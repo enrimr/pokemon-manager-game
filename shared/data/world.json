@@ -1,0 +1,8952 @@
+{
+ "meta": {
+  "league_name": "Indigo League",
+  "season_start": "2026-08-01",
+  "player_club_id": "club10",
+  "currency": "P$"
+ },
+ "clubs": [
+  {
+   "id": "club00",
+   "name": "Viridian Vipers",
+   "short": "VIR",
+   "manager": "Silas Duarte",
+   "reputation": 10,
+   "finances": {
+    "balance": 1383000,
+    "wage_budget": 32629
+   },
+   "squad": [
+    {
+     "uid": "pkm0001",
+     "species_id": 29,
+     "species": "Nidoran F",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 0,
+      "atk": 10,
+      "def": 15,
+      "spa": 9,
+      "spd": 8,
+      "spe": 7
+     },
+     "moves": [
+      "Reflect",
+      "Slash",
+      "Poison Sting",
+      "Sludge"
+     ],
+     "condition": 81,
+     "fitness": 97,
+     "morale": 94,
+     "age_months": 73,
+     "contract": {
+      "salary": 2243,
+      "expiry": "2030-06-30"
+     }
+    },
+    {
+     "uid": "pkm0002",
+     "species_id": 60,
+     "species": "Poliwag",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 11,
+      "spa": 8,
+      "spd": 8,
+      "spe": 14
+     },
+     "moves": [
+      "Hydro Pump",
+      "Slash",
+      "Water Gun",
+      "Waterfall"
+     ],
+     "condition": 93,
+     "fitness": 98,
+     "morale": 62,
+     "age_months": 50,
+     "contract": {
+      "salary": 2125,
+      "expiry": "2027-08-30"
+     }
+    },
+    {
+     "uid": "pkm0003",
+     "species_id": 96,
+     "species": "Drowzee",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 3,
+      "atk": 13,
+      "def": 9,
+      "spa": 0,
+      "spd": 3,
+      "spe": 13
+     },
+     "moves": [
+      "Confusion",
+      "Hypnosis",
+      "Psychic",
+      "Recover"
+     ],
+     "condition": 84,
+     "fitness": 81,
+     "morale": 72,
+     "age_months": 116,
+     "contract": {
+      "salary": 2465,
+      "expiry": "2029-06-30"
+     }
+    },
+    {
+     "uid": "pkm0004",
+     "species_id": 88,
+     "species": "Grimer",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 8,
+      "atk": 3,
+      "def": 12,
+      "spa": 15,
+      "spd": 10,
+      "spe": 2
+     },
+     "moves": [
+      "Poison Sting",
+      "Smog",
+      "Toxic",
+      "Sludge"
+     ],
+     "condition": 96,
+     "fitness": 79,
+     "morale": 52,
+     "age_months": 117,
+     "contract": {
+      "salary": 2788,
+      "expiry": "2028-08-30"
+     }
+    },
+    {
+     "uid": "pkm0005",
+     "species_id": 98,
+     "species": "Krabby",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 14,
+      "atk": 5,
+      "def": 15,
+      "spa": 15,
+      "spd": 4,
+      "spe": 10
+     },
+     "moves": [
+      "Leer",
+      "Water Gun",
+      "Waterfall",
+      "Quick Attack"
+     ],
+     "condition": 92,
+     "fitness": 96,
+     "morale": 67,
+     "age_months": 112,
+     "contract": {
+      "salary": 2138,
+      "expiry": "2028-05-30"
+     }
+    },
+    {
+     "uid": "pkm0006",
+     "species_id": 25,
+     "species": "Pikachu",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 5,
+      "atk": 0,
+      "def": 15,
+      "spa": 9,
+      "spd": 14,
+      "spe": 3
+     },
+     "moves": [
+      "Thunder Wave",
+      "Thunderbolt",
+      "Quick Attack",
+      "Agility"
+     ],
+     "condition": 80,
+     "fitness": 97,
+     "morale": 93,
+     "age_months": 45,
+     "contract": {
+      "salary": 2588,
+      "expiry": "2030-02-30"
+     }
+    },
+    {
+     "uid": "pkm0007",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 11,
+      "atk": 12,
+      "def": 2,
+      "spa": 13,
+      "spd": 2,
+      "spe": 0
+     },
+     "moves": [
+      "Waterfall",
+      "Bubble Beam",
+      "Harden",
+      "Rock Throw"
+     ],
+     "condition": 82,
+     "fitness": 96,
+     "morale": 51,
+     "age_months": 15,
+     "contract": {
+      "salary": 2956,
+      "expiry": "2030-05-30"
+     }
+    },
+    {
+     "uid": "pkm0008",
+     "species_id": 46,
+     "species": "Paras",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 9,
+      "atk": 15,
+      "def": 9,
+      "spa": 1,
+      "spd": 12,
+      "spe": 6
+     },
+     "moves": [
+      "Solar Beam",
+      "Pin Missile",
+      "String Shot",
+      "Quick Attack"
+     ],
+     "condition": 97,
+     "fitness": 83,
+     "morale": 77,
+     "age_months": 28,
+     "contract": {
+      "salary": 1765,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0009",
+     "species_id": 17,
+     "species": "Pidgeotto",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 1,
+      "atk": 8,
+      "def": 4,
+      "spa": 4,
+      "spd": 11,
+      "spe": 9
+     },
+     "moves": [
+      "Hyper Beam",
+      "Harden",
+      "Peck",
+      "Drill Peck"
+     ],
+     "condition": 71,
+     "fitness": 92,
+     "morale": 50,
+     "age_months": 113,
+     "contract": {
+      "salary": 2028,
+      "expiry": "2027-07-30"
+     }
+    },
+    {
+     "uid": "pkm0010",
+     "species_id": 17,
+     "species": "Pidgeotto",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 9,
+      "atk": 15,
+      "def": 2,
+      "spa": 14,
+      "spd": 15,
+      "spe": 12
+     },
+     "moves": [
+      "Double-Edge",
+      "Headbutt",
+      "Fly",
+      "Peck"
+     ],
+     "condition": 97,
+     "fitness": 90,
+     "morale": 83,
+     "age_months": 115,
+     "contract": {
+      "salary": 2411,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0011",
+     "species_id": 138,
+     "species": "Omanyte",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 12,
+      "atk": 4,
+      "def": 10,
+      "spa": 5,
+      "spd": 4,
+      "spe": 0
+     },
+     "moves": [
+      "Hydro Pump",
+      "Swift",
+      "Rock Slide",
+      "Reflect"
+     ],
+     "condition": 100,
+     "fitness": 90,
+     "morale": 86,
+     "age_months": 21,
+     "contract": {
+      "salary": 2053,
+      "expiry": "2029-01-30"
+     }
+    },
+    {
+     "uid": "pkm0012",
+     "species_id": 48,
+     "species": "Venonat",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 13,
+      "atk": 2,
+      "def": 9,
+      "spa": 0,
+      "spd": 6,
+      "spe": 3
+     },
+     "moves": [
+      "Smog",
+      "Twineedle",
+      "Poison Sting",
+      "String Shot"
+     ],
+     "condition": 80,
+     "fitness": 77,
+     "morale": 65,
+     "age_months": 74,
+     "contract": {
+      "salary": 2336,
+      "expiry": "2028-09-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Ximena Joyce",
+     "role": "coach",
+     "ratings": {
+      "attacking": 16,
+      "defending": 5,
+      "fitness": 11,
+      "judging_ability": 14,
+      "judging_potential": 9,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Yuki Serrano",
+     "role": "coach",
+     "ratings": {
+      "attacking": 8,
+      "defending": 16,
+      "fitness": 11,
+      "judging_ability": 18,
+      "judging_potential": 7,
+      "youth": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "club01",
+   "name": "Pewter Boulders",
+   "short": "PEW",
+   "manager": "Franco Kline",
+   "reputation": 13,
+   "finances": {
+    "balance": 1340000,
+    "wage_budget": 30157
+   },
+   "squad": [
+    {
+     "uid": "pkm0013",
+     "species_id": 67,
+     "species": "Machoke",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 0,
+      "atk": 13,
+      "def": 1,
+      "spa": 1,
+      "spd": 10,
+      "spe": 0
+     },
+     "moves": [
+      "Karate Chop",
+      "Low Kick",
+      "Slash",
+      "Leer"
+     ],
+     "condition": 88,
+     "fitness": 87,
+     "morale": 75,
+     "age_months": 29,
+     "contract": {
+      "salary": 2327,
+      "expiry": "2030-06-30"
+     }
+    },
+    {
+     "uid": "pkm0014",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 47,
+     "ivs": {
+      "hp": 11,
+      "atk": 12,
+      "def": 11,
+      "spa": 14,
+      "spd": 8,
+      "spe": 1
+     },
+     "moves": [
+      "Water Gun",
+      "Rock Slide",
+      "Slash",
+      "Harden"
+     ],
+     "condition": 73,
+     "fitness": 90,
+     "morale": 61,
+     "age_months": 31,
+     "contract": {
+      "salary": 2293,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0015",
+     "species_id": 98,
+     "species": "Krabby",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 15,
+      "atk": 3,
+      "def": 9,
+      "spa": 1,
+      "spd": 15,
+      "spe": 12
+     },
+     "moves": [
+      "Quick Attack",
+      "Waterfall",
+      "Water Gun",
+      "Surf"
+     ],
+     "condition": 100,
+     "fitness": 82,
+     "morale": 68,
+     "age_months": 38,
+     "contract": {
+      "salary": 2658,
+      "expiry": "2028-09-30"
+     }
+    },
+    {
+     "uid": "pkm0016",
+     "species_id": 47,
+     "species": "Parasect",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 7,
+      "atk": 9,
+      "def": 0,
+      "spa": 3,
+      "spd": 7,
+      "spe": 8
+     },
+     "moves": [
+      "String Shot",
+      "Body Slam",
+      "Petal Dance",
+      "Twineedle"
+     ],
+     "condition": 70,
+     "fitness": 88,
+     "morale": 71,
+     "age_months": 52,
+     "contract": {
+      "salary": 3326,
+      "expiry": "2030-01-30"
+     }
+    },
+    {
+     "uid": "pkm0017",
+     "species_id": 5,
+     "species": "Charmeleon",
+     "nickname": null,
+     "level": 52,
+     "ivs": {
+      "hp": 11,
+      "atk": 11,
+      "def": 4,
+      "spa": 11,
+      "spd": 11,
+      "spe": 14
+     },
+     "moves": [
+      "Fire Spin",
+      "Ember",
+      "Double Team",
+      "Flamethrower"
+     ],
+     "condition": 88,
+     "fitness": 88,
+     "morale": 85,
+     "age_months": 49,
+     "contract": {
+      "salary": 3546,
+      "expiry": "2030-05-30"
+     }
+    },
+    {
+     "uid": "pkm0018",
+     "species_id": 102,
+     "species": "Exeggcute",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 8,
+      "atk": 2,
+      "def": 7,
+      "spa": 7,
+      "spd": 3,
+      "spe": 14
+     },
+     "moves": [
+      "Confusion",
+      "Quick Attack",
+      "Reflect",
+      "Psybeam"
+     ],
+     "condition": 97,
+     "fitness": 99,
+     "morale": 69,
+     "age_months": 91,
+     "contract": {
+      "salary": 2249,
+      "expiry": "2027-07-30"
+     }
+    },
+    {
+     "uid": "pkm0019",
+     "species_id": 61,
+     "species": "Poliwhirl",
+     "nickname": null,
+     "level": 44,
+     "ivs": {
+      "hp": 8,
+      "atk": 9,
+      "def": 11,
+      "spa": 6,
+      "spd": 4,
+      "spe": 15
+     },
+     "moves": [
+      "Agility",
+      "Waterfall",
+      "Bubble Beam",
+      "Surf"
+     ],
+     "condition": 71,
+     "fitness": 82,
+     "morale": 73,
+     "age_months": 18,
+     "contract": {
+      "salary": 2763,
+      "expiry": "2028-08-30"
+     }
+    },
+    {
+     "uid": "pkm0020",
+     "species_id": 97,
+     "species": "Hypno",
+     "nickname": null,
+     "level": 44,
+     "ivs": {
+      "hp": 15,
+      "atk": 10,
+      "def": 3,
+      "spa": 0,
+      "spd": 2,
+      "spe": 12
+     },
+     "moves": [
+      "Psybeam",
+      "Psychic",
+      "Screech",
+      "Quick Attack"
+     ],
+     "condition": 81,
+     "fitness": 95,
+     "morale": 82,
+     "age_months": 120,
+     "contract": {
+      "salary": 2843,
+      "expiry": "2027-07-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Carla Serrano",
+     "role": "physio",
+     "ratings": {
+      "attacking": 12,
+      "defending": 20,
+      "fitness": 9,
+      "judging_ability": 10,
+      "judging_potential": 15,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Franco Tanaka",
+     "role": "coach",
+     "ratings": {
+      "attacking": 16,
+      "defending": 7,
+      "fitness": 10,
+      "judging_ability": 5,
+      "judging_potential": 5,
+      "youth": 10
+     }
+    },
+    {
+     "name": "Hiro Joyce",
+     "role": "scout",
+     "ratings": {
+      "attacking": 20,
+      "defending": 16,
+      "fitness": 17,
+      "judging_ability": 20,
+      "judging_potential": 12,
+      "youth": 19
+     }
+    },
+    {
+     "name": "Jonah Sato",
+     "role": "coach",
+     "ratings": {
+      "attacking": 13,
+      "defending": 7,
+      "fitness": 17,
+      "judging_ability": 9,
+      "judging_potential": 20,
+      "youth": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "club02",
+   "name": "Cerulean Tides",
+   "short": "CER",
+   "manager": "Jonah Tanaka",
+   "reputation": 12,
+   "finances": {
+    "balance": 1251000,
+    "wage_budget": 36834
+   },
+   "squad": [
+    {
+     "uid": "pkm0021",
+     "species_id": 99,
+     "species": "Kingler",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 3,
+      "atk": 13,
+      "def": 15,
+      "spa": 4,
+      "spd": 0,
+      "spe": 13
+     },
+     "moves": [
+      "Quick Attack",
+      "Bubble Beam",
+      "Hydro Pump",
+      "Double Team"
+     ],
+     "condition": 98,
+     "fitness": 100,
+     "morale": 70,
+     "age_months": 27,
+     "contract": {
+      "salary": 2481,
+      "expiry": "2027-06-30"
+     }
+    },
+    {
+     "uid": "pkm0022",
+     "species_id": 95,
+     "species": "Onix",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 2,
+      "atk": 12,
+      "def": 6,
+      "spa": 15,
+      "spd": 14,
+      "spe": 10
+     },
+     "moves": [
+      "Bone Club",
+      "Earthquake",
+      "Tail Whip",
+      "Dig"
+     ],
+     "condition": 98,
+     "fitness": 81,
+     "morale": 62,
+     "age_months": 69,
+     "contract": {
+      "salary": 3022,
+      "expiry": "2027-08-30"
+     }
+    },
+    {
+     "uid": "pkm0023",
+     "species_id": 58,
+     "species": "Growlithe",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 11,
+      "atk": 12,
+      "def": 11,
+      "spa": 4,
+      "spd": 11,
+      "spe": 0
+     },
+     "moves": [
+      "Flame Wheel",
+      "Reflect",
+      "Headbutt",
+      "Ember"
+     ],
+     "condition": 96,
+     "fitness": 99,
+     "morale": 53,
+     "age_months": 94,
+     "contract": {
+      "salary": 1658,
+      "expiry": "2028-12-30"
+     }
+    },
+    {
+     "uid": "pkm0024",
+     "species_id": 109,
+     "species": "Koffing",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 8,
+      "atk": 11,
+      "def": 13,
+      "spa": 6,
+      "spd": 11,
+      "spe": 6
+     },
+     "moves": [
+      "Toxic",
+      "Sludge",
+      "Screech",
+      "Slash"
+     ],
+     "condition": 98,
+     "fitness": 83,
+     "morale": 82,
+     "age_months": 70,
+     "contract": {
+      "salary": 2376,
+      "expiry": "2028-12-30"
+     }
+    },
+    {
+     "uid": "pkm0025",
+     "species_id": 110,
+     "species": "Weezing",
+     "nickname": null,
+     "level": 49,
+     "ivs": {
+      "hp": 0,
+      "atk": 1,
+      "def": 7,
+      "spa": 14,
+      "spd": 10,
+      "spe": 15
+     },
+     "moves": [
+      "Acid",
+      "Quick Attack",
+      "Leer",
+      "Sludge"
+     ],
+     "condition": 85,
+     "fitness": 75,
+     "morale": 79,
+     "age_months": 12,
+     "contract": {
+      "salary": 2713,
+      "expiry": "2029-01-30"
+     }
+    },
+    {
+     "uid": "pkm0026",
+     "species_id": 15,
+     "species": "Beedrill",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 9,
+      "atk": 9,
+      "def": 7,
+      "spa": 8,
+      "spd": 2,
+      "spe": 4
+     },
+     "moves": [
+      "Smog",
+      "Twineedle",
+      "Acid",
+      "Body Slam"
+     ],
+     "condition": 100,
+     "fitness": 84,
+     "morale": 67,
+     "age_months": 92,
+     "contract": {
+      "salary": 2275,
+      "expiry": "2029-06-30"
+     }
+    },
+    {
+     "uid": "pkm0027",
+     "species_id": 44,
+     "species": "Gloom",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 12,
+      "atk": 6,
+      "def": 6,
+      "spa": 0,
+      "spd": 8,
+      "spe": 2
+     },
+     "moves": [
+      "Solar Beam",
+      "Smog",
+      "Light Screen",
+      "Acid"
+     ],
+     "condition": 99,
+     "fitness": 98,
+     "morale": 82,
+     "age_months": 53,
+     "contract": {
+      "salary": 2006,
+      "expiry": "2028-12-30"
+     }
+    },
+    {
+     "uid": "pkm0028",
+     "species_id": 70,
+     "species": "Weepinbell",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 5,
+      "atk": 11,
+      "def": 5,
+      "spa": 3,
+      "spd": 12,
+      "spe": 10
+     },
+     "moves": [
+      "Petal Dance",
+      "Acid",
+      "Sludge",
+      "Harden"
+     ],
+     "condition": 86,
+     "fitness": 78,
+     "morale": 64,
+     "age_months": 95,
+     "contract": {
+      "salary": 2848,
+      "expiry": "2027-11-30"
+     }
+    },
+    {
+     "uid": "pkm0029",
+     "species_id": 17,
+     "species": "Pidgeotto",
+     "nickname": null,
+     "level": 53,
+     "ivs": {
+      "hp": 1,
+      "atk": 0,
+      "def": 5,
+      "spa": 4,
+      "spd": 13,
+      "spe": 7
+     },
+     "moves": [
+      "Harden",
+      "Headbutt",
+      "Double-Edge",
+      "Fly"
+     ],
+     "condition": 71,
+     "fitness": 81,
+     "morale": 83,
+     "age_months": 48,
+     "contract": {
+      "salary": 3062,
+      "expiry": "2029-09-30"
+     }
+    },
+    {
+     "uid": "pkm0030",
+     "species_id": 72,
+     "species": "Tentacool",
+     "nickname": null,
+     "level": 52,
+     "ivs": {
+      "hp": 9,
+      "atk": 3,
+      "def": 0,
+      "spa": 6,
+      "spd": 2,
+      "spe": 2
+     },
+     "moves": [
+      "Acid",
+      "Waterfall",
+      "Smog",
+      "Swift"
+     ],
+     "condition": 73,
+     "fitness": 89,
+     "morale": 89,
+     "age_months": 16,
+     "contract": {
+      "salary": 3134,
+      "expiry": "2027-12-30"
+     }
+    },
+    {
+     "uid": "pkm0031",
+     "species_id": 122,
+     "species": "Mr. Mime",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 0,
+      "atk": 1,
+      "def": 6,
+      "spa": 1,
+      "spd": 14,
+      "spe": 9
+     },
+     "moves": [
+      "Hypnosis",
+      "Tail Whip",
+      "Agility",
+      "Recover"
+     ],
+     "condition": 87,
+     "fitness": 87,
+     "morale": 70,
+     "age_months": 99,
+     "contract": {
+      "salary": 2254,
+      "expiry": "2028-01-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Hiro Grant",
+     "role": "coach",
+     "ratings": {
+      "attacking": 14,
+      "defending": 16,
+      "fitness": 16,
+      "judging_ability": 18,
+      "judging_potential": 16,
+      "youth": 19
+     }
+    },
+    {
+     "name": "Olga Duarte",
+     "role": "coach",
+     "ratings": {
+      "attacking": 15,
+      "defending": 7,
+      "fitness": 18,
+      "judging_ability": 10,
+      "judging_potential": 7,
+      "youth": 10
+     }
+    },
+    {
+     "name": "Olga Serrano",
+     "role": "physio",
+     "ratings": {
+      "attacking": 11,
+      "defending": 20,
+      "fitness": 17,
+      "judging_ability": 18,
+      "judging_potential": 11,
+      "youth": 20
+     }
+    },
+    {
+     "name": "Ander Sato",
+     "role": "scout",
+     "ratings": {
+      "attacking": 10,
+      "defending": 8,
+      "fitness": 13,
+      "judging_ability": 19,
+      "judging_potential": 16,
+      "youth": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "club03",
+   "name": "Vermilion Volts",
+   "short": "VER",
+   "manager": "Carla Mendez",
+   "reputation": 16,
+   "finances": {
+    "balance": 1192000,
+    "wage_budget": 45922
+   },
+   "squad": [
+    {
+     "uid": "pkm0032",
+     "species_id": 57,
+     "species": "Primeape",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 11,
+      "spa": 5,
+      "spd": 4,
+      "spe": 15
+     },
+     "moves": [
+      "Seismic Toss",
+      "High Jump Kick",
+      "Double Kick",
+      "Submission"
+     ],
+     "condition": 70,
+     "fitness": 75,
+     "morale": 68,
+     "age_months": 116,
+     "contract": {
+      "salary": 2442,
+      "expiry": "2027-12-30"
+     }
+    },
+    {
+     "uid": "pkm0033",
+     "species_id": 9,
+     "species": "Blastoise",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 10,
+      "atk": 1,
+      "def": 0,
+      "spa": 7,
+      "spd": 5,
+      "spe": 7
+     },
+     "moves": [
+      "Swift",
+      "Water Gun",
+      "Surf",
+      "Tail Whip"
+     ],
+     "condition": 77,
+     "fitness": 90,
+     "morale": 90,
+     "age_months": 74,
+     "contract": {
+      "salary": 2302,
+      "expiry": "2030-04-30"
+     }
+    },
+    {
+     "uid": "pkm0034",
+     "species_id": 31,
+     "species": "Nidoqueen",
+     "nickname": null,
+     "level": 51,
+     "ivs": {
+      "hp": 1,
+      "atk": 7,
+      "def": 14,
+      "spa": 12,
+      "spd": 5,
+      "spe": 1
+     },
+     "moves": [
+      "Sand Attack",
+      "Sludge",
+      "Dig",
+      "Slash"
+     ],
+     "condition": 96,
+     "fitness": 99,
+     "morale": 86,
+     "age_months": 33,
+     "contract": {
+      "salary": 3738,
+      "expiry": "2030-05-30"
+     }
+    },
+    {
+     "uid": "pkm0035",
+     "species_id": 135,
+     "species": "Jolteon",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 1,
+      "atk": 12,
+      "def": 8,
+      "spa": 13,
+      "spd": 14,
+      "spe": 0
+     },
+     "moves": [
+      "Thunder Punch",
+      "Thunder Shock",
+      "Thunder",
+      "Thunderbolt"
+     ],
+     "condition": 74,
+     "fitness": 91,
+     "morale": 52,
+     "age_months": 19,
+     "contract": {
+      "salary": 3221,
+      "expiry": "2028-09-30"
+     }
+    },
+    {
+     "uid": "pkm0036",
+     "species_id": 65,
+     "species": "Alakazam",
+     "nickname": null,
+     "level": 51,
+     "ivs": {
+      "hp": 13,
+      "atk": 8,
+      "def": 15,
+      "spa": 10,
+      "spd": 6,
+      "spe": 15
+     },
+     "moves": [
+      "Recover",
+      "Confusion",
+      "Psybeam",
+      "Reflect"
+     ],
+     "condition": 93,
+     "fitness": 99,
+     "morale": 70,
+     "age_months": 116,
+     "contract": {
+      "salary": 3227,
+      "expiry": "2028-07-30"
+     }
+    },
+    {
+     "uid": "pkm0037",
+     "species_id": 107,
+     "species": "Hitmonchan",
+     "nickname": null,
+     "level": 60,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 1,
+      "spa": 12,
+      "spd": 4,
+      "spe": 13
+     },
+     "moves": [
+      "Tail Whip",
+      "Karate Chop",
+      "Seismic Toss",
+      "Headbutt"
+     ],
+     "condition": 100,
+     "fitness": 84,
+     "morale": 85,
+     "age_months": 64,
+     "contract": {
+      "salary": 3559,
+      "expiry": "2030-02-30"
+     }
+    },
+    {
+     "uid": "pkm0038",
+     "species_id": 131,
+     "species": "Lapras",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 9,
+      "atk": 7,
+      "def": 1,
+      "spa": 11,
+      "spd": 15,
+      "spe": 9
+     },
+     "moves": [
+      "Surf",
+      "Blizzard",
+      "Hydro Pump",
+      "Tackle"
+     ],
+     "condition": 85,
+     "fitness": 78,
+     "morale": 51,
+     "age_months": 77,
+     "contract": {
+      "salary": 2620,
+      "expiry": "2027-06-30"
+     }
+    },
+    {
+     "uid": "pkm0039",
+     "species_id": 36,
+     "species": "Clefable",
+     "nickname": null,
+     "level": 54,
+     "ivs": {
+      "hp": 15,
+      "atk": 3,
+      "def": 5,
+      "spa": 12,
+      "spd": 4,
+      "spe": 11
+     },
+     "moves": [
+      "Body Slam",
+      "Double-Edge",
+      "Slash",
+      "Light Screen"
+     ],
+     "condition": 97,
+     "fitness": 84,
+     "morale": 66,
+     "age_months": 59,
+     "contract": {
+      "salary": 3049,
+      "expiry": "2029-12-30"
+     }
+    },
+    {
+     "uid": "pkm0040",
+     "species_id": 107,
+     "species": "Hitmonchan",
+     "nickname": null,
+     "level": 57,
+     "ivs": {
+      "hp": 11,
+      "atk": 1,
+      "def": 1,
+      "spa": 5,
+      "spd": 7,
+      "spe": 10
+     },
+     "moves": [
+      "Headbutt",
+      "Seismic Toss",
+      "Karate Chop",
+      "Double Kick"
+     ],
+     "condition": 91,
+     "fitness": 80,
+     "morale": 54,
+     "age_months": 35,
+     "contract": {
+      "salary": 3411,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0041",
+     "species_id": 124,
+     "species": "Jynx",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 11,
+      "atk": 6,
+      "def": 1,
+      "spa": 8,
+      "spd": 3,
+      "spe": 1
+     },
+     "moves": [
+      "Psychic",
+      "Recover",
+      "Confusion",
+      "Growl"
+     ],
+     "condition": 92,
+     "fitness": 89,
+     "morale": 61,
+     "age_months": 51,
+     "contract": {
+      "salary": 3054,
+      "expiry": "2027-10-30"
+     }
+    },
+    {
+     "uid": "pkm0042",
+     "species_id": 31,
+     "species": "Nidoqueen",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 2,
+      "atk": 9,
+      "def": 1,
+      "spa": 8,
+      "spd": 9,
+      "spe": 14
+     },
+     "moves": [
+      "Sludge",
+      "Dig",
+      "Toxic",
+      "Double Team"
+     ],
+     "condition": 92,
+     "fitness": 90,
+     "morale": 52,
+     "age_months": 120,
+     "contract": {
+      "salary": 2476,
+      "expiry": "2029-07-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Daisuke Fowler",
+     "role": "coach",
+     "ratings": {
+      "attacking": 4,
+      "defending": 9,
+      "fitness": 15,
+      "judging_ability": 16,
+      "judging_potential": 9,
+      "youth": 20
+     }
+    },
+    {
+     "name": "Quinn Hale",
+     "role": "scout",
+     "ratings": {
+      "attacking": 14,
+      "defending": 19,
+      "fitness": 4,
+      "judging_ability": 14,
+      "judging_potential": 12,
+      "youth": 11
+     }
+    },
+    {
+     "name": "Viktor Duarte",
+     "role": "coach",
+     "ratings": {
+      "attacking": 7,
+      "defending": 9,
+      "fitness": 6,
+      "judging_ability": 9,
+      "judging_potential": 10,
+      "youth": 5
+     }
+    },
+    {
+     "name": "Akira Lorca",
+     "role": "physio",
+     "ratings": {
+      "attacking": 12,
+      "defending": 15,
+      "fitness": 20,
+      "judging_ability": 16,
+      "judging_potential": 12,
+      "youth": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "club04",
+   "name": "Lavender Phantoms",
+   "short": "LAV",
+   "manager": "Viktor Oteiza",
+   "reputation": 12,
+   "finances": {
+    "balance": 851000,
+    "wage_budget": 29661
+   },
+   "squad": [
+    {
+     "uid": "pkm0043",
+     "species_id": 30,
+     "species": "Nidorina",
+     "nickname": null,
+     "level": 54,
+     "ivs": {
+      "hp": 4,
+      "atk": 0,
+      "def": 9,
+      "spa": 13,
+      "spd": 9,
+      "spe": 13
+     },
+     "moves": [
+      "Smog",
+      "Toxic",
+      "Acid",
+      "Tackle"
+     ],
+     "condition": 75,
+     "fitness": 79,
+     "morale": 86,
+     "age_months": 71,
+     "contract": {
+      "salary": 3071,
+      "expiry": "2029-08-30"
+     }
+    },
+    {
+     "uid": "pkm0044",
+     "species_id": 70,
+     "species": "Weepinbell",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 9,
+      "atk": 13,
+      "def": 9,
+      "spa": 9,
+      "spd": 14,
+      "spe": 13
+     },
+     "moves": [
+      "Petal Dance",
+      "Sludge",
+      "Harden",
+      "Vine Whip"
+     ],
+     "condition": 70,
+     "fitness": 98,
+     "morale": 95,
+     "age_months": 46,
+     "contract": {
+      "salary": 2177,
+      "expiry": "2029-10-30"
+     }
+    },
+    {
+     "uid": "pkm0045",
+     "species_id": 75,
+     "species": "Graveler",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 9,
+      "atk": 0,
+      "def": 14,
+      "spa": 7,
+      "spd": 2,
+      "spe": 10
+     },
+     "moves": [
+      "Earthquake",
+      "Growl",
+      "Bone Club",
+      "Sand Attack"
+     ],
+     "condition": 98,
+     "fitness": 89,
+     "morale": 64,
+     "age_months": 26,
+     "contract": {
+      "salary": 2136,
+      "expiry": "2029-01-30"
+     }
+    },
+    {
+     "uid": "pkm0046",
+     "species_id": 64,
+     "species": "Kadabra",
+     "nickname": null,
+     "level": 52,
+     "ivs": {
+      "hp": 12,
+      "atk": 9,
+      "def": 7,
+      "spa": 13,
+      "spd": 6,
+      "spe": 15
+     },
+     "moves": [
+      "Leer",
+      "Confusion",
+      "Tackle",
+      "Hypnosis"
+     ],
+     "condition": 74,
+     "fitness": 99,
+     "morale": 93,
+     "age_months": 15,
+     "contract": {
+      "salary": 2867,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0047",
+     "species_id": 8,
+     "species": "Wartortle",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 8,
+      "atk": 11,
+      "def": 12,
+      "spa": 8,
+      "spd": 12,
+      "spe": 12
+     },
+     "moves": [
+      "Waterfall",
+      "Bubble Beam",
+      "Hydro Pump",
+      "Water Gun"
+     ],
+     "condition": 90,
+     "fitness": 99,
+     "morale": 75,
+     "age_months": 117,
+     "contract": {
+      "salary": 1939,
+      "expiry": "2030-04-30"
+     }
+    },
+    {
+     "uid": "pkm0048",
+     "species_id": 5,
+     "species": "Charmeleon",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 12,
+      "atk": 1,
+      "def": 3,
+      "spa": 14,
+      "spd": 4,
+      "spe": 10
+     },
+     "moves": [
+      "Fire Blast",
+      "Double Team",
+      "Fire Spin",
+      "Quick Attack"
+     ],
+     "condition": 84,
+     "fitness": 92,
+     "morale": 94,
+     "age_months": 34,
+     "contract": {
+      "salary": 2787,
+      "expiry": "2029-12-30"
+     }
+    },
+    {
+     "uid": "pkm0049",
+     "species_id": 119,
+     "species": "Seaking",
+     "nickname": null,
+     "level": 49,
+     "ivs": {
+      "hp": 3,
+      "atk": 13,
+      "def": 5,
+      "spa": 14,
+      "spd": 6,
+      "spe": 3
+     },
+     "moves": [
+      "Tackle",
+      "Surf",
+      "Waterfall",
+      "Water Gun"
+     ],
+     "condition": 92,
+     "fitness": 96,
+     "morale": 66,
+     "age_months": 15,
+     "contract": {
+      "salary": 3390,
+      "expiry": "2027-10-30"
+     }
+    },
+    {
+     "uid": "pkm0050",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 47,
+     "ivs": {
+      "hp": 11,
+      "atk": 12,
+      "def": 11,
+      "spa": 7,
+      "spd": 2,
+      "spe": 13
+     },
+     "moves": [
+      "Rock Slide",
+      "Rock Throw",
+      "Waterfall",
+      "Harden"
+     ],
+     "condition": 81,
+     "fitness": 98,
+     "morale": 57,
+     "age_months": 57,
+     "contract": {
+      "salary": 3210,
+      "expiry": "2028-06-30"
+     }
+    },
+    {
+     "uid": "pkm0051",
+     "species_id": 51,
+     "species": "Dugtrio",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 0,
+      "atk": 4,
+      "def": 10,
+      "spa": 6,
+      "spd": 8,
+      "spe": 0
+     },
+     "moves": [
+      "Dig",
+      "Swords Dance",
+      "Bone Club",
+      "Earthquake"
+     ],
+     "condition": 77,
+     "fitness": 79,
+     "morale": 75,
+     "age_months": 79,
+     "contract": {
+      "salary": 3110,
+      "expiry": "2029-03-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Tomoko Grant",
+     "role": "scout",
+     "ratings": {
+      "attacking": 7,
+      "defending": 15,
+      "fitness": 20,
+      "judging_ability": 4,
+      "judging_potential": 19,
+      "youth": 19
+     }
+    },
+    {
+     "name": "Jonah Iwata",
+     "role": "coach",
+     "ratings": {
+      "attacking": 10,
+      "defending": 14,
+      "fitness": 4,
+      "judging_ability": 20,
+      "judging_potential": 13,
+      "youth": 17
+     }
+    },
+    {
+     "name": "Noel Marchetti",
+     "role": "coach",
+     "ratings": {
+      "attacking": 14,
+      "defending": 12,
+      "fitness": 15,
+      "judging_ability": 12,
+      "judging_potential": 6,
+      "youth": 9
+     }
+    },
+    {
+     "name": "Ines Sato",
+     "role": "physio",
+     "ratings": {
+      "attacking": 5,
+      "defending": 16,
+      "fitness": 15,
+      "judging_ability": 4,
+      "judging_potential": 6,
+      "youth": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "club05",
+   "name": "Celadon Blossoms",
+   "short": "CEL",
+   "manager": "Ander Duarte",
+   "reputation": 13,
+   "finances": {
+    "balance": 1238000,
+    "wage_budget": 27586
+   },
+   "squad": [
+    {
+     "uid": "pkm0052",
+     "species_id": 87,
+     "species": "Dewgong",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 2,
+      "atk": 11,
+      "def": 5,
+      "spa": 0,
+      "spd": 14,
+      "spe": 11
+     },
+     "moves": [
+      "Agility",
+      "Ice Punch",
+      "Aurora Beam",
+      "Surf"
+     ],
+     "condition": 83,
+     "fitness": 93,
+     "morale": 63,
+     "age_months": 29,
+     "contract": {
+      "salary": 2333,
+      "expiry": "2028-10-30"
+     }
+    },
+    {
+     "uid": "pkm0053",
+     "species_id": 81,
+     "species": "Magnemite",
+     "nickname": null,
+     "level": 54,
+     "ivs": {
+      "hp": 12,
+      "atk": 1,
+      "def": 5,
+      "spa": 5,
+      "spd": 12,
+      "spe": 5
+     },
+     "moves": [
+      "Agility",
+      "Thunder",
+      "Tackle",
+      "Thunder Wave"
+     ],
+     "condition": 79,
+     "fitness": 94,
+     "morale": 63,
+     "age_months": 102,
+     "contract": {
+      "salary": 2293,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0054",
+     "species_id": 12,
+     "species": "Butterfree",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 1,
+      "atk": 12,
+      "def": 15,
+      "spa": 1,
+      "spd": 1,
+      "spe": 15
+     },
+     "moves": [
+      "Quick Attack",
+      "String Shot",
+      "Wing Attack",
+      "Fly"
+     ],
+     "condition": 79,
+     "fitness": 98,
+     "morale": 58,
+     "age_months": 81,
+     "contract": {
+      "salary": 3024,
+      "expiry": "2028-11-30"
+     }
+    },
+    {
+     "uid": "pkm0055",
+     "species_id": 2,
+     "species": "Ivysaur",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 1,
+      "spa": 3,
+      "spd": 9,
+      "spe": 1
+     },
+     "moves": [
+      "Stun Spore",
+      "Smog",
+      "Quick Attack",
+      "Mega Drain"
+     ],
+     "condition": 93,
+     "fitness": 96,
+     "morale": 83,
+     "age_months": 50,
+     "contract": {
+      "salary": 1779,
+      "expiry": "2027-08-30"
+     }
+    },
+    {
+     "uid": "pkm0056",
+     "species_id": 30,
+     "species": "Nidorina",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 1,
+      "atk": 2,
+      "def": 9,
+      "spa": 1,
+      "spd": 7,
+      "spe": 5
+     },
+     "moves": [
+      "Acid",
+      "Agility",
+      "Tackle",
+      "Smog"
+     ],
+     "condition": 98,
+     "fitness": 79,
+     "morale": 77,
+     "age_months": 55,
+     "contract": {
+      "salary": 2420,
+      "expiry": "2030-04-30"
+     }
+    },
+    {
+     "uid": "pkm0057",
+     "species_id": 77,
+     "species": "Ponyta",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 7,
+      "atk": 12,
+      "def": 11,
+      "spa": 15,
+      "spd": 4,
+      "spe": 4
+     },
+     "moves": [
+      "Ember",
+      "Tackle",
+      "Fire Blast",
+      "Fire Punch"
+     ],
+     "condition": 76,
+     "fitness": 87,
+     "morale": 56,
+     "age_months": 64,
+     "contract": {
+      "salary": 2035,
+      "expiry": "2027-10-30"
+     }
+    },
+    {
+     "uid": "pkm0058",
+     "species_id": 44,
+     "species": "Gloom",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 10,
+      "atk": 9,
+      "def": 5,
+      "spa": 10,
+      "spd": 13,
+      "spe": 2
+     },
+     "moves": [
+      "Acid",
+      "Light Screen",
+      "Mega Drain",
+      "Razor Leaf"
+     ],
+     "condition": 77,
+     "fitness": 96,
+     "morale": 91,
+     "age_months": 88,
+     "contract": {
+      "salary": 2764,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0059",
+     "species_id": 111,
+     "species": "Rhyhorn",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 7,
+      "atk": 8,
+      "def": 3,
+      "spa": 6,
+      "spd": 2,
+      "spe": 15
+     },
+     "moves": [
+      "Tail Whip",
+      "Dig",
+      "Earthquake",
+      "Rock Throw"
+     ],
+     "condition": 97,
+     "fitness": 94,
+     "morale": 57,
+     "age_months": 106,
+     "contract": {
+      "salary": 1994,
+      "expiry": "2028-07-30"
+     }
+    },
+    {
+     "uid": "pkm0060",
+     "species_id": 20,
+     "species": "Raticate",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 2,
+      "atk": 11,
+      "def": 12,
+      "spa": 2,
+      "spd": 14,
+      "spe": 9
+     },
+     "moves": [
+      "Headbutt",
+      "Tackle",
+      "Quick Attack",
+      "Tail Whip"
+     ],
+     "condition": 81,
+     "fitness": 97,
+     "morale": 90,
+     "age_months": 59,
+     "contract": {
+      "salary": 1794,
+      "expiry": "2029-09-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Gwen Serrano",
+     "role": "physio",
+     "ratings": {
+      "attacking": 8,
+      "defending": 12,
+      "fitness": 4,
+      "judging_ability": 18,
+      "judging_potential": 6,
+      "youth": 4
+     }
+    },
+    {
+     "name": "Hiro Lorca",
+     "role": "coach",
+     "ratings": {
+      "attacking": 18,
+      "defending": 16,
+      "fitness": 10,
+      "judging_ability": 6,
+      "judging_potential": 8,
+      "youth": 7
+     }
+    },
+    {
+     "name": "Franco Voss",
+     "role": "scout",
+     "ratings": {
+      "attacking": 7,
+      "defending": 10,
+      "fitness": 5,
+      "judging_ability": 15,
+      "judging_potential": 4,
+      "youth": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "club06",
+   "name": "Fuchsia Fangs",
+   "short": "FUC",
+   "manager": "Kaede Serrano",
+   "reputation": 12,
+   "finances": {
+    "balance": 1269000,
+    "wage_budget": 22993
+   },
+   "squad": [
+    {
+     "uid": "pkm0061",
+     "species_id": 2,
+     "species": "Ivysaur",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 6,
+      "atk": 11,
+      "def": 14,
+      "spa": 12,
+      "spd": 6,
+      "spe": 9
+     },
+     "moves": [
+      "Mega Drain",
+      "Harden",
+      "Razor Leaf",
+      "Smog"
+     ],
+     "condition": 95,
+     "fitness": 75,
+     "morale": 56,
+     "age_months": 59,
+     "contract": {
+      "salary": 2291,
+      "expiry": "2030-04-30"
+     }
+    },
+    {
+     "uid": "pkm0062",
+     "species_id": 33,
+     "species": "Nidorino",
+     "nickname": null,
+     "level": 53,
+     "ivs": {
+      "hp": 11,
+      "atk": 14,
+      "def": 9,
+      "spa": 5,
+      "spd": 7,
+      "spe": 14
+     },
+     "moves": [
+      "Sludge",
+      "Reflect",
+      "Body Slam",
+      "Acid"
+     ],
+     "condition": 90,
+     "fitness": 93,
+     "morale": 86,
+     "age_months": 61,
+     "contract": {
+      "salary": 3061,
+      "expiry": "2029-09-30"
+     }
+    },
+    {
+     "uid": "pkm0063",
+     "species_id": 108,
+     "species": "Lickitung",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 10,
+      "atk": 1,
+      "def": 13,
+      "spa": 6,
+      "spd": 14,
+      "spe": 0
+     },
+     "moves": [
+      "Double Team",
+      "Swift",
+      "Hyper Beam",
+      "Quick Attack"
+     ],
+     "condition": 75,
+     "fitness": 76,
+     "morale": 89,
+     "age_months": 39,
+     "contract": {
+      "salary": 3198,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0064",
+     "species_id": 20,
+     "species": "Raticate",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 14,
+      "atk": 9,
+      "def": 11,
+      "spa": 12,
+      "spd": 8,
+      "spe": 12
+     },
+     "moves": [
+      "Tail Whip",
+      "Tackle",
+      "Hyper Beam",
+      "Quick Attack"
+     ],
+     "condition": 90,
+     "fitness": 75,
+     "morale": 60,
+     "age_months": 45,
+     "contract": {
+      "salary": 2609,
+      "expiry": "2028-03-30"
+     }
+    },
+    {
+     "uid": "pkm0065",
+     "species_id": 30,
+     "species": "Nidorina",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 13,
+      "atk": 11,
+      "def": 7,
+      "spa": 3,
+      "spd": 14,
+      "spe": 3
+     },
+     "moves": [
+      "Agility",
+      "Toxic",
+      "Tackle",
+      "Smog"
+     ],
+     "condition": 84,
+     "fitness": 91,
+     "morale": 73,
+     "age_months": 92,
+     "contract": {
+      "salary": 2307,
+      "expiry": "2027-07-30"
+     }
+    },
+    {
+     "uid": "pkm0066",
+     "species_id": 133,
+     "species": "Eevee",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 14,
+      "atk": 15,
+      "def": 1,
+      "spa": 5,
+      "spd": 4,
+      "spe": 7
+     },
+     "moves": [
+      "Leer",
+      "Double-Edge",
+      "Hyper Beam",
+      "Body Slam"
+     ],
+     "condition": 89,
+     "fitness": 97,
+     "morale": 88,
+     "age_months": 55,
+     "contract": {
+      "salary": 2022,
+      "expiry": "2027-12-30"
+     }
+    },
+    {
+     "uid": "pkm0067",
+     "species_id": 61,
+     "species": "Poliwhirl",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 11,
+      "atk": 0,
+      "def": 0,
+      "spa": 8,
+      "spd": 3,
+      "spe": 12
+     },
+     "moves": [
+      "Surf",
+      "Hydro Pump",
+      "Agility",
+      "Bubble Beam"
+     ],
+     "condition": 77,
+     "fitness": 83,
+     "morale": 51,
+     "age_months": 53,
+     "contract": {
+      "salary": 3132,
+      "expiry": "2030-05-30"
+     }
+    },
+    {
+     "uid": "pkm0068",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 9,
+      "atk": 15,
+      "def": 0,
+      "spa": 0,
+      "spd": 14,
+      "spe": 14
+     },
+     "moves": [
+      "Waterfall",
+      "Rock Slide",
+      "Rock Throw",
+      "Harden"
+     ],
+     "condition": 75,
+     "fitness": 83,
+     "morale": 60,
+     "age_months": 44,
+     "contract": {
+      "salary": 1865,
+      "expiry": "2029-07-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Elena Vidal",
+     "role": "scout",
+     "ratings": {
+      "attacking": 20,
+      "defending": 6,
+      "fitness": 12,
+      "judging_ability": 14,
+      "judging_potential": 19,
+      "youth": 12
+     }
+    },
+    {
+     "name": "Noel Kimura",
+     "role": "physio",
+     "ratings": {
+      "attacking": 19,
+      "defending": 15,
+      "fitness": 9,
+      "judging_ability": 18,
+      "judging_potential": 7,
+      "youth": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "club07",
+   "name": "Saffron Sages",
+   "short": "SAF",
+   "manager": "Ximena Fowler",
+   "reputation": 14,
+   "finances": {
+    "balance": 968000,
+    "wage_budget": 40329
+   },
+   "squad": [
+    {
+     "uid": "pkm0069",
+     "species_id": 33,
+     "species": "Nidorino",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 9,
+      "atk": 10,
+      "def": 5,
+      "spa": 3,
+      "spd": 15,
+      "spe": 12
+     },
+     "moves": [
+      "Poison Sting",
+      "Smog",
+      "Body Slam",
+      "Reflect"
+     ],
+     "condition": 87,
+     "fitness": 90,
+     "morale": 83,
+     "age_months": 52,
+     "contract": {
+      "salary": 2241,
+      "expiry": "2028-02-30"
+     }
+    },
+    {
+     "uid": "pkm0070",
+     "species_id": 85,
+     "species": "Dodrio",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 14,
+      "atk": 8,
+      "def": 14,
+      "spa": 9,
+      "spd": 4,
+      "spe": 3
+     },
+     "moves": [
+      "Slash",
+      "Quick Attack",
+      "Fly",
+      "Gust"
+     ],
+     "condition": 95,
+     "fitness": 100,
+     "morale": 73,
+     "age_months": 61,
+     "contract": {
+      "salary": 2810,
+      "expiry": "2029-11-30"
+     }
+    },
+    {
+     "uid": "pkm0071",
+     "species_id": 113,
+     "species": "Chansey",
+     "nickname": null,
+     "level": 50,
+     "ivs": {
+      "hp": 6,
+      "atk": 12,
+      "def": 10,
+      "spa": 11,
+      "spd": 9,
+      "spe": 14
+     },
+     "moves": [
+      "Sing",
+      "Light Screen",
+      "Soft-Boiled",
+      "Seismic Toss"
+     ],
+     "condition": 95,
+     "fitness": 80,
+     "morale": 93,
+     "age_months": 73,
+     "contract": {
+      "salary": 3321,
+      "expiry": "2028-04-30"
+     }
+    },
+    {
+     "uid": "pkm0072",
+     "species_id": 44,
+     "species": "Gloom",
+     "nickname": null,
+     "level": 44,
+     "ivs": {
+      "hp": 2,
+      "atk": 1,
+      "def": 2,
+      "spa": 4,
+      "spd": 9,
+      "spe": 6
+     },
+     "moves": [
+      "Quick Attack",
+      "Light Screen",
+      "Mega Drain",
+      "Sludge"
+     ],
+     "condition": 85,
+     "fitness": 80,
+     "morale": 64,
+     "age_months": 32,
+     "contract": {
+      "salary": 2971,
+      "expiry": "2028-12-30"
+     }
+    },
+    {
+     "uid": "pkm0073",
+     "species_id": 44,
+     "species": "Gloom",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 6,
+      "atk": 1,
+      "def": 11,
+      "spa": 0,
+      "spd": 13,
+      "spe": 3
+     },
+     "moves": [
+      "Solar Beam",
+      "Sludge",
+      "Smog",
+      "Light Screen"
+     ],
+     "condition": 83,
+     "fitness": 99,
+     "morale": 70,
+     "age_months": 115,
+     "contract": {
+      "salary": 2325,
+      "expiry": "2028-09-30"
+     }
+    },
+    {
+     "uid": "pkm0074",
+     "species_id": 36,
+     "species": "Clefable",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 15,
+      "atk": 0,
+      "def": 2,
+      "spa": 13,
+      "spd": 10,
+      "spe": 8
+     },
+     "moves": [
+      "Light Screen",
+      "Body Slam",
+      "Double-Edge",
+      "Slash"
+     ],
+     "condition": 73,
+     "fitness": 92,
+     "morale": 50,
+     "age_months": 23,
+     "contract": {
+      "salary": 2539,
+      "expiry": "2028-07-30"
+     }
+    },
+    {
+     "uid": "pkm0075",
+     "species_id": 96,
+     "species": "Drowzee",
+     "nickname": null,
+     "level": 47,
+     "ivs": {
+      "hp": 14,
+      "atk": 6,
+      "def": 7,
+      "spa": 1,
+      "spd": 6,
+      "spe": 0
+     },
+     "moves": [
+      "Psychic",
+      "Quick Attack",
+      "Hypnosis",
+      "Recover"
+     ],
+     "condition": 94,
+     "fitness": 89,
+     "morale": 83,
+     "age_months": 97,
+     "contract": {
+      "salary": 2684,
+      "expiry": "2028-03-30"
+     }
+    },
+    {
+     "uid": "pkm0076",
+     "species_id": 47,
+     "species": "Parasect",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 4,
+      "atk": 10,
+      "def": 11,
+      "spa": 3,
+      "spd": 12,
+      "spe": 15
+     },
+     "moves": [
+      "Twineedle",
+      "Pin Missile",
+      "Vine Whip",
+      "Body Slam"
+     ],
+     "condition": 71,
+     "fitness": 88,
+     "morale": 64,
+     "age_months": 36,
+     "contract": {
+      "salary": 2427,
+      "expiry": "2029-01-30"
+     }
+    },
+    {
+     "uid": "pkm0077",
+     "species_id": 72,
+     "species": "Tentacool",
+     "nickname": null,
+     "level": 53,
+     "ivs": {
+      "hp": 3,
+      "atk": 2,
+      "def": 1,
+      "spa": 15,
+      "spd": 4,
+      "spe": 3
+     },
+     "moves": [
+      "Waterfall",
+      "Sludge",
+      "Harden",
+      "Swift"
+     ],
+     "condition": 96,
+     "fitness": 87,
+     "morale": 68,
+     "age_months": 77,
+     "contract": {
+      "salary": 3018,
+      "expiry": "2030-04-30"
+     }
+    },
+    {
+     "uid": "pkm0078",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 7,
+      "atk": 10,
+      "def": 15,
+      "spa": 0,
+      "spd": 2,
+      "spe": 15
+     },
+     "moves": [
+      "Rock Slide",
+      "Waterfall",
+      "Water Gun",
+      "Rock Throw"
+     ],
+     "condition": 82,
+     "fitness": 87,
+     "morale": 52,
+     "age_months": 66,
+     "contract": {
+      "salary": 2922,
+      "expiry": "2028-11-30"
+     }
+    },
+    {
+     "uid": "pkm0079",
+     "species_id": 72,
+     "species": "Tentacool",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 10,
+      "atk": 14,
+      "def": 14,
+      "spa": 14,
+      "spd": 14,
+      "spe": 0
+     },
+     "moves": [
+      "Smog",
+      "Harden",
+      "Hydro Pump",
+      "Sludge"
+     ],
+     "condition": 78,
+     "fitness": 97,
+     "morale": 51,
+     "age_months": 39,
+     "contract": {
+      "salary": 2469,
+      "expiry": "2030-06-30"
+     }
+    },
+    {
+     "uid": "pkm0080",
+     "species_id": 102,
+     "species": "Exeggcute",
+     "nickname": null,
+     "level": 56,
+     "ivs": {
+      "hp": 9,
+      "atk": 13,
+      "def": 2,
+      "spa": 9,
+      "spd": 8,
+      "spe": 1
+     },
+     "moves": [
+      "Stun Spore",
+      "Sleep Powder",
+      "Confusion",
+      "Psybeam"
+     ],
+     "condition": 81,
+     "fitness": 79,
+     "morale": 86,
+     "age_months": 75,
+     "contract": {
+      "salary": 3282,
+      "expiry": "2029-11-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Rosa Oteiza",
+     "role": "coach",
+     "ratings": {
+      "attacking": 15,
+      "defending": 6,
+      "fitness": 15,
+      "judging_ability": 5,
+      "judging_potential": 5,
+      "youth": 17
+     }
+    },
+    {
+     "name": "Uma Fowler",
+     "role": "physio",
+     "ratings": {
+      "attacking": 9,
+      "defending": 16,
+      "fitness": 5,
+      "judging_ability": 18,
+      "judging_potential": 10,
+      "youth": 7
+     }
+    },
+    {
+     "name": "Noel Nishida",
+     "role": "scout",
+     "ratings": {
+      "attacking": 13,
+      "defending": 16,
+      "fitness": 16,
+      "judging_ability": 7,
+      "judging_potential": 12,
+      "youth": 20
+     }
+    },
+    {
+     "name": "Ines Zubiri",
+     "role": "coach",
+     "ratings": {
+      "attacking": 6,
+      "defending": 12,
+      "fitness": 12,
+      "judging_ability": 7,
+      "judging_potential": 6,
+      "youth": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "club08",
+   "name": "Cinnabar Blaze",
+   "short": "CIN",
+   "manager": "Olga Duarte",
+   "reputation": 17,
+   "finances": {
+    "balance": 1713000,
+    "wage_budget": 47902
+   },
+   "squad": [
+    {
+     "uid": "pkm0081",
+     "species_id": 45,
+     "species": "Vileplume",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 12,
+      "atk": 1,
+      "def": 2,
+      "spa": 10,
+      "spd": 1,
+      "spe": 10
+     },
+     "moves": [
+      "Sludge",
+      "Sleep Powder",
+      "Petal Dance",
+      "Quick Attack"
+     ],
+     "condition": 73,
+     "fitness": 93,
+     "morale": 75,
+     "age_months": 32,
+     "contract": {
+      "salary": 2727,
+      "expiry": "2029-04-30"
+     }
+    },
+    {
+     "uid": "pkm0082",
+     "species_id": 62,
+     "species": "Poliwrath",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 0,
+      "atk": 14,
+      "def": 7,
+      "spa": 14,
+      "spd": 0,
+      "spe": 15
+     },
+     "moves": [
+      "Low Kick",
+      "Swords Dance",
+      "Hydro Pump",
+      "Water Gun"
+     ],
+     "condition": 73,
+     "fitness": 97,
+     "morale": 75,
+     "age_months": 79,
+     "contract": {
+      "salary": 3146,
+      "expiry": "2029-07-30"
+     }
+    },
+    {
+     "uid": "pkm0083",
+     "species_id": 110,
+     "species": "Weezing",
+     "nickname": null,
+     "level": 50,
+     "ivs": {
+      "hp": 5,
+      "atk": 2,
+      "def": 14,
+      "spa": 12,
+      "spd": 9,
+      "spe": 1
+     },
+     "moves": [
+      "Toxic",
+      "Quick Attack",
+      "Acid",
+      "Leer"
+     ],
+     "condition": 78,
+     "fitness": 97,
+     "morale": 73,
+     "age_months": 92,
+     "contract": {
+      "salary": 3211,
+      "expiry": "2030-02-30"
+     }
+    },
+    {
+     "uid": "pkm0084",
+     "species_id": 91,
+     "species": "Cloyster",
+     "nickname": null,
+     "level": 49,
+     "ivs": {
+      "hp": 11,
+      "atk": 15,
+      "def": 12,
+      "spa": 1,
+      "spd": 12,
+      "spe": 7
+     },
+     "moves": [
+      "Ice Punch",
+      "Waterfall",
+      "Aurora Beam",
+      "Ice Beam"
+     ],
+     "condition": 98,
+     "fitness": 79,
+     "morale": 64,
+     "age_months": 83,
+     "contract": {
+      "salary": 2724,
+      "expiry": "2029-04-30"
+     }
+    },
+    {
+     "uid": "pkm0085",
+     "species_id": 114,
+     "species": "Tangela",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 3,
+      "atk": 13,
+      "def": 9,
+      "spa": 2,
+      "spd": 5,
+      "spe": 10
+     },
+     "moves": [
+      "Razor Leaf",
+      "Harden",
+      "Solar Beam",
+      "Petal Dance"
+     ],
+     "condition": 88,
+     "fitness": 96,
+     "morale": 78,
+     "age_months": 75,
+     "contract": {
+      "salary": 2118,
+      "expiry": "2029-06-30"
+     }
+    },
+    {
+     "uid": "pkm0086",
+     "species_id": 36,
+     "species": "Clefable",
+     "nickname": null,
+     "level": 54,
+     "ivs": {
+      "hp": 3,
+      "atk": 1,
+      "def": 1,
+      "spa": 3,
+      "spd": 3,
+      "spe": 1
+     },
+     "moves": [
+      "Light Screen",
+      "Double-Edge",
+      "Body Slam",
+      "Headbutt"
+     ],
+     "condition": 71,
+     "fitness": 86,
+     "morale": 87,
+     "age_months": 23,
+     "contract": {
+      "salary": 3276,
+      "expiry": "2029-08-30"
+     }
+    },
+    {
+     "uid": "pkm0087",
+     "species_id": 125,
+     "species": "Electabuzz",
+     "nickname": null,
+     "level": 59,
+     "ivs": {
+      "hp": 12,
+      "atk": 0,
+      "def": 2,
+      "spa": 5,
+      "spd": 9,
+      "spe": 4
+     },
+     "moves": [
+      "Tail Whip",
+      "Thunder Punch",
+      "Tackle",
+      "Thunder"
+     ],
+     "condition": 96,
+     "fitness": 95,
+     "morale": 94,
+     "age_months": 53,
+     "contract": {
+      "salary": 3401,
+      "expiry": "2027-07-30"
+     }
+    },
+    {
+     "uid": "pkm0088",
+     "species_id": 85,
+     "species": "Dodrio",
+     "nickname": null,
+     "level": 54,
+     "ivs": {
+      "hp": 10,
+      "atk": 5,
+      "def": 8,
+      "spa": 14,
+      "spd": 15,
+      "spe": 2
+     },
+     "moves": [
+      "Quick Attack",
+      "Body Slam",
+      "Gust",
+      "Fly"
+     ],
+     "condition": 94,
+     "fitness": 98,
+     "morale": 81,
+     "age_months": 80,
+     "contract": {
+      "salary": 3086,
+      "expiry": "2029-10-30"
+     }
+    },
+    {
+     "uid": "pkm0089",
+     "species_id": 97,
+     "species": "Hypno",
+     "nickname": null,
+     "level": 58,
+     "ivs": {
+      "hp": 13,
+      "atk": 11,
+      "def": 13,
+      "spa": 2,
+      "spd": 3,
+      "spe": 13
+     },
+     "moves": [
+      "Quick Attack",
+      "Psychic",
+      "Psybeam",
+      "Recover"
+     ],
+     "condition": 86,
+     "fitness": 93,
+     "morale": 61,
+     "age_months": 16,
+     "contract": {
+      "salary": 3685,
+      "expiry": "2029-12-30"
+     }
+    },
+    {
+     "uid": "pkm0090",
+     "species_id": 28,
+     "species": "Sandslash",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 1,
+      "atk": 4,
+      "def": 9,
+      "spa": 9,
+      "spd": 5,
+      "spe": 3
+     },
+     "moves": [
+      "Bone Club",
+      "Earthquake",
+      "Harden",
+      "Body Slam"
+     ],
+     "condition": 92,
+     "fitness": 76,
+     "morale": 70,
+     "age_months": 64,
+     "contract": {
+      "salary": 2701,
+      "expiry": "2030-03-30"
+     }
+    },
+    {
+     "uid": "pkm0091",
+     "species_id": 125,
+     "species": "Electabuzz",
+     "nickname": null,
+     "level": 58,
+     "ivs": {
+      "hp": 2,
+      "atk": 7,
+      "def": 7,
+      "spa": 5,
+      "spd": 9,
+      "spe": 13
+     },
+     "moves": [
+      "Thunder Wave",
+      "Thunder Punch",
+      "Thunder",
+      "Tackle"
+     ],
+     "condition": 92,
+     "fitness": 96,
+     "morale": 89,
+     "age_months": 115,
+     "contract": {
+      "salary": 4092,
+      "expiry": "2027-07-30"
+     }
+    },
+    {
+     "uid": "pkm0092",
+     "species_id": 62,
+     "species": "Poliwrath",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 6,
+      "atk": 1,
+      "def": 14,
+      "spa": 11,
+      "spd": 8,
+      "spe": 10
+     },
+     "moves": [
+      "Hydro Pump",
+      "Water Gun",
+      "Low Kick",
+      "Submission"
+     ],
+     "condition": 96,
+     "fitness": 99,
+     "morale": 56,
+     "age_months": 93,
+     "contract": {
+      "salary": 2253,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0093",
+     "species_id": 36,
+     "species": "Clefable",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 7,
+      "atk": 7,
+      "def": 14,
+      "spa": 11,
+      "spd": 14,
+      "spe": 14
+     },
+     "moves": [
+      "Headbutt",
+      "Light Screen",
+      "Double-Edge",
+      "Body Slam"
+     ],
+     "condition": 91,
+     "fitness": 83,
+     "morale": 51,
+     "age_months": 60,
+     "contract": {
+      "salary": 2772,
+      "expiry": "2028-01-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Akira Zubiri",
+     "role": "scout",
+     "ratings": {
+      "attacking": 4,
+      "defending": 4,
+      "fitness": 19,
+      "judging_ability": 17,
+      "judging_potential": 18,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Marta Tanaka",
+     "role": "coach",
+     "ratings": {
+      "attacking": 18,
+      "defending": 11,
+      "fitness": 7,
+      "judging_ability": 20,
+      "judging_potential": 15,
+      "youth": 14
+     }
+    }
+   ]
+  },
+  {
+   "id": "club09",
+   "name": "Indigo Royals",
+   "short": "IND",
+   "manager": "Yuki Ibarra",
+   "reputation": 9,
+   "finances": {
+    "balance": 1013000,
+    "wage_budget": 31773
+   },
+   "squad": [
+    {
+     "uid": "pkm0094",
+     "species_id": 102,
+     "species": "Exeggcute",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 6,
+      "atk": 5,
+      "def": 3,
+      "spa": 12,
+      "spd": 8,
+      "spe": 1
+     },
+     "moves": [
+      "Mega Drain",
+      "Sleep Powder",
+      "Recover",
+      "Quick Attack"
+     ],
+     "condition": 98,
+     "fitness": 75,
+     "morale": 76,
+     "age_months": 103,
+     "contract": {
+      "salary": 2526,
+      "expiry": "2028-03-30"
+     }
+    },
+    {
+     "uid": "pkm0095",
+     "species_id": 83,
+     "species": "Farfetch'd",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 7,
+      "atk": 15,
+      "def": 5,
+      "spa": 15,
+      "spd": 0,
+      "spe": 9
+     },
+     "moves": [
+      "Headbutt",
+      "Peck",
+      "Gust",
+      "Quick Attack"
+     ],
+     "condition": 99,
+     "fitness": 93,
+     "morale": 81,
+     "age_months": 37,
+     "contract": {
+      "salary": 2271,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0096",
+     "species_id": 83,
+     "species": "Farfetch'd",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 12,
+      "atk": 13,
+      "def": 4,
+      "spa": 2,
+      "spd": 12,
+      "spe": 3
+     },
+     "moves": [
+      "Peck",
+      "Fly",
+      "Quick Attack",
+      "Gust"
+     ],
+     "condition": 87,
+     "fitness": 93,
+     "morale": 50,
+     "age_months": 118,
+     "contract": {
+      "salary": 2074,
+      "expiry": "2028-11-30"
+     }
+    },
+    {
+     "uid": "pkm0097",
+     "species_id": 25,
+     "species": "Pikachu",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 2,
+      "atk": 0,
+      "def": 9,
+      "spa": 10,
+      "spd": 0,
+      "spe": 14
+     },
+     "moves": [
+      "Thunder Wave",
+      "Quick Attack",
+      "Thunderbolt",
+      "Agility"
+     ],
+     "condition": 98,
+     "fitness": 88,
+     "morale": 53,
+     "age_months": 37,
+     "contract": {
+      "salary": 2338,
+      "expiry": "2029-08-30"
+     }
+    },
+    {
+     "uid": "pkm0098",
+     "species_id": 109,
+     "species": "Koffing",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 4,
+      "atk": 3,
+      "def": 12,
+      "spa": 4,
+      "spd": 15,
+      "spe": 3
+     },
+     "moves": [
+      "Sludge",
+      "Poison Sting",
+      "Smog",
+      "Toxic"
+     ],
+     "condition": 71,
+     "fitness": 81,
+     "morale": 67,
+     "age_months": 14,
+     "contract": {
+      "salary": 1789,
+      "expiry": "2028-07-30"
+     }
+    },
+    {
+     "uid": "pkm0099",
+     "species_id": 88,
+     "species": "Grimer",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 15,
+      "atk": 8,
+      "def": 0,
+      "spa": 6,
+      "spd": 5,
+      "spe": 11
+     },
+     "moves": [
+      "Tackle",
+      "Screech",
+      "Poison Sting",
+      "Sludge"
+     ],
+     "condition": 92,
+     "fitness": 85,
+     "morale": 84,
+     "age_months": 40,
+     "contract": {
+      "salary": 1650,
+      "expiry": "2028-10-30"
+     }
+    },
+    {
+     "uid": "pkm0100",
+     "species_id": 138,
+     "species": "Omanyte",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 12,
+      "atk": 15,
+      "def": 2,
+      "spa": 6,
+      "spd": 15,
+      "spe": 5
+     },
+     "moves": [
+      "Swift",
+      "Rock Throw",
+      "Surf",
+      "Hydro Pump"
+     ],
+     "condition": 94,
+     "fitness": 98,
+     "morale": 56,
+     "age_months": 114,
+     "contract": {
+      "salary": 2441,
+      "expiry": "2029-04-30"
+     }
+    },
+    {
+     "uid": "pkm0101",
+     "species_id": 2,
+     "species": "Ivysaur",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 13,
+      "atk": 12,
+      "def": 5,
+      "spa": 2,
+      "spd": 14,
+      "spe": 11
+     },
+     "moves": [
+      "Harden",
+      "Smog",
+      "Quick Attack",
+      "Toxic"
+     ],
+     "condition": 70,
+     "fitness": 99,
+     "morale": 72,
+     "age_months": 114,
+     "contract": {
+      "salary": 2446,
+      "expiry": "2028-09-30"
+     }
+    },
+    {
+     "uid": "pkm0102",
+     "species_id": 33,
+     "species": "Nidorino",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 3,
+      "atk": 8,
+      "def": 9,
+      "spa": 8,
+      "spd": 10,
+      "spe": 12
+     },
+     "moves": [
+      "Body Slam",
+      "Sludge",
+      "Smog",
+      "Reflect"
+     ],
+     "condition": 72,
+     "fitness": 89,
+     "morale": 61,
+     "age_months": 60,
+     "contract": {
+      "salary": 3173,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0103",
+     "species_id": 70,
+     "species": "Weepinbell",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 12,
+      "atk": 10,
+      "def": 10,
+      "spa": 0,
+      "spd": 8,
+      "spe": 10
+     },
+     "moves": [
+      "Petal Dance",
+      "Stun Spore",
+      "Sludge",
+      "Poison Sting"
+     ],
+     "condition": 86,
+     "fitness": 93,
+     "morale": 52,
+     "age_months": 101,
+     "contract": {
+      "salary": 2007,
+      "expiry": "2029-05-30"
+     }
+    },
+    {
+     "uid": "pkm0104",
+     "species_id": 66,
+     "species": "Machop",
+     "nickname": null,
+     "level": 44,
+     "ivs": {
+      "hp": 11,
+      "atk": 12,
+      "def": 12,
+      "spa": 2,
+      "spd": 11,
+      "spe": 5
+     },
+     "moves": [
+      "Seismic Toss",
+      "Tail Whip",
+      "Double Kick",
+      "Karate Chop"
+     ],
+     "condition": 77,
+     "fitness": 77,
+     "morale": 91,
+     "age_months": 51,
+     "contract": {
+      "salary": 2291,
+      "expiry": "2027-10-30"
+     }
+    },
+    {
+     "uid": "pkm0105",
+     "species_id": 138,
+     "species": "Omanyte",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 3,
+      "atk": 2,
+      "def": 4,
+      "spa": 8,
+      "spd": 2,
+      "spe": 8
+     },
+     "moves": [
+      "Rock Throw",
+      "Surf",
+      "Reflect",
+      "Hydro Pump"
+     ],
+     "condition": 87,
+     "fitness": 78,
+     "morale": 67,
+     "age_months": 17,
+     "contract": {
+      "salary": 2077,
+      "expiry": "2028-02-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Daisuke Serrano",
+     "role": "physio",
+     "ratings": {
+      "attacking": 8,
+      "defending": 7,
+      "fitness": 7,
+      "judging_ability": 13,
+      "judging_potential": 8,
+      "youth": 20
+     }
+    },
+    {
+     "name": "Tomoko Watanabe",
+     "role": "scout",
+     "ratings": {
+      "attacking": 18,
+      "defending": 5,
+      "fitness": 4,
+      "judging_ability": 20,
+      "judging_potential": 17,
+      "youth": 10
+     }
+    },
+    {
+     "name": "Carla Sato",
+     "role": "coach",
+     "ratings": {
+      "attacking": 16,
+      "defending": 16,
+      "fitness": 19,
+      "judging_ability": 20,
+      "judging_potential": 10,
+      "youth": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "club10",
+   "name": "Pallet Pioneers",
+   "short": "PAL",
+   "manager": "Ines Duarte",
+   "reputation": 12,
+   "finances": {
+    "balance": 1356000,
+    "wage_budget": 36156
+   },
+   "squad": [
+    {
+     "uid": "pkm0106",
+     "species_id": 121,
+     "species": "Starmie",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 2,
+      "atk": 1,
+      "def": 12,
+      "spa": 10,
+      "spd": 9,
+      "spe": 13
+     },
+     "moves": [
+      "Water Gun",
+      "Confusion",
+      "Quick Attack",
+      "Hypnosis"
+     ],
+     "condition": 88,
+     "fitness": 76,
+     "morale": 72,
+     "age_months": 38,
+     "contract": {
+      "salary": 2449,
+      "expiry": "2030-04-30"
+     }
+    },
+    {
+     "uid": "pkm0107",
+     "species_id": 128,
+     "species": "Tauros",
+     "nickname": null,
+     "level": 57,
+     "ivs": {
+      "hp": 2,
+      "atk": 10,
+      "def": 10,
+      "spa": 0,
+      "spd": 1,
+      "spe": 0
+     },
+     "moves": [
+      "Headbutt",
+      "Quick Attack",
+      "Body Slam",
+      "Reflect"
+     ],
+     "condition": 98,
+     "fitness": 90,
+     "morale": 72,
+     "age_months": 102,
+     "contract": {
+      "salary": 3170,
+      "expiry": "2028-10-30"
+     }
+    },
+    {
+     "uid": "pkm0108",
+     "species_id": 85,
+     "species": "Dodrio",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 1,
+      "atk": 4,
+      "def": 0,
+      "spa": 6,
+      "spd": 15,
+      "spe": 6
+     },
+     "moves": [
+      "Gust",
+      "Fly",
+      "Screech",
+      "Slash"
+     ],
+     "condition": 72,
+     "fitness": 96,
+     "morale": 87,
+     "age_months": 17,
+     "contract": {
+      "salary": 3118,
+      "expiry": "2030-04-30"
+     }
+    },
+    {
+     "uid": "pkm0109",
+     "species_id": 144,
+     "species": "Articuno",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 8,
+      "atk": 12,
+      "def": 11,
+      "spa": 1,
+      "spd": 4,
+      "spe": 14
+     },
+     "moves": [
+      "Aurora Beam",
+      "Drill Peck",
+      "Icy Wind",
+      "Gust"
+     ],
+     "condition": 85,
+     "fitness": 88,
+     "morale": 94,
+     "age_months": 91,
+     "contract": {
+      "salary": 2877,
+      "expiry": "2028-09-30"
+     }
+    },
+    {
+     "uid": "pkm0110",
+     "species_id": 18,
+     "species": "Pidgeot",
+     "nickname": null,
+     "level": 58,
+     "ivs": {
+      "hp": 3,
+      "atk": 6,
+      "def": 1,
+      "spa": 0,
+      "spd": 14,
+      "spe": 5
+     },
+     "moves": [
+      "Wing Attack",
+      "Swift",
+      "Gust",
+      "Drill Peck"
+     ],
+     "condition": 75,
+     "fitness": 92,
+     "morale": 90,
+     "age_months": 110,
+     "contract": {
+      "salary": 3396,
+      "expiry": "2027-06-30"
+     }
+    },
+    {
+     "uid": "pkm0111",
+     "species_id": 34,
+     "species": "Nidoking",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 10,
+      "atk": 10,
+      "def": 4,
+      "spa": 12,
+      "spd": 12,
+      "spe": 0
+     },
+     "moves": [
+      "Smog",
+      "Poison Sting",
+      "Sand Attack",
+      "Focus Energy"
+     ],
+     "condition": 73,
+     "fitness": 79,
+     "morale": 71,
+     "age_months": 80,
+     "contract": {
+      "salary": 2905,
+      "expiry": "2029-05-30"
+     }
+    },
+    {
+     "uid": "pkm0112",
+     "species_id": 127,
+     "species": "Pinsir",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 5,
+      "atk": 8,
+      "def": 0,
+      "spa": 7,
+      "spd": 9,
+      "spe": 4
+     },
+     "moves": [
+      "Swords Dance",
+      "Pin Missile",
+      "Body Slam",
+      "Leech Life"
+     ],
+     "condition": 90,
+     "fitness": 78,
+     "morale": 70,
+     "age_months": 88,
+     "contract": {
+      "salary": 2407,
+      "expiry": "2029-03-30"
+     }
+    },
+    {
+     "uid": "pkm0113",
+     "species_id": 24,
+     "species": "Arbok",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 0,
+      "atk": 7,
+      "def": 3,
+      "spa": 13,
+      "spd": 1,
+      "spe": 5
+     },
+     "moves": [
+      "Toxic",
+      "Sludge",
+      "Slash",
+      "Acid"
+     ],
+     "condition": 89,
+     "fitness": 100,
+     "morale": 51,
+     "age_months": 90,
+     "contract": {
+      "salary": 2471,
+      "expiry": "2028-01-30"
+     }
+    },
+    {
+     "uid": "pkm0114",
+     "species_id": 126,
+     "species": "Magmar",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 3,
+      "atk": 10,
+      "def": 2,
+      "spa": 3,
+      "spd": 3,
+      "spe": 6
+     },
+     "moves": [
+      "Double Team",
+      "Flamethrower",
+      "Fire Blast",
+      "Ember"
+     ],
+     "condition": 81,
+     "fitness": 99,
+     "morale": 60,
+     "age_months": 65,
+     "contract": {
+      "salary": 2965,
+      "expiry": "2027-06-30"
+     }
+    },
+    {
+     "uid": "pkm0115",
+     "species_id": 18,
+     "species": "Pidgeot",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 11,
+      "atk": 7,
+      "def": 7,
+      "spa": 11,
+      "spd": 3,
+      "spe": 7
+     },
+     "moves": [
+      "Wing Attack",
+      "Drill Peck",
+      "Gust",
+      "Double-Edge"
+     ],
+     "condition": 87,
+     "fitness": 83,
+     "morale": 83,
+     "age_months": 112,
+     "contract": {
+      "salary": 2536,
+      "expiry": "2028-10-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Akira Serrano",
+     "role": "coach",
+     "ratings": {
+      "attacking": 4,
+      "defending": 5,
+      "fitness": 14,
+      "judging_ability": 16,
+      "judging_potential": 9,
+      "youth": 16
+     }
+    },
+    {
+     "name": "Ines Sato",
+     "role": "coach",
+     "ratings": {
+      "attacking": 10,
+      "defending": 11,
+      "fitness": 11,
+      "judging_ability": 19,
+      "judging_potential": 20,
+      "youth": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "club11",
+   "name": "Rock Tunnel Miners",
+   "short": "RTM",
+   "manager": "Quinn Voss",
+   "reputation": 8,
+   "finances": {
+    "balance": 1078000,
+    "wage_budget": 31860
+   },
+   "squad": [
+    {
+     "uid": "pkm0116",
+     "species_id": 129,
+     "species": "Magikarp",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 14,
+      "atk": 0,
+      "def": 14,
+      "spa": 14,
+      "spd": 13,
+      "spe": 5
+     },
+     "moves": [
+      "Splash",
+      "Screech",
+      "Slash",
+      "Tackle"
+     ],
+     "condition": 82,
+     "fitness": 85,
+     "morale": 79,
+     "age_months": 28,
+     "contract": {
+      "salary": 1931,
+      "expiry": "2027-06-30"
+     }
+    },
+    {
+     "uid": "pkm0117",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 44,
+     "ivs": {
+      "hp": 1,
+      "atk": 5,
+      "def": 4,
+      "spa": 13,
+      "spd": 8,
+      "spe": 13
+     },
+     "moves": [
+      "Bubble Beam",
+      "Waterfall",
+      "Water Gun",
+      "Harden"
+     ],
+     "condition": 84,
+     "fitness": 80,
+     "morale": 69,
+     "age_months": 81,
+     "contract": {
+      "salary": 2973,
+      "expiry": "2027-08-30"
+     }
+    },
+    {
+     "uid": "pkm0118",
+     "species_id": 17,
+     "species": "Pidgeotto",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 2,
+      "spa": 0,
+      "spd": 12,
+      "spe": 9
+     },
+     "moves": [
+      "Hyper Beam",
+      "Double-Edge",
+      "Drill Peck",
+      "Peck"
+     ],
+     "condition": 97,
+     "fitness": 99,
+     "morale": 66,
+     "age_months": 13,
+     "contract": {
+      "salary": 2033,
+      "expiry": "2028-04-30"
+     }
+    },
+    {
+     "uid": "pkm0119",
+     "species_id": 58,
+     "species": "Growlithe",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 13,
+      "atk": 2,
+      "def": 8,
+      "spa": 4,
+      "spd": 3,
+      "spe": 14
+     },
+     "moves": [
+      "Reflect",
+      "Fire Spin",
+      "Ember",
+      "Flame Wheel"
+     ],
+     "condition": 84,
+     "fitness": 91,
+     "morale": 65,
+     "age_months": 98,
+     "contract": {
+      "salary": 2398,
+      "expiry": "2028-05-30"
+     }
+    },
+    {
+     "uid": "pkm0120",
+     "species_id": 11,
+     "species": "Metapod",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 14,
+      "atk": 4,
+      "def": 5,
+      "spa": 4,
+      "spd": 10,
+      "spe": 5
+     },
+     "moves": [
+      "Twineedle",
+      "Quick Attack",
+      "Pin Missile",
+      "Double Team"
+     ],
+     "condition": 99,
+     "fitness": 87,
+     "morale": 91,
+     "age_months": 56,
+     "contract": {
+      "salary": 2081,
+      "expiry": "2030-06-30"
+     }
+    },
+    {
+     "uid": "pkm0121",
+     "species_id": 137,
+     "species": "Porygon",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 6,
+      "atk": 8,
+      "def": 12,
+      "spa": 14,
+      "spd": 14,
+      "spe": 4
+     },
+     "moves": [
+      "Tail Whip",
+      "Slash",
+      "Quick Attack",
+      "Headbutt"
+     ],
+     "condition": 75,
+     "fitness": 75,
+     "morale": 68,
+     "age_months": 52,
+     "contract": {
+      "salary": 2287,
+      "expiry": "2028-08-30"
+     }
+    },
+    {
+     "uid": "pkm0122",
+     "species_id": 72,
+     "species": "Tentacool",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 4,
+      "atk": 2,
+      "def": 5,
+      "spa": 3,
+      "spd": 11,
+      "spe": 1
+     },
+     "moves": [
+      "Sludge",
+      "Acid",
+      "Swift",
+      "Harden"
+     ],
+     "condition": 86,
+     "fitness": 94,
+     "morale": 63,
+     "age_months": 51,
+     "contract": {
+      "salary": 1781,
+      "expiry": "2028-06-30"
+     }
+    },
+    {
+     "uid": "pkm0123",
+     "species_id": 64,
+     "species": "Kadabra",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 12,
+      "atk": 14,
+      "def": 14,
+      "spa": 4,
+      "spd": 3,
+      "spe": 5
+     },
+     "moves": [
+      "Confusion",
+      "Hypnosis",
+      "Recover",
+      "Psychic"
+     ],
+     "condition": 74,
+     "fitness": 94,
+     "morale": 69,
+     "age_months": 37,
+     "contract": {
+      "salary": 2627,
+      "expiry": "2028-05-30"
+     }
+    },
+    {
+     "uid": "pkm0124",
+     "species_id": 64,
+     "species": "Kadabra",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 13,
+      "atk": 4,
+      "def": 9,
+      "spa": 12,
+      "spd": 2,
+      "spe": 4
+     },
+     "moves": [
+      "Recover",
+      "Hypnosis",
+      "Leer",
+      "Psychic"
+     ],
+     "condition": 84,
+     "fitness": 89,
+     "morale": 89,
+     "age_months": 35,
+     "contract": {
+      "salary": 2629,
+      "expiry": "2029-08-30"
+     }
+    },
+    {
+     "uid": "pkm0125",
+     "species_id": 83,
+     "species": "Farfetch'd",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 7,
+      "atk": 5,
+      "def": 11,
+      "spa": 2,
+      "spd": 9,
+      "spe": 1
+     },
+     "moves": [
+      "Peck",
+      "Double-Edge",
+      "Headbutt",
+      "Gust"
+     ],
+     "condition": 85,
+     "fitness": 84,
+     "morale": 74,
+     "age_months": 37,
+     "contract": {
+      "salary": 2705,
+      "expiry": "2029-04-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Iker Vidal",
+     "role": "physio",
+     "ratings": {
+      "attacking": 14,
+      "defending": 15,
+      "fitness": 7,
+      "judging_ability": 19,
+      "judging_potential": 5,
+      "youth": 4
+     }
+    },
+    {
+     "name": "Marta Marchetti",
+     "role": "coach",
+     "ratings": {
+      "attacking": 6,
+      "defending": 11,
+      "fitness": 5,
+      "judging_ability": 20,
+      "judging_potential": 10,
+      "youth": 7
+     }
+    },
+    {
+     "name": "Tomoko Vidal",
+     "role": "scout",
+     "ratings": {
+      "attacking": 10,
+      "defending": 10,
+      "fitness": 8,
+      "judging_ability": 6,
+      "judging_potential": 13,
+      "youth": 5
+     }
+    },
+    {
+     "name": "Quinn Marchetti",
+     "role": "coach",
+     "ratings": {
+      "attacking": 7,
+      "defending": 16,
+      "fitness": 12,
+      "judging_ability": 16,
+      "judging_potential": 18,
+      "youth": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "club12",
+   "name": "Seafoam Islanders",
+   "short": "SEA",
+   "manager": "Olga Lorca",
+   "reputation": 9,
+   "finances": {
+    "balance": 679000,
+    "wage_budget": 33024
+   },
+   "squad": [
+    {
+     "uid": "pkm0126",
+     "species_id": 17,
+     "species": "Pidgeotto",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 12,
+      "atk": 3,
+      "def": 4,
+      "spa": 3,
+      "spd": 2,
+      "spe": 12
+     },
+     "moves": [
+      "Harden",
+      "Drill Peck",
+      "Hyper Beam",
+      "Fly"
+     ],
+     "condition": 70,
+     "fitness": 95,
+     "morale": 81,
+     "age_months": 98,
+     "contract": {
+      "salary": 2334,
+      "expiry": "2029-09-30"
+     }
+    },
+    {
+     "uid": "pkm0127",
+     "species_id": 25,
+     "species": "Pikachu",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 11,
+      "atk": 14,
+      "def": 10,
+      "spa": 8,
+      "spd": 7,
+      "spe": 14
+     },
+     "moves": [
+      "Agility",
+      "Thunder",
+      "Quick Attack",
+      "Thunder Wave"
+     ],
+     "condition": 98,
+     "fitness": 75,
+     "morale": 65,
+     "age_months": 66,
+     "contract": {
+      "salary": 2952,
+      "expiry": "2030-01-30"
+     }
+    },
+    {
+     "uid": "pkm0128",
+     "species_id": 129,
+     "species": "Magikarp",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 4,
+      "atk": 15,
+      "def": 14,
+      "spa": 0,
+      "spd": 7,
+      "spe": 6
+     },
+     "moves": [
+      "Splash",
+      "Tackle",
+      "Slash",
+      "Screech"
+     ],
+     "condition": 76,
+     "fitness": 82,
+     "morale": 64,
+     "age_months": 106,
+     "contract": {
+      "salary": 1736,
+      "expiry": "2030-01-30"
+     }
+    },
+    {
+     "uid": "pkm0129",
+     "species_id": 43,
+     "species": "Oddish",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 11,
+      "atk": 15,
+      "def": 3,
+      "spa": 9,
+      "spd": 12,
+      "spe": 6
+     },
+     "moves": [
+      "Mega Drain",
+      "Solar Beam",
+      "Growl",
+      "Sludge"
+     ],
+     "condition": 73,
+     "fitness": 92,
+     "morale": 54,
+     "age_months": 103,
+     "contract": {
+      "salary": 1992,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0130",
+     "species_id": 4,
+     "species": "Charmander",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 2,
+      "atk": 9,
+      "def": 9,
+      "spa": 0,
+      "spd": 12,
+      "spe": 5
+     },
+     "moves": [
+      "Fire Punch",
+      "Screech",
+      "Ember",
+      "Flame Wheel"
+     ],
+     "condition": 90,
+     "fitness": 96,
+     "morale": 87,
+     "age_months": 67,
+     "contract": {
+      "salary": 2062,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0131",
+     "species_id": 86,
+     "species": "Seel",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 14,
+      "atk": 12,
+      "def": 6,
+      "spa": 15,
+      "spd": 5,
+      "spe": 7
+     },
+     "moves": [
+      "Surf",
+      "Focus Energy",
+      "Water Gun",
+      "Waterfall"
+     ],
+     "condition": 97,
+     "fitness": 88,
+     "morale": 69,
+     "age_months": 97,
+     "contract": {
+      "salary": 2580,
+      "expiry": "2027-07-30"
+     }
+    },
+    {
+     "uid": "pkm0132",
+     "species_id": 33,
+     "species": "Nidorino",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 12,
+      "atk": 14,
+      "def": 15,
+      "spa": 7,
+      "spd": 0,
+      "spe": 10
+     },
+     "moves": [
+      "Smog",
+      "Body Slam",
+      "Reflect",
+      "Sludge"
+     ],
+     "condition": 89,
+     "fitness": 90,
+     "morale": 65,
+     "age_months": 15,
+     "contract": {
+      "salary": 1739,
+      "expiry": "2028-03-30"
+     }
+    },
+    {
+     "uid": "pkm0133",
+     "species_id": 32,
+     "species": "Nidoran M",
+     "nickname": null,
+     "level": 47,
+     "ivs": {
+      "hp": 3,
+      "atk": 10,
+      "def": 4,
+      "spa": 12,
+      "spd": 6,
+      "spe": 11
+     },
+     "moves": [
+      "Poison Sting",
+      "Headbutt",
+      "Sludge",
+      "Acid"
+     ],
+     "condition": 98,
+     "fitness": 95,
+     "morale": 88,
+     "age_months": 80,
+     "contract": {
+      "salary": 2352,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0134",
+     "species_id": 50,
+     "species": "Diglett",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 15,
+      "atk": 2,
+      "def": 13,
+      "spa": 11,
+      "spd": 5,
+      "spe": 2
+     },
+     "moves": [
+      "Sand Attack",
+      "Slash",
+      "Dig",
+      "Double Team"
+     ],
+     "condition": 75,
+     "fitness": 100,
+     "morale": 68,
+     "age_months": 112,
+     "contract": {
+      "salary": 2463,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0135",
+     "species_id": 90,
+     "species": "Shellder",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 8,
+      "atk": 6,
+      "def": 8,
+      "spa": 4,
+      "spd": 5,
+      "spe": 1
+     },
+     "moves": [
+      "Bubble Beam",
+      "Water Gun",
+      "Harden",
+      "Hydro Pump"
+     ],
+     "condition": 96,
+     "fitness": 76,
+     "morale": 84,
+     "age_months": 110,
+     "contract": {
+      "salary": 2785,
+      "expiry": "2028-08-30"
+     }
+    },
+    {
+     "uid": "pkm0136",
+     "species_id": 100,
+     "species": "Voltorb",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 14,
+      "atk": 2,
+      "def": 11,
+      "spa": 7,
+      "spd": 4,
+      "spe": 2
+     },
+     "moves": [
+      "Leer",
+      "Tackle",
+      "Thunder Shock",
+      "Thunder Punch"
+     ],
+     "condition": 96,
+     "fitness": 95,
+     "morale": 55,
+     "age_months": 82,
+     "contract": {
+      "salary": 1953,
+      "expiry": "2029-03-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Jonah Joyce",
+     "role": "scout",
+     "ratings": {
+      "attacking": 15,
+      "defending": 17,
+      "fitness": 16,
+      "judging_ability": 17,
+      "judging_potential": 6,
+      "youth": 6
+     }
+    },
+    {
+     "name": "Tomoko Watanabe",
+     "role": "coach",
+     "ratings": {
+      "attacking": 12,
+      "defending": 6,
+      "fitness": 16,
+      "judging_ability": 4,
+      "judging_potential": 19,
+      "youth": 14
+     }
+    },
+    {
+     "name": "Ander Voss",
+     "role": "physio",
+     "ratings": {
+      "attacking": 15,
+      "defending": 15,
+      "fitness": 15,
+      "judging_ability": 15,
+      "judging_potential": 8,
+      "youth": 18
+     }
+    },
+    {
+     "name": "Wanda Tanaka",
+     "role": "coach",
+     "ratings": {
+      "attacking": 14,
+      "defending": 5,
+      "fitness": 9,
+      "judging_ability": 16,
+      "judging_potential": 13,
+      "youth": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "club13",
+   "name": "Mt. Moon Comets",
+   "short": "MTM",
+   "manager": "Silas Oteiza",
+   "reputation": 8,
+   "finances": {
+    "balance": 1286000,
+    "wage_budget": 30491
+   },
+   "squad": [
+    {
+     "uid": "pkm0137",
+     "species_id": 116,
+     "species": "Horsea",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 9,
+      "atk": 4,
+      "def": 5,
+      "spa": 4,
+      "spd": 3,
+      "spe": 11
+     },
+     "moves": [
+      "Surf",
+      "Harden",
+      "Hydro Pump",
+      "Waterfall"
+     ],
+     "condition": 84,
+     "fitness": 79,
+     "morale": 52,
+     "age_months": 86,
+     "contract": {
+      "salary": 1858,
+      "expiry": "2027-06-30"
+     }
+    },
+    {
+     "uid": "pkm0138",
+     "species_id": 21,
+     "species": "Spearow",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 10,
+      "atk": 3,
+      "def": 15,
+      "spa": 13,
+      "spd": 7,
+      "spe": 15
+     },
+     "moves": [
+      "Fly",
+      "Headbutt",
+      "Drill Peck",
+      "Double-Edge"
+     ],
+     "condition": 77,
+     "fitness": 95,
+     "morale": 82,
+     "age_months": 52,
+     "contract": {
+      "salary": 1873,
+      "expiry": "2029-10-30"
+     }
+    },
+    {
+     "uid": "pkm0139",
+     "species_id": 30,
+     "species": "Nidorina",
+     "nickname": null,
+     "level": 44,
+     "ivs": {
+      "hp": 5,
+      "atk": 6,
+      "def": 7,
+      "spa": 3,
+      "spd": 13,
+      "spe": 5
+     },
+     "moves": [
+      "Agility",
+      "Acid",
+      "Smog",
+      "Poison Sting"
+     ],
+     "condition": 87,
+     "fitness": 91,
+     "morale": 74,
+     "age_months": 65,
+     "contract": {
+      "salary": 3080,
+      "expiry": "2027-11-30"
+     }
+    },
+    {
+     "uid": "pkm0140",
+     "species_id": 41,
+     "species": "Zubat",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 7,
+      "atk": 10,
+      "def": 2,
+      "spa": 0,
+      "spd": 5,
+      "spe": 6
+     },
+     "moves": [
+      "Slash",
+      "Poison Sting",
+      "Sludge",
+      "Double Team"
+     ],
+     "condition": 90,
+     "fitness": 96,
+     "morale": 57,
+     "age_months": 113,
+     "contract": {
+      "salary": 1559,
+      "expiry": "2030-03-30"
+     }
+    },
+    {
+     "uid": "pkm0141",
+     "species_id": 109,
+     "species": "Koffing",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 10,
+      "atk": 6,
+      "def": 7,
+      "spa": 5,
+      "spd": 12,
+      "spe": 10
+     },
+     "moves": [
+      "Toxic",
+      "Smog",
+      "Screech",
+      "Slash"
+     ],
+     "condition": 94,
+     "fitness": 98,
+     "morale": 75,
+     "age_months": 77,
+     "contract": {
+      "salary": 2372,
+      "expiry": "2030-01-30"
+     }
+    },
+    {
+     "uid": "pkm0142",
+     "species_id": 72,
+     "species": "Tentacool",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 5,
+      "spa": 5,
+      "spd": 8,
+      "spe": 5
+     },
+     "moves": [
+      "Swift",
+      "Waterfall",
+      "Surf",
+      "Smog"
+     ],
+     "condition": 96,
+     "fitness": 78,
+     "morale": 50,
+     "age_months": 89,
+     "contract": {
+      "salary": 3074,
+      "expiry": "2027-11-30"
+     }
+    },
+    {
+     "uid": "pkm0143",
+     "species_id": 17,
+     "species": "Pidgeotto",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 8,
+      "atk": 6,
+      "def": 3,
+      "spa": 2,
+      "spd": 5,
+      "spe": 2
+     },
+     "moves": [
+      "Double-Edge",
+      "Headbutt",
+      "Harden",
+      "Hyper Beam"
+     ],
+     "condition": 90,
+     "fitness": 84,
+     "morale": 78,
+     "age_months": 118,
+     "contract": {
+      "salary": 2473,
+      "expiry": "2029-01-30"
+     }
+    },
+    {
+     "uid": "pkm0144",
+     "species_id": 72,
+     "species": "Tentacool",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 6,
+      "atk": 7,
+      "def": 10,
+      "spa": 9,
+      "spd": 10,
+      "spe": 6
+     },
+     "moves": [
+      "Surf",
+      "Smog",
+      "Sludge",
+      "Hydro Pump"
+     ],
+     "condition": 81,
+     "fitness": 93,
+     "morale": 73,
+     "age_months": 74,
+     "contract": {
+      "salary": 2474,
+      "expiry": "2028-08-30"
+     }
+    },
+    {
+     "uid": "pkm0145",
+     "species_id": 52,
+     "species": "Meowth",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 14,
+      "atk": 3,
+      "def": 0,
+      "spa": 9,
+      "spd": 0,
+      "spe": 1
+     },
+     "moves": [
+      "Hyper Beam",
+      "Leer",
+      "Double-Edge",
+      "Slash"
+     ],
+     "condition": 71,
+     "fitness": 95,
+     "morale": 55,
+     "age_months": 115,
+     "contract": {
+      "salary": 2012,
+      "expiry": "2029-09-30"
+     }
+    },
+    {
+     "uid": "pkm0146",
+     "species_id": 86,
+     "species": "Seel",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 1,
+      "atk": 11,
+      "def": 1,
+      "spa": 11,
+      "spd": 5,
+      "spe": 0
+     },
+     "moves": [
+      "Bubble Beam",
+      "Waterfall",
+      "Water Gun",
+      "Surf"
+     ],
+     "condition": 97,
+     "fitness": 96,
+     "morale": 51,
+     "age_months": 112,
+     "contract": {
+      "salary": 2224,
+      "expiry": "2029-01-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Silas Yamamoto",
+     "role": "scout",
+     "ratings": {
+      "attacking": 9,
+      "defending": 9,
+      "fitness": 14,
+      "judging_ability": 13,
+      "judging_potential": 16,
+      "youth": 15
+     }
+    },
+    {
+     "name": "Olga Vidal",
+     "role": "coach",
+     "ratings": {
+      "attacking": 7,
+      "defending": 6,
+      "fitness": 10,
+      "judging_ability": 18,
+      "judging_potential": 14,
+      "youth": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "club14",
+   "name": "Safari Rangers",
+   "short": "SFR",
+   "manager": "Olga Serrano",
+   "reputation": 17,
+   "finances": {
+    "balance": 1466000,
+    "wage_budget": 38482
+   },
+   "squad": [
+    {
+     "uid": "pkm0147",
+     "species_id": 68,
+     "species": "Machamp",
+     "nickname": null,
+     "level": 49,
+     "ivs": {
+      "hp": 7,
+      "atk": 13,
+      "def": 10,
+      "spa": 6,
+      "spd": 5,
+      "spe": 2
+     },
+     "moves": [
+      "Seismic Toss",
+      "Body Slam",
+      "Leer",
+      "Submission"
+     ],
+     "condition": 95,
+     "fitness": 82,
+     "morale": 51,
+     "age_months": 87,
+     "contract": {
+      "salary": 2988,
+      "expiry": "2027-11-30"
+     }
+    },
+    {
+     "uid": "pkm0148",
+     "species_id": 89,
+     "species": "Muk",
+     "nickname": null,
+     "level": 51,
+     "ivs": {
+      "hp": 1,
+      "atk": 8,
+      "def": 2,
+      "spa": 3,
+      "spd": 13,
+      "spe": 11
+     },
+     "moves": [
+      "Sludge",
+      "Screech",
+      "Toxic",
+      "Body Slam"
+     ],
+     "condition": 71,
+     "fitness": 88,
+     "morale": 84,
+     "age_months": 103,
+     "contract": {
+      "salary": 3144,
+      "expiry": "2027-07-30"
+     }
+    },
+    {
+     "uid": "pkm0149",
+     "species_id": 125,
+     "species": "Electabuzz",
+     "nickname": null,
+     "level": 46,
+     "ivs": {
+      "hp": 1,
+      "atk": 13,
+      "def": 11,
+      "spa": 9,
+      "spd": 8,
+      "spe": 3
+     },
+     "moves": [
+      "Tail Whip",
+      "Thunder",
+      "Thunder Punch",
+      "Thunder Wave"
+     ],
+     "condition": 96,
+     "fitness": 84,
+     "morale": 73,
+     "age_months": 99,
+     "contract": {
+      "salary": 3113,
+      "expiry": "2027-09-30"
+     }
+    },
+    {
+     "uid": "pkm0150",
+     "species_id": 128,
+     "species": "Tauros",
+     "nickname": null,
+     "level": 49,
+     "ivs": {
+      "hp": 4,
+      "atk": 3,
+      "def": 0,
+      "spa": 15,
+      "spd": 3,
+      "spe": 1
+     },
+     "moves": [
+      "Reflect",
+      "Body Slam",
+      "Tackle",
+      "Headbutt"
+     ],
+     "condition": 88,
+     "fitness": 89,
+     "morale": 78,
+     "age_months": 95,
+     "contract": {
+      "salary": 3617,
+      "expiry": "2028-01-30"
+     }
+    },
+    {
+     "uid": "pkm0151",
+     "species_id": 91,
+     "species": "Cloyster",
+     "nickname": null,
+     "level": 43,
+     "ivs": {
+      "hp": 3,
+      "atk": 2,
+      "def": 14,
+      "spa": 14,
+      "spd": 8,
+      "spe": 6
+     },
+     "moves": [
+      "Slash",
+      "Ice Punch",
+      "Bubble Beam",
+      "Aurora Beam"
+     ],
+     "condition": 88,
+     "fitness": 92,
+     "morale": 87,
+     "age_months": 41,
+     "contract": {
+      "salary": 2471,
+      "expiry": "2029-01-30"
+     }
+    },
+    {
+     "uid": "pkm0152",
+     "species_id": 126,
+     "species": "Magmar",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 12,
+      "atk": 11,
+      "def": 11,
+      "spa": 5,
+      "spd": 3,
+      "spe": 8
+     },
+     "moves": [
+      "Swift",
+      "Flamethrower",
+      "Double Team",
+      "Fire Punch"
+     ],
+     "condition": 96,
+     "fitness": 79,
+     "morale": 72,
+     "age_months": 26,
+     "contract": {
+      "salary": 2558,
+      "expiry": "2027-08-30"
+     }
+    },
+    {
+     "uid": "pkm0153",
+     "species_id": 85,
+     "species": "Dodrio",
+     "nickname": null,
+     "level": 50,
+     "ivs": {
+      "hp": 11,
+      "atk": 15,
+      "def": 5,
+      "spa": 5,
+      "spd": 7,
+      "spe": 9
+     },
+     "moves": [
+      "Body Slam",
+      "Peck",
+      "Fly",
+      "Screech"
+     ],
+     "condition": 71,
+     "fitness": 96,
+     "morale": 94,
+     "age_months": 46,
+     "contract": {
+      "salary": 2975,
+      "expiry": "2028-10-30"
+     }
+    },
+    {
+     "uid": "pkm0154",
+     "species_id": 45,
+     "species": "Vileplume",
+     "nickname": null,
+     "level": 59,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 6,
+      "spa": 2,
+      "spd": 7,
+      "spe": 0
+     },
+     "moves": [
+      "Toxic",
+      "Solar Beam",
+      "Poison Sting",
+      "Quick Attack"
+     ],
+     "condition": 80,
+     "fitness": 84,
+     "morale": 89,
+     "age_months": 18,
+     "contract": {
+      "salary": 4057,
+      "expiry": "2028-05-30"
+     }
+    },
+    {
+     "uid": "pkm0155",
+     "species_id": 113,
+     "species": "Chansey",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 13,
+      "atk": 2,
+      "def": 4,
+      "spa": 11,
+      "spd": 2,
+      "spe": 7
+     },
+     "moves": [
+      "Seismic Toss",
+      "Soft-Boiled",
+      "Body Slam",
+      "Sing"
+     ],
+     "condition": 80,
+     "fitness": 81,
+     "morale": 92,
+     "age_months": 87,
+     "contract": {
+      "salary": 3075,
+      "expiry": "2028-11-30"
+     }
+    },
+    {
+     "uid": "pkm0156",
+     "species_id": 113,
+     "species": "Chansey",
+     "nickname": null,
+     "level": 59,
+     "ivs": {
+      "hp": 14,
+      "atk": 8,
+      "def": 12,
+      "spa": 8,
+      "spd": 1,
+      "spe": 4
+     },
+     "moves": [
+      "Seismic Toss",
+      "Body Slam",
+      "Sing",
+      "Soft-Boiled"
+     ],
+     "condition": 98,
+     "fitness": 90,
+     "morale": 95,
+     "age_months": 52,
+     "contract": {
+      "salary": 2946,
+      "expiry": "2028-09-30"
+     }
+    },
+    {
+     "uid": "pkm0157",
+     "species_id": 40,
+     "species": "Wigglytuff",
+     "nickname": null,
+     "level": 59,
+     "ivs": {
+      "hp": 0,
+      "atk": 3,
+      "def": 14,
+      "spa": 1,
+      "spd": 7,
+      "spe": 4
+     },
+     "moves": [
+      "Headbutt",
+      "Tail Whip",
+      "Slash",
+      "Tackle"
+     ],
+     "condition": 85,
+     "fitness": 96,
+     "morale": 85,
+     "age_months": 104,
+     "contract": {
+      "salary": 3904,
+      "expiry": "2028-01-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Ines Fowler",
+     "role": "physio",
+     "ratings": {
+      "attacking": 7,
+      "defending": 18,
+      "fitness": 4,
+      "judging_ability": 11,
+      "judging_potential": 19,
+      "youth": 14
+     }
+    },
+    {
+     "name": "Zane Vidal",
+     "role": "coach",
+     "ratings": {
+      "attacking": 7,
+      "defending": 13,
+      "fitness": 10,
+      "judging_ability": 8,
+      "judging_potential": 8,
+      "youth": 19
+     }
+    }
+   ]
+  },
+  {
+   "id": "club15",
+   "name": "Victory Road Wanderers",
+   "short": "VRW",
+   "manager": "Silas Novak",
+   "reputation": 10,
+   "finances": {
+    "balance": 983000,
+    "wage_budget": 35924
+   },
+   "squad": [
+    {
+     "uid": "pkm0158",
+     "species_id": 109,
+     "species": "Koffing",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 0,
+      "atk": 12,
+      "def": 2,
+      "spa": 8,
+      "spd": 5,
+      "spe": 13
+     },
+     "moves": [
+      "Toxic",
+      "Slash",
+      "Sludge",
+      "Poison Sting"
+     ],
+     "condition": 96,
+     "fitness": 76,
+     "morale": 84,
+     "age_months": 117,
+     "contract": {
+      "salary": 2625,
+      "expiry": "2027-06-30"
+     }
+    },
+    {
+     "uid": "pkm0159",
+     "species_id": 90,
+     "species": "Shellder",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 5,
+      "atk": 8,
+      "def": 13,
+      "spa": 11,
+      "spd": 13,
+      "spe": 9
+     },
+     "moves": [
+      "Harden",
+      "Hydro Pump",
+      "Water Gun",
+      "Slash"
+     ],
+     "condition": 73,
+     "fitness": 79,
+     "morale": 75,
+     "age_months": 102,
+     "contract": {
+      "salary": 1604,
+      "expiry": "2028-05-30"
+     }
+    },
+    {
+     "uid": "pkm0160",
+     "species_id": 109,
+     "species": "Koffing",
+     "nickname": null,
+     "level": 45,
+     "ivs": {
+      "hp": 7,
+      "atk": 0,
+      "def": 7,
+      "spa": 3,
+      "spd": 15,
+      "spe": 6
+     },
+     "moves": [
+      "Poison Sting",
+      "Smog",
+      "Slash",
+      "Screech"
+     ],
+     "condition": 88,
+     "fitness": 81,
+     "morale": 76,
+     "age_months": 103,
+     "contract": {
+      "salary": 2945,
+      "expiry": "2028-04-30"
+     }
+    },
+    {
+     "uid": "pkm0161",
+     "species_id": 60,
+     "species": "Poliwag",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 6,
+      "atk": 5,
+      "def": 3,
+      "spa": 2,
+      "spd": 2,
+      "spe": 13
+     },
+     "moves": [
+      "Hydro Pump",
+      "Waterfall",
+      "Water Gun",
+      "Reflect"
+     ],
+     "condition": 77,
+     "fitness": 84,
+     "morale": 95,
+     "age_months": 120,
+     "contract": {
+      "salary": 1932,
+      "expiry": "2029-09-30"
+     }
+    },
+    {
+     "uid": "pkm0162",
+     "species_id": 33,
+     "species": "Nidorino",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 11,
+      "atk": 13,
+      "def": 7,
+      "spa": 0,
+      "spd": 0,
+      "spe": 5
+     },
+     "moves": [
+      "Smog",
+      "Poison Sting",
+      "Body Slam",
+      "Reflect"
+     ],
+     "condition": 98,
+     "fitness": 84,
+     "morale": 70,
+     "age_months": 99,
+     "contract": {
+      "salary": 2324,
+      "expiry": "2028-08-30"
+     }
+    },
+    {
+     "uid": "pkm0163",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 14,
+      "atk": 10,
+      "def": 1,
+      "spa": 10,
+      "spd": 12,
+      "spe": 10
+     },
+     "moves": [
+      "Waterfall",
+      "Rock Throw",
+      "Harden",
+      "Water Gun"
+     ],
+     "condition": 87,
+     "fitness": 95,
+     "morale": 89,
+     "age_months": 107,
+     "contract": {
+      "salary": 2524,
+      "expiry": "2028-09-30"
+     }
+    },
+    {
+     "uid": "pkm0164",
+     "species_id": 102,
+     "species": "Exeggcute",
+     "nickname": null,
+     "level": 48,
+     "ivs": {
+      "hp": 10,
+      "atk": 3,
+      "def": 7,
+      "spa": 13,
+      "spd": 7,
+      "spe": 5
+     },
+     "moves": [
+      "Sleep Powder",
+      "Mega Drain",
+      "Reflect",
+      "Recover"
+     ],
+     "condition": 92,
+     "fitness": 85,
+     "morale": 77,
+     "age_months": 68,
+     "contract": {
+      "salary": 3067,
+      "expiry": "2029-04-30"
+     }
+    },
+    {
+     "uid": "pkm0165",
+     "species_id": 15,
+     "species": "Beedrill",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 6,
+      "atk": 6,
+      "def": 10,
+      "spa": 2,
+      "spd": 10,
+      "spe": 11
+     },
+     "moves": [
+      "String Shot",
+      "Poison Sting",
+      "Leech Life",
+      "Twineedle"
+     ],
+     "condition": 73,
+     "fitness": 87,
+     "morale": 75,
+     "age_months": 103,
+     "contract": {
+      "salary": 1811,
+      "expiry": "2029-09-30"
+     }
+    },
+    {
+     "uid": "pkm0166",
+     "species_id": 102,
+     "species": "Exeggcute",
+     "nickname": null,
+     "level": 50,
+     "ivs": {
+      "hp": 12,
+      "atk": 15,
+      "def": 8,
+      "spa": 3,
+      "spd": 11,
+      "spe": 10
+     },
+     "moves": [
+      "Mega Drain",
+      "Sleep Powder",
+      "Psybeam",
+      "Quick Attack"
+     ],
+     "condition": 85,
+     "fitness": 82,
+     "morale": 86,
+     "age_months": 97,
+     "contract": {
+      "salary": 2464,
+      "expiry": "2029-03-30"
+     }
+    },
+    {
+     "uid": "pkm0167",
+     "species_id": 30,
+     "species": "Nidorina",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 2,
+      "atk": 2,
+      "def": 11,
+      "spa": 0,
+      "spd": 8,
+      "spe": 0
+     },
+     "moves": [
+      "Poison Sting",
+      "Agility",
+      "Acid",
+      "Toxic"
+     ],
+     "condition": 99,
+     "fitness": 85,
+     "morale": 65,
+     "age_months": 75,
+     "contract": {
+      "salary": 2165,
+      "expiry": "2029-02-30"
+     }
+    },
+    {
+     "uid": "pkm0168",
+     "species_id": 133,
+     "species": "Eevee",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 6,
+      "atk": 15,
+      "def": 9,
+      "spa": 1,
+      "spd": 11,
+      "spe": 11
+     },
+     "moves": [
+      "Double-Edge",
+      "Body Slam",
+      "Leer",
+      "Hyper Beam"
+     ],
+     "condition": 89,
+     "fitness": 79,
+     "morale": 56,
+     "age_months": 74,
+     "contract": {
+      "salary": 2369,
+      "expiry": "2029-12-30"
+     }
+    }
+   ],
+   "staff": [
+    {
+     "name": "Silas Joyce",
+     "role": "coach",
+     "ratings": {
+      "attacking": 20,
+      "defending": 14,
+      "fitness": 13,
+      "judging_ability": 12,
+      "judging_potential": 14,
+      "youth": 17
+     }
+    },
+    {
+     "name": "Hiro Watanabe",
+     "role": "scout",
+     "ratings": {
+      "attacking": 7,
+      "defending": 8,
+      "fitness": 8,
+      "judging_ability": 19,
+      "judging_potential": 20,
+      "youth": 17
+     }
+    }
+   ]
+  }
+ ],
+ "free_agents": [
+  {
+   "uid": "pkm0169",
+   "species_id": 143,
+   "species": "Snorlax",
+   "nickname": null,
+   "level": 45,
+   "ivs": {
+    "hp": 6,
+    "atk": 0,
+    "def": 10,
+    "spa": 15,
+    "spd": 0,
+    "spe": 1
+   },
+   "moves": [
+    "Amnesia",
+    "Body Slam",
+    "Earthquake",
+    "Hyper Beam"
+   ],
+   "condition": 83,
+   "fitness": 100,
+   "morale": 84,
+   "age_months": 15,
+   "contract": {
+    "salary": 2244,
+    "expiry": "2030-02-30"
+   }
+  },
+  {
+   "uid": "pkm0170",
+   "species_id": 116,
+   "species": "Horsea",
+   "nickname": null,
+   "level": 26,
+   "ivs": {
+    "hp": 4,
+    "atk": 11,
+    "def": 9,
+    "spa": 5,
+    "spd": 10,
+    "spe": 9
+   },
+   "moves": [
+    "Harden",
+    "Hydro Pump",
+    "Water Gun",
+    "Surf"
+   ],
+   "condition": 76,
+   "fitness": 81,
+   "morale": 75,
+   "age_months": 89,
+   "contract": {
+    "salary": 939,
+    "expiry": "2028-10-30"
+   }
+  },
+  {
+   "uid": "pkm0171",
+   "species_id": 136,
+   "species": "Flareon",
+   "nickname": null,
+   "level": 49,
+   "ivs": {
+    "hp": 9,
+    "atk": 15,
+    "def": 15,
+    "spa": 6,
+    "spd": 1,
+    "spe": 15
+   },
+   "moves": [
+    "Leer",
+    "Fire Spin",
+    "Flamethrower",
+    "Fire Punch"
+   ],
+   "condition": 95,
+   "fitness": 81,
+   "morale": 71,
+   "age_months": 30,
+   "contract": {
+    "salary": 1964,
+    "expiry": "2027-07-30"
+   }
+  },
+  {
+   "uid": "pkm0172",
+   "species_id": 45,
+   "species": "Vileplume",
+   "nickname": null,
+   "level": 30,
+   "ivs": {
+    "hp": 6,
+    "atk": 14,
+    "def": 15,
+    "spa": 12,
+    "spd": 10,
+    "spe": 5
+   },
+   "moves": [
+    "Poison Sting",
+    "Growl",
+    "Solar Beam",
+    "Sleep Powder"
+   ],
+   "condition": 97,
+   "fitness": 79,
+   "morale": 92,
+   "age_months": 96,
+   "contract": {
+    "salary": 1377,
+    "expiry": "2029-11-30"
+   }
+  },
+  {
+   "uid": "pkm0173",
+   "species_id": 84,
+   "species": "Doduo",
+   "nickname": null,
+   "level": 41,
+   "ivs": {
+    "hp": 10,
+    "atk": 14,
+    "def": 11,
+    "spa": 8,
+    "spd": 2,
+    "spe": 13
+   },
+   "moves": [
+    "Drill Peck",
+    "Headbutt",
+    "Wing Attack",
+    "Double-Edge"
+   ],
+   "condition": 90,
+   "fitness": 93,
+   "morale": 77,
+   "age_months": 89,
+   "contract": {
+    "salary": 1644,
+    "expiry": "2029-08-30"
+   }
+  },
+  {
+   "uid": "pkm0174",
+   "species_id": 33,
+   "species": "Nidorino",
+   "nickname": null,
+   "level": 24,
+   "ivs": {
+    "hp": 5,
+    "atk": 7,
+    "def": 1,
+    "spa": 8,
+    "spd": 5,
+    "spe": 1
+   },
+   "moves": [
+    "Reflect",
+    "Sludge",
+    "Body Slam",
+    "Smog"
+   ],
+   "condition": 97,
+   "fitness": 81,
+   "morale": 52,
+   "age_months": 20,
+   "contract": {
+    "salary": 1046,
+    "expiry": "2029-11-30"
+   }
+  },
+  {
+   "uid": "pkm0175",
+   "species_id": 110,
+   "species": "Weezing",
+   "nickname": null,
+   "level": 26,
+   "ivs": {
+    "hp": 15,
+    "atk": 6,
+    "def": 12,
+    "spa": 2,
+    "spd": 9,
+    "spe": 6
+   },
+   "moves": [
+    "Quick Attack",
+    "Toxic",
+    "Leer",
+    "Sludge"
+   ],
+   "condition": 72,
+   "fitness": 85,
+   "morale": 79,
+   "age_months": 56,
+   "contract": {
+    "salary": 1549,
+    "expiry": "2028-12-30"
+   }
+  },
+  {
+   "uid": "pkm0176",
+   "species_id": 75,
+   "species": "Graveler",
+   "nickname": null,
+   "level": 48,
+   "ivs": {
+    "hp": 6,
+    "atk": 1,
+    "def": 15,
+    "spa": 5,
+    "spd": 1,
+    "spe": 3
+   },
+   "moves": [
+    "Bone Club",
+    "Rock Slide",
+    "Sand Attack",
+    "Rock Throw"
+   ],
+   "condition": 82,
+   "fitness": 85,
+   "morale": 90,
+   "age_months": 59,
+   "contract": {
+    "salary": 1871,
+    "expiry": "2029-09-30"
+   }
+  },
+  {
+   "uid": "pkm0177",
+   "species_id": 48,
+   "species": "Venonat",
+   "nickname": null,
+   "level": 20,
+   "ivs": {
+    "hp": 2,
+    "atk": 3,
+    "def": 3,
+    "spa": 9,
+    "spd": 13,
+    "spe": 5
+   },
+   "moves": [
+    "Toxic",
+    "String Shot",
+    "Leech Life",
+    "Twineedle"
+   ],
+   "condition": 84,
+   "fitness": 86,
+   "morale": 56,
+   "age_months": 42,
+   "contract": {
+    "salary": 892,
+    "expiry": "2027-07-30"
+   }
+  },
+  {
+   "uid": "pkm0178",
+   "species_id": 10,
+   "species": "Caterpie",
+   "nickname": null,
+   "level": 32,
+   "ivs": {
+    "hp": 14,
+    "atk": 15,
+    "def": 0,
+    "spa": 8,
+    "spd": 0,
+    "spe": 8
+   },
+   "moves": [
+    "Growl",
+    "Pin Missile",
+    "Twineedle",
+    "Body Slam"
+   ],
+   "condition": 94,
+   "fitness": 77,
+   "morale": 80,
+   "age_months": 23,
+   "contract": {
+    "salary": 1379,
+    "expiry": "2029-12-30"
+   }
+  },
+  {
+   "uid": "pkm0179",
+   "species_id": 130,
+   "species": "Gyarados",
+   "nickname": null,
+   "level": 36,
+   "ivs": {
+    "hp": 6,
+    "atk": 12,
+    "def": 12,
+    "spa": 14,
+    "spd": 13,
+    "spe": 13
+   },
+   "moves": [
+    "Water Gun",
+    "Surf",
+    "Peck",
+    "Focus Energy"
+   ],
+   "condition": 78,
+   "fitness": 93,
+   "morale": 86,
+   "age_months": 61,
+   "contract": {
+    "salary": 1784,
+    "expiry": "2029-10-30"
+   }
+  },
+  {
+   "uid": "pkm0180",
+   "species_id": 23,
+   "species": "Ekans",
+   "nickname": null,
+   "level": 46,
+   "ivs": {
+    "hp": 7,
+    "atk": 0,
+    "def": 14,
+    "spa": 8,
+    "spd": 4,
+    "spe": 10
+   },
+   "moves": [
+    "Acid",
+    "Sludge",
+    "Slash",
+    "Toxic"
+   ],
+   "condition": 83,
+   "fitness": 94,
+   "morale": 52,
+   "age_months": 74,
+   "contract": {
+    "salary": 2058,
+    "expiry": "2030-05-30"
+   }
+  },
+  {
+   "uid": "pkm0181",
+   "species_id": 18,
+   "species": "Pidgeot",
+   "nickname": null,
+   "level": 41,
+   "ivs": {
+    "hp": 7,
+    "atk": 0,
+    "def": 0,
+    "spa": 3,
+    "spd": 1,
+    "spe": 2
+   },
+   "moves": [
+    "Wing Attack",
+    "Double-Edge",
+    "Swift",
+    "Headbutt"
+   ],
+   "condition": 92,
+   "fitness": 90,
+   "morale": 95,
+   "age_months": 36,
+   "contract": {
+    "salary": 2011,
+    "expiry": "2028-02-30"
+   }
+  },
+  {
+   "uid": "pkm0182",
+   "species_id": 37,
+   "species": "Vulpix",
+   "nickname": null,
+   "level": 32,
+   "ivs": {
+    "hp": 11,
+    "atk": 12,
+    "def": 12,
+    "spa": 3,
+    "spd": 2,
+    "spe": 3
+   },
+   "moves": [
+    "Flamethrower",
+    "Leer",
+    "Tackle",
+    "Fire Spin"
+   ],
+   "condition": 94,
+   "fitness": 94,
+   "morale": 88,
+   "age_months": 27,
+   "contract": {
+    "salary": 1172,
+    "expiry": "2030-03-30"
+   }
+  },
+  {
+   "uid": "pkm0183",
+   "species_id": 105,
+   "species": "Marowak",
+   "nickname": null,
+   "level": 19,
+   "ivs": {
+    "hp": 8,
+    "atk": 3,
+    "def": 2,
+    "spa": 11,
+    "spd": 4,
+    "spe": 6
+   },
+   "moves": [
+    "Sand Attack",
+    "Double Team",
+    "Slash",
+    "Earthquake"
+   ],
+   "condition": 73,
+   "fitness": 82,
+   "morale": 57,
+   "age_months": 45,
+   "contract": {
+    "salary": 1336,
+    "expiry": "2028-12-30"
+   }
+  },
+  {
+   "uid": "pkm0184",
+   "species_id": 31,
+   "species": "Nidoqueen",
+   "nickname": null,
+   "level": 27,
+   "ivs": {
+    "hp": 13,
+    "atk": 12,
+    "def": 3,
+    "spa": 13,
+    "spd": 11,
+    "spe": 15
+   },
+   "moves": [
+    "Sludge",
+    "Double Team",
+    "Slash",
+    "Sand Attack"
+   ],
+   "condition": 92,
+   "fitness": 99,
+   "morale": 69,
+   "age_months": 58,
+   "contract": {
+    "salary": 1423,
+    "expiry": "2028-11-30"
+   }
+  },
+  {
+   "uid": "pkm0185",
+   "species_id": 39,
+   "species": "Jigglypuff",
+   "nickname": null,
+   "level": 45,
+   "ivs": {
+    "hp": 5,
+    "atk": 5,
+    "def": 13,
+    "spa": 4,
+    "spd": 14,
+    "spe": 7
+   },
+   "moves": [
+    "Headbutt",
+    "Swift",
+    "Hyper Beam",
+    "Swords Dance"
+   ],
+   "condition": 93,
+   "fitness": 94,
+   "morale": 53,
+   "age_months": 100,
+   "contract": {
+    "salary": 1441,
+    "expiry": "2030-06-30"
+   }
+  },
+  {
+   "uid": "pkm0186",
+   "species_id": 3,
+   "species": "Venusaur",
+   "nickname": null,
+   "level": 45,
+   "ivs": {
+    "hp": 1,
+    "atk": 10,
+    "def": 11,
+    "spa": 14,
+    "spd": 8,
+    "spe": 11
+   },
+   "moves": [
+    "Petal Dance",
+    "Quick Attack",
+    "Smog",
+    "Screech"
+   ],
+   "condition": 79,
+   "fitness": 85,
+   "morale": 93,
+   "age_months": 19,
+   "contract": {
+    "salary": 2470,
+    "expiry": "2029-12-30"
+   }
+  },
+  {
+   "uid": "pkm0187",
+   "species_id": 51,
+   "species": "Dugtrio",
+   "nickname": null,
+   "level": 29,
+   "ivs": {
+    "hp": 0,
+    "atk": 11,
+    "def": 4,
+    "spa": 3,
+    "spd": 11,
+    "spe": 13
+   },
+   "moves": [
+    "Swords Dance",
+    "Quick Attack",
+    "Bone Club",
+    "Dig"
+   ],
+   "condition": 86,
+   "fitness": 84,
+   "morale": 76,
+   "age_months": 97,
+   "contract": {
+    "salary": 1220,
+    "expiry": "2027-06-30"
+   }
+  },
+  {
+   "uid": "pkm0188",
+   "species_id": 109,
+   "species": "Koffing",
+   "nickname": null,
+   "level": 43,
+   "ivs": {
+    "hp": 7,
+    "atk": 3,
+    "def": 4,
+    "spa": 9,
+    "spd": 4,
+    "spe": 15
+   },
+   "moves": [
+    "Smog",
+    "Sludge",
+    "Poison Sting",
+    "Toxic"
+   ],
+   "condition": 73,
+   "fitness": 99,
+   "morale": 75,
+   "age_months": 27,
+   "contract": {
+    "salary": 1978,
+    "expiry": "2029-11-30"
+   }
+  },
+  {
+   "uid": "pkm0189",
+   "species_id": 50,
+   "species": "Diglett",
+   "nickname": null,
+   "level": 44,
+   "ivs": {
+    "hp": 15,
+    "atk": 13,
+    "def": 2,
+    "spa": 15,
+    "spd": 11,
+    "spe": 14
+   },
+   "moves": [
+    "Sand Attack",
+    "Earthquake",
+    "Slash",
+    "Double Team"
+   ],
+   "condition": 76,
+   "fitness": 79,
+   "morale": 94,
+   "age_months": 51,
+   "contract": {
+    "salary": 1406,
+    "expiry": "2028-08-30"
+   }
+  },
+  {
+   "uid": "pkm0190",
+   "species_id": 118,
+   "species": "Goldeen",
+   "nickname": null,
+   "level": 46,
+   "ivs": {
+    "hp": 7,
+    "atk": 15,
+    "def": 14,
+    "spa": 7,
+    "spd": 12,
+    "spe": 4
+   },
+   "moves": [
+    "Waterfall",
+    "Growl",
+    "Body Slam",
+    "Water Gun"
+   ],
+   "condition": 75,
+   "fitness": 96,
+   "morale": 81,
+   "age_months": 53,
+   "contract": {
+    "salary": 2098,
+    "expiry": "2028-04-30"
+   }
+  },
+  {
+   "uid": "pkm0191",
+   "species_id": 45,
+   "species": "Vileplume",
+   "nickname": null,
+   "level": 51,
+   "ivs": {
+    "hp": 0,
+    "atk": 14,
+    "def": 12,
+    "spa": 14,
+    "spd": 3,
+    "spe": 15
+   },
+   "moves": [
+    "Sludge",
+    "Toxic",
+    "Sleep Powder",
+    "Poison Sting"
+   ],
+   "condition": 90,
+   "fitness": 88,
+   "morale": 77,
+   "age_months": 59,
+   "contract": {
+    "salary": 2497,
+    "expiry": "2027-06-30"
+   }
+  },
+  {
+   "uid": "pkm0192",
+   "species_id": 125,
+   "species": "Electabuzz",
+   "nickname": null,
+   "level": 23,
+   "ivs": {
+    "hp": 12,
+    "atk": 8,
+    "def": 7,
+    "spa": 3,
+    "spd": 6,
+    "spe": 4
+   },
+   "moves": [
+    "Tail Whip",
+    "Tackle",
+    "Thunder Wave",
+    "Thunder Punch"
+   ],
+   "condition": 82,
+   "fitness": 98,
+   "morale": 72,
+   "age_months": 45,
+   "contract": {
+    "salary": 1188,
+    "expiry": "2028-04-30"
+   }
+  },
+  {
+   "uid": "pkm0193",
+   "species_id": 135,
+   "species": "Jolteon",
+   "nickname": null,
+   "level": 21,
+   "ivs": {
+    "hp": 10,
+    "atk": 15,
+    "def": 13,
+    "spa": 4,
+    "spd": 2,
+    "spe": 14
+   },
+   "moves": [
+    "Thunder Shock",
+    "Quick Attack",
+    "Thunderbolt",
+    "Swords Dance"
+   ],
+   "condition": 70,
+   "fitness": 84,
+   "morale": 94,
+   "age_months": 104,
+   "contract": {
+    "salary": 1244,
+    "expiry": "2027-11-30"
+   }
+  },
+  {
+   "uid": "pkm0194",
+   "species_id": 61,
+   "species": "Poliwhirl",
+   "nickname": null,
+   "level": 50,
+   "ivs": {
+    "hp": 5,
+    "atk": 9,
+    "def": 10,
+    "spa": 8,
+    "spd": 3,
+    "spe": 3
+   },
+   "moves": [
+    "Tackle",
+    "Hydro Pump",
+    "Agility",
+    "Waterfall"
+   ],
+   "condition": 88,
+   "fitness": 99,
+   "morale": 76,
+   "age_months": 61,
+   "contract": {
+    "salary": 2019,
+    "expiry": "2028-09-30"
+   }
+  },
+  {
+   "uid": "pkm0195",
+   "species_id": 19,
+   "species": "Rattata",
+   "nickname": null,
+   "level": 26,
+   "ivs": {
+    "hp": 1,
+    "atk": 0,
+    "def": 3,
+    "spa": 9,
+    "spd": 7,
+    "spe": 5
+   },
+   "moves": [
+    "Light Screen",
+    "Slash",
+    "Swift",
+    "Double-Edge"
+   ],
+   "condition": 90,
+   "fitness": 78,
+   "morale": 64,
+   "age_months": 72,
+   "contract": {
+    "salary": 1239,
+    "expiry": "2029-02-30"
+   }
+  },
+  {
+   "uid": "pkm0196",
+   "species_id": 50,
+   "species": "Diglett",
+   "nickname": null,
+   "level": 42,
+   "ivs": {
+    "hp": 1,
+    "atk": 2,
+    "def": 6,
+    "spa": 8,
+    "spd": 6,
+    "spe": 4
+   },
+   "moves": [
+    "Earthquake",
+    "Double Team",
+    "Dig",
+    "Bone Club"
+   ],
+   "condition": 71,
+   "fitness": 86,
+   "morale": 62,
+   "age_months": 24,
+   "contract": {
+    "salary": 1921,
+    "expiry": "2029-09-30"
+   }
+  },
+  {
+   "uid": "pkm0197",
+   "species_id": 110,
+   "species": "Weezing",
+   "nickname": null,
+   "level": 37,
+   "ivs": {
+    "hp": 6,
+    "atk": 8,
+    "def": 3,
+    "spa": 2,
+    "spd": 1,
+    "spe": 9
+   },
+   "moves": [
+    "Quick Attack",
+    "Smog",
+    "Acid",
+    "Sludge"
+   ],
+   "condition": 71,
+   "fitness": 80,
+   "morale": 79,
+   "age_months": 112,
+   "contract": {
+    "salary": 1574,
+    "expiry": "2030-05-30"
+   }
+  },
+  {
+   "uid": "pkm0198",
+   "species_id": 77,
+   "species": "Ponyta",
+   "nickname": null,
+   "level": 44,
+   "ivs": {
+    "hp": 11,
+    "atk": 10,
+    "def": 1,
+    "spa": 4,
+    "spd": 13,
+    "spe": 0
+   },
+   "moves": [
+    "Fire Blast",
+    "Ember",
+    "Fire Punch",
+    "Fire Spin"
+   ],
+   "condition": 82,
+   "fitness": 100,
+   "morale": 87,
+   "age_months": 96,
+   "contract": {
+    "salary": 1825,
+    "expiry": "2029-06-30"
+   }
+  },
+  {
+   "uid": "pkm0199",
+   "species_id": 52,
+   "species": "Meowth",
+   "nickname": null,
+   "level": 37,
+   "ivs": {
+    "hp": 10,
+    "atk": 11,
+    "def": 6,
+    "spa": 2,
+    "spd": 7,
+    "spe": 12
+   },
+   "moves": [
+    "Swift",
+    "Slash",
+    "Double-Edge",
+    "Leer"
+   ],
+   "condition": 89,
+   "fitness": 86,
+   "morale": 82,
+   "age_months": 56,
+   "contract": {
+    "salary": 1480,
+    "expiry": "2029-07-30"
+   }
+  },
+  {
+   "uid": "pkm0200",
+   "species_id": 57,
+   "species": "Primeape",
+   "nickname": null,
+   "level": 52,
+   "ivs": {
+    "hp": 1,
+    "atk": 0,
+    "def": 8,
+    "spa": 6,
+    "spd": 2,
+    "spe": 9
+   },
+   "moves": [
+    "Submission",
+    "Seismic Toss",
+    "High Jump Kick",
+    "Screech"
+   ],
+   "condition": 91,
+   "fitness": 82,
+   "morale": 54,
+   "age_months": 80,
+   "contract": {
+    "salary": 1753,
+    "expiry": "2029-03-30"
+   }
+  },
+  {
+   "uid": "pkm0201",
+   "species_id": 122,
+   "species": "Mr. Mime",
+   "nickname": null,
+   "level": 29,
+   "ivs": {
+    "hp": 1,
+    "atk": 11,
+    "def": 9,
+    "spa": 7,
+    "spd": 3,
+    "spe": 2
+   },
+   "moves": [
+    "Agility",
+    "Swift",
+    "Hypnosis",
+    "Tail Whip"
+   ],
+   "condition": 70,
+   "fitness": 85,
+   "morale": 56,
+   "age_months": 73,
+   "contract": {
+    "salary": 1315,
+    "expiry": "2027-12-30"
+   }
+  },
+  {
+   "uid": "pkm0202",
+   "species_id": 42,
+   "species": "Golbat",
+   "nickname": null,
+   "level": 18,
+   "ivs": {
+    "hp": 10,
+    "atk": 6,
+    "def": 4,
+    "spa": 8,
+    "spd": 10,
+    "spe": 15
+   },
+   "moves": [
+    "Drill Peck",
+    "Sludge",
+    "Fly",
+    "Screech"
+   ],
+   "condition": 99,
+   "fitness": 88,
+   "morale": 80,
+   "age_months": 12,
+   "contract": {
+    "salary": 1162,
+    "expiry": "2029-01-30"
+   }
+  },
+  {
+   "uid": "pkm0203",
+   "species_id": 35,
+   "species": "Clefairy",
+   "nickname": null,
+   "level": 21,
+   "ivs": {
+    "hp": 12,
+    "atk": 15,
+    "def": 10,
+    "spa": 6,
+    "spd": 7,
+    "spe": 11
+   },
+   "moves": [
+    "Quick Attack",
+    "Headbutt",
+    "Body Slam",
+    "Double Team"
+   ],
+   "condition": 89,
+   "fitness": 100,
+   "morale": 90,
+   "age_months": 96,
+   "contract": {
+    "salary": 1242,
+    "expiry": "2028-03-30"
+   }
+  },
+  {
+   "uid": "pkm0204",
+   "species_id": 87,
+   "species": "Dewgong",
+   "nickname": null,
+   "level": 55,
+   "ivs": {
+    "hp": 5,
+    "atk": 1,
+    "def": 7,
+    "spa": 10,
+    "spd": 12,
+    "spe": 1
+   },
+   "moves": [
+    "Aurora Beam",
+    "Surf",
+    "Ice Beam",
+    "Ice Punch"
+   ],
+   "condition": 88,
+   "fitness": 80,
+   "morale": 76,
+   "age_months": 24,
+   "contract": {
+    "salary": 2399,
+    "expiry": "2029-12-30"
+   }
+  },
+  {
+   "uid": "pkm0205",
+   "species_id": 71,
+   "species": "Victreebel",
+   "nickname": null,
+   "level": 18,
+   "ivs": {
+    "hp": 1,
+    "atk": 8,
+    "def": 12,
+    "spa": 6,
+    "spd": 4,
+    "spe": 9
+   },
+   "moves": [
+    "Poison Sting",
+    "Toxic",
+    "Mega Drain",
+    "Stun Spore"
+   ],
+   "condition": 81,
+   "fitness": 93,
+   "morale": 89,
+   "age_months": 86,
+   "contract": {
+    "salary": 1218,
+    "expiry": "2029-06-30"
+   }
+  },
+  {
+   "uid": "pkm0206",
+   "species_id": 144,
+   "species": "Articuno",
+   "nickname": null,
+   "level": 28,
+   "ivs": {
+    "hp": 8,
+    "atk": 14,
+    "def": 1,
+    "spa": 3,
+    "spd": 5,
+    "spe": 2
+   },
+   "moves": [
+    "Aurora Beam",
+    "Icy Wind",
+    "Wing Attack",
+    "Drill Peck"
+   ],
+   "condition": 76,
+   "fitness": 88,
+   "morale": 69,
+   "age_months": 59,
+   "contract": {
+    "salary": 1584,
+    "expiry": "2028-08-30"
+   }
+  },
+  {
+   "uid": "pkm0207",
+   "species_id": 66,
+   "species": "Machop",
+   "nickname": null,
+   "level": 45,
+   "ivs": {
+    "hp": 7,
+    "atk": 7,
+    "def": 2,
+    "spa": 13,
+    "spd": 3,
+    "spe": 0
+   },
+   "moves": [
+    "Double Kick",
+    "Low Kick",
+    "Body Slam",
+    "Tail Whip"
+   ],
+   "condition": 93,
+   "fitness": 95,
+   "morale": 94,
+   "age_months": 66,
+   "contract": {
+    "salary": 2018,
+    "expiry": "2029-12-30"
+   }
+  },
+  {
+   "uid": "pkm0208",
+   "species_id": 67,
+   "species": "Machoke",
+   "nickname": null,
+   "level": 26,
+   "ivs": {
+    "hp": 5,
+    "atk": 8,
+    "def": 5,
+    "spa": 3,
+    "spd": 3,
+    "spe": 5
+   },
+   "moves": [
+    "Submission",
+    "Leer",
+    "Low Kick",
+    "Slash"
+   ],
+   "condition": 82,
+   "fitness": 99,
+   "morale": 87,
+   "age_months": 54,
+   "contract": {
+    "salary": 1064,
+    "expiry": "2028-08-30"
+   }
+  },
+  {
+   "uid": "pkm0209",
+   "species_id": 15,
+   "species": "Beedrill",
+   "nickname": null,
+   "level": 43,
+   "ivs": {
+    "hp": 9,
+    "atk": 7,
+    "def": 11,
+    "spa": 8,
+    "spd": 7,
+    "spe": 2
+   },
+   "moves": [
+    "Smog",
+    "Swords Dance",
+    "Acid",
+    "Poison Sting"
+   ],
+   "condition": 96,
+   "fitness": 77,
+   "morale": 65,
+   "age_months": 51,
+   "contract": {
+    "salary": 1820,
+    "expiry": "2029-06-30"
+   }
+  },
+  {
+   "uid": "pkm0210",
+   "species_id": 96,
+   "species": "Drowzee",
+   "nickname": null,
+   "level": 49,
+   "ivs": {
+    "hp": 7,
+    "atk": 1,
+    "def": 0,
+    "spa": 3,
+    "spd": 1,
+    "spe": 6
+   },
+   "moves": [
+    "Confusion",
+    "Harden",
+    "Recover",
+    "Psychic"
+   ],
+   "condition": 97,
+   "fitness": 83,
+   "morale": 51,
+   "age_months": 92,
+   "contract": {
+    "salary": 1568,
+    "expiry": "2028-08-30"
+   }
+  },
+  {
+   "uid": "pkm0211",
+   "species_id": 90,
+   "species": "Shellder",
+   "nickname": null,
+   "level": 42,
+   "ivs": {
+    "hp": 8,
+    "atk": 7,
+    "def": 12,
+    "spa": 10,
+    "spd": 2,
+    "spe": 15
+   },
+   "moves": [
+    "Bubble Beam",
+    "Hydro Pump",
+    "Water Gun",
+    "Slash"
+   ],
+   "condition": 88,
+   "fitness": 95,
+   "morale": 88,
+   "age_months": 89,
+   "contract": {
+    "salary": 1641,
+    "expiry": "2028-08-30"
+   }
+  },
+  {
+   "uid": "pkm0212",
+   "species_id": 93,
+   "species": "Haunter",
+   "nickname": null,
+   "level": 45,
+   "ivs": {
+    "hp": 7,
+    "atk": 7,
+    "def": 13,
+    "spa": 12,
+    "spd": 7,
+    "spe": 4
+   },
+   "moves": [
+    "Confuse Ray",
+    "Tackle",
+    "Light Screen",
+    "Poison Sting"
+   ],
+   "condition": 91,
+   "fitness": 92,
+   "morale": 68,
+   "age_months": 56,
+   "contract": {
+    "salary": 1735,
+    "expiry": "2029-06-30"
+   }
+  },
+  {
+   "uid": "pkm0213",
+   "species_id": 58,
+   "species": "Growlithe",
+   "nickname": null,
+   "level": 21,
+   "ivs": {
+    "hp": 5,
+    "atk": 11,
+    "def": 3,
+    "spa": 13,
+    "spd": 1,
+    "spe": 10
+   },
+   "moves": [
+    "Fire Spin",
+    "Headbutt",
+    "Flame Wheel",
+    "Flamethrower"
+   ],
+   "condition": 82,
+   "fitness": 91,
+   "morale": 64,
+   "age_months": 63,
+   "contract": {
+    "salary": 1269,
+    "expiry": "2027-07-30"
+   }
+  },
+  {
+   "uid": "pkm0214",
+   "species_id": 96,
+   "species": "Drowzee",
+   "nickname": null,
+   "level": 53,
+   "ivs": {
+    "hp": 6,
+    "atk": 8,
+    "def": 10,
+    "spa": 15,
+    "spd": 12,
+    "spe": 1
+   },
+   "moves": [
+    "Confusion",
+    "Quick Attack",
+    "Harden",
+    "Recover"
+   ],
+   "condition": 98,
+   "fitness": 87,
+   "morale": 63,
+   "age_months": 82,
+   "contract": {
+    "salary": 1810,
+    "expiry": "2030-06-30"
+   }
+  },
+  {
+   "uid": "pkm0215",
+   "species_id": 62,
+   "species": "Poliwrath",
+   "nickname": null,
+   "level": 51,
+   "ivs": {
+    "hp": 6,
+    "atk": 8,
+    "def": 12,
+    "spa": 14,
+    "spd": 10,
+    "spe": 9
+   },
+   "moves": [
+    "Water Gun",
+    "Waterfall",
+    "Swords Dance",
+    "Submission"
+   ],
+   "condition": 100,
+   "fitness": 94,
+   "morale": 64,
+   "age_months": 62,
+   "contract": {
+    "salary": 2145,
+    "expiry": "2029-01-30"
+   }
+  },
+  {
+   "uid": "pkm0216",
+   "species_id": 130,
+   "species": "Gyarados",
+   "nickname": null,
+   "level": 45,
+   "ivs": {
+    "hp": 5,
+    "atk": 0,
+    "def": 7,
+    "spa": 9,
+    "spd": 13,
+    "spe": 8
+   },
+   "moves": [
+    "Waterfall",
+    "Wing Attack",
+    "Peck",
+    "Gust"
+   ],
+   "condition": 94,
+   "fitness": 98,
+   "morale": 74,
+   "age_months": 13,
+   "contract": {
+    "salary": 2315,
+    "expiry": "2028-08-30"
+   }
+  },
+  {
+   "uid": "pkm0217",
+   "species_id": 93,
+   "species": "Haunter",
+   "nickname": null,
+   "level": 38,
+   "ivs": {
+    "hp": 10,
+    "atk": 7,
+    "def": 2,
+    "spa": 4,
+    "spd": 15,
+    "spe": 15
+   },
+   "moves": [
+    "Lick",
+    "Confuse Ray",
+    "Poison Sting",
+    "Acid"
+   ],
+   "condition": 75,
+   "fitness": 77,
+   "morale": 54,
+   "age_months": 78,
+   "contract": {
+    "salary": 1326,
+    "expiry": "2029-06-30"
+   }
+  },
+  {
+   "uid": "pkm0218",
+   "species_id": 116,
+   "species": "Horsea",
+   "nickname": null,
+   "level": 27,
+   "ivs": {
+    "hp": 1,
+    "atk": 12,
+    "def": 10,
+    "spa": 1,
+    "spd": 15,
+    "spe": 15
+   },
+   "moves": [
+    "Surf",
+    "Waterfall",
+    "Water Gun",
+    "Harden"
+   ],
+   "condition": 74,
+   "fitness": 93,
+   "morale": 67,
+   "age_months": 25,
+   "contract": {
+    "salary": 1108,
+    "expiry": "2028-09-30"
+   }
+  },
+  {
+   "uid": "pkm0219",
+   "species_id": 149,
+   "species": "Dragonite",
+   "nickname": null,
+   "level": 39,
+   "ivs": {
+    "hp": 14,
+    "atk": 6,
+    "def": 9,
+    "spa": 0,
+    "spd": 11,
+    "spe": 7
+   },
+   "moves": [
+    "Thunder Wave",
+    "Surf",
+    "Hyper Beam",
+    "Outrage"
+   ],
+   "condition": 95,
+   "fitness": 78,
+   "morale": 52,
+   "age_months": 63,
+   "contract": {
+    "salary": 2059,
+    "expiry": "2029-10-30"
+   }
+  },
+  {
+   "uid": "pkm0220",
+   "species_id": 109,
+   "species": "Koffing",
+   "nickname": null,
+   "level": 29,
+   "ivs": {
+    "hp": 5,
+    "atk": 0,
+    "def": 11,
+    "spa": 14,
+    "spd": 1,
+    "spe": 12
+   },
+   "moves": [
+    "Screech",
+    "Sludge",
+    "Toxic",
+    "Smog"
+   ],
+   "condition": 71,
+   "fitness": 76,
+   "morale": 68,
+   "age_months": 41,
+   "contract": {
+    "salary": 1512,
+    "expiry": "2028-07-30"
+   }
+  },
+  {
+   "uid": "pkm0221",
+   "species_id": 58,
+   "species": "Growlithe",
+   "nickname": null,
+   "level": 46,
+   "ivs": {
+    "hp": 8,
+    "atk": 4,
+    "def": 15,
+    "spa": 7,
+    "spd": 2,
+    "spe": 13
+   },
+   "moves": [
+    "Headbutt",
+    "Fire Spin",
+    "Flame Wheel",
+    "Flamethrower"
+   ],
+   "condition": 99,
+   "fitness": 98,
+   "morale": 92,
+   "age_months": 68,
+   "contract": {
+    "salary": 1600,
+    "expiry": "2028-02-30"
+   }
+  },
+  {
+   "uid": "pkm0222",
+   "species_id": 138,
+   "species": "Omanyte",
+   "nickname": null,
+   "level": 29,
+   "ivs": {
+    "hp": 9,
+    "atk": 11,
+    "def": 4,
+    "spa": 7,
+    "spd": 2,
+    "spe": 10
+   },
+   "moves": [
+    "Rock Throw",
+    "Waterfall",
+    "Surf",
+    "Swift"
+   ],
+   "condition": 84,
+   "fitness": 86,
+   "morale": 93,
+   "age_months": 106,
+   "contract": {
+    "salary": 1223,
+    "expiry": "2028-04-30"
+   }
+  },
+  {
+   "uid": "pkm0223",
+   "species_id": 95,
+   "species": "Onix",
+   "nickname": null,
+   "level": 40,
+   "ivs": {
+    "hp": 2,
+    "atk": 7,
+    "def": 8,
+    "spa": 2,
+    "spd": 7,
+    "spe": 12
+   },
+   "moves": [
+    "Rock Slide",
+    "Slash",
+    "Tail Whip",
+    "Dig"
+   ],
+   "condition": 97,
+   "fitness": 100,
+   "morale": 75,
+   "age_months": 112,
+   "contract": {
+    "salary": 1618,
+    "expiry": "2029-02-30"
+   }
+  },
+  {
+   "uid": "pkm0224",
+   "species_id": 71,
+   "species": "Victreebel",
+   "nickname": null,
+   "level": 37,
+   "ivs": {
+    "hp": 2,
+    "atk": 10,
+    "def": 13,
+    "spa": 9,
+    "spd": 7,
+    "spe": 3
+   },
+   "moves": [
+    "Headbutt",
+    "Tail Whip",
+    "Toxic",
+    "Razor Leaf"
+   ],
+   "condition": 91,
+   "fitness": 88,
+   "morale": 89,
+   "age_months": 120,
+   "contract": {
+    "salary": 1692,
+    "expiry": "2029-02-30"
+   }
+  },
+  {
+   "uid": "pkm0225",
+   "species_id": 95,
+   "species": "Onix",
+   "nickname": null,
+   "level": 37,
+   "ivs": {
+    "hp": 9,
+    "atk": 7,
+    "def": 9,
+    "spa": 4,
+    "spd": 1,
+    "spe": 0
+   },
+   "moves": [
+    "Bone Club",
+    "Rock Throw",
+    "Tail Whip",
+    "Earthquake"
+   ],
+   "condition": 92,
+   "fitness": 81,
+   "morale": 53,
+   "age_months": 16,
+   "contract": {
+    "salary": 1444,
+    "expiry": "2027-08-30"
+   }
+  },
+  {
+   "uid": "pkm0226",
+   "species_id": 55,
+   "species": "Golduck",
+   "nickname": null,
+   "level": 19,
+   "ivs": {
+    "hp": 10,
+    "atk": 12,
+    "def": 14,
+    "spa": 0,
+    "spd": 9,
+    "spe": 0
+   },
+   "moves": [
+    "Surf",
+    "Waterfall",
+    "Bubble Beam",
+    "Quick Attack"
+   ],
+   "condition": 81,
+   "fitness": 84,
+   "morale": 92,
+   "age_months": 62,
+   "contract": {
+    "salary": 1134,
+    "expiry": "2029-05-30"
+   }
+  },
+  {
+   "uid": "pkm0227",
+   "species_id": 112,
+   "species": "Rhydon",
+   "nickname": null,
+   "level": 54,
+   "ivs": {
+    "hp": 5,
+    "atk": 4,
+    "def": 15,
+    "spa": 6,
+    "spd": 0,
+    "spe": 4
+   },
+   "moves": [
+    "Dig",
+    "Bone Club",
+    "Tackle",
+    "Rock Slide"
+   ],
+   "condition": 85,
+   "fitness": 87,
+   "morale": 86,
+   "age_months": 86,
+   "contract": {
+    "salary": 2137,
+    "expiry": "2030-06-30"
+   }
+  },
+  {
+   "uid": "pkm0228",
+   "species_id": 141,
+   "species": "Kabutops",
+   "nickname": null,
+   "level": 31,
+   "ivs": {
+    "hp": 2,
+    "atk": 8,
+    "def": 14,
+    "spa": 12,
+    "spd": 2,
+    "spe": 10
+   },
+   "moves": [
+    "Headbutt",
+    "Rock Slide",
+    "Surf",
+    "Bubble Beam"
+   ],
+   "condition": 96,
+   "fitness": 85,
+   "morale": 78,
+   "age_months": 49,
+   "contract": {
+    "salary": 1269,
+    "expiry": "2029-12-30"
+   }
+  },
+  {
+   "uid": "pkm0229",
+   "species_id": 91,
+   "species": "Cloyster",
+   "nickname": null,
+   "level": 30,
+   "ivs": {
+    "hp": 13,
+    "atk": 4,
+    "def": 2,
+    "spa": 1,
+    "spd": 7,
+    "spe": 0
+   },
+   "moves": [
+    "Swords Dance",
+    "Ice Beam",
+    "Aurora Beam",
+    "Waterfall"
+   ],
+   "condition": 88,
+   "fitness": 76,
+   "morale": 83,
+   "age_months": 67,
+   "contract": {
+    "salary": 1872,
+    "expiry": "2028-03-30"
+   }
+  },
+  {
+   "uid": "pkm0230",
+   "species_id": 14,
+   "species": "Kakuna",
+   "nickname": null,
+   "level": 18,
+   "ivs": {
+    "hp": 2,
+    "atk": 1,
+    "def": 5,
+    "spa": 9,
+    "spd": 2,
+    "spe": 4
+   },
+   "moves": [
+    "Smog",
+    "Poison Sting",
+    "Leech Life",
+    "Pin Missile"
+   ],
+   "condition": 79,
+   "fitness": 78,
+   "morale": 72,
+   "age_months": 14,
+   "contract": {
+    "salary": 865,
+    "expiry": "2027-06-30"
+   }
+  },
+  {
+   "uid": "pkm0231",
+   "species_id": 119,
+   "species": "Seaking",
+   "nickname": null,
+   "level": 48,
+   "ivs": {
+    "hp": 8,
+    "atk": 1,
+    "def": 4,
+    "spa": 7,
+    "spd": 5,
+    "spe": 15
+   },
+   "moves": [
+    "Screech",
+    "Surf",
+    "Tackle",
+    "Waterfall"
+   ],
+   "condition": 83,
+   "fitness": 91,
+   "morale": 60,
+   "age_months": 30,
+   "contract": {
+    "salary": 2018,
+    "expiry": "2029-10-30"
+   }
+  },
+  {
+   "uid": "pkm0232",
+   "species_id": 14,
+   "species": "Kakuna",
+   "nickname": null,
+   "level": 35,
+   "ivs": {
+    "hp": 0,
+    "atk": 10,
+    "def": 13,
+    "spa": 13,
+    "spd": 4,
+    "spe": 2
+   },
+   "moves": [
+    "Pin Missile",
+    "Twineedle",
+    "Smog",
+    "Poison Sting"
+   ],
+   "condition": 72,
+   "fitness": 95,
+   "morale": 84,
+   "age_months": 30,
+   "contract": {
+    "salary": 1441,
+    "expiry": "2030-01-30"
+   }
+  },
+  {
+   "uid": "pkm0233",
+   "species_id": 92,
+   "species": "Gastly",
+   "nickname": null,
+   "level": 36,
+   "ivs": {
+    "hp": 9,
+    "atk": 6,
+    "def": 10,
+    "spa": 3,
+    "spd": 8,
+    "spe": 6
+   },
+   "moves": [
+    "Confuse Ray",
+    "Tackle",
+    "Night Shade",
+    "Swords Dance"
+   ],
+   "condition": 88,
+   "fitness": 98,
+   "morale": 83,
+   "age_months": 20,
+   "contract": {
+    "salary": 1603,
+    "expiry": "2030-05-30"
+   }
+  },
+  {
+   "uid": "pkm0234",
+   "species_id": 50,
+   "species": "Diglett",
+   "nickname": null,
+   "level": 51,
+   "ivs": {
+    "hp": 10,
+    "atk": 9,
+    "def": 11,
+    "spa": 4,
+    "spd": 0,
+    "spe": 3
+   },
+   "moves": [
+    "Slash",
+    "Dig",
+    "Double Team",
+    "Bone Club"
+   ],
+   "condition": 72,
+   "fitness": 98,
+   "morale": 70,
+   "age_months": 95,
+   "contract": {
+    "salary": 1917,
+    "expiry": "2029-02-30"
+   }
+  },
+  {
+   "uid": "pkm0235",
+   "species_id": 58,
+   "species": "Growlithe",
+   "nickname": null,
+   "level": 47,
+   "ivs": {
+    "hp": 5,
+    "atk": 15,
+    "def": 4,
+    "spa": 11,
+    "spd": 8,
+    "spe": 8
+   },
+   "moves": [
+    "Headbutt",
+    "Ember",
+    "Reflect",
+    "Flame Wheel"
+   ],
+   "condition": 85,
+   "fitness": 86,
+   "morale": 79,
+   "age_months": 51,
+   "contract": {
+    "salary": 1749,
+    "expiry": "2030-01-30"
+   }
+  },
+  {
+   "uid": "pkm0236",
+   "species_id": 94,
+   "species": "Gengar",
+   "nickname": null,
+   "level": 33,
+   "ivs": {
+    "hp": 2,
+    "atk": 8,
+    "def": 2,
+    "spa": 2,
+    "spd": 4,
+    "spe": 15
+   },
+   "moves": [
+    "Psychic",
+    "Sludge",
+    "Hypnosis",
+    "Confuse Ray"
+   ],
+   "condition": 78,
+   "fitness": 78,
+   "morale": 62,
+   "age_months": 92,
+   "contract": {
+    "salary": 1561,
+    "expiry": "2028-12-30"
+   }
+  },
+  {
+   "uid": "pkm0237",
+   "species_id": 130,
+   "species": "Gyarados",
+   "nickname": null,
+   "level": 52,
+   "ivs": {
+    "hp": 9,
+    "atk": 3,
+    "def": 5,
+    "spa": 13,
+    "spd": 8,
+    "spe": 0
+   },
+   "moves": [
+    "Water Gun",
+    "Surf",
+    "Wing Attack",
+    "Slash"
+   ],
+   "condition": 84,
+   "fitness": 90,
+   "morale": 54,
+   "age_months": 12,
+   "contract": {
+    "salary": 2116,
+    "expiry": "2029-03-30"
+   }
+  },
+  {
+   "uid": "pkm0238",
+   "species_id": 39,
+   "species": "Jigglypuff",
+   "nickname": null,
+   "level": 54,
+   "ivs": {
+    "hp": 4,
+    "atk": 14,
+    "def": 13,
+    "spa": 9,
+    "spd": 0,
+    "spe": 8
+   },
+   "moves": [
+    "Headbutt",
+    "Swift",
+    "Swords Dance",
+    "Double-Edge"
+   ],
+   "condition": 93,
+   "fitness": 90,
+   "morale": 58,
+   "age_months": 24,
+   "contract": {
+    "salary": 1526,
+    "expiry": "2030-02-30"
+   }
+  },
+  {
+   "uid": "pkm0239",
+   "species_id": 125,
+   "species": "Electabuzz",
+   "nickname": null,
+   "level": 19,
+   "ivs": {
+    "hp": 11,
+    "atk": 0,
+    "def": 15,
+    "spa": 10,
+    "spd": 14,
+    "spe": 11
+   },
+   "moves": [
+    "Thunder",
+    "Tail Whip",
+    "Tackle",
+    "Thunder Wave"
+   ],
+   "condition": 93,
+   "fitness": 80,
+   "morale": 85,
+   "age_months": 57,
+   "contract": {
+    "salary": 1203,
+    "expiry": "2030-04-30"
+   }
+  },
+  {
+   "uid": "pkm0240",
+   "species_id": 105,
+   "species": "Marowak",
+   "nickname": null,
+   "level": 31,
+   "ivs": {
+    "hp": 13,
+    "atk": 7,
+    "def": 3,
+    "spa": 12,
+    "spd": 12,
+    "spe": 4
+   },
+   "moves": [
+    "Earthquake",
+    "Sand Attack",
+    "Dig",
+    "Bone Club"
+   ],
+   "condition": 72,
+   "fitness": 100,
+   "morale": 75,
+   "age_months": 85,
+   "contract": {
+    "salary": 1601,
+    "expiry": "2028-11-30"
+   }
+  },
+  {
+   "uid": "pkm0241",
+   "species_id": 100,
+   "species": "Voltorb",
+   "nickname": null,
+   "level": 27,
+   "ivs": {
+    "hp": 4,
+    "atk": 12,
+    "def": 0,
+    "spa": 9,
+    "spd": 14,
+    "spe": 7
+   },
+   "moves": [
+    "Thunder Punch",
+    "Thunder Shock",
+    "Thunderbolt",
+    "Tackle"
+   ],
+   "condition": 99,
+   "fitness": 98,
+   "morale": 71,
+   "age_months": 72,
+   "contract": {
+    "salary": 1492,
+    "expiry": "2029-11-30"
+   }
+  },
+  {
+   "uid": "pkm0242",
+   "species_id": 12,
+   "species": "Butterfree",
+   "nickname": null,
+   "level": 30,
+   "ivs": {
+    "hp": 7,
+    "atk": 1,
+    "def": 14,
+    "spa": 11,
+    "spd": 15,
+    "spe": 15
+   },
+   "moves": [
+    "Leer",
+    "Twineedle",
+    "Gust",
+    "Fly"
+   ],
+   "condition": 75,
+   "fitness": 77,
+   "morale": 62,
+   "age_months": 116,
+   "contract": {
+    "salary": 1473,
+    "expiry": "2027-09-30"
+   }
+  },
+  {
+   "uid": "pkm0243",
+   "species_id": 15,
+   "species": "Beedrill",
+   "nickname": null,
+   "level": 31,
+   "ivs": {
+    "hp": 14,
+    "atk": 5,
+    "def": 6,
+    "spa": 0,
+    "spd": 4,
+    "spe": 5
+   },
+   "moves": [
+    "String Shot",
+    "Leech Life",
+    "Body Slam",
+    "Smog"
+   ],
+   "condition": 86,
+   "fitness": 93,
+   "morale": 89,
+   "age_months": 89,
+   "contract": {
+    "salary": 1445,
+    "expiry": "2030-03-30"
+   }
+  },
+  {
+   "uid": "pkm0244",
+   "species_id": 136,
+   "species": "Flareon",
+   "nickname": null,
+   "level": 28,
+   "ivs": {
+    "hp": 14,
+    "atk": 9,
+    "def": 5,
+    "spa": 4,
+    "spd": 15,
+    "spe": 13
+   },
+   "moves": [
+    "Leer",
+    "Headbutt",
+    "Flame Wheel",
+    "Fire Punch"
+   ],
+   "condition": 74,
+   "fitness": 82,
+   "morale": 71,
+   "age_months": 78,
+   "contract": {
+    "salary": 1642,
+    "expiry": "2029-08-30"
+   }
+  },
+  {
+   "uid": "pkm0245",
+   "species_id": 69,
+   "species": "Bellsprout",
+   "nickname": null,
+   "level": 47,
+   "ivs": {
+    "hp": 2,
+    "atk": 10,
+    "def": 0,
+    "spa": 15,
+    "spd": 11,
+    "spe": 4
+   },
+   "moves": [
+    "Toxic",
+    "Smog",
+    "Poison Sting",
+    "Slash"
+   ],
+   "condition": 75,
+   "fitness": 85,
+   "morale": 83,
+   "age_months": 111,
+   "contract": {
+    "salary": 1986,
+    "expiry": "2027-10-30"
+   }
+  },
+  {
+   "uid": "pkm0246",
+   "species_id": 127,
+   "species": "Pinsir",
+   "nickname": null,
+   "level": 19,
+   "ivs": {
+    "hp": 8,
+    "atk": 13,
+    "def": 9,
+    "spa": 13,
+    "spd": 8,
+    "spe": 5
+   },
+   "moves": [
+    "Body Slam",
+    "Swords Dance",
+    "String Shot",
+    "Twineedle"
+   ],
+   "condition": 73,
+   "fitness": 97,
+   "morale": 74,
+   "age_months": 39,
+   "contract": {
+    "salary": 1405,
+    "expiry": "2028-12-30"
+   }
+  },
+  {
+   "uid": "pkm0247",
+   "species_id": 89,
+   "species": "Muk",
+   "nickname": null,
+   "level": 29,
+   "ivs": {
+    "hp": 13,
+    "atk": 6,
+    "def": 13,
+    "spa": 5,
+    "spd": 1,
+    "spe": 7
+   },
+   "moves": [
+    "Smog",
+    "Body Slam",
+    "Acid",
+    "Sludge"
+   ],
+   "condition": 96,
+   "fitness": 89,
+   "morale": 94,
+   "age_months": 30,
+   "contract": {
+    "salary": 1578,
+    "expiry": "2027-07-30"
+   }
+  },
+  {
+   "uid": "pkm0248",
+   "species_id": 63,
+   "species": "Abra",
+   "nickname": null,
+   "level": 37,
+   "ivs": {
+    "hp": 12,
+    "atk": 9,
+    "def": 7,
+    "spa": 15,
+    "spd": 13,
+    "spe": 4
+   },
+   "moves": [
+    "Quick Attack",
+    "Focus Energy",
+    "Recover",
+    "Confusion"
+   ],
+   "condition": 71,
+   "fitness": 92,
+   "morale": 93,
+   "age_months": 111,
+   "contract": {
+    "salary": 1527,
+    "expiry": "2029-09-30"
+   }
+  }
+ ],
+ "prospects": [
+  {
+   "uid": "pkm0249",
+   "species_id": 141,
+   "species": "Kabutops",
+   "nickname": null,
+   "level": 13,
+   "ivs": {
+    "hp": 6,
+    "atk": 3,
+    "def": 0,
+    "spa": 7,
+    "spd": 12,
+    "spe": 10
+   },
+   "moves": [
+    "Headbutt",
+    "Waterfall",
+    "Rock Slide",
+    "Surf"
+   ],
+   "condition": 81,
+   "fitness": 87,
+   "morale": 85,
+   "age_months": 25,
+   "contract": {
+    "salary": 447,
+    "expiry": "2030-06-30"
+   },
+   "potential": 16,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0250",
+   "species_id": 80,
+   "species": "Slowbro",
+   "nickname": null,
+   "level": 21,
+   "ivs": {
+    "hp": 7,
+    "atk": 4,
+    "def": 14,
+    "spa": 0,
+    "spd": 9,
+    "spe": 4
+   },
+   "moves": [
+    "Recover",
+    "Waterfall",
+    "Hydro Pump",
+    "Tackle"
+   ],
+   "condition": 99,
+   "fitness": 85,
+   "morale": 84,
+   "age_months": 20,
+   "contract": {
+    "salary": 551,
+    "expiry": "2028-11-30"
+   },
+   "potential": 9,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0251",
+   "species_id": 54,
+   "species": "Psyduck",
+   "nickname": null,
+   "level": 15,
+   "ivs": {
+    "hp": 14,
+    "atk": 4,
+    "def": 5,
+    "spa": 2,
+    "spd": 5,
+    "spe": 6
+   },
+   "moves": [
+    "Surf",
+    "Double Team",
+    "Bubble Beam",
+    "Tackle"
+   ],
+   "condition": 98,
+   "fitness": 82,
+   "morale": 60,
+   "age_months": 78,
+   "contract": {
+    "salary": 297,
+    "expiry": "2030-05-30"
+   },
+   "potential": 10,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0252",
+   "species_id": 98,
+   "species": "Krabby",
+   "nickname": null,
+   "level": 6,
+   "ivs": {
+    "hp": 4,
+    "atk": 9,
+    "def": 4,
+    "spa": 15,
+    "spd": 5,
+    "spe": 7
+   },
+   "moves": [
+    "Quick Attack",
+    "Waterfall",
+    "Leer",
+    "Hydro Pump"
+   ],
+   "condition": 76,
+   "fitness": 98,
+   "morale": 78,
+   "age_months": 64,
+   "contract": {
+    "salary": 324,
+    "expiry": "2029-11-30"
+   },
+   "potential": 15,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0253",
+   "species_id": 40,
+   "species": "Wigglytuff",
+   "nickname": null,
+   "level": 9,
+   "ivs": {
+    "hp": 10,
+    "atk": 9,
+    "def": 4,
+    "spa": 9,
+    "spd": 13,
+    "spe": 0
+   },
+   "moves": [
+    "Tail Whip",
+    "Slash",
+    "Headbutt",
+    "Quick Attack"
+   ],
+   "condition": 87,
+   "fitness": 81,
+   "morale": 54,
+   "age_months": 107,
+   "contract": {
+    "salary": 296,
+    "expiry": "2029-05-30"
+   },
+   "potential": 9,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0254",
+   "species_id": 55,
+   "species": "Golduck",
+   "nickname": null,
+   "level": 7,
+   "ivs": {
+    "hp": 2,
+    "atk": 7,
+    "def": 10,
+    "spa": 8,
+    "spd": 11,
+    "spe": 4
+   },
+   "moves": [
+    "Quick Attack",
+    "Surf",
+    "Waterfall",
+    "Reflect"
+   ],
+   "condition": 82,
+   "fitness": 76,
+   "morale": 68,
+   "age_months": 90,
+   "contract": {
+    "salary": 346,
+    "expiry": "2028-03-30"
+   },
+   "potential": 9,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0255",
+   "species_id": 73,
+   "species": "Tentacruel",
+   "nickname": null,
+   "level": 12,
+   "ivs": {
+    "hp": 10,
+    "atk": 9,
+    "def": 9,
+    "spa": 4,
+    "spd": 15,
+    "spe": 7
+   },
+   "moves": [
+    "Bubble Beam",
+    "Toxic",
+    "Double Team",
+    "Waterfall"
+   ],
+   "condition": 97,
+   "fitness": 86,
+   "morale": 53,
+   "age_months": 15,
+   "contract": {
+    "salary": 480,
+    "expiry": "2030-02-30"
+   },
+   "potential": 12,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0256",
+   "species_id": 4,
+   "species": "Charmander",
+   "nickname": null,
+   "level": 20,
+   "ivs": {
+    "hp": 7,
+    "atk": 8,
+    "def": 14,
+    "spa": 8,
+    "spd": 7,
+    "spe": 14
+   },
+   "moves": [
+    "Flame Wheel",
+    "Ember",
+    "Flamethrower",
+    "Fire Punch"
+   ],
+   "condition": 89,
+   "fitness": 77,
+   "morale": 82,
+   "age_months": 95,
+   "contract": {
+    "salary": 479,
+    "expiry": "2029-02-30"
+   },
+   "potential": 20,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0257",
+   "species_id": 109,
+   "species": "Koffing",
+   "nickname": null,
+   "level": 12,
+   "ivs": {
+    "hp": 12,
+    "atk": 15,
+    "def": 11,
+    "spa": 2,
+    "spd": 8,
+    "spe": 2
+   },
+   "moves": [
+    "Toxic",
+    "Sludge",
+    "Screech",
+    "Smog"
+   ],
+   "condition": 84,
+   "fitness": 76,
+   "morale": 72,
+   "age_months": 33,
+   "contract": {
+    "salary": 295,
+    "expiry": "2028-07-30"
+   },
+   "potential": 11,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0258",
+   "species_id": 113,
+   "species": "Chansey",
+   "nickname": null,
+   "level": 9,
+   "ivs": {
+    "hp": 2,
+    "atk": 9,
+    "def": 8,
+    "spa": 15,
+    "spd": 13,
+    "spe": 3
+   },
+   "moves": [
+    "Soft-Boiled",
+    "Sing",
+    "Light Screen",
+    "Body Slam"
+   ],
+   "condition": 91,
+   "fitness": 76,
+   "morale": 58,
+   "age_months": 55,
+   "contract": {
+    "salary": 409,
+    "expiry": "2028-11-30"
+   },
+   "potential": 8,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0259",
+   "species_id": 115,
+   "species": "Kangaskhan",
+   "nickname": null,
+   "level": 19,
+   "ivs": {
+    "hp": 7,
+    "atk": 0,
+    "def": 10,
+    "spa": 0,
+    "spd": 1,
+    "spe": 12
+   },
+   "moves": [
+    "Hyper Beam",
+    "Quick Attack",
+    "Body Slam",
+    "Double-Edge"
+   ],
+   "condition": 86,
+   "fitness": 83,
+   "morale": 61,
+   "age_months": 45,
+   "contract": {
+    "salary": 627,
+    "expiry": "2027-06-30"
+   },
+   "potential": 13,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0260",
+   "species_id": 133,
+   "species": "Eevee",
+   "nickname": null,
+   "level": 16,
+   "ivs": {
+    "hp": 4,
+    "atk": 10,
+    "def": 10,
+    "spa": 3,
+    "spd": 6,
+    "spe": 4
+   },
+   "moves": [
+    "Double-Edge",
+    "Hyper Beam",
+    "Swift",
+    "Leer"
+   ],
+   "condition": 90,
+   "fitness": 94,
+   "morale": 68,
+   "age_months": 22,
+   "contract": {
+    "salary": 390,
+    "expiry": "2030-04-30"
+   },
+   "potential": 12,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0261",
+   "species_id": 44,
+   "species": "Gloom",
+   "nickname": null,
+   "level": 7,
+   "ivs": {
+    "hp": 11,
+    "atk": 0,
+    "def": 8,
+    "spa": 4,
+    "spd": 14,
+    "spe": 9
+   },
+   "moves": [
+    "Acid",
+    "Smog",
+    "Razor Leaf",
+    "Quick Attack"
+   ],
+   "condition": 91,
+   "fitness": 97,
+   "morale": 68,
+   "age_months": 39,
+   "contract": {
+    "salary": 358,
+    "expiry": "2028-11-30"
+   },
+   "potential": 9,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0262",
+   "species_id": 139,
+   "species": "Omastar",
+   "nickname": null,
+   "level": 22,
+   "ivs": {
+    "hp": 8,
+    "atk": 3,
+    "def": 0,
+    "spa": 10,
+    "spd": 9,
+    "spe": 12
+   },
+   "moves": [
+    "Waterfall",
+    "Bubble Beam",
+    "Rock Throw",
+    "Swift"
+   ],
+   "condition": 90,
+   "fitness": 92,
+   "morale": 68,
+   "age_months": 15,
+   "contract": {
+    "salary": 500,
+    "expiry": "2030-04-30"
+   },
+   "potential": 14,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0263",
+   "species_id": 124,
+   "species": "Jynx",
+   "nickname": null,
+   "level": 22,
+   "ivs": {
+    "hp": 6,
+    "atk": 3,
+    "def": 5,
+    "spa": 15,
+    "spd": 15,
+    "spe": 3
+   },
+   "moves": [
+    "Blizzard",
+    "Ice Punch",
+    "Growl",
+    "Icy Wind"
+   ],
+   "condition": 70,
+   "fitness": 98,
+   "morale": 70,
+   "age_months": 61,
+   "contract": {
+    "salary": 622,
+    "expiry": "2028-07-30"
+   },
+   "potential": 14,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0264",
+   "species_id": 56,
+   "species": "Mankey",
+   "nickname": null,
+   "level": 9,
+   "ivs": {
+    "hp": 7,
+    "atk": 1,
+    "def": 5,
+    "spa": 12,
+    "spd": 13,
+    "spe": 13
+   },
+   "moves": [
+    "High Jump Kick",
+    "Karate Chop",
+    "Screech",
+    "Tackle"
+   ],
+   "condition": 97,
+   "fitness": 89,
+   "morale": 92,
+   "age_months": 88,
+   "contract": {
+    "salary": 297,
+    "expiry": "2029-02-30"
+   },
+   "potential": 17,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0265",
+   "species_id": 57,
+   "species": "Primeape",
+   "nickname": null,
+   "level": 12,
+   "ivs": {
+    "hp": 7,
+    "atk": 1,
+    "def": 12,
+    "spa": 14,
+    "spd": 1,
+    "spe": 10
+   },
+   "moves": [
+    "Submission",
+    "Screech",
+    "Tackle",
+    "High Jump Kick"
+   ],
+   "condition": 92,
+   "fitness": 95,
+   "morale": 75,
+   "age_months": 117,
+   "contract": {
+    "salary": 367,
+    "expiry": "2028-12-30"
+   },
+   "potential": 14,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0266",
+   "species_id": 147,
+   "species": "Dratini",
+   "nickname": null,
+   "level": 9,
+   "ivs": {
+    "hp": 11,
+    "atk": 3,
+    "def": 7,
+    "spa": 14,
+    "spd": 8,
+    "spe": 3
+   },
+   "moves": [
+    "Outrage",
+    "Dragon Rage",
+    "Slash",
+    "Swords Dance"
+   ],
+   "condition": 75,
+   "fitness": 90,
+   "morale": 75,
+   "age_months": 29,
+   "contract": {
+    "salary": 289,
+    "expiry": "2028-01-30"
+   },
+   "potential": 18,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0267",
+   "species_id": 90,
+   "species": "Shellder",
+   "nickname": null,
+   "level": 12,
+   "ivs": {
+    "hp": 9,
+    "atk": 10,
+    "def": 7,
+    "spa": 15,
+    "spd": 2,
+    "spe": 12
+   },
+   "moves": [
+    "Water Gun",
+    "Hydro Pump",
+    "Slash",
+    "Harden"
+   ],
+   "condition": 72,
+   "fitness": 92,
+   "morale": 77,
+   "age_months": 41,
+   "contract": {
+    "salary": 295,
+    "expiry": "2027-08-30"
+   },
+   "potential": 18,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0268",
+   "species_id": 94,
+   "species": "Gengar",
+   "nickname": null,
+   "level": 16,
+   "ivs": {
+    "hp": 4,
+    "atk": 2,
+    "def": 0,
+    "spa": 5,
+    "spd": 15,
+    "spe": 12
+   },
+   "moves": [
+    "Hypnosis",
+    "Sludge",
+    "Psychic",
+    "Night Shade"
+   ],
+   "condition": 100,
+   "fitness": 78,
+   "morale": 63,
+   "age_months": 87,
+   "contract": {
+    "salary": 471,
+    "expiry": "2028-09-30"
+   },
+   "potential": 17,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0269",
+   "species_id": 78,
+   "species": "Rapidash",
+   "nickname": null,
+   "level": 14,
+   "ivs": {
+    "hp": 10,
+    "atk": 6,
+    "def": 12,
+    "spa": 11,
+    "spd": 14,
+    "spe": 1
+   },
+   "moves": [
+    "Flamethrower",
+    "Headbutt",
+    "Fire Spin",
+    "Double Team"
+   ],
+   "condition": 100,
+   "fitness": 88,
+   "morale": 69,
+   "age_months": 29,
+   "contract": {
+    "salary": 531,
+    "expiry": "2029-09-30"
+   },
+   "potential": 14,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0270",
+   "species_id": 143,
+   "species": "Snorlax",
+   "nickname": null,
+   "level": 14,
+   "ivs": {
+    "hp": 10,
+    "atk": 13,
+    "def": 10,
+    "spa": 6,
+    "spd": 12,
+    "spe": 11
+   },
+   "moves": [
+    "Hyper Beam",
+    "Amnesia",
+    "Rest",
+    "Earthquake"
+   ],
+   "condition": 72,
+   "fitness": 77,
+   "morale": 75,
+   "age_months": 62,
+   "contract": {
+    "salary": 464,
+    "expiry": "2029-08-30"
+   },
+   "potential": 9,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0271",
+   "species_id": 100,
+   "species": "Voltorb",
+   "nickname": null,
+   "level": 14,
+   "ivs": {
+    "hp": 13,
+    "atk": 10,
+    "def": 5,
+    "spa": 12,
+    "spd": 5,
+    "spe": 1
+   },
+   "moves": [
+    "Thunder Punch",
+    "Thunder",
+    "Tackle",
+    "Thunderbolt"
+   ],
+   "condition": 86,
+   "fitness": 93,
+   "morale": 54,
+   "age_months": 12,
+   "contract": {
+    "salary": 403,
+    "expiry": "2028-07-30"
+   },
+   "potential": 19,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0272",
+   "species_id": 88,
+   "species": "Grimer",
+   "nickname": null,
+   "level": 18,
+   "ivs": {
+    "hp": 12,
+    "atk": 11,
+    "def": 1,
+    "spa": 8,
+    "spd": 14,
+    "spe": 2
+   },
+   "moves": [
+    "Screech",
+    "Sludge",
+    "Tackle",
+    "Toxic"
+   ],
+   "condition": 97,
+   "fitness": 76,
+   "morale": 64,
+   "age_months": 96,
+   "contract": {
+    "salary": 403,
+    "expiry": "2029-08-30"
+   },
+   "potential": 8,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0273",
+   "species_id": 80,
+   "species": "Slowbro",
+   "nickname": null,
+   "level": 18,
+   "ivs": {
+    "hp": 13,
+    "atk": 8,
+    "def": 11,
+    "spa": 10,
+    "spd": 13,
+    "spe": 7
+   },
+   "moves": [
+    "Hydro Pump",
+    "Water Gun",
+    "Agility",
+    "Recover"
+   ],
+   "condition": 92,
+   "fitness": 100,
+   "morale": 50,
+   "age_months": 44,
+   "contract": {
+    "salary": 542,
+    "expiry": "2027-08-30"
+   },
+   "potential": 17,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0274",
+   "species_id": 109,
+   "species": "Koffing",
+   "nickname": null,
+   "level": 21,
+   "ivs": {
+    "hp": 10,
+    "atk": 5,
+    "def": 11,
+    "spa": 1,
+    "spd": 9,
+    "spe": 7
+   },
+   "moves": [
+    "Slash",
+    "Screech",
+    "Poison Sting",
+    "Smog"
+   ],
+   "condition": 75,
+   "fitness": 81,
+   "morale": 88,
+   "age_months": 64,
+   "contract": {
+    "salary": 548,
+    "expiry": "2027-09-30"
+   },
+   "potential": 11,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0275",
+   "species_id": 49,
+   "species": "Venomoth",
+   "nickname": null,
+   "level": 11,
+   "ivs": {
+    "hp": 9,
+    "atk": 0,
+    "def": 13,
+    "spa": 2,
+    "spd": 4,
+    "spe": 11
+   },
+   "moves": [
+    "Acid",
+    "Toxic",
+    "Poison Sting",
+    "Reflect"
+   ],
+   "condition": 100,
+   "fitness": 86,
+   "morale": 83,
+   "age_months": 37,
+   "contract": {
+    "salary": 377,
+    "expiry": "2029-10-30"
+   },
+   "potential": 12,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0276",
+   "species_id": 9,
+   "species": "Blastoise",
+   "nickname": null,
+   "level": 5,
+   "ivs": {
+    "hp": 0,
+    "atk": 10,
+    "def": 1,
+    "spa": 6,
+    "spd": 10,
+    "spe": 5
+   },
+   "moves": [
+    "Water Gun",
+    "Waterfall",
+    "Hydro Pump",
+    "Tail Whip"
+   ],
+   "condition": 72,
+   "fitness": 85,
+   "morale": 59,
+   "age_months": 76,
+   "contract": {
+    "salary": 360,
+    "expiry": "2029-10-30"
+   },
+   "potential": 11,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0277",
+   "species_id": 36,
+   "species": "Clefable",
+   "nickname": null,
+   "level": 13,
+   "ivs": {
+    "hp": 14,
+    "atk": 8,
+    "def": 12,
+    "spa": 2,
+    "spd": 2,
+    "spe": 2
+   },
+   "moves": [
+    "Light Screen",
+    "Headbutt",
+    "Double-Edge",
+    "Body Slam"
+   ],
+   "condition": 88,
+   "fitness": 80,
+   "morale": 95,
+   "age_months": 16,
+   "contract": {
+    "salary": 538,
+    "expiry": "2029-05-30"
+   },
+   "potential": 18,
+   "scouted_pct": 0
+  },
+  {
+   "uid": "pkm0278",
+   "species_id": 145,
+   "species": "Zapdos",
+   "nickname": null,
+   "level": 14,
+   "ivs": {
+    "hp": 13,
+    "atk": 7,
+    "def": 2,
+    "spa": 4,
+    "spd": 6,
+    "spe": 9
+   },
+   "moves": [
+    "Thunder Punch",
+    "Wing Attack",
+    "Fly",
+    "Reflect"
+   ],
+   "condition": 100,
+   "fitness": 92,
+   "morale": 53,
+   "age_months": 32,
+   "contract": {
+    "salary": 519,
+    "expiry": "2027-09-30"
+   },
+   "potential": 13,
+   "scouted_pct": 0
+  }
+ ]
+}
