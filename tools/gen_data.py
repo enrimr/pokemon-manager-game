@@ -170,7 +170,104 @@ MOVES = {
 }
 
 TYPES = ["normal", "fire", "water", "grass", "electric", "ice", "fighting", "poison",
-         "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon"]
+         "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon",
+         "dark", "steel", "fairy"]
+
+# ---------------------------------------------------------------- gen-2 moves
+# Same tuple format as MOVES. New forward-looking tag: weather:<sun|rain|sand>
+# (BattleEngine ignores unknown tags today; the battle-depth piece wires them).
+# Gen-2 correction: Bite becomes Dark-type.
+MOVES["Bite"] = ("dark", 60, 100, 25, "phys", ["flinch:0.1"])
+MOVES.update({
+    # Dark
+    "Crunch": ("dark", 80, 100, 15, "phys", ["stat:spd:-1:0.2"]),
+    "Pursuit": ("dark", 40, 100, 20, "phys", []),
+    "Feint Attack": ("dark", 60, 0, 20, "phys", ["never_miss"]),
+    "Thief": ("dark", 60, 100, 25, "phys", []),
+    "Beat Up": ("dark", 60, 100, 10, "phys", []),
+    # Steel
+    "Iron Tail": ("steel", 100, 75, 15, "phys", ["stat:def:-1:0.3"]),
+    "Steel Wing": ("steel", 70, 90, 25, "phys", ["stat:def:+1:0.1:self"]),
+    "Metal Claw": ("steel", 50, 95, 35, "phys", ["stat:atk:+1:0.1:self"]),
+})
+MOVES.update({
+    # Normal
+    "Return": ("normal", 102, 100, 20, "phys", []),
+    "Extreme Speed": ("normal", 80, 100, 5, "phys", ["priority:1"]),
+    "Rapid Spin": ("normal", 50, 100, 40, "phys", []),
+    "Slam": ("normal", 80, 75, 20, "phys", []),
+    "Snore": ("normal", 50, 100, 15, "spec", ["flinch:0.3"]),
+    "False Swipe": ("normal", 40, 100, 40, "phys", []),
+    "Triple Kick": ("fighting", 47, 90, 10, "phys", []),
+    "Milk Drink": ("normal", 0, 0, 10, "status", ["heal:0.5"]),
+    "Morning Sun": ("normal", 0, 0, 5, "status", ["heal:0.5"]),
+    "Moonlight": ("normal", 0, 0, 5, "status", ["heal:0.5"]),
+    "Scary Face": ("normal", 0, 100, 10, "status", ["stat:spe:-2"]),
+    "Charm": ("normal", 0, 100, 20, "status", ["stat:atk:-2"]),
+    "Sweet Scent": ("normal", 0, 100, 20, "status", ["stat:eva:-1"]),
+    "Sweet Kiss": ("normal", 0, 75, 10, "status", ["confuse:1.0"]),
+    "Belly Drum": ("normal", 0, 0, 10, "status", ["stat:atk:+2:1:self"]),
+    "Safeguard": ("normal", 0, 0, 25, "status", ["guard_spec"]),
+    "Hidden Power": ("normal", 60, 100, 15, "spec", []),
+})
+MOVES.update({
+    # Fire / Water / Grass
+    "Sacred Fire": ("fire", 100, 95, 5, "phys", ["burn:0.5"]),
+    "Sunny Day": ("fire", 0, 0, 5, "status", ["weather:sun"]),
+    "Flame Burst": ("fire", 70, 100, 15, "spec", []),
+    "Whirlpool": ("water", 35, 85, 15, "spec", []),
+    "Octazooka": ("water", 65, 85, 10, "spec", ["stat:acc:-1:0.5"]),
+    "Rain Dance": ("water", 0, 0, 5, "status", ["weather:rain"]),
+    "Giga Drain": ("grass", 60, 100, 10, "spec", ["drain:0.5"]),
+    "Synthesis": ("grass", 0, 0, 5, "status", ["heal:0.5"]),
+    "Cotton Spore": ("grass", 0, 100, 40, "status", ["stat:spe:-2"]),
+    # Electric / Ice
+    "Spark": ("electric", 65, 100, 20, "phys", ["para:0.3"]),
+    "Zap Cannon": ("electric", 120, 50, 5, "spec", ["para:1.0"]),
+    "Powder Snow": ("ice", 40, 100, 25, "spec", ["freeze:0.1"]),
+})
+MOVES.update({
+    # Fighting / Poison / Ground
+    "Cross Chop": ("fighting", 100, 80, 5, "phys", ["crit:1"]),
+    "Dynamic Punch": ("fighting", 100, 50, 5, "phys", ["confuse:1.0"]),
+    "Mach Punch": ("fighting", 40, 100, 30, "phys", ["priority:1"]),
+    "Vital Throw": ("fighting", 70, 0, 10, "phys", ["never_miss"]),
+    "Rock Smash": ("fighting", 40, 100, 15, "phys", ["stat:def:-1:0.5"]),
+    "Sludge Bomb": ("poison", 90, 100, 10, "spec", ["poison:0.3"]),
+    "Mud-Slap": ("ground", 20, 100, 10, "spec", ["stat:acc:-1:1.0"]),
+    "Magnitude": ("ground", 70, 100, 30, "phys", []),
+    "Bone Rush": ("ground", 75, 90, 10, "phys", []),
+    "Spikes": ("ground", 0, 0, 20, "status", []),
+    # Flying / Psychic / Bug
+    "Aeroblast": ("flying", 100, 95, 5, "spec", ["crit:1"]),
+    "Future Sight": ("psychic", 80, 90, 10, "spec", []),
+    "Psych Up": ("psychic", 0, 0, 10, "status", ["stat:spa:+1:1:self"]),
+    "Megahorn": ("bug", 120, 85, 10, "phys", []),
+    "Fury Cutter": ("bug", 40, 95, 20, "phys", []),
+})
+MOVES.update({
+    # Rock / Ghost / Dragon / misc status
+    "Ancient Power": ("rock", 60, 100, 5, "spec", ["stat:atk:+1:0.1:self"]),
+    "Rollout": ("rock", 30, 90, 20, "phys", []),
+    "Sandstorm": ("rock", 0, 0, 10, "status", ["weather:sand"]),
+    "Shadow Ball": ("ghost", 80, 100, 15, "spec", ["stat:spd:-1:0.2"]),
+    "Twister": ("dragon", 40, 100, 20, "spec", ["flinch:0.2"]),
+    "Curse": ("ghost", 0, 0, 10, "status", ["stat:atk:+1:1:self", "stat:def:+1:1:self"]),
+    "Encore": ("normal", 0, 100, 5, "status", []),
+    "Attract": ("normal", 0, 100, 15, "status", ["confuse:1.0"]),
+    "Swagger": ("normal", 0, 85, 15, "status", ["confuse:1.0"]),
+    "Heal Bell": ("normal", 0, 0, 5, "status", ["heal:0.25"]),
+    "Pain Split": ("normal", 0, 100, 20, "status", []),
+    "Endure": ("normal", 0, 0, 10, "status", []),
+    "Protect": ("normal", 0, 0, 10, "status", []),
+    "Detect": ("fighting", 0, 0, 5, "status", []),
+    "Baton Pass": ("normal", 0, 0, 40, "status", []),
+    "Mean Look": ("normal", 0, 0, 5, "status", []),
+    "Mirror Coat": ("psychic", 0, 100, 20, "spec", ["fixed:level"]),
+    "Present": ("normal", 60, 90, 15, "phys", []),
+    "Frustration": ("normal", 70, 100, 20, "phys", []),
+})
+# __GEN2_MOVES_END__
 
 # ---------------------------------------------------------------- items
 # Two classes:
@@ -311,23 +408,29 @@ for _iid, _it in ITEMS.items():
         if _fx.startswith("type_boost:"):
             TYPE_BOOST_BY_TYPE[_fx.split(":")[1]] = _iid
 
-# Gen-1 style effectiveness chart. chart[attacker][defender] = multiplier (missing = 1.0)
+# Gen-2+ effectiveness chart (18 types; fairy is forward-compat — no fairy
+# species/moves yet). chart[attacker][defender] = multiplier (missing = 1.0).
+# Gen-2 corrections vs the old gen-1 chart: bug/poison 0.5 (was 2), poison/bug
+# 1 (was 2), ghost/psychic 2 (was 0), ice/fire 0.5; new dark & steel rows+cols.
 CHART = {
-    "normal":   {"rock": 0.5, "ghost": 0.0},
-    "fire":     {"fire": 0.5, "water": 0.5, "grass": 2, "ice": 2, "bug": 2, "rock": 0.5, "dragon": 0.5},
+    "normal":   {"rock": 0.5, "ghost": 0.0, "steel": 0.5},
+    "fire":     {"fire": 0.5, "water": 0.5, "grass": 2, "ice": 2, "bug": 2, "rock": 0.5, "dragon": 0.5, "steel": 2},
     "water":    {"fire": 2, "water": 0.5, "grass": 0.5, "ground": 2, "rock": 2, "dragon": 0.5},
-    "grass":    {"fire": 0.5, "water": 2, "grass": 0.5, "poison": 0.5, "ground": 2, "flying": 0.5, "bug": 0.5, "rock": 2, "dragon": 0.5},
+    "grass":    {"fire": 0.5, "water": 2, "grass": 0.5, "poison": 0.5, "ground": 2, "flying": 0.5, "bug": 0.5, "rock": 2, "dragon": 0.5, "steel": 0.5},
     "electric": {"water": 2, "grass": 0.5, "electric": 0.5, "ground": 0.0, "flying": 2, "dragon": 0.5},
-    "ice":      {"fire": 0.5, "water": 0.5, "grass": 2, "ice": 0.5, "ground": 2, "flying": 2, "dragon": 2},
-    "fighting": {"normal": 2, "ice": 2, "poison": 0.5, "flying": 0.5, "psychic": 0.5, "bug": 0.5, "rock": 2, "ghost": 0.0},
-    "poison":   {"grass": 2, "poison": 0.5, "ground": 0.5, "bug": 2, "rock": 0.5, "ghost": 0.5},
-    "ground":   {"fire": 2, "grass": 0.5, "electric": 2, "poison": 2, "flying": 0.0, "bug": 0.5, "rock": 2},
-    "flying":   {"grass": 2, "electric": 0.5, "fighting": 2, "bug": 2, "rock": 0.5},
-    "psychic":  {"fighting": 2, "poison": 2, "psychic": 0.5},
-    "bug":      {"fire": 0.5, "grass": 2, "fighting": 0.5, "poison": 2, "flying": 0.5, "psychic": 2, "ghost": 0.5},
-    "rock":     {"fire": 2, "ice": 2, "fighting": 0.5, "ground": 0.5, "flying": 2, "bug": 2},
-    "ghost":    {"normal": 0.0, "psychic": 0.0, "ghost": 2},
-    "dragon":   {"dragon": 2},
+    "ice":      {"fire": 0.5, "water": 0.5, "grass": 2, "ice": 0.5, "ground": 2, "flying": 2, "dragon": 2, "steel": 0.5},
+    "fighting": {"normal": 2, "ice": 2, "poison": 0.5, "flying": 0.5, "psychic": 0.5, "bug": 0.5, "rock": 2, "ghost": 0.0, "dark": 2, "steel": 2, "fairy": 0.5},
+    "poison":   {"grass": 2, "poison": 0.5, "ground": 0.5, "rock": 0.5, "ghost": 0.5, "steel": 0.0, "fairy": 2},
+    "ground":   {"fire": 2, "grass": 0.5, "electric": 2, "poison": 2, "flying": 0.0, "bug": 0.5, "rock": 2, "steel": 2},
+    "flying":   {"grass": 2, "electric": 0.5, "fighting": 2, "bug": 2, "rock": 0.5, "steel": 0.5},
+    "psychic":  {"fighting": 2, "poison": 2, "psychic": 0.5, "dark": 0.0, "steel": 0.5},
+    "bug":      {"fire": 0.5, "grass": 2, "fighting": 0.5, "poison": 0.5, "flying": 0.5, "psychic": 2, "ghost": 0.5, "dark": 2, "steel": 0.5, "fairy": 0.5},
+    "rock":     {"fire": 2, "ice": 2, "fighting": 0.5, "ground": 0.5, "flying": 2, "bug": 2, "steel": 0.5},
+    "ghost":    {"normal": 0.0, "psychic": 2, "ghost": 2, "dark": 0.5},
+    "dragon":   {"dragon": 2, "steel": 0.5, "fairy": 0.0},
+    "dark":     {"fighting": 0.5, "psychic": 2, "ghost": 2, "dark": 0.5, "fairy": 0.5},
+    "steel":    {"fire": 0.5, "water": 0.5, "electric": 0.5, "ice": 2, "rock": 2, "steel": 0.5, "fairy": 2},
+    "fairy":    {"fire": 0.5, "fighting": 2, "poison": 0.5, "dragon": 2, "dark": 2, "steel": 0.5},
 }
 
 # ---------------------------------------------------------------- pokemon
@@ -486,6 +589,110 @@ P = [
     (151,"Mew","psychic",None,100,100,100,100,100,100,"medium_slow"),
 ]
 
+# Gen-2 (Johto) species 152-251. Same tuple format. Gen-2 base stats.
+P2 = [
+    (152,"Chikorita","grass",None,45,49,65,49,65,45,"medium_slow"),
+    (153,"Bayleef","grass",None,60,62,80,63,80,60,"medium_slow"),
+    (154,"Meganium","grass",None,80,82,100,83,100,80,"medium_slow"),
+    (155,"Cyndaquil","fire",None,39,52,43,60,50,65,"medium_slow"),
+    (156,"Quilava","fire",None,58,64,58,80,65,80,"medium_slow"),
+    (157,"Typhlosion","fire",None,78,84,78,109,85,100,"medium_slow"),
+    (158,"Totodile","water",None,50,65,64,44,48,43,"medium_slow"),
+    (159,"Croconaw","water",None,65,80,80,59,63,58,"medium_slow"),
+    (160,"Feraligatr","water",None,85,105,100,79,83,78,"medium_slow"),
+    (161,"Sentret","normal",None,35,46,34,35,45,20,"medium_fast"),
+    (162,"Furret","normal",None,85,76,64,45,55,90,"medium_fast"),
+    (163,"Hoothoot","normal","flying",60,30,30,36,56,50,"medium_fast"),
+    (164,"Noctowl","normal","flying",100,50,50,76,96,70,"medium_fast"),
+    (165,"Ledyba","bug","flying",40,20,30,40,80,55,"fast"),
+    (166,"Ledian","bug","flying",55,35,50,55,110,85,"fast"),
+    (167,"Spinarak","bug","poison",40,60,40,40,40,30,"fast"),
+    (168,"Ariados","bug","poison",70,90,70,60,60,40,"fast"),
+    (169,"Crobat","poison","flying",85,90,80,70,80,130,"medium_fast"),
+    (170,"Chinchou","water","electric",75,38,38,56,56,67,"slow"),
+    (171,"Lanturn","water","electric",125,58,58,76,76,67,"slow"),
+    (172,"Pichu","electric",None,20,40,15,35,35,60,"medium_fast"),
+    (173,"Cleffa","normal",None,50,25,28,45,55,15,"fast"),
+    (174,"Igglybuff","normal",None,90,30,15,40,20,15,"fast"),
+    (175,"Togepi","normal",None,35,20,65,40,65,20,"fast"),
+    (176,"Togetic","normal","flying",55,40,85,80,105,40,"fast"),
+    (177,"Natu","psychic","flying",40,50,45,70,45,70,"medium_fast"),
+    (178,"Xatu","psychic","flying",65,75,70,95,70,95,"medium_fast"),
+    (179,"Mareep","electric",None,55,40,40,65,45,35,"medium_slow"),
+    (180,"Flaaffy","electric",None,70,55,55,80,60,45,"medium_slow"),
+    (181,"Ampharos","electric",None,90,75,75,115,90,55,"medium_slow"),
+    (182,"Bellossom","grass",None,75,80,85,90,100,50,"medium_slow"),
+    (183,"Marill","water",None,70,20,50,20,50,40,"fast"),
+    (184,"Azumarill","water",None,100,50,80,50,80,50,"fast"),
+    (185,"Sudowoodo","rock",None,70,100,115,30,65,30,"medium_fast"),
+    (186,"Politoed","water",None,90,75,75,90,100,70,"medium_slow"),
+    (187,"Hoppip","grass","flying",35,35,40,35,55,50,"medium_slow"),
+    (188,"Skiploom","grass","flying",55,45,50,45,65,80,"medium_slow"),
+    (189,"Jumpluff","grass","flying",75,55,70,55,95,110,"medium_slow"),
+    (190,"Aipom","normal",None,55,70,55,40,55,85,"fast"),
+    (191,"Sunkern","grass",None,30,30,30,30,30,30,"medium_slow"),
+    (192,"Sunflora","grass",None,75,75,55,105,85,30,"medium_slow"),
+    (193,"Yanma","bug","flying",65,65,45,75,45,95,"medium_fast"),
+    (194,"Wooper","water","ground",55,45,45,25,25,15,"medium_fast"),
+    (195,"Quagsire","water","ground",95,85,85,65,65,35,"medium_fast"),
+    (196,"Espeon","psychic",None,65,65,60,130,95,110,"medium_fast"),
+    (197,"Umbreon","dark",None,95,65,110,60,130,65,"medium_fast"),
+    (198,"Murkrow","dark","flying",60,85,42,85,42,91,"medium_slow"),
+    (199,"Slowking","water","psychic",95,75,80,100,110,30,"medium_fast"),
+    (200,"Misdreavus","ghost",None,60,60,60,85,85,85,"fast"),
+    (201,"Unown","psychic",None,48,72,48,72,48,48,"medium_fast"),
+    (202,"Wobbuffet","psychic",None,190,33,58,33,58,33,"medium_fast"),
+    (203,"Girafarig","normal","psychic",70,80,65,90,65,85,"medium_fast"),
+    (204,"Pineco","bug",None,50,65,90,35,35,15,"medium_fast"),
+    (205,"Forretress","bug","steel",75,90,140,60,60,40,"medium_fast"),
+    (206,"Dunsparce","normal",None,100,70,70,65,65,45,"medium_fast"),
+    (207,"Gligar","ground","flying",65,75,105,35,65,85,"medium_slow"),
+    (208,"Steelix","steel","ground",75,85,200,55,65,30,"medium_fast"),
+    (209,"Snubbull","normal",None,60,80,50,40,40,30,"fast"),
+    (210,"Granbull","normal",None,90,120,75,60,60,45,"fast"),
+    (211,"Qwilfish","water","poison",65,95,75,55,55,85,"medium_fast"),
+    (212,"Scizor","bug","steel",70,130,100,55,80,65,"medium_fast"),
+    (213,"Shuckle","bug","rock",20,10,230,10,230,5,"medium_slow"),
+    (214,"Heracross","bug","fighting",80,125,75,40,95,85,"slow"),
+    (215,"Sneasel","dark","ice",55,95,55,35,75,115,"medium_slow"),
+    (216,"Teddiursa","normal",None,60,80,50,50,50,40,"medium_fast"),
+    (217,"Ursaring","normal",None,90,130,75,75,75,55,"medium_fast"),
+    (218,"Slugma","fire",None,40,40,40,70,40,20,"medium_fast"),
+    (219,"Magcargo","fire","rock",50,50,120,80,80,30,"medium_fast"),
+    (220,"Swinub","ice","ground",50,50,40,30,30,50,"slow"),
+    (221,"Piloswine","ice","ground",100,100,80,60,60,50,"slow"),
+    (222,"Corsola","water","rock",55,55,85,65,85,35,"fast"),
+    (223,"Remoraid","water",None,35,65,35,65,35,65,"medium_fast"),
+    (224,"Octillery","water",None,75,105,75,105,75,45,"medium_fast"),
+    (225,"Delibird","ice","flying",45,55,45,65,45,75,"fast"),
+    (226,"Mantine","water","flying",65,40,70,80,140,70,"slow"),
+    (227,"Skarmory","steel","flying",65,80,140,40,70,70,"slow"),
+    (228,"Houndour","dark","fire",45,60,30,80,50,65,"slow"),
+    (229,"Houndoom","dark","fire",75,90,50,110,80,95,"slow"),
+    (230,"Kingdra","water","dragon",75,95,95,95,95,85,"medium_fast"),
+    (231,"Phanpy","ground",None,90,60,60,40,40,40,"medium_fast"),
+    (232,"Donphan","ground",None,90,120,120,60,60,50,"medium_fast"),
+    (233,"Porygon2","normal",None,85,80,90,105,95,60,"medium_fast"),
+    (234,"Stantler","normal",None,73,95,62,85,65,85,"slow"),
+    (235,"Smeargle","normal",None,55,20,35,20,45,75,"fast"),
+    (236,"Tyrogue","fighting",None,35,35,35,35,35,35,"medium_fast"),
+    (237,"Hitmontop","fighting",None,50,95,95,35,110,70,"medium_fast"),
+    (238,"Smoochum","ice","psychic",45,30,15,85,65,65,"medium_fast"),
+    (239,"Elekid","electric",None,45,63,37,65,55,95,"medium_fast"),
+    (240,"Magby","fire",None,45,75,37,70,55,83,"medium_fast"),
+    (241,"Miltank","normal",None,95,80,105,40,70,100,"slow"),
+    (242,"Blissey","normal",None,255,10,10,75,135,55,"fast"),
+    (243,"Raikou","electric",None,90,85,75,115,100,115,"slow"),
+    (244,"Entei","fire",None,115,115,85,90,75,100,"slow"),
+    (245,"Suicune","water",None,100,75,115,90,115,85,"slow"),
+    (246,"Larvitar","rock","ground",50,64,50,45,50,41,"slow"),
+    (247,"Pupitar","rock","ground",70,84,70,65,70,51,"slow"),
+    (248,"Tyranitar","rock","dark",100,134,110,95,100,61,"slow"),
+    (249,"Lugia","psychic","flying",106,90,130,90,154,110,"slow"),
+    (250,"Ho-Oh","fire","flying",106,130,90,110,154,90,"slow"),
+    (251,"Celebi","psychic","grass",100,100,100,100,100,100,"medium_slow"),
+]
+
 # Type -> candidate attacking/status moves (used to build plausible learnsets)
 TYPE_POOL = {
     "normal": ["Tackle", "Quick Attack", "Body Slam", "Slash", "Double-Edge", "Hyper Beam", "Headbutt", "Swift"],
@@ -533,19 +740,22 @@ EVOLVES = {
 
 rng = random.Random(20260801)
 
-def build_learnset(pid, name, t1, t2, atk, spa):
-    if pid in SIGNATURE:
-        base = list(SIGNATURE[pid])
+def build_learnset(pid, name, t1, t2, atk, spa, r=None, pools=None, sigs=None):
+    r = r or rng
+    pools = pools or TYPE_POOL
+    sigs = sigs if sigs is not None else SIGNATURE
+    if pid in sigs:
+        base = list(sigs[pid])
     else:
         base = []
         for t in filter(None, [t1, t2]):
-            pool = list(TYPE_POOL[t])
+            pool = list(pools[t])
             k = min(len(pool), 3 if t2 else 4)
-            base += rng.sample(pool, k)
+            base += r.sample(pool, k)
         # a normal staple
         if t1 != "normal":
-            base.append(rng.choice(NORMAL_STAPLES_PHYS if atk >= spa else NORMAL_STAPLES_SPEC))
-        base.append(rng.choice(STATUS_POOL))
+            base.append(r.choice(NORMAL_STAPLES_PHYS if atk >= spa else NORMAL_STAPLES_SPEC))
+        base.append(r.choice(STATUS_POOL))
     # dedupe preserving order, clamp 4..8
     seen, out = set(), []
     for m in base:
@@ -553,7 +763,7 @@ def build_learnset(pid, name, t1, t2, atk, spa):
             seen.add(m)
             out.append(m)
     while len(out) < 4:
-        m = rng.choice(NORMAL_STAPLES_PHYS + STATUS_POOL)
+        m = r.choice(NORMAL_STAPLES_PHYS + STATUS_POOL)
         if m not in seen:
             seen.add(m)
             out.append(m)
@@ -570,10 +780,223 @@ for (pid, name, t1, t2, hp, atk, dfn, spa, spd, spe, growth) in P:
         "learnset": build_learnset(pid, name, t1, t2, atk, spa),
     })
 
+# ---------------------------------------------------------------- gen-2 build
+# Separate RNG + extended pools so every gen-1 species (and the world gen
+# below, which only draws from gen-1) stays byte-identical across regens.
+rng2 = random.Random(20260830)
+TYPE_POOL2 = {t: list(v) for t, v in TYPE_POOL.items()}
+TYPE_POOL2["dark"] = ["Bite", "Crunch", "Pursuit", "Feint Attack", "Thief"]
+TYPE_POOL2["steel"] = ["Metal Claw", "Iron Tail", "Steel Wing"]
+TYPE_POOL2["normal"] += ["Return", "Headbutt"]
+TYPE_POOL2["fighting"] += ["Cross Chop", "Mach Punch", "Rock Smash"]
+TYPE_POOL2["water"] += ["Whirlpool"]
+TYPE_POOL2["grass"] += ["Giga Drain", "Synthesis"]
+TYPE_POOL2["electric"] += ["Spark"]
+TYPE_POOL2["ice"] += ["Powder Snow"]
+TYPE_POOL2["poison"] += ["Sludge Bomb"]
+TYPE_POOL2["ground"] += ["Mud-Slap", "Magnitude"]
+TYPE_POOL2["psychic"] += ["Future Sight"]
+TYPE_POOL2["bug"] += ["Megahorn", "Fury Cutter"]
+TYPE_POOL2["rock"] += ["Ancient Power", "Rollout"]
+TYPE_POOL2["ghost"] += ["Shadow Ball"]
+TYPE_POOL2["dragon"] += ["Twister"]
+
+SIGNATURE2 = {
+    157: ["Flamethrower", "Fire Blast", "Swift", "Quick Attack", "Smokescreen"],
+    160: ["Surf", "Crunch", "Slash", "Ice Punch", "Screech"],
+    169: ["Wing Attack", "Bite", "Confuse Ray", "Toxic", "Agility"],
+    181: ["Thunderbolt", "Zap Cannon", "Thunder Wave", "Fire Punch", "Light Screen"],
+    196: ["Psychic", "Psybeam", "Morning Sun", "Swift", "Reflect"],
+    197: ["Feint Attack", "Crunch", "Moonlight", "Toxic", "Confuse Ray", "Screech"],
+    208: ["Iron Tail", "Earthquake", "Rock Slide", "Crunch", "Harden", "Screech"],
+    212: ["Metal Claw", "Fury Cutter", "Slash", "Wing Attack", "Swords Dance", "Agility"],
+    214: ["Megahorn", "Cross Chop", "Earthquake", "Fury Cutter", "Focus Energy"],
+    230: ["Surf", "Hydro Pump", "Twister", "Ice Beam", "Agility", "Smokescreen"],
+    242: ["Soft-Boiled", "Seismic Toss", "Sing", "Light Screen", "Toxic"],
+    243: ["Thunderbolt", "Crunch", "Zap Cannon", "Quick Attack", "Reflect"],
+    244: ["Fire Blast", "Sacred Fire", "Bite", "Stomp", "Swagger"],
+    245: ["Surf", "Aurora Beam", "Ice Beam", "Mist", "Rain Dance"],
+    248: ["Crunch", "Rock Slide", "Earthquake", "Fire Blast", "Scary Face"],
+    249: ["Aeroblast", "Psychic", "Recover", "Rain Dance", "Ancient Power"],
+    250: ["Sacred Fire", "Fire Blast", "Ancient Power", "Recover", "Sunny Day"],
+    251: ["Psychic", "Giga Drain", "Ancient Power", "Recover", "Heal Bell"],
+    235: ["Sketch", "Tackle", "Swift", "Double Team"],
+    225: ["Present", "Icy Wind", "Fly", "Quick Attack"],
+}
+MOVES["Sketch"] = ("normal", 0, 0, 1, "status", [])
+
+# Gen-2 species that can still evolve (drives Eviolite "nfe").
+EVOLVES2 = {
+    152, 153, 155, 156, 158, 159, 161, 163, 165, 167, 170, 172, 173, 174, 175,
+    176, 177, 179, 180, 183, 187, 188, 191, 194, 204, 209, 215, 216, 218, 220,
+    223, 228, 231, 236, 238, 239, 240, 246, 247,
+}
+
+pokemon_gen2 = []
+for (pid, name, t1, t2, hp, atk, dfn, spa, spd, spe, growth) in P2:
+    pokemon_gen2.append({
+        "id": pid, "name": name,
+        "types": [t for t in [t1, t2] if t],
+        "base": {"hp": hp, "atk": atk, "def": dfn, "spa": spa, "spd": spd, "spe": spe},
+        "growth": growth,
+        "evolves": pid in EVOLVES2,
+        "learnset": build_learnset(pid, name, t1, t2, atk, spa,
+                                   r=rng2, pools=TYPE_POOL2, sigs=SIGNATURE2),
+    })
+pokemon_all = pokemon + pokemon_gen2
+
 moves_out = {}
 for name, (mtype, power, acc, pp, cat, fx) in MOVES.items():
     moves_out[name] = {"type": mtype, "power": power, "accuracy": acc, "pp": pp,
                        "category": cat, "effects": fx}
+
+# ---------------------------------------------------------------- natures
+# The 25 real natures: +10% to `plus`, -10% to `minus` (null/null = neutral).
+# Written to natures.json as {name: {plus, minus}}; every world instance
+# carries a "nature" field with one of these names.
+NATURES = {
+    "Hardy":   (None, None),  "Lonely": ("atk", "def"), "Brave": ("atk", "spe"),
+    "Adamant": ("atk", "spa"), "Naughty": ("atk", "spd"),
+    "Bold":    ("def", "atk"), "Docile": (None, None),  "Relaxed": ("def", "spe"),
+    "Impish":  ("def", "spa"), "Lax":    ("def", "spd"),
+    "Timid":   ("spe", "atk"), "Hasty":  ("spe", "def"), "Serious": (None, None),
+    "Jolly":   ("spe", "spa"), "Naive":  ("spe", "spd"),
+    "Modest":  ("spa", "atk"), "Mild":   ("spa", "def"), "Quiet": ("spa", "spe"),
+    "Bashful": (None, None),   "Rash":   ("spa", "spd"),
+    "Calm":    ("spd", "atk"), "Gentle": ("spd", "def"), "Sassy": ("spd", "spe"),
+    "Careful": ("spd", "spa"), "Quirky": (None, None),
+}
+NATURE_NAMES = list(NATURES.keys())
+natures_out = {n: {"plus": p, "minus": m} for n, (p, m) in NATURES.items()}
+
+# ---------------------------------------------------------------- abilities
+# ~45 real abilities with machine-readable effect tags (colon-separated).
+# BattleEngine wires these later (battle-depth piece); unknown tags are inert.
+# Tag grammar:
+#   on_switch_in:stat:<stat>:<±stages>:foe      on_switch_in:weather:<sun|rain|sand>
+#   contact_status:<status|confuse|spore>:p     contact_damage:f
+#   immune:<move type>   immune_status:<status>  immune_confuse  immune_flinch
+#   absorb:<type>[:heal:f]      resist:<type>:mult     pinch_boost:<type>:mult
+#   mult:<stat>:mult    status_boost:<stat>:mult    end_turn_stat:<stat>:<±n>
+#   weather_speed:<w>:mult   weather_eva:<w>:mult   weather_heal:<w>:f
+#   no_stat_drop  no_acc_drop  no_atk_drop  no_secondary_effects  no_recoil
+#   effect_chance_mult:f  acc_mult:<all|phys>:f  end_turn_cure:p  sleep_half
+#   heal_status_on_switch  reflect_status  sturdy  pp_pressure:n
+ABILITIES = {
+    "intimidate":   ("Intimidate", ["on_switch_in:stat:atk:-1:foe"], "Lowers the foe's Attack one stage on switch-in."),
+    "levitate":     ("Levitate", ["immune:ground"], "Immune to Ground-type moves."),
+    "static":       ("Static", ["contact_status:para:0.3"], "30% to paralyze attackers on contact."),
+    "flash_fire":   ("Flash Fire", ["absorb:fire"], "Immune to Fire moves; powers up its own Fire moves when hit by one."),
+    "sturdy":       ("Sturdy", ["sturdy"], "Survives a one-hit KO from full HP with 1 HP."),
+    "speed_boost":  ("Speed Boost", ["end_turn_stat:spe:+1"], "Speed rises one stage at the end of each turn."),
+    "drizzle":      ("Drizzle", ["on_switch_in:weather:rain"], "Summons rain on switch-in."),
+    "drought":      ("Drought", ["on_switch_in:weather:sun"], "Summons harsh sunlight on switch-in."),
+    "sand_stream":  ("Sand Stream", ["on_switch_in:weather:sand"], "Whips up a sandstorm on switch-in."),
+    "chlorophyll":  ("Chlorophyll", ["weather_speed:sun:2.0"], "Doubles Speed in harsh sunlight."),
+    "swift_swim":   ("Swift Swim", ["weather_speed:rain:2.0"], "Doubles Speed in rain."),
+    "guts":         ("Guts", ["status_boost:atk:1.5"], "Attack x1.5 while statused."),
+    "thick_fat":    ("Thick Fat", ["resist:fire:0.5", "resist:ice:0.5"], "Halves damage from Fire and Ice moves."),
+    "volt_absorb":  ("Volt Absorb", ["absorb:electric:heal:0.25"], "Heals 25% when hit by Electric moves."),
+    "water_absorb": ("Water Absorb", ["absorb:water:heal:0.25"], "Heals 25% when hit by Water moves."),
+    "poison_point": ("Poison Point", ["contact_status:poison:0.3"], "30% to poison attackers on contact."),
+    "flame_body":   ("Flame Body", ["contact_status:burn:0.3"], "30% to burn attackers on contact."),
+    "effect_spore": ("Effect Spore", ["contact_status:spore:0.3"], "30% to sleep/poison/paralyze attackers on contact."),
+    "rough_skin":   ("Rough Skin", ["contact_damage:0.125"], "Attackers lose 1/8 max HP on contact."),
+    "overgrow":     ("Overgrow", ["pinch_boost:grass:1.5"], "Grass moves x1.5 below 1/3 HP."),
+    "blaze":        ("Blaze", ["pinch_boost:fire:1.5"], "Fire moves x1.5 below 1/3 HP."),
+    "torrent":      ("Torrent", ["pinch_boost:water:1.5"], "Water moves x1.5 below 1/3 HP."),
+    "swarm":        ("Swarm", ["pinch_boost:bug:1.5"], "Bug moves x1.5 below 1/3 HP."),
+    "hustle":       ("Hustle", ["mult:atk:1.5", "acc_mult:phys:0.8"], "Attack x1.5 but physical accuracy x0.8."),
+    "huge_power":   ("Huge Power", ["mult:atk:2.0"], "Doubles Attack."),
+    "natural_cure": ("Natural Cure", ["heal_status_on_switch"], "Status conditions heal on switch-out."),
+    "serene_grace": ("Serene Grace", ["effect_chance_mult:2.0"], "Doubles move secondary-effect chances."),
+    "shed_skin":    ("Shed Skin", ["end_turn_cure:0.33"], "33% each turn to shrug off a status condition."),
+    "immunity":     ("Immunity", ["immune_status:poison"], "Cannot be poisoned."),
+    "limber":       ("Limber", ["immune_status:para"], "Cannot be paralyzed."),
+    "insomnia":     ("Insomnia", ["immune_status:sleep"], "Cannot fall asleep."),
+    "vital_spirit": ("Vital Spirit", ["immune_status:sleep"], "Cannot fall asleep."),
+    "water_veil":   ("Water Veil", ["immune_status:burn"], "Cannot be burned."),
+    "magma_armor":  ("Magma Armor", ["immune_status:freeze"], "Cannot be frozen."),
+    "own_tempo":    ("Own Tempo", ["immune_confuse"], "Cannot be confused."),
+    "inner_focus":  ("Inner Focus", ["immune_flinch"], "Cannot flinch."),
+    "keen_eye":     ("Keen Eye", ["no_acc_drop"], "Accuracy cannot be lowered."),
+    "hyper_cutter": ("Hyper Cutter", ["no_atk_drop"], "Attack cannot be lowered."),
+    "clear_body":   ("Clear Body", ["no_stat_drop"], "Stats cannot be lowered by opponents."),
+    "shield_dust":  ("Shield Dust", ["no_secondary_effects"], "Blocks incoming moves' secondary effects."),
+    "rock_head":    ("Rock Head", ["no_recoil"], "Takes no recoil damage."),
+    "synchronize":  ("Synchronize", ["reflect_status"], "Passes burns/poison/paralysis back to the inflicter."),
+    "pressure":     ("Pressure", ["pp_pressure:2"], "Foes spend 2 PP per move."),
+    "early_bird":   ("Early Bird", ["sleep_half"], "Wakes from sleep twice as fast."),
+    "sand_veil":    ("Sand Veil", ["weather_eva:sand:0.8"], "Evasion up in a sandstorm."),
+    "rain_dish":    ("Rain Dish", ["weather_heal:rain:0.0625"], "Heals 1/16 max HP each turn in rain."),
+    "cute_charm":   ("Cute Charm", ["contact_status:confuse:0.3"], "30% to infatuate/confuse attackers on contact."),
+    "compound_eyes":("Compound Eyes", ["acc_mult:all:1.3"], "Accuracy x1.3."),
+}
+abilities_out = {aid: {"id": aid, "name": nm, "effects": fx, "desc": d}
+                 for aid, (nm, fx, d) in ABILITIES.items()}
+
+# One plausible ability per species (canonical where the ability exists above).
+ABILITY_MAP = {}
+def _amap(ab, *ids):
+    for i in ids:
+        ABILITY_MAP[i] = ab
+_amap("overgrow", 1, 2, 3, 152, 153, 154)
+_amap("blaze", 4, 5, 6, 155, 156, 157)
+_amap("torrent", 7, 8, 9, 158, 159, 160)
+_amap("shield_dust", 10, 11, 13, 14, 48, 49)
+_amap("compound_eyes", 12)
+_amap("swarm", 15, 123, 167, 168, 193, 204)
+_amap("keen_eye", 16, 17, 18, 21, 22, 83, 107, 161, 162, 198, 215)
+_amap("guts", 19, 20, 56, 57, 66, 67, 68, 214, 216, 217, 236, 246)
+_amap("shed_skin", 23, 147, 148, 247)
+_amap("intimidate", 24, 58, 59, 128, 130, 209, 210, 234, 237)
+_amap("static", 25, 26, 100, 101, 125, 172, 179, 180, 181, 239)
+_amap("sand_veil", 27, 28, 50, 51)
+_amap("poison_point", 29, 30, 31, 32, 33, 34, 88, 89, 211)
+_amap("cute_charm", 35, 36, 39, 40, 173, 174)
+_amap("flash_fire", 37, 38, 77, 78, 136, 228, 229)
+_amap("inner_focus", 41, 42, 122, 149, 169, 203)
+_amap("chlorophyll", 43, 44, 45, 69, 70, 71, 102, 103, 114, 182, 187, 188, 189, 191, 192)
+_amap("effect_spore", 46, 47)
+_amap("limber", 52, 53, 106, 132)
+_amap("swift_swim", 54, 55, 116, 117, 129, 138, 139, 140, 141, 223, 224, 230)
+_amap("water_absorb", 60, 61, 62, 131, 134, 186, 194, 195, 226)
+_amap("synchronize", 63, 64, 65, 151, 177, 178, 196, 197)
+_amap("clear_body", 72, 73)
+_amap("sturdy", 74, 75, 76, 81, 82, 90, 91, 95, 205, 208, 213, 227)
+_amap("own_tempo", 79, 80, 108, 124, 199, 238)
+_amap("early_bird", 84, 85, 165, 166)
+_amap("thick_fat", 86, 87, 143, 220, 221, 241)
+_amap("levitate", 92, 93, 94, 109, 110, 200, 201)
+_amap("insomnia", 96, 97, 163, 164, 202)
+_amap("hyper_cutter", 98, 99, 127, 207)
+_amap("rock_head", 104, 105, 111, 112, 142, 185, 219, 231, 232)
+_amap("natural_cure", 113, 120, 121, 222, 242, 251)
+_amap("early_bird", 115)
+_amap("water_veil", 118, 119)
+_amap("pressure", 144, 145, 146, 150, 243, 244, 245, 248, 249, 250)
+_amap("flame_body", 126, 218, 240)
+_amap("vital_spirit", 225)
+_amap("volt_absorb", 135, 170, 171)
+_amap("huge_power", 183, 184)
+_amap("serene_grace", 175, 176, 206, 233)
+_amap("speed_boost", 193)
+_amap("sand_stream", 248)
+# fallback by primary type for anything unmapped (deterministic RNG)
+ABILITY_FALLBACK = {
+    "normal": ["keen_eye", "guts", "limber"], "fire": ["flash_fire", "flame_body"],
+    "water": ["swift_swim", "water_absorb"], "grass": ["chlorophyll"],
+    "electric": ["static"], "ice": ["thick_fat"], "fighting": ["guts"],
+    "poison": ["poison_point"], "ground": ["sand_veil"], "flying": ["keen_eye"],
+    "psychic": ["synchronize", "own_tempo"], "bug": ["swarm", "shield_dust"],
+    "rock": ["sturdy", "rock_head"], "ghost": ["levitate"], "dragon": ["shed_skin"],
+    "dark": ["inner_focus"], "steel": ["sturdy"], "fairy": ["cute_charm"],
+}
+arng = random.Random(20260831)
+for sp in pokemon_all:
+    ab = ABILITY_MAP.get(sp["id"]) or arng.choice(ABILITY_FALLBACK[sp["types"][0]])
+    assert ab in ABILITIES, ab
+    sp["ability"] = ab
 
 # ---------------------------------------------------------------- world
 CLUBS = [
@@ -680,14 +1103,15 @@ for _ in range(30):
 # ---- item economy: starting held items on key mons + club item inventories.
 # Separate RNG so everything generated above stays byte-identical across runs.
 irng = random.Random(20260829)
-poke_by_id = {p["id"]: p for p in pokemon}
+poke_by_id = {p["id"]: p for p in pokemon_all}
 
 def pick_held(inst):
     sp = poke_by_id[inst["species_id"]]
     b = sp["base"]
-    cands = [TYPE_BOOST_BY_TYPE[sp["types"][0]]]
-    if len(sp["types"]) > 1:
-        cands.append(TYPE_BOOST_BY_TYPE[sp["types"][1]])
+    # dark/steel have no type-boost item in the catalog — skip, don't crash
+    cands = [TYPE_BOOST_BY_TYPE[t] for t in sp["types"] if t in TYPE_BOOST_BY_TYPE]
+    if not cands:
+        cands = ["leftovers"]
     if b["hp"] >= 85:
         cands += ["leftovers", "leftovers"]
     if b["atk"] >= b["spa"] + 15 and b["atk"] >= 90:
@@ -732,12 +1156,130 @@ for c in clubs:
         inv[spare] = inv.get(spare, 0) + 1
     c["items"] = {k: v for k, v in inv.items() if v > 0}
 
+# ---- natures + abilities on every instance (separate RNG: everything above
+# stays byte-identical). Ability is the species ability; nature is rolled.
+nrng = random.Random(20260901)
+_all_by_id = {p["id"]: p for p in pokemon_all}
+for _inst in [m for c in clubs for m in c["squad"]] + free_agents + prospects:
+    _inst["nature"] = nrng.choice(NATURE_NAMES)
+    _inst["ability"] = _all_by_id[_inst["species_id"]]["ability"]
+
+# ---------------------------------------------------------------- Johto league
+# Generated strictly AFTER everything above so the Kanto half of the world is
+# byte-identical to the single-league output (same rng consumption order).
+JOHTO_CLUBS = [
+    ("New Bark Gales", "NBK"), ("Cherrygrove Mariners", "CHY"),
+    ("Violet Skylarks", "VIO"), ("Azalea Silkwings", "AZA"),
+    ("Goldenrod Magnates", "GLD"), ("Ecruteak Bellkeepers", "ECR"),
+    ("Olivine Beacons", "OLV"), ("Cianwood Stormfists", "CIA"),
+    ("Mahogany Icebreakers", "MAH"), ("Blackthorn Dragonguard", "BLK"),
+    ("Lake Rage Tempest", "LKR"), ("Alph Runekeepers", "ALP"),
+    ("Whirl Islands Corsairs", "WHI"), ("Mt. Silver Summits", "MTS"),
+    ("Ilex Timekeepers", "ILX"), ("Union Cave Drifters", "UNC"),
+]
+
+for c in clubs:
+    c["league"] = "kanto"
+
+# Johto squads are flavoured with gen-2 species: no legendaries, no Unown.
+_johto_banned = {201, 243, 244, 245, 249, 250, 251}
+johto_species = [p for p in pokemon_all if 152 <= p["id"] <= 251 and p["id"] not in _johto_banned]
+j_by_bst = sorted(johto_species, key=lambda p: sum(p["base"].values()))
+j_low, j_mid, j_high = j_by_bst[:35], j_by_bst[20:65], j_by_bst[45:]
+
+def johto_pick(tier_pool):
+    # ~1 in 5 squad slots is a Kanto import; the rest are Johto natives
+    if rng.random() < 0.20:
+        return rng.choice(usable)
+    return rng.choice(tier_pool)
+
+johto_clubs = []
+for i, (name, short) in enumerate(JOHTO_CLUBS):
+    rep = rng.randint(8, 18)
+    tier_pool = j_high if rep >= 15 else (j_mid if rep >= 11 else j_low + j_mid[:20])
+    squad_n = rng.randint(8, 14)
+    squad = [make_instance(johto_pick(tier_pool), 20 + rep, min(60, 30 + rep * 2))
+             for _ in range(squad_n)]
+    wage_bill = sum(m["contract"]["salary"] for m in squad)
+    johto_clubs.append({
+        "id": f"club{16 + i:02d}",
+        "name": name,
+        "short": short,
+        "league": "johto",
+        "manager": person_name(),
+        "reputation": rep,
+        "finances": {
+            "balance": rng.randint(200, 900) * 1000 + rep * 50000,
+            "wage_budget": int(wage_bill * rng.uniform(1.1, 1.4)),
+        },
+        "squad": squad,
+        "staff": [make_staff(r) for r in rng.sample(ROLES, rng.randint(2, 4))],
+    })
+
+# Johto market: extra free agents + prospects. native_region is INERT data —
+# the transfers piece's regional scouting maps these by type today (so cross-
+# region watches already pay travel days) and can adopt a first-class Johto
+# region later without a data regen. (A live "region" key would crash the
+# current region_coverage board, so we deliberately do not set it.)
+johto_free_agents = []
+for _ in range(40):
+    inst = make_instance(rng.choice(johto_species), 18, 55, 0.7)
+    inst["native_region"] = "Johto"
+    johto_free_agents.append(inst)
+johto_prospects = []
+for _ in range(20):
+    inst = make_instance(rng.choice(johto_species), 5, 22, 0.3)
+    inst["potential"] = rng.randint(8, 20)
+    inst["scouted_pct"] = 0
+    inst["native_region"] = "Johto"
+    johto_prospects.append(inst)
+for c in johto_clubs:
+    for m in c["squad"]:
+        m["native_region"] = "Johto"
+
+# Held items + club inventories for Johto (fresh rng; pick_held reads module irng)
+irng = random.Random(20270115)
+for c in johto_clubs:
+    rep = c["reputation"]
+    key = sorted(c["squad"], key=lambda m: -m["level"])[: 2 + rep // 6]
+    for m in key:
+        if irng.random() < 0.85:
+            m["held_item"] = pick_held(m)
+    inv = {}
+    inv["potion"] = irng.randint(2, 4)
+    inv["super_potion"] = irng.randint(1, 3)
+    inv["full_heal"] = irng.randint(0, 2)
+    inv["revive"] = irng.randint(0, 1)
+    for extra in irng.sample(USABLE_STOCK, 2 + rep // 8):
+        inv[extra] = inv.get(extra, 0) + irng.randint(1, 2)
+    if rep >= 13:
+        inv["hyper_potion"] = inv.get("hyper_potion", 0) + irng.randint(1, 2)
+    for _ in range(irng.randint(1, 2)):
+        spare = irng.choice(list(TYPE_BOOST_BY_TYPE.values()) + ["leftovers", "quick_claw", "sitrus_berry"])
+        inv[spare] = inv.get(spare, 0) + 1
+    c["items"] = {k: v for k, v in inv.items() if v > 0}
+
+# natures + abilities for the new Johto instances
+jnrng = random.Random(20270120)
+for _inst in [m for c in johto_clubs for m in c["squad"]] + johto_free_agents + johto_prospects:
+    _inst["nature"] = jnrng.choice(NATURE_NAMES)
+    _inst["ability"] = _all_by_id[_inst["species_id"]]["ability"]
+
+clubs += johto_clubs
+free_agents += johto_free_agents
+prospects += johto_prospects
+
 world = {
     "meta": {
-        "league_name": "Indigo League",
+        "league_name": "Kanto League",
         "season_start": "2026-08-01",
         "player_club_id": player_club["id"],
         "currency": "P$",
+        "cup_name": "Indigo Cup",
+        "leagues": [
+            {"id": "kanto", "name": "Kanto League"},
+            {"id": "johto", "name": "Johto League"},
+        ],
     },
     "clubs": clubs,
     "free_agents": free_agents,
@@ -755,19 +1297,43 @@ for iid, (iname, icls, price, rarity, fx, desc) in ITEMS.items():
     items_out[iid] = {"id": iid, "name": iname, "class": icls, "price": price,
                       "rarity": rarity, "effects": fx, "desc": desc}
 
-dump("pokemon.json", pokemon)
+dump("pokemon.json", pokemon_all)
 dump("moves.json", moves_out)
 dump("typechart.json", {"types": TYPES, "chart": CHART})
 dump("world.json", world)
 dump("items.json", items_out)
+dump("natures.json", natures_out)
+dump("abilities.json", abilities_out)
 
 # sanity: every learnset/instance move exists in moves.json
 missing = set()
-for p in pokemon:
+for p in pokemon_all:
     for m in p["learnset"]:
         if m not in moves_out:
             missing.add(m)
 assert not missing, f"missing moves: {missing}"
+# sanity: species ids contiguous 1..251, chart consistent over all 18 types
+assert [p["id"] for p in pokemon_all] == list(range(1, 252))
+assert len(TYPES) == 18 and len(CHART) == 18
+for atk_t, row in CHART.items():
+    assert atk_t in TYPES
+    for def_t, mult in row.items():
+        assert def_t in TYPES and mult in (0.0, 0, 0.5, 2), (atk_t, def_t, mult)
+for p in pokemon_all:
+    assert all(t in TYPES for t in p["types"]), p["name"]
+    assert p["ability"] in ABILITIES, p["name"]
+assert len(NATURES) == 25
+assert sum(1 for v in NATURES.values() if v[0] is None) == 5
+# sanity: every instance carries a valid nature + ability
+for _inst in [m for c in clubs for m in c["squad"]] + free_agents + prospects:
+    assert _inst["nature"] in NATURES and _inst["ability"] in ABILITIES
+# sanity: two 16-club leagues, unique ids, every club assigned to a league
+assert len(clubs) == 32 and len(set(c["id"] for c in clubs)) == 32
+assert sum(1 for c in clubs if c["league"] == "kanto") == 16
+assert sum(1 for c in clubs if c["league"] == "johto") == 16
+_uids = [m["uid"] for c in clubs for m in c["squad"]] + \
+        [m["uid"] for m in free_agents] + [m["uid"] for m in prospects]
+assert len(_uids) == len(set(_uids)), "duplicate instance uids"
 # sanity: every assigned/stocked item exists in items.json
 for c in clubs:
     for m in c["squad"]:
@@ -777,6 +1343,7 @@ for c in clubs:
 held_n = sum(1 for i in items_out.values() if i["class"] == "held")
 usable_n = len(items_out) - held_n
 equipped = sum(1 for c in clubs for m in c["squad"] if m["held_item"])
-print(f"OK: {len(pokemon)} pokemon, {len(moves_out)} moves, {len(clubs)} clubs, "
+print(f"OK: {len(pokemon_all)} pokemon, {len(moves_out)} moves, {len(clubs)} clubs, "
       f"{len(free_agents)} free agents, {len(prospects)} prospects, "
-      f"{len(items_out)} items ({held_n} held / {usable_n} usable), {equipped} mons equipped")
+      f"{len(items_out)} items ({held_n} held / {usable_n} usable), {equipped} mons equipped, "
+      f"{len(natures_out)} natures, {len(abilities_out)} abilities")

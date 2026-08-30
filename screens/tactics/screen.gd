@@ -426,9 +426,12 @@ func _make_coverage_grid(offensive: bool) -> Control:
 						_fmt_mult(res["mult"]),
 						(" (" + str(res["move"]) + ")") if res["move"] != "" else ""]))
 			else:
-				var mult := DataStore.effectiveness(t, a["types"])
-				grid.add_child(_cell(mult, false,
-					"%s attacks take ×%s on %s" % [str(t).capitalize(), _fmt_mult(mult), a["battler"]["name"]]))
+				var mult: float = Logic.def_mult(a, t)
+				var tip := "%s attacks take ×%s on %s" % [str(t).capitalize(), _fmt_mult(mult), a["battler"]["name"]]
+				if mult != DataStore.effectiveness(t, a["types"]):
+					tip += "\n%s: the ability changes this from the raw type chart (×%s)." % [
+						a["ability_name"], _fmt_mult(DataStore.effectiveness(t, a["types"]))]
+				grid.add_child(_cell(mult, false, tip))
 
 	# team summary row
 	var sum_lbl := Label.new()
@@ -446,7 +449,7 @@ func _make_coverage_grid(offensive: bool) -> Control:
 					count += 1
 					who.append(a["battler"]["name"])
 			else:
-				if DataStore.effectiveness(t, a["types"]) > 1.0:
+				if Logic.def_mult(a, t) > 1.0:
 					count += 1
 					who.append(a["battler"]["name"])
 		grid.add_child(_team_cell(count, offensive, t, who))
@@ -548,7 +551,7 @@ func _make_coverage_summary() -> Control:
 			var a: Dictionary = _analyses[uid]
 			if Logic.offense_vs(a, t)["mult"] >= 2.0:
 				hits += 1
-			if DataStore.effectiveness(t, a["types"]) > 1.0:
+			if Logic.def_mult(a, t) > 1.0:
 				weak += 1
 		if hits == 0:
 			uncovered.append(str(t).capitalize())

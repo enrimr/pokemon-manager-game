@@ -17,6 +17,7 @@ var _speed := 1.0            # 0 = paused
 var _key_only := false
 var _clock := 0.0
 var _ticker_idx := 0
+var _action_slot := -1       # doubles: which of our slots the action bar is for
 
 # node refs
 var _score_label: Label
@@ -36,7 +37,15 @@ var _force_btn: MenuButton
 var _ctl_toggle: CheckButton
 var _key_toggle: CheckButton
 var _bag_label: Label
+var _weather_label: Label
 var _tl_row2: Control   # policy row — hidden while the action bar is up (manual mode)
+
+const WEATHER_UI := {
+	"sun": ["HARSH SUNLIGHT", Color("f0a848")],
+	"rain": ["POURING RAIN", Color("58a8f0")],
+	"sand": ["SANDSTORM", Color("d8c078")],
+	"hail": ["HAIL", Color("98d8d8")],
+}
 
 const DELAYS := {
 	"battle_start": 0.9, "turn_start": 0.3, "move_used": 0.6, "damage": 0.75,
@@ -44,6 +53,8 @@ const DELAYS := {
 	"status_tick": 0.4, "stat_change": 0.45, "heal": 0.55, "flinch": 0.5,
 	"confused_hit": 0.55, "asleep": 0.45, "paralyzed": 0.5,
 	"commentary_hook": 0.0, "battle_end": 1.4, "item_used": 1.0, "held_item": 0.5,
+	"no_target": 0.55, "ability_triggered": 0.45, "weather_start": 0.8,
+	"weather_end": 0.5, "weather_chip": 0.35,
 }
 
 
@@ -175,25 +186,69 @@ func _build_scoreboard() -> Control:
 	_battle_label = UI.label("", 12, UI.COL_DIM)
 	_battle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pair[1].add_child(_battle_label)
+	_weather_label = UI.label("", 12, UI.COL_WARN)
+	_weather_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_weather_label.visible = false
+	pair[1].add_child(_weather_label)
 	return pair[0]
 
 
 func _build_card(col: int) -> Control:
-	## col 0 = home side, col 1 = away side.
+	## col 0 = home side, col 1 = away side. Holds one block per ACTIVE SLOT
+	## (1 in singles, 2 in doubles — rebuilt when the format changes mid-tie).
 	var pair: Array = UI.panel(str(runner.club_for_side(col).get("name", "")).to_upper()
 		+ ("  ·  YOU" if col == runner.player_side else ""))
 	var p: PanelContainer = pair[0]
 	var box: VBoxContainer = pair[1]
 	p.custom_minimum_size.x = 252
 	p.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	var refs := {}
+	var blocks_box := UI.vbox(6)
+	box.add_child(blocks_box)
+	box.add_child(UI.spacer_v())
+	box.add_child(UI.label("BENCH", 10, UI.COL_DIM))
+	var bench := UI.hbox(5)
+	box.add_child(bench)
+	_cards[col] = {"blocks_box": blocks_box, "bench": bench, "blocks": []}
+	_ensure_card_blocks(col)
+	return p
 
-	var name_row := UI.hbox(8)
-	refs["name"] = UI.label("—", 18, Color.WHITE)
+
+## Rebuild the per-slot blocks when the active-slot count changes (1 <-> 2).
+func _ensure_card_blocks(side: int) -> void:
+	var card: Dictionary = _cards[side]
+	if card.is_empty():
+		return
+	var want: int = runner.vm["actives"][side].size()
+	if card["blocks"].size() == want:
+		return
+	for c in card["blocks_box"].get_children():
+		c.queue_free()
+	card["blocks"] = []
+	for k in want:
+		card["blocks"].append(_build_slot_block(card["blocks_box"], want > 1, k))
+
+
+func _build_slot_block(parent: Control, compact: bool, slot: int) -> Dictionary:
+	## compact = doubles: two of these must stack in one side card AND leave the
+	## action bar on-screen, so every sub-row is folded tight (stages ride the
+	## name row, held item rides the HP row, moves form a 2x2 grid).
+	var refs := {}
+	var box := UI.vbox(2 if compact else 4)
+	parent.add_child(box)
+	if compact and slot > 0:
+		var sep := HSeparator.new()
+		box.add_child(sep)
+	var name_row := UI.hbox(6 if compact else 8)
+	if compact:
+		name_row.add_child(UI.label("S%d" % (slot + 1), 10, UI.COL_ACCENT))
+	refs["name"] = UI.label("—", 13 if compact else 18, Color.WHITE)
 	name_row.add_child(refs["name"])
-	refs["level"] = UI.label("", 12, UI.COL_DIM)
+	refs["level"] = UI.label("", 10 if compact else 12, UI.COL_DIM)
 	name_row.add_child(refs["level"])
 	name_row.add_child(UI.spacer_h())
+	refs["stages"] = UI.label("", 10 if compact else 12, UI.COL_WARN)
+	if compact:
+		name_row.add_child(refs["stages"])
 	box.add_child(name_row)
 
 	refs["types"] = UI.hbox(4)
@@ -204,7 +259,7 @@ func _build_card(col: int) -> Control:
 	refs["hp_bar"].max_value = 1.0
 	refs["hp_bar"].value = 1.0
 	refs["hp_bar"].show_percentage = false
-	refs["hp_bar"].custom_minimum_size = Vector2(0, 16)
+	refs["hp_bar"].custom_minimum_size = Vector2(0, 10 if compact else 16)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = UI.COL_GOOD
 	fill.set_corner_radius_all(3)
@@ -212,36 +267,37 @@ func _build_card(col: int) -> Control:
 	refs["hp_fill"] = fill
 	box.add_child(refs["hp_bar"])
 
-	var hp_row := UI.hbox(8)
-	refs["hp_text"] = UI.label("", 13, UI.COL_TEXT)
+	var hp_row := UI.hbox(6 if compact else 8)
+	refs["hp_text"] = UI.label("", 11 if compact else 13, UI.COL_TEXT)
 	hp_row.add_child(refs["hp_text"])
 	hp_row.add_child(UI.spacer_h())
 	refs["status"] = UI.hbox(4)
 	hp_row.add_child(refs["status"])
+	refs["item"] = UI.label("—", 10 if compact else 12, UI.COL_TEXT)
+	refs["item"].mouse_filter = Control.MOUSE_FILTER_STOP
+	if compact:
+		hp_row.add_child(refs["item"])
 	box.add_child(hp_row)
 
-	refs["stages"] = UI.label("", 12, UI.COL_WARN)
-	box.add_child(refs["stages"])
-
-	# held item chip (hover for the effect popup)
-	var item_row := UI.hbox(6)
-	item_row.add_child(UI.label("HELD", 10, UI.COL_DIM))
-	refs["item"] = UI.label("—", 12, UI.COL_TEXT)
-	refs["item"].mouse_filter = Control.MOUSE_FILTER_STOP
-	item_row.add_child(refs["item"])
-	box.add_child(item_row)
-
-	box.add_child(UI.label("MOVES", 10, UI.COL_DIM))
-	refs["moves"] = UI.vbox(3)
+	if not compact:
+		box.add_child(refs["stages"])
+		# held item chip (hover for the effect popup)
+		var item_row := UI.hbox(6)
+		item_row.add_child(UI.label("HELD", 10, UI.COL_DIM))
+		item_row.add_child(refs["item"])
+		box.add_child(item_row)
+		box.add_child(UI.label("MOVES", 10, UI.COL_DIM))
+		refs["moves"] = UI.vbox(3)
+	else:
+		var grid := GridContainer.new()
+		grid.columns = 2
+		grid.add_theme_constant_override("h_separation", 10)
+		grid.add_theme_constant_override("v_separation", 1)
+		refs["moves"] = grid
 	box.add_child(refs["moves"])
-
-	box.add_child(UI.spacer_v())
-	box.add_child(UI.label("BENCH", 10, UI.COL_DIM))
-	refs["bench"] = UI.hbox(5)
-	box.add_child(refs["bench"])
-
-	_cards[col] = refs
-	return p
+	refs["compact"] = compact
+	refs["box"] = box
+	return refs
 
 
 func _build_touchline() -> Control:
@@ -320,10 +376,26 @@ func _build_touchline() -> Control:
 
 
 func _build_action_bar() -> Control:
-	var pair: Array = UI.panel("YOUR CALL — attack, switch or use an item (items cost the turn)", true)
+	## Kept deliberately short: in doubles this bar must fit UNDER two stacked
+	## battler blocks per side card inside the shell's content area (see
+	## _doubles_ui_qa.gd, which asserts its rect is fully on-screen).
+	var pair: Array = UI.panel("", true)
 	pair[0].visible = false
-	var rows := UI.vbox(6)
+	var rows := UI.vbox(4)
 	pair[1].add_child(rows)
+	var head_row := UI.hbox(8)
+	rows.add_child(head_row)
+	head_row.add_child(UI.label("YOUR CALL", 11, UI.COL_DIM))
+	var head := UI.label("", 13, UI.COL_ACCENT)
+	head_row.add_child(head)
+	head_row.add_child(UI.spacer_h())
+	var undo := Button.new()
+	undo.text = "↩ redo slot 1"
+	undo.visible = false
+	undo.custom_minimum_size = Vector2(110, 24)
+	undo.add_theme_font_size_override("font_size", 12)
+	undo.pressed.connect(_on_undo_slot)
+	head_row.add_child(undo)
 	var moves_row := UI.hbox(6)
 	rows.add_child(moves_row)
 	var lower := UI.hbox(6)
@@ -334,6 +406,8 @@ func _build_action_bar() -> Control:
 	var items_row := UI.hbox(6)
 	items_row.alignment = BoxContainer.ALIGNMENT_END
 	lower.add_child(items_row)
+	pair[0].set_meta("head", head)
+	pair[0].set_meta("undo", undo)
 	pair[0].set_meta("moves_row", moves_row)
 	pair[0].set_meta("switch_row", switch_row)
 	pair[0].set_meta("items_row", items_row)
@@ -373,10 +447,20 @@ func _refresh_all() -> void:
 
 func _refresh_scoreboard() -> void:
 	_score_label.text = "%d – %d" % [runner.wins[0], runner.wins[1]]
-	_battle_label.text = "BEST OF 3  ·  BATTLE %d  ·  TURN %d  ·  %s" % [
-		runner.battle_no, runner.turn_now,
+	_battle_label.text = "BEST OF 3  ·  BATTLE %d%s  ·  TURN %d  ·  %s" % [
+		runner.battle_no, "  ·  2v2 DOUBLES" if runner.doubles_now() else "", runner.turn_now,
 		("LEAGUE ROUND %d" % int(runner.fixture["round"])) if runner.fixture["comp"] == "league"
 		else Season.cup_round_name(int(runner.fixture["round"])).to_upper() + " (CUP)"]
+	var wk := str(runner.vm.get("weather", ""))
+	if wk == "" or not WEATHER_UI.has(wk):
+		_weather_label.visible = false
+	else:
+		_weather_label.visible = true
+		var spec: Array = WEATHER_UI[wk]
+		var turns := int(runner.vm.get("weather_turns", 0))
+		_weather_label.text = "◈ %s%s" % [spec[0],
+			("  ·  %d turn%s left" % [turns, "" if turns == 1 else "s"]) if turns > 0 else ""]
+		_weather_label.add_theme_color_override("font_color", spec[1])
 
 
 func _refresh_bag() -> void:
@@ -392,65 +476,25 @@ func _refresh_bag() -> void:
 
 
 func _refresh_card(side: int, animate: bool) -> void:
-	var refs: Dictionary = _cards[side]
-	if refs.is_empty():
+	var card: Dictionary = _cards[side]
+	if card.is_empty():
 		return
 	var team: Array = runner.vm["teams"][side]
 	if team.is_empty():
 		return
-	var b: Dictionary = team[runner.vm["active"][side]]
-	refs["name"].text = str(b["name"])
-	refs["level"].text = "Lv %d  %s" % [int(b["level"]), str(b["species"]) if b["species"] != b["name"] else ""]
-	for c in refs["types"].get_children():
-		c.queue_free()
-	for t in b["types"]:
-		refs["types"].add_child(UI.type_badge(str(t)))
-	var frac := float(b["hp"]) / maxf(float(b["max_hp"]), 1.0)
-	refs["hp_fill"].bg_color = UI.hp_color(frac)
-	if animate:
-		var tw := create_tween()
-		tw.tween_property(refs["hp_bar"], "value", frac, 0.35).set_trans(Tween.TRANS_CUBIC)
-	else:
-		refs["hp_bar"].value = frac
-	refs["hp_text"].text = "%d / %d HP  (%d%%)" % [int(b["hp"]), int(b["max_hp"]), int(round(frac * 100))]
-	for c in refs["status"].get_children():
-		c.queue_free()
-	if str(b["status"]) != "":
-		refs["status"].add_child(UI.status_chip(str(b["status"])))
-	if b["confused"]:
-		refs["status"].add_child(UI.status_chip("confused"))
-	refs["stages"].text = UI.stage_text(b["stages"])
-	# held item chip
-	var iid := str(b.get("item", ""))
-	if iid == "":
-		refs["item"].text = "nothing"
-		refs["item"].add_theme_color_override("font_color", UI.COL_DIM)
-		refs["item"].tooltip_text = "No held item."
-	else:
-		var it: Dictionary = DataStore.item(iid)
-		var consumed := bool(b.get("item_consumed", false))
-		refs["item"].text = "◆ %s%s" % [str(it.get("name", iid)), "  (spent)" if consumed else ""]
-		refs["item"].add_theme_color_override("font_color", UI.COL_DIM if consumed else UI.COL_WARN)
-		refs["item"].tooltip_text = "%s\n%s" % [str(it.get("name", iid)), str(it.get("desc", ""))]
-	# live move list with PP
-	for c in refs["moves"].get_children():
-		c.queue_free()
-	for mname in b["moves"]:
-		var mv: Dictionary = DataStore.move(str(mname))
-		var mrow := UI.hbox(6)
-		mrow.add_child(UI.type_badge(str(mv.get("type", "?")), 9))
-		var pp_left := int(b.get("pp", {}).get(str(mname), -1))
-		var out_of_pp := pp_left == 0
-		var ml := UI.label(str(mname), 12, UI.COL_DIM if out_of_pp else UI.COL_TEXT)
-		mrow.add_child(ml)
-		mrow.add_child(UI.spacer_h())
-		var pw := int(mv.get("power", 0))
-		var meta_txt := ("pw %d" % pw) if pw > 0 else str(mv.get("category", ""))
-		mrow.add_child(UI.label("%s · %s PP" % [meta_txt, str(pp_left) if pp_left >= 0 else "?"],
-			11, UI.COL_BAD if out_of_pp else UI.COL_DIM))
-		refs["moves"].add_child(mrow)
+	_ensure_card_blocks(side)
+	var actives: Array = runner.vm["actives"][side]
+	for k in card["blocks"].size():
+		var refs: Dictionary = card["blocks"][k]
+		var idx: int = int(actives[k]) if k < actives.size() else -1
+		if idx < 0 or idx >= team.size():
+			refs["box"].visible = false
+			continue
+		refs["box"].visible = true
+		_refresh_block(refs, team[idx], animate)
 	# bench pips
-	for c in refs["bench"].get_children():
+	var bench: Control = card["bench"]
+	for c in bench.get_children():
 		c.queue_free()
 	for i in team.size():
 		var m: Dictionary = team[i]
@@ -463,12 +507,87 @@ func _refresh_card(side: int, animate: bool) -> void:
 		var sb := StyleBoxFlat.new()
 		var mf := float(m["hp"]) / maxf(float(m["max_hp"]), 1.0)
 		sb.bg_color = Color("242a3d") if m["fainted"] else UI.hp_color(mf) * Color(1, 1, 1, 0.55 + 0.45 * mf)
-		if i == runner.vm["active"][side]:
+		if actives.has(i):
 			sb.border_color = Color.WHITE
 			sb.set_border_width_all(1)
 		sb.set_corner_radius_all(2)
 		pip.add_theme_stylebox_override("panel", sb)
-		refs["bench"].add_child(pip)
+		bench.add_child(pip)
+
+
+func _refresh_block(refs: Dictionary, b: Dictionary, animate: bool) -> void:
+	var compact := bool(refs.get("compact", false))
+	refs["name"].text = str(b["name"])
+	if compact:
+		refs["level"].text = "Lv %d" % int(b["level"])
+	else:
+		refs["level"].text = "Lv %d  %s" % [int(b["level"]), str(b["species"]) if b["species"] != b["name"] else ""]
+	for c in refs["types"].get_children():
+		c.queue_free()
+	for t in b["types"]:
+		refs["types"].add_child(UI.type_badge(str(t), 9 if compact else 11))
+	var frac := float(b["hp"]) / maxf(float(b["max_hp"]), 1.0)
+	refs["hp_fill"].bg_color = UI.hp_color(frac)
+	if animate:
+		var tw := create_tween()
+		tw.tween_property(refs["hp_bar"], "value", frac, 0.35).set_trans(Tween.TRANS_CUBIC)
+	else:
+		refs["hp_bar"].value = frac
+	if compact:
+		refs["hp_text"].text = "%d/%d" % [int(b["hp"]), int(b["max_hp"])]
+	else:
+		refs["hp_text"].text = "%d / %d HP  (%d%%)" % [int(b["hp"]), int(b["max_hp"]), int(round(frac * 100))]
+	for c in refs["status"].get_children():
+		c.queue_free()
+	if str(b["status"]) != "":
+		refs["status"].add_child(UI.status_chip(str(b["status"]), 9 if compact else 11))
+	if b["confused"]:
+		refs["status"].add_child(UI.status_chip("confused", 9 if compact else 11))
+	refs["stages"].text = UI.stage_text(b["stages"])
+	# held item chip
+	var iid := str(b.get("item", ""))
+	if iid == "":
+		refs["item"].text = "—" if compact else "nothing"
+		refs["item"].add_theme_color_override("font_color", UI.COL_DIM)
+		refs["item"].tooltip_text = "No held item."
+	else:
+		var it: Dictionary = DataStore.item(iid)
+		var consumed := bool(b.get("item_consumed", false))
+		refs["item"].text = "◆ %s%s" % [str(it.get("name", iid)),
+			("*" if compact else "  (spent)") if consumed else ""]
+		refs["item"].add_theme_color_override("font_color", UI.COL_DIM if consumed else UI.COL_WARN)
+		refs["item"].tooltip_text = "%s\n%s%s" % [str(it.get("name", iid)), str(it.get("desc", "")),
+			"\n(already spent this battle)" if consumed else ""]
+	# live move list with PP
+	for c in refs["moves"].get_children():
+		c.queue_free()
+	for mname in b["moves"]:
+		var mv: Dictionary = DataStore.move(str(mname))
+		var pp_left := int(b.get("pp", {}).get(str(mname), -1))
+		var out_of_pp := pp_left == 0
+		var pw := int(mv.get("power", 0))
+		var meta_txt := ("pw %d" % pw) if pw > 0 else str(mv.get("category", ""))
+		if compact:
+			# 2x2 grid cell: type-coloured move name + PP count (tooltip = detail)
+			var cell := UI.hbox(4)
+			var ml := UI.label(str(mname), 10,
+				UI.COL_DIM if out_of_pp else DataStore.type_color(str(mv.get("type", "?"))).lightened(0.25))
+			ml.mouse_filter = Control.MOUSE_FILTER_STOP
+			ml.tooltip_text = "%s · %s · %s · %s PP left" % [str(mv.get("type", "?")).to_upper(),
+				str(mv.get("category", "?")), meta_txt, str(pp_left) if pp_left >= 0 else "?"]
+			cell.add_child(ml)
+			cell.add_child(UI.label("·%s" % (str(pp_left) if pp_left >= 0 else "?"), 9,
+				UI.COL_BAD if out_of_pp else UI.COL_DIM))
+			refs["moves"].add_child(cell)
+			continue
+		var mrow := UI.hbox(6)
+		mrow.add_child(UI.type_badge(str(mv.get("type", "?")), 9))
+		var ml2 := UI.label(str(mname), 12, UI.COL_DIM if out_of_pp else UI.COL_TEXT)
+		mrow.add_child(ml2)
+		mrow.add_child(UI.spacer_h())
+		mrow.add_child(UI.label("%s · %s PP" % [meta_txt, str(pp_left) if pp_left >= 0 else "?"],
+			11, UI.COL_BAD if out_of_pp else UI.COL_DIM))
+		refs["moves"].add_child(mrow)
 
 
 func _refresh_graph() -> void:
@@ -499,8 +618,12 @@ func _after_event(e: Dictionary) -> void:
 		"turn_start":
 			_refresh_scoreboard()
 			_refresh_graph()
-		"damage", "heal", "status_tick", "confused_hit":
+		"damage", "heal", "status_tick", "confused_hit", "weather_chip":
 			_refresh_card(int(e["side"]), true)
+		"weather_start", "weather_end":
+			_refresh_scoreboard()
+		"ability_triggered":
+			_refresh_card(int(e.get("side", 0)), false)
 		"switch", "faint", "status_applied", "stat_change", "flinch", "held_item", "move_used":
 			_refresh_card(int(e.get("side", 0)), t != "switch")
 			if t == "faint":
@@ -549,6 +672,7 @@ func _finish_skip_refresh() -> void:
 
 func _show_over_bar() -> void:
 	_action_bar.visible = false
+	_action_slot = -1
 	_tl_row2.visible = true
 	_over_bar.visible = true
 	var s: Array = runner.shorts()
@@ -579,7 +703,7 @@ func _fill_force_menu() -> void:
 	var team: Array = runner.vm["teams"][runner.player_side]
 	for i in team.size():
 		var b: Dictionary = team[i]
-		if b["fainted"] or i == runner.vm["active"][runner.player_side]:
+		if b["fainted"] or runner.vm["actives"][runner.player_side].has(i):
 			continue
 		pop.add_item("%s  Lv%d  %d%%" % [b["name"], int(b["level"]),
 			int(round(100.0 * float(b["hp"]) / maxf(float(b["max_hp"]), 1.0)))], i)
@@ -595,11 +719,32 @@ func _on_force_switch(id: int) -> void:
 # ------------------------------------------------------------------ action bar (manual combat)
 
 func _show_action_bar() -> void:
-	if _action_bar.visible:
+	var doubles: bool = runner.doubles_now()
+	var slot := 0
+	if doubles:
+		var waiting: Array = runner.slots_awaiting()
+		if waiting.is_empty():
+			return
+		slot = int(waiting[0])
+	if _action_bar.visible and _action_slot == slot:
 		return
+	_action_slot = slot
 	_over_bar.visible = false
 	_action_bar.visible = true
 	_tl_row2.visible = false  # policies are moot while you call every turn
+	var head: Label = _action_bar.get_meta("head")
+	var undo: Button = _action_bar.get_meta("undo")
+	undo.visible = false
+	if doubles:
+		var me: Dictionary = runner.engine.slot_battler(runner.player_side, slot)
+		head.text = "DOUBLES — SLOT %d/%d: %s.  Pick a move AND its target, switch, or use an item." % [
+			slot + 1, runner.engine.slot_count(), str(me.get("name", "?"))]
+		if not runner.slot_actions.is_empty():
+			var prev_slot: int = runner.slot_actions.keys()[0]
+			undo.text = "↩ redo slot %d" % (int(prev_slot) + 1)
+			undo.visible = true
+	else:
+		head.text = "Attack, switch or use an item (items cost the turn)."
 	var moves_row: HBoxContainer = _action_bar.get_meta("moves_row")
 	var switch_row: HBoxContainer = _action_bar.get_meta("switch_row")
 	var items_row: HBoxContainer = _action_bar.get_meta("items_row")
@@ -610,9 +755,14 @@ func _show_action_bar() -> void:
 	for c in items_row.get_children():
 		c.queue_free()
 	var item_groups := {}   # item_id -> [action dicts]
-	for a in runner.available_actions():
+	var acts: Array = runner.available_actions_slot(slot) if doubles else runner.available_actions()
+	for a in acts:
 		if a["type"] == "move":
-			moves_row.add_child(_move_button(a))
+			if doubles and str(a.get("targeting", "")) == "single" \
+					and a.get("targets", []).size() > 1:
+				moves_row.add_child(_move_target_menu(a))
+			else:
+				moves_row.add_child(_move_button(a))
 		elif a["type"] == "switch":
 			switch_row.add_child(_switch_button(a))
 		elif a["type"] == "use_item":
@@ -624,36 +774,90 @@ func _show_action_bar() -> void:
 		items_row.add_child(_item_menu(str(iid), item_groups[iid]))
 
 
+func _on_undo_slot() -> void:
+	if runner.slot_actions.is_empty():
+		return
+	runner.retract_slot_action(int(runner.slot_actions.keys()[0]))
+	_action_slot = -1
+	_action_bar.visible = false
+	_show_action_bar()
+
+
+static func _eff_text(mv: Dictionary, pv: Dictionary, spread: bool) -> String:
+	var eff := float(pv.get("eff", 1.0))
+	var est := int(round(float(pv.get("est_frac", 0.0)) * 100))
+	if str(mv.get("category", "")) == "status":
+		return "status"
+	var t := "~%d%% dmg" % est
+	if eff >= 2.0:
+		t += " ▲▲"
+	elif eff == 0.0:
+		t = "immune ✕"
+	elif eff < 1.0:
+		t += " ▼"
+	if spread:
+		t += " · EACH"
+	return t
+
+
 func _move_button(a: Dictionary) -> Button:
 	var btn := Button.new()
 	var mv: Dictionary = DataStore.move(str(a["move"]))
+	var tg := str(a.get("targeting", ""))
+	var spread := tg == "spread_foes" or tg == "spread_all"
 	var pv: Dictionary = a.get("preview", {})
+	var action := {"type": "move", "index": int(a["index"])}
+	if tg == "single" and a.get("targets", []).size() == 1:
+		var t: Dictionary = a["targets"][0]
+		pv = t.get("preview", pv)
+		action["target"] = {"side": int(t["side"]), "slot": int(t["slot"])}
 	var eff := float(pv.get("eff", 1.0))
-	var est := int(round(float(pv.get("est_frac", 0.0)) * 100))
-	var eff_txt := ""
-	if str(mv.get("category", "")) == "status":
-		eff_txt = "status"
-	else:
-		eff_txt = "~%d%% dmg" % est
-		if eff >= 2.0:
-			eff_txt += " ▲▲"
-		elif eff == 0.0:
-			eff_txt = "immune ✕"
-		elif eff < 1.0:
-			eff_txt += " ▼"
+	var eff_txt := _eff_text(mv, pv, spread)
 	var pow_txt := "—" if int(mv.get("power", 0)) <= 0 else str(int(mv["power"]))
 	var acc_v := int(mv.get("accuracy", 100))
 	var acc_txt := "—" if acc_v <= 0 else "%d%%" % acc_v
+	var tail := eff_txt
+	if spread:
+		tail = ("HITS BOTH FOES%s · " % (" + ALLY" if tg == "spread_all" else "")) + eff_txt
 	btn.text = "%s\n%s · pw %s · acc %s · %d PP\n%s" % [str(a["move"]),
-		str(mv.get("type", "?")).to_upper(), pow_txt, acc_txt, int(a["pp"]), eff_txt]
-	btn.tooltip_text = "Type %s · %s · power %s · accuracy %s · %d PP left" % [
-		str(mv.get("type", "?")), str(mv.get("category", "?")), pow_txt, acc_txt, int(a["pp"])]
+		str(mv.get("type", "?")).to_upper(), pow_txt, acc_txt, int(a["pp"]), tail]
+	btn.tooltip_text = "Type %s · %s · power %s · accuracy %s · %d PP left%s" % [
+		str(mv.get("type", "?")), str(mv.get("category", "?")), pow_txt, acc_txt, int(a["pp"]),
+		"\nSpread: hits every target at 75% power." if spread else ""]
 	btn.add_theme_color_override("font_color",
 		UI.COL_GOOD if eff >= 2.0 else (UI.COL_BAD if eff == 0.0 else UI.COL_TEXT))
-	btn.pressed.connect(_on_player_action.bind({"type": "move", "index": int(a["index"])}))
-	btn.custom_minimum_size = Vector2(130, 50)
+	btn.add_theme_font_size_override("font_size", 12)
+	btn.pressed.connect(_on_player_action.bind(action))
+	btn.custom_minimum_size = Vector2(120, 46)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return btn
+
+
+## Doubles two-step: the move button opens a target picker (per-target preview).
+func _move_target_menu(a: Dictionary) -> MenuButton:
+	var mb := MenuButton.new()
+	var mv: Dictionary = DataStore.move(str(a["move"]))
+	var pow_txt := "—" if int(mv.get("power", 0)) <= 0 else str(int(mv["power"]))
+	var acc_v := int(mv.get("accuracy", 100))
+	var acc_txt := "—" if acc_v <= 0 else "%d%%" % acc_v
+	mb.text = "%s  🎯▾\n%s · pw %s · acc %s · %d PP\npick a target" % [str(a["move"]),
+		str(mv.get("type", "?")).to_upper(), pow_txt, acc_txt, int(a["pp"])]
+	mb.flat = false
+	mb.add_theme_font_size_override("font_size", 12)
+	mb.custom_minimum_size = Vector2(120, 46)
+	mb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mb.tooltip_text = "Single-target move — choose which foe to hit."
+	var targets: Array = a.get("targets", [])
+	var pop := mb.get_popup()
+	for i in targets.size():
+		var t: Dictionary = targets[i]
+		var pv: Dictionary = t.get("preview", {})
+		pop.add_item("→ %s   (%s)" % [str(t.get("name", "?")), _eff_text(mv, pv, false)], i)
+	pop.id_pressed.connect(func(id: int):
+		var t: Dictionary = targets[id]
+		_on_player_action({"type": "move", "index": int(a["index"]),
+			"target": {"side": int(t["side"]), "slot": int(t["slot"])}}))
+	return mb
 
 
 func _switch_button(a: Dictionary) -> Button:
@@ -661,8 +865,9 @@ func _switch_button(a: Dictionary) -> Button:
 	btn.text = "⇄ %s · %d%% HP" % [str(a["pokemon"]),
 		int(round(100.0 * float(a["hp"]) / maxf(float(a["max_hp"]), 1.0)))]
 	btn.add_theme_color_override("font_color", UI.COL_ACCENT)
+	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(_on_player_action.bind({"type": "switch", "index": int(a["index"])}))
-	btn.custom_minimum_size = Vector2(90, 30)
+	btn.custom_minimum_size = Vector2(90, 26)
 	return btn
 
 
@@ -673,8 +878,9 @@ func _item_menu(iid: String, actions: Array) -> MenuButton:
 	mb.text = "🧰 %s ×%d ▾" % [str(first.get("name", iid)), int(first.get("count", 1))]
 	mb.flat = false
 	mb.add_theme_color_override("font_color", UI.COL_WARN)
+	mb.add_theme_font_size_override("font_size", 12)
 	mb.tooltip_text = "%s — using an item costs this turn." % str(first.get("desc", ""))
-	mb.custom_minimum_size = Vector2(120, 30)
+	mb.custom_minimum_size = Vector2(110, 26)
 	var pop := mb.get_popup()
 	for i in actions.size():
 		var a: Dictionary = actions[i]
@@ -695,7 +901,20 @@ func _item_menu(iid: String, actions: Array) -> MenuButton:
 
 
 func _on_player_action(action: Dictionary) -> void:
+	if runner.doubles_now():
+		runner.submit_slot_action(_action_slot, action)
+		_action_slot = -1
+		if runner.awaiting_input() and not runner.slots_awaiting().is_empty():
+			_action_bar.visible = false
+			_show_action_bar()   # step two: the other slot's call
+			return
+		_action_bar.visible = false
+		_tl_row2.visible = true
+		if _speed <= 0.0:
+			_set_speed(1.0)
+		return
 	_action_bar.visible = false
+	_action_slot = -1
 	_tl_row2.visible = true
 	runner.submit_action(action)
 	if _speed <= 0.0:

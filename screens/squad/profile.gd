@@ -1,4 +1,5 @@
 extends Control
+const EvoSvc := preload("res://shared/sim/services/evolution.gd")
 ## Squad piece: full Pokémon profile (FM player-profile style).
 ## Overview tab: header (monogram, types, key facts), attribute panels with
 ## 1-20 colored bars and 30-day change indicators, known + learnable moves,
@@ -115,9 +116,16 @@ func _build(squad: Array, idx: int) -> void:
 	left.add_theme_constant_override("separation", 8)
 	left.custom_minimum_size = Vector2(470, 0)
 	body.add_child(left)
+	var evo_panel := _evolution_panel(inst)
+	var evo_pending: bool = EvoSvc.instance != null \
+		and not EvoSvc.instance.pending_for(str(inst["uid"])).is_empty()
+	if evo_panel != null and evo_pending:
+		left.add_child(evo_panel)   # a decision is due — lead with it, FM-style
 	left.add_child(_attributes_panel(inst, sp, stats, squad))
-	left.add_child(_matchups_panel(sp))
+	left.add_child(_matchups_panel(inst, sp))
 	left.add_child(_development_panel(inst, sp))
+	if evo_panel != null and not evo_pending:
+		left.add_child(evo_panel)
 
 	var mid := VBoxContainer.new()
 	mid.add_theme_constant_override("separation", 8)
@@ -192,6 +200,23 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 		var b := UI.type_badge(t, 12)
 		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		name_row.add_child(b)
+	var ab_tag := Label.new()
+	ab_tag.text = UI.ability_label(inst).to_upper()
+	ab_tag.add_theme_font_size_override("font_size", 11)
+	ab_tag.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.3))
+	ab_tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	ab_tag.mouse_filter = Control.MOUSE_FILTER_STOP
+	ab_tag.tooltip_text = "Battle ability (passive, always active in battle):\n%s" % UI.ability_tip(inst)
+	name_row.add_child(ab_tag)
+	var nat_tag := Label.new()
+	nat_tag.text = UI.nature_text(inst).to_upper()
+	nat_tag.add_theme_font_size_override("font_size", 11)
+	nat_tag.add_theme_color_override("font_color",
+		UI.COL_TEXT_DIM if UI.nature_text(inst).ends_with("(neutral)") else UI.COL_WARN.lightened(0.15))
+	nat_tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	nat_tag.mouse_filter = Control.MOUSE_FILTER_STOP
+	nat_tag.tooltip_text = UI.nature_tip(inst)
+	name_row.add_child(nat_tag)
 	var svc: Node = Service.ensure()
 	var happy: Dictionary = Personality.happiness(inst, svc, Personality.context(svc))
 	var sel: Dictionary = Selection.selection()
@@ -515,8 +540,13 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 	var dev: Dictionary = History.ensure().delta_since(inst["uid"], inst, DEV_WINDOW_DAYS)
 	for k in STAT_KEYS:
 		var name_l := Label.new()
-		name_l.text = STAT_NAMES[k]
+		var ndir := UI.nature_dir(inst, k)
+		name_l.text = STAT_NAMES[k] + ("  +" if ndir > 0 else ("  −" if ndir < 0 else ""))
 		name_l.custom_minimum_size = Vector2(84, 0)
+		if ndir != 0:
+			name_l.add_theme_color_override("font_color", UI.COL_GOOD if ndir > 0 else UI.COL_WARN)
+			name_l.mouse_filter = Control.MOUSE_FILTER_STOP
+			name_l.tooltip_text = UI.nature_tip(inst)
 		grid.add_child(name_l)
 
 		var b20 := UI.base_to_20(int(base[k]))
@@ -586,7 +616,9 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 	foot.add_theme_constant_override("separation", 10)
 	v.add_child(foot)
 	var tot_l := Label.new()
-	tot_l.text = "Base total %d  ·  Current total %d" % [bst, tot]
+	tot_l.text = "Base total %d  ·  Current total %d  ·  %s nature applied" % [bst, tot, UI.nature_name(inst)]
+	tot_l.mouse_filter = Control.MOUSE_FILTER_STOP
+	tot_l.tooltip_text = UI.nature_tip(inst) + "\nCURRENT figures are battle-real — identical to what the match engine uses."
 	tot_l.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	tot_l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	foot.add_child(tot_l)
@@ -716,15 +748,18 @@ func _num_cell(text: String, dim: bool) -> Label:
 	return l
 
 
-func _matchups_panel(sp: Dictionary) -> Control:
+func _matchups_panel(inst: Dictionary, sp: Dictionary) -> Control:
 	var pk := _panel("Defensive Matchups")
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
+	var ability := UI.ability_id(inst)
 	var weak: Array = []
 	var resist: Array = []
 	var immune: Array = []
 	for t in DataStore.types:
-		var mult := DataStore.effectiveness(t, sp["types"])
+		# Ability-aware: Levitate/Water Absorb etc. zero out or dampen types
+		# the raw chart would call weaknesses — same math the engine applies.
+		var mult := UI.defense_multiplier(sp["types"], ability, t)
 		if mult == 0.0:
 			immune.append([t, mult])
 		elif mult > 1.0:
@@ -768,6 +803,16 @@ func _matchups_panel(sp: Dictionary) -> Control:
 				wrap.add_child(b)
 		row.add_child(wrap)
 		v.add_child(row)
+	var imm_types := UI.ability_immunities(ability)
+	if not imm_types.is_empty():
+		var note := Label.new()
+		note.text = "%s: immune to %s — folded into the chart above." % [UI.ability_label(inst),
+			" & ".join(imm_types.map(func(t): return str(t).capitalize()))]
+		note.add_theme_font_size_override("font_size", 11)
+		note.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.2))
+		note.mouse_filter = Control.MOUSE_FILTER_STOP
+		note.tooltip_text = UI.ability_tip(inst)
+		v.add_child(note)
 	return panel
 
 
@@ -1338,6 +1383,149 @@ func _development_panel(inst: Dictionary, sp: Dictionary) -> Control:
 		svc.set_training_focus(uid, Actions.FOCUS_KEYS[i]))
 	focus_row.add_child(picker)
 	return panel
+
+
+## FM-style development-milestone panel: the mon's evolution pathways with
+## live eligibility, the pending manager-approval decision (Approve/Postpone
+## act on the real EvolutionService) and stone routes (Use consumes stock).
+func _evolution_panel(inst: Dictionary) -> Control:
+	var svc: RefCounted = EvoSvc.instance
+	if svc == null:
+		return null
+	var uid: String = str(inst["uid"])
+	var options: Array = svc.eligibility(inst)
+	if options.is_empty():
+		return null
+	var pk := _panel("Evolution")
+	var panel: PanelContainer = pk[0]
+	var v: VBoxContainer = pk[1]
+
+	var pend: Dictionary = svc.pending_for(uid)
+	if not pend.is_empty():
+		v.add_child(_evo_pending_box(inst, pend, svc))
+
+	for o in options:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		v.add_child(row)
+		var arrow := Label.new()
+		arrow.text = "->  %s" % str(o["to_name"])
+		arrow.custom_minimum_size = Vector2(130, 0)
+		arrow.add_theme_color_override("font_color",
+			Color.WHITE if o["ok"] else UI.COL_TEXT)
+		row.add_child(arrow)
+		var mth := Label.new()
+		mth.text = _evo_method_word(str(o["method"]))
+		mth.custom_minimum_size = Vector2(88, 0)
+		mth.add_theme_font_size_override("font_size", 11)
+		mth.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+		row.add_child(mth)
+		var status := Label.new()
+		status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		status.add_theme_font_size_override("font_size", 12)
+		if o["ok"]:
+			status.text = "READY" if str(o["method"]) != "stone" else "READY — stone in stock"
+			status.add_theme_color_override("font_color", UI.COL_GOOD)
+		else:
+			status.text = str(o["why"])
+			status.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+		status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(status)
+
+	# stone routes get a live Use button (consumes the stone from the storeroom)
+	var stones: Array = svc.stone_options(uid)
+	if not stones.is_empty():
+		var srow := HFlowContainer.new()
+		srow.add_theme_constant_override("h_separation", 8)
+		srow.add_theme_constant_override("v_separation", 6)
+		v.add_child(srow)
+		for s in stones:
+			var b := Button.new()
+			var owned := int(s["owned"])
+			b.text = "Use %s (%d in stock)" % [str(s["item_name"]), owned] if owned > 0 \
+				else "%s: none in stock" % str(s["item_name"])
+			b.disabled = owned <= 0
+			b.tooltip_text = ("Evolves %s into %s immediately — using the stone is the approval." %
+				[UI.display_name(inst), str(s["to_name"])]) if owned > 0 \
+				else "Buy one in the League Store (Items screen)."
+			var iid := str(s["item_id"])
+			b.pressed.connect(func() -> void: _evo_act(svc.use_stone(uid, iid)))
+			srow.add_child(b)
+		if stones.all(func(s2): return int(s2["owned"]) <= 0):
+			var shop := Button.new()
+			shop.text = "League Store >"
+			shop.pressed.connect(_goto_items)
+			srow.add_child(shop)
+
+	var foot := Label.new()
+	foot.text = "Effective Lv %d  (Lv %d + %d from %d training development pts)" % \
+		[svc.effective_level(inst), int(inst["level"]), svc.dev_levels(uid), svc.dev_points(uid)]
+	foot.add_theme_font_size_override("font_size", 11)
+	foot.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	foot.tooltip_text = "Levels are static in this league — training development is what pushes a Pokémon past evolution thresholds (6 dev pts = 1 effective level)."
+	v.add_child(foot)
+	return panel
+
+
+## The highlighted "awaiting your approval" decision box inside the panel.
+func _evo_pending_box(inst: Dictionary, pend: Dictionary, svc: RefCounted) -> Control:
+	var box := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(UI.COL_GOOD, 0.12)
+	sb.border_color = UI.COL_GOOD
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	box.add_theme_stylebox_override("panel", sb)
+	var bv := VBoxContainer.new()
+	bv.add_theme_constant_override("separation", 6)
+	box.add_child(bv)
+	var head := Label.new()
+	head.text = "READY TO EVOLVE INTO %s — AWAITING YOUR APPROVAL" % str(pend["to_name"]).to_upper()
+	head.add_theme_font_size_override("font_size", 12)
+	head.add_theme_color_override("font_color", UI.COL_GOOD)
+	head.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	bv.add_child(head)
+	var uid: String = str(inst["uid"])
+	var btns := HBoxContainer.new()
+	btns.add_theme_constant_override("separation", 8)
+	bv.add_child(btns)
+	var ok_b := Button.new()
+	ok_b.text = "Approve Evolution"
+	ok_b.tooltip_text = "Transform %s into %s now: +%d morale, old learnset stays trainable." % \
+		[UI.display_name(inst), str(pend["to_name"]), EvoSvc.EVOLVE_MORALE_BOOST]
+	ok_b.pressed.connect(func() -> void: _evo_act(svc.approve(uid)))
+	btns.add_child(ok_b)
+	var no_b := Button.new()
+	no_b.text = "Postpone (-%d morale)" % EvoSvc.POSTPONE_MORALE_COST
+	no_b.tooltip_text = "Hold it back: costs %d morale, the offer returns in %d days if still eligible." % \
+		[EvoSvc.POSTPONE_MORALE_COST, EvoSvc.REOFFER_DAYS]
+	no_b.pressed.connect(func() -> void: _evo_act(svc.postpone(uid)))
+	btns.add_child(no_b)
+	return box
+
+
+func _evo_act(err: String) -> void:
+	if err != "":
+		var dlg := AcceptDialog.new()
+		dlg.title = "Evolution"
+		dlg.dialog_text = err
+		dlg.confirmed.connect(dlg.queue_free)
+		dlg.canceled.connect(dlg.queue_free)
+		_host().add_child(dlg)
+		dlg.popup_centered()
+	refresh()
+
+
+func _evo_method_word(method: String) -> String:
+	match method:
+		"level": return "Level"
+		"development": return "Development"
+		"stone": return "Stone"
+	return method.capitalize()
 
 
 func _contract_panel(inst: Dictionary) -> Control:

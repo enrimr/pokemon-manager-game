@@ -1,4 +1,5 @@
 extends Control
+const EvoSvc := preload("res://shared/sim/services/evolution.gd")
 ## Squad screen — FM24-style squad table + full Pokémon profile.
 ## Owned by the "squad" piece. All data live from GameState / DataStore.
 
@@ -314,7 +315,24 @@ func _make_record(inst: Dictionary, wage_bill: int) -> Dictionary:
 		promise = _svc.recent_promise(uid, "broken", 45)
 	if promise.is_empty():
 		promise = _svc.recent_promise(uid, "kept", 30)
+	# live evolution state (pending approval / stone route ready)
+	var evo_pending := false
+	var evo_ready := false
+	var evo_to := ""
+	var evo_svc: RefCounted = EvoSvc.instance
+	if evo_svc != null:
+		var pend: Dictionary = evo_svc.pending_for(uid)
+		if not pend.is_empty():
+			evo_pending = true
+			evo_to = str(pend["to_name"])
+		elif not evo_svc.chain_of(int(inst["species_id"])).is_empty():
+			for o in evo_svc.eligibility(inst):
+				if o["ok"]:
+					evo_ready = true
+					evo_to = str(o["to_name"])
+					break
 	return {
+		"evo_pending": evo_pending, "evo_ready": evo_ready, "evo_to": evo_to,
 		"happy": happy, "happy_score": int(happy["score"]),
 		"pers": str((happy["arch"] as Dictionary)["name"]),
 		"sstat": happy["status"], "concern": str(happy["top_concern"]),
@@ -322,6 +340,9 @@ func _make_record(inst: Dictionary, wage_bill: int) -> Dictionary:
 		"pick": pick, "pick_rank": int(pick["rank"]),
 		"flags": flags, "role": str(pick["role"]),
 		"item_id": item_id, "item": item, "item_name": str(item.get("name", "")),
+		"babil": UI.ability_label(inst), "babil_tip": UI.ability_tip(inst),
+		"nature": UI.nature_text(inst), "nature_tip": UI.nature_tip(inst),
+		"nature_name": UI.nature_name(inst),
 		"cur": float(rep["now"]), "pot": float(rep["pot"]),
 		"rec": str(rep["verdict"]), "report": rep,
 		"inst": inst, "uid": uid,
@@ -410,6 +431,13 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 		[mood_avg, "\n".join(PackedStringArray(unhappy))]) if not unhappy.is_empty() else \
 		"Average squad happiness %d/100 — no one is agitating. The Happiness view shows every factor." % mood_avg
 	_chips_box.add_child(mood_chip)
+	var evo_svc: RefCounted = EvoSvc.instance
+	if evo_svc != null and not evo_svc.pending().is_empty():
+		var pend: Array = evo_svc.pending()
+		var evo_chip := _chip("EVOLUTION", "%d awaiting approval" % pend.size(), UI.COL_GOOD)
+		evo_chip.tooltip_text = "Manager approval needed — decide from the profile or the inbox:\n" + \
+			"\n".join(PackedStringArray(pend.map(func(e): return "%s -> %s" % [e["name"], e["to_name"]])))
+		_chips_box.add_child(evo_chip)
 	var wages_chip := _chip("WAGES /WK", "%s of %s" % [UI.money(wage_bill),
 		UI.money(int(club["finances"]["wage_budget"]))],
 		UI.COL_WARN if wage_bill > int(club["finances"]["wage_budget"]) else UI.COL_TEXT)
@@ -458,6 +486,7 @@ func _cell_text(rec: Dictionary, id: String) -> String:
 		"pick": return (rec["pick"] as Dictionary)["text"]
 		"avail": return Selection.flags_text(rec["flags"])
 		"item": return rec["item_name"] if rec["item_name"] != "" else "-"
+		"babil": return rec["babil"]
 		"role": return rec["role"] if rec["role"] != "" else "-"
 		"cur", "pot": return ""  # star icon cells
 		"rec": return rec["rec"]
@@ -489,6 +518,9 @@ func _cell_color(rec: Dictionary, id: String) -> Color:
 		"avail": return Selection.worst_color(rec["flags"])
 		"item": return UI.rarity_color(str((rec["item"] as Dictionary).get("rarity", ""))) \
 			if rec["item_name"] != "" else UI.COL_TEXT_DIM
+		"babil": return UI.COL_ACCENT.lightened(0.25) \
+			if not UI.ability_immunities(UI.ability_id(rec["inst"])).is_empty() else UI.COL_TEXT
+		"nature": return UI.COL_TEXT_DIM if rec["nature"].ends_with("(neutral)") else UI.COL_TEXT
 		"role": return UI.COL_TEXT if rec["role"] != "" else UI.COL_TEXT_DIM
 		"rec": return (rec["report"] as Dictionary)["verdict_color"]
 		"name": return Color.WHITE
@@ -511,6 +543,7 @@ func _cell_color(rec: Dictionary, id: String) -> Color:
 		"dev": return UI.COL_GOOD if rec["dev"] > 0 else UI.COL_TEXT_DIM
 		"demand": return UI.COL_WARN if rec["demand"] > rec["salary"] * 2 else UI.COL_TEXT_DIM
 		"status":
+			if rec["evo_pending"] or rec["evo_ready"]: return UI.COL_GOOD
 			if rec["bids"] > 0: return UI.COL_WARN
 			if rec["listed"]: return UI.COL_BAD
 			return UI.COL_TEXT_DIM
@@ -522,6 +555,10 @@ func _cell_color(rec: Dictionary, id: String) -> Color:
 
 func _status_text(rec: Dictionary) -> String:
 	var parts: Array = []
+	if rec["evo_pending"]:
+		parts.append("Evolve? -> %s" % rec["evo_to"])
+	elif rec["evo_ready"]:
+		parts.append("Stone ready")
 	if rec["bids"] > 0:
 		parts.append("%d bid%s" % [rec["bids"], "s" if rec["bids"] > 1 else ""])
 	if rec["listed"]:
@@ -533,6 +570,10 @@ func _status_text(rec: Dictionary) -> String:
 
 func _status_tip(rec: Dictionary) -> String:
 	var lines: Array = []
+	if rec["evo_pending"]:
+		lines.append("Ready to evolve into %s — approve or postpone from the profile or the inbox decision message." % rec["evo_to"])
+	elif rec["evo_ready"]:
+		lines.append("An evolution stone in the storeroom would evolve it into %s — apply it from the profile or the Items screen." % rec["evo_to"])
 	if rec["bids"] > 0:
 		lines.append("%d active transfer bid%s awaiting your response (respond from the footer or right-click)." %
 			[rec["bids"], "s" if rec["bids"] > 1 else ""])
@@ -754,6 +795,24 @@ func _rebuild_table() -> void:
 					[item.get("name", "?"), item.get("rarity", "?"), item.get("desc", "")])
 			else:
 				it.set_tooltip_text(item_col, "No held item — equip one from the Items screen storeroom.")
+		var babil_col := cols.find("babil")
+		if babil_col >= 0:
+			it.set_tooltip_text(babil_col, rec["babil_tip"])
+		var nature_col := cols.find("nature")
+		if nature_col >= 0:
+			it.set_tooltip_text(nature_col, rec["nature_tip"])
+		for sk in ["hp", "atk", "def", "spa", "spd", "spe"]:
+			var s_col := cols.find(sk)
+			if s_col < 0:
+				continue
+			var dir := UI.nature_dir(rec["inst"], sk)
+			var tip := "Battle-real %s: %d — the number the match engine fights with." % \
+				[UI.STAT_SHORT[sk], int(rec[sk])]
+			if dir != 0:
+				tip += "\nIncludes the %s nature's %s10%% %s." % [rec["nature_name"],
+					"+" if dir > 0 else "−", "boost" if dir > 0 else "drop"]
+				it.set_custom_color(s_col, UI.COL_GOOD if dir > 0 else UI.COL_WARN)
+			it.set_tooltip_text(s_col, tip)
 		var name_col := cols.find("name")
 		if name_col >= 0:
 			it.set_icon(name_col, UI.dot_icon(DataStore.type_color(rec["types"][0]), 9))

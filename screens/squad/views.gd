@@ -18,11 +18,11 @@ const LOCKED_COL := "name"    # every view keeps the Name column
 
 ## Factory presets — the editable starting points.
 const PRESETS := {
-	"General": ["pick", "name", "avail", "type", "lv", "age", "cur", "pot", "rec",
+	"General": ["pick", "name", "avail", "type", "babil", "lv", "age", "cur", "pot", "rec",
 		"cond", "morale", "happy", "item", "apps", "rat", "salary", "status"],
-	"Selection": ["pick", "name", "avail", "role", "type", "lv", "cond", "fit", "morale",
+	"Selection": ["pick", "name", "avail", "role", "type", "babil", "lv", "cond", "fit", "morale",
 		"item", "apps", "kos", "rat", "value", "status"],
-	"Battle Stats": ["pick", "name", "type", "lv", "cur", "pot", "hp", "atk", "def",
+	"Battle Stats": ["pick", "name", "type", "lv", "babil", "nature", "cur", "pot", "hp", "atk", "def",
 		"spa", "spd", "spe", "tot", "dev", "apps", "wins", "kos", "dmg", "taken", "faints", "rat"],
 	"Contracts": ["pick", "name", "avail", "age", "lv", "cur", "pot", "rec", "morale",
 		"salary", "wage_pct", "expiry", "days_left", "demand", "value", "status"],
@@ -52,7 +52,11 @@ const COLS := {
 		"cat": "Identity", "desc": "Age in years and months."},
 	"item": {"title": "Held Item", "w": 100, "expand": false, "num": false,
 		"cat": "Identity", "desc": "Held item (equip from the Items screen)."},
-	"cur": {"title": "Ability", "w": 84, "expand": false, "num": true,
+	"babil": {"title": "Ability", "w": 96, "expand": false, "num": false,
+		"cat": "Identity", "desc": "Battle ability — a passive power the engine applies (immunities, entry effects...)."},
+	"nature": {"title": "Nature", "w": 116, "expand": false, "num": false,
+		"cat": "Identity", "desc": "Nature: +10% to one battle stat, −10% to another. Already applied to the attribute columns."},
+	"cur": {"title": "Cur Ability", "w": 84, "expand": false, "num": true,
 		"cat": "Coach Report", "desc": "Current ability stars (coach judgement)."},
 	"pot": {"title": "Potential", "w": 84, "expand": false, "num": true,
 		"cat": "Coach Report", "desc": "Potential star range with scouting confidence."},

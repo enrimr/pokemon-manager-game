@@ -8,6 +8,8 @@ var pokemon_by_id: Dictionary = {} # int id -> species dict
 var pokemon_by_name: Dictionary = {}
 var moves: Dictionary = {}         # move name -> move dict
 var items: Dictionary = {}         # item id -> item dict (see items.json)
+var natures: Dictionary = {}       # nature name -> {plus: stat|null, minus: stat|null}
+var abilities: Dictionary = {}     # ability id -> {id, name, effects:[tags], desc}
 var types: Array = []
 var type_chart: Dictionary = {}    # attacker -> {defender: mult}
 
@@ -17,6 +19,7 @@ const TYPE_COLORS := {
 	"fighting": Color("c03028"), "poison": Color("a040a0"), "ground": Color("e0c068"),
 	"flying": Color("a890f0"), "psychic": Color("f85888"), "bug": Color("a8b820"),
 	"rock": Color("b8a038"), "ghost": Color("705898"), "dragon": Color("7038f8"),
+	"dark": Color("705848"), "steel": Color("b8b8d0"), "fairy": Color("ee99ac"),
 }
 
 
@@ -31,6 +34,8 @@ func _load_all() -> void:
 		pokemon_by_name[p["name"]] = p
 	moves = _load_json("res://shared/data/moves.json")
 	items = _load_json("res://shared/data/items.json")
+	natures = _load_json("res://shared/data/natures.json")
+	abilities = _load_json("res://shared/data/abilities.json")
 	var tc: Dictionary = _load_json("res://shared/data/typechart.json")
 	types = tc["types"]
 	type_chart = tc["chart"]
@@ -65,6 +70,23 @@ func item(id: String) -> Dictionary:
 
 func item_name(id: String) -> String:
 	return str(items.get(id, {}).get("name", id))
+
+
+## Nature by name ({} if unknown): {plus: "atk"|..|null, minus: "atk"|..|null}.
+## +10% to `plus`, -10% to `minus`; null/null = neutral. 25 real natures.
+func nature(name: String) -> Dictionary:
+	return natures.get(name, {})
+
+
+## Ability by id ({} if unknown): {id, name, effects:[tags], desc}.
+## Effect tags are machine-readable (see abilities.json header in gen_data.py);
+## the engine wires them incrementally — unknown tags must stay inert.
+func ability(id: String) -> Dictionary:
+	return abilities.get(id, {})
+
+
+func ability_name(id: String) -> String:
+	return str(abilities.get(id, {}).get("name", id.capitalize()))
 
 
 ## All items as an Array, held first, then by price descending.
@@ -128,4 +150,8 @@ func make_battler(inst: Dictionary) -> Dictionary:
 		"moves": mv,
 		"held_item": str(held) if held != null and str(held) != "" else "",
 		"nfe": bool(sp.get("evolves", false)),
+		# Carried for the engine/UI; stat/effect application is wired by the
+		# battle-depth piece. Fallbacks cover pre-gen-2 saves.
+		"nature": str(inst.get("nature", "Hardy")),
+		"ability": str(inst.get("ability", sp.get("ability", ""))),
 	}

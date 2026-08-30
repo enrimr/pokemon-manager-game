@@ -157,6 +157,47 @@ static func type_chip(type_name: String) -> Control:
 	p.add_child(l)
 	return p
 
+## League identity colors (no copyrighted art: plain color + lettering).
+## Kanto = the Red cartridge era, Johto = the Gold cartridge era.
+static func league_color(league_id: String) -> Color:
+	match league_id:
+		"kanto": return Color("e05a4e")
+		"johto": return Color("d4a83f")
+	return TB.COL_ACCENT
+
+
+static func league_tag(league_id: String) -> String:
+	match league_id:
+		"kanto": return "KAN"
+		"johto": return "JOH"
+	return league_id.substr(0, 3).to_upper()
+
+
+## Tiny league badge chip ("KAN" / "JOH") — marks which championship a club
+## belongs to on cross-league views (cup bracket, all-regions stats).
+static func league_chip(league_id: String, font_size: int = 9) -> Control:
+	var col := league_color(league_id)
+	var p := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(col.r, col.g, col.b, 0.16)
+	sb.border_color = Color(col.r, col.g, col.b, 0.75)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(2)
+	sb.content_margin_left = 4
+	sb.content_margin_right = 4
+	sb.content_margin_top = 0
+	sb.content_margin_bottom = 0
+	p.add_theme_stylebox_override("panel", sb)
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var l := Label.new()
+	l.text = league_tag(league_id)
+	l.add_theme_font_size_override("font_size", font_size)
+	l.add_theme_color_override("font_color", col.lightened(0.3))
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	p.add_child(l)
+	return p
+
+
 const COL_WIN := Color("57c979")
 const COL_LOSS := Color("e06060")
 const COL_TITLE_ZONE := Color(0.83, 0.68, 0.21, 0.16)     # champions gold tint

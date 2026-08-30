@@ -121,8 +121,12 @@ var _search_list: ItemList
 var _toast_panel: PanelContainer
 var _toast_label: Label
 var _menu_btn: MenuButton
+const ClubPicker := preload("res://shell/club_picker.gd")
+
 var _load_confirm: ConfirmationDialog
-var _new_confirm: ConfirmationDialog
+var _new_confirm: ConfirmationDialog   # unused since the club picker took over
+var _club_picker: Control = null       # new-career club selector overlay
+var _foot_label: Label = null          # sidebar footer (league name follows career)
 
 # fonts (real typography via system fonts; no bundled assets)
 var _font_bold: SystemFont
@@ -998,11 +1002,11 @@ func _build_nav() -> void:
 			_add_subnav(list, n)
 
 	_nav_box.add_child(_thin_sep())
-	var foot := Label.new()
-	foot.text = "TRAINER MANAGER · %s" % GameState.world["meta"]["league_name"]
-	foot.add_theme_font_size_override("font_size", 9)
-	foot.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
-	_nav_box.add_child(foot)
+	_foot_label = Label.new()
+	_foot_label.text = "TRAINER MANAGER · %s" % GameState.world["meta"]["league_name"]
+	_foot_label.add_theme_font_size_override("font_size", 9)
+	_foot_label.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	_nav_box.add_child(_foot_label)
 
 	var hint := Label.new()
 	hint.text = "Space = Continue · %d–%d = screens · Ctrl+1–9 = sections" % [1, maxi(shortcut, 1)]
@@ -1239,6 +1243,8 @@ func _update_subnav() -> void:
 # ------------------------------------------------------------------ refresh
 
 func _on_career_started() -> void:
+	if _foot_label != null:   # league can change with the chosen club
+		_foot_label.text = "TRAINER MANAGER · %s" % GameState.world["meta"]["league_name"]
 	_refresh_identity()
 	_refresh_topbar()
 	_refresh_badges()
@@ -1441,7 +1447,7 @@ func _on_menu_id(id: int) -> void:
 			else:
 				_toast("No save file found")
 		2:
-			_new_confirm.popup_centered()
+			_open_club_picker()
 
 
 func _build_dialogs() -> void:
@@ -1459,19 +1465,32 @@ func _build_dialogs() -> void:
 			_toast("Load failed"))
 	add_child(_load_confirm)
 
-	_new_confirm = ConfirmationDialog.new()
-	_new_confirm.title = "New Career"
-	_new_confirm.dialog_text = "Start a brand-new career?\nThe current save will be deleted."
-	_new_confirm.ok_button_text = "Start New Career"
-	_new_confirm.confirmed.connect(func():
+	# "New Career" opens the FM-style club picker overlay instead of a plain
+	# confirm — league tabs, one row per club (rep / balance / squad strength).
+	_new_confirm = null
+
+
+## FM-style new-career flow: full-screen club selector over the shell.
+## Pick any club from either league; plain boot still defaults to Pallet.
+func _open_club_picker() -> void:
+	if _club_picker != null and is_instance_valid(_club_picker):
+		return
+	_club_picker = ClubPicker.new()
+	_club_picker.setup(_font_bold, _font_semibold, _font_header)
+	_club_picker.club_chosen.connect(func(club_id: String):
+		if _club_picker != null and is_instance_valid(_club_picker):
+			_club_picker.queue_free()
+			_club_picker = null
 		GameState.delete_save()
-		GameState.new_career()
+		GameState.new_career(20260801, club_id)
 		GameState.save_game()
 		_reset_history()
 		if not screens.is_empty():
 			navigate_to(screens.keys().front())
-		_toast("New career started at %s" % GameState.player_club().get("name", "")))
-	add_child(_new_confirm)
+		_toast("New career started at %s · %s" %
+			[GameState.player_club().get("name", ""), GameState.league_name()]))
+	_club_picker.cancelled.connect(func(): _club_picker = null)
+	add_child(_club_picker)
 
 
 # ------------------------------------------------------------------ global search

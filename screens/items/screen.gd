@@ -1,4 +1,5 @@
 extends Control
+const EvoSvc := preload("res://shared/sim/services/evolution.gd")
 ## Items screen — FM-facility-style League Store & club storeroom.
 ## Left: browsable catalog (filters, prices, stock) — buy with club funds.
 ## Right: item dossier + squad equipment board: equip/unequip held items
@@ -27,6 +28,7 @@ var _detail: VBoxContainer
 var _squad_tree: Tree
 var _equip_btn: Button
 var _strip_btn: Button
+var _use_btn: Button        # evolution stones: apply from the storeroom
 var _equip_hint: Label
 
 
@@ -39,6 +41,12 @@ func _ready() -> void:
 
 
 func on_show() -> void:
+	# Dev hook for screenshot verification (env-gated, no effect in normal play):
+	# ITEMS_DEV_SELECT="<item_id>:<uid>" preselects a catalog item + squad mon.
+	var sel := OS.get_environment("ITEMS_DEV_SELECT")
+	if sel.contains(":"):
+		_selected_item = sel.get_slice(":", 0)
+		_selected_uid = sel.get_slice(":", 1)
 	_refresh_all()
 
 
@@ -258,6 +266,11 @@ func _build_ui() -> void:
 	_strip_btn.text = "Take item"
 	_strip_btn.pressed.connect(_do_strip)
 	eq_row.add_child(_strip_btn)
+	_use_btn = Button.new()
+	_use_btn.text = "Use stone"
+	_use_btn.visible = false
+	_use_btn.pressed.connect(_do_use_stone)
+	eq_row.add_child(_use_btn)
 	_equip_hint = _lbl("", ThemeBuilder.COL_TEXT_DIM, 11, true)
 	_equip_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	eq_row.add_child(_equip_hint)
@@ -319,6 +332,54 @@ func _do_strip() -> void:
 	if _selected_uid == "":
 		return
 	_err(GameState.unassign_held_item(_selected_uid))
+
+
+# ------------------------------------------------------- evolution stones
+
+## Is this item an evolution stone/trigger (inert in battle, applied here)?
+func _is_stone(it: Dictionary) -> bool:
+	for e in it.get("effects", []):
+		if str(e).begins_with("evolve:"):
+			return true
+	return false
+
+
+## The evolution this stone unlocks for a given squad mon ({} = none).
+func _stone_route(item_id: String, m: Dictionary) -> Dictionary:
+	var svc: RefCounted = EvoSvc.instance
+	if svc == null or m.is_empty() or item_id == "":
+		return {}
+	for o in svc.chain_of(int(m.get("species_id", 0))):
+		if str(o.get("method", "")) == "stone" and str(o.get("stone", "")) == item_id:
+			return o
+	return {}
+
+
+## Squad mons this stone would evolve right now.
+func _stone_targets(item_id: String) -> Array:
+	var out: Array = []
+	for m in GameState.player_club()["squad"]:
+		if not _stone_route(item_id, m).is_empty():
+			out.append(m)
+	return out
+
+
+## Apply the selected stone to the selected mon — evolves it immediately
+## (using the stone IS the manager's approval) and consumes one from stock.
+func _do_use_stone() -> void:
+	var svc: RefCounted = EvoSvc.instance
+	if svc == null or _selected_item == "" or _selected_uid == "":
+		return
+	var m: Dictionary = GameState.squad_member(_selected_uid)
+	var old_name := _display_name(m) if not m.is_empty() else "?"
+	var err: String = str(svc.use_stone(_selected_uid, _selected_item))
+	if err != "":
+		_err(err)
+		return
+	_err("%s evolved into %s! The %s was consumed." % [old_name,
+		str(GameState.squad_member(_selected_uid).get("species", "?")),
+		DataStore.item_name(_selected_item)])
+	_refresh_all()
 
 
 # ================================================================== refresh
@@ -467,6 +528,21 @@ func _refresh_detail() -> void:
 			_detail.add_child(_lbl("Currently held by: %s" % ", ".join(
 				holders.map(func(m): return "%s (Lv %d)" % [_display_name(m), int(m["level"])])),
 				ThemeBuilder.COL_GOOD, 12, true))
+	elif _is_stone(it):
+		var targets := _stone_targets(_selected_item)
+		if targets.is_empty():
+			_detail.add_child(_lbl("Evolution stone — applied from the storeroom, never in battle. Nobody in the current squad evolves with it.",
+				ThemeBuilder.COL_TEXT_DIM, 12, true))
+		else:
+			var lines: Array = []
+			for m in targets:
+				var route := _stone_route(_selected_item, m)
+				lines.append("%s (Lv %d) -> %s" % [_display_name(m), int(m["level"]),
+					str(DataStore.species(int(route["to"])).get("name", "?"))])
+			_detail.add_child(_lbl("Would evolve: %s" % ", ".join(PackedStringArray(lines)),
+				ThemeBuilder.COL_GOOD, 12, true))
+			_detail.add_child(_lbl("Pick the Pokémon below and press Use — evolution is immediate and permanent; using the stone is the approval.",
+				ThemeBuilder.COL_TEXT_DIM, 11, true))
 	else:
 		_detail.add_child(_lbl("Usable items are consumed as a battle turn — the engine exposes them as \"use_item\" actions from your matchday bag.",
 			ThemeBuilder.COL_TEXT_DIM, 11, true))
@@ -504,6 +580,25 @@ func _refresh_equip_row() -> void:
 	_equip_btn.text = "Equip %s" % str(it["name"]) if is_held else "Equip"
 	var cur: Variant = m.get("held_item") if not m.is_empty() else null
 	_strip_btn.disabled = m.is_empty() or cur == null or str(cur) == ""
+	# evolution stones: the Use path (apply from storeroom -> evolves NOW)
+	var is_stone := not it.is_empty() and _is_stone(it)
+	var route: Dictionary = _stone_route(_selected_item, m) if is_stone else {}
+	_use_btn.visible = is_stone
+	_use_btn.disabled = route.is_empty() or owned <= 0
+	_use_btn.text = "Use %s" % str(it["name"]) if is_stone else "Use stone"
+	if is_stone:
+		if m.is_empty():
+			_equip_hint.text = "Pick a Pokémon below to apply the %s — stones evolve certain species instantly (never used in battle)." % str(it["name"])
+		elif route.is_empty():
+			_equip_hint.text = "The %s has no effect on %s." % [str(it["name"]), _display_name(m)]
+		elif owned <= 0:
+			_equip_hint.text = "%s would evolve into %s — buy a %s first." % [_display_name(m),
+				str(DataStore.species(int(route["to"])).get("name", "?")), str(it["name"])]
+		else:
+			_equip_hint.text = "%s -> evolves %s into %s. Permanent — using the stone is the approval." % \
+				[str(it["name"]), _display_name(m),
+				str(DataStore.species(int(route["to"])).get("name", "?"))]
+		return
 	if m.is_empty():
 		_equip_hint.text = "Pick an item above and a Pokémon here, then Equip. Swapping returns the old item to the storeroom."
 	elif is_held and owned > 0:

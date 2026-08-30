@@ -49,7 +49,8 @@ func _build_club(cid: String) -> void:
 		add_child(UI.dim("Unknown club.", 13))
 		return
 	var fixtures: Array = GameState.fixtures
-	var table: Array = GameState.league_table()
+	# position/record inside the club's OWN championship (clubs span 2 leagues)
+	var table: Array = GameState.league_table(GameState.league_of(cid))
 	var pos: int = Season.table_positions(table).get(cid, 0)
 	var row := {}
 	for r in table:
@@ -109,6 +110,12 @@ func _club_header(club: Dictionary, pos: int, row: Dictionary) -> Control:
 	var name_row := HBoxContainer.new()
 	name_row.add_theme_constant_override("separation", 10)
 	name_row.add_child(UI.label(str(club["name"]), 20, Color.WHITE))
+	var lg_id := GameState.league_of(str(club["id"]))
+	var lg_link := UI.link(GameState.league_name(lg_id), 12,
+		UI.league_color(lg_id).lightened(0.25), {"kind": "league", "id": lg_id},
+		"Browse the %s" % GameState.league_name(lg_id))
+	lg_link.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	name_row.add_child(lg_link)
 	if GameState.is_player_club(str(club["id"])):
 		var yours := UI.label("YOUR CLUB", 10, TB.COL_ACCENT.lightened(0.35))
 		yours.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -234,7 +241,8 @@ func _club_season_card(club: Dictionary, pos: int, row: Dictionary, fixtures: Ar
 	var card := UI.card("Season")
 	var body := UI.card_body(card)
 	var cid: String = str(club["id"])
-	body.add_child(UI.kv_row("League position", _ord(pos),
+	var lg_id := GameState.league_of(cid)
+	body.add_child(UI.kv_row("%s position" % GameState.league_name(lg_id), _ord(pos),
 		TB.COL_ACCENT.lightened(0.35) if GameState.is_player_club(cid) else TB.COL_TEXT))
 	body.add_child(UI.kv_row("Record (W-L)", "%d-%d" % [int(row.get("won", 0)), int(row.get("lost", 0))]))
 	var diff := int(row.get("bf", 0)) - int(row.get("ba", 0))
@@ -242,8 +250,10 @@ func _club_season_card(club: Dictionary, pos: int, row: Dictionary, fixtures: Ar
 		UI.COL_WIN if diff > 0 else (UI.COL_LOSS if diff < 0 else TB.COL_TEXT)))
 	body.add_child(UI.kv_row("Points", str(int(row.get("points", 0))), Color.WHITE))
 	body.add_child(UI.kv_row("Cup", _cup_status(cid, fixtures)))
-	# position-over-time sparkline (full graph: League Table ▸ Position Graph)
-	var hist: Dictionary = Season.position_history(GameState.club_ids(), fixtures)
+	# position-over-time sparkline within the club's own league
+	var lg_ids: Array = GameState.league_club_ids(lg_id)
+	var hist: Dictionary = Season.position_history(lg_ids,
+		Season.league_fixtures(fixtures, lg_id))
 	var vals: Array = hist.get(cid, [])
 	if vals.size() >= 2:
 		var h := HBoxContainer.new()
@@ -255,7 +265,7 @@ func _club_season_card(club: Dictionary, pos: int, row: Dictionary, fixtures: Ar
 		var spark = Charts.Sparkline.new()
 		spark.invert = true   # position: 1 at the top
 		spark.v_min = 1.0
-		spark.v_max = float(GameState.club_ids().size())
+		spark.v_max = float(lg_ids.size())
 		spark.color = UI.club_color(club)
 		spark.custom_minimum_size = Vector2(0, 26)
 		spark.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -303,7 +313,15 @@ func _cup_status(cid: String, fixtures: Array) -> String:
 	var max_round := 0
 	for f in ties:
 		max_round = maxi(max_round, int(f["round"]))
-	if max_round >= 4 and ties.back()["played"]:
+	# champions only if the FINAL is won (round count derives from the draw size)
+	var first_count: int = fixtures.filter(func(f):
+		return f["comp"] == "cup" and int(f["round"]) == 1).size()
+	var total_rounds := 1
+	var n := first_count
+	while n > 1:
+		n = n / 2
+		total_rounds += 1
+	if max_round >= total_rounds and ties.back()["played"]:
 		return "CHAMPIONS"
 	return "In the %s" % out
 

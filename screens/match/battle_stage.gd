@@ -9,7 +9,7 @@ const UI := preload("res://screens/match/ui_bits.gd")
 
 var runner  # MatchRunner
 
-var _meds: Array = [null, null]   # Medallion per side (0 = home, bottom-left)
+var _meds: Array = [[], []]       # Medallions per side per slot (doubles: 2 each)
 var _caption: Label
 var _sub_caption: Label
 var _time := 0.0
@@ -101,13 +101,7 @@ func setup(p_runner) -> void:
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in 2:
-		var m := Medallion.new()
-		m.facing = 1 if side == 0 else -1
-		m.size = Vector2(118, 118) if side == 0 else Vector2(100, 100)
-		m.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(m)
-		_meds[side] = m
+	_ensure_meds()
 	_caption = Label.new()
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_caption.add_theme_font_size_override("font_size", 17)
@@ -130,38 +124,95 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	for side in 2:
-		var m: Medallion = _meds[side]
-		if m == null:
-			continue
-		m.t = _time
-		var bob := Vector2(0, sin(_time * 2.2 + side * 2.1) * 4.0)
-		if bool(m.battler.get("fainted", false)):
-			bob = Vector2.ZERO
-		m.position = _slot(side) - m.size * 0.5 + bob + m.anim_offset
-		m.queue_redraw()
+		for k in _meds[side].size():
+			var m: Medallion = _meds[side][k]
+			if m == null:
+				continue
+			m.t = _time
+			var bob := Vector2(0, sin(_time * 2.2 + side * 2.1 + k * 1.3) * 4.0)
+			if bool(m.battler.get("fainted", false)):
+				bob = Vector2.ZERO
+			m.position = _slot_pos(side, k) - m.size * 0.5 + bob + m.anim_offset
+			m.queue_redraw()
 	queue_redraw()
 
 
-func _slot(side: int) -> Vector2:
-	## Home fights from the near (bottom-left) platform, away from the far one.
+## How many active slots this battle runs per side (1 singles, 2 doubles).
+func _slots_n() -> int:
+	if runner == null:
+		return 1
+	return runner.vm["actives"][0].size()
+
+
+## Create/trim the medallion pool to match the current battle format.
+func _ensure_meds() -> void:
+	var n := _slots_n()
+	for side in 2:
+		while _meds[side].size() > n:
+			var old: Medallion = _meds[side].pop_back()
+			if old != null:
+				old.queue_free()
+		while _meds[side].size() < n:
+			var k: int = _meds[side].size()
+			var m := Medallion.new()
+			m.facing = 1 if side == 0 else -1
+			var base := 118.0 if side == 0 else 100.0
+			if n > 1:
+				base *= 0.82
+			m.size = Vector2(base, base)
+			m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			add_child(m)
+			_meds[side].append(m)
+
+
+func _slot_pos(side: int, slot: int) -> Vector2:
+	## Home fights from the near (bottom-left) platforms, away from the far ones.
 	var w := size.x
 	var h := size.y
+	if _slots_n() <= 1:
+		return Vector2(w * 0.30, h * 0.62) if side == 0 else Vector2(w * 0.72, h * 0.33)
 	if side == 0:
-		return Vector2(w * 0.30, h * 0.62)
-	return Vector2(w * 0.72, h * 0.33)
+		return Vector2(w * 0.24, h * 0.56) if slot == 0 else Vector2(w * 0.41, h * 0.72)
+	return Vector2(w * 0.63, h * 0.27) if slot == 0 else Vector2(w * 0.80, h * 0.40)
+
+
+func _med(side: int, slot: int) -> Medallion:
+	if slot < 0 or slot >= _meds[side].size():
+		return null if _meds[side].is_empty() else _meds[side][0]
+	return _meds[side][slot]
+
+
+## Medallion an event refers to: explicit slot key first, then name lookup.
+func _med_from_event(e: Dictionary, slot_key: String = "slot") -> Medallion:
+	var side := int(e.get("side", 0))
+	if e.has(slot_key):
+		return _med(side, int(e[slot_key]))
+	var pname := str(e.get("pokemon", ""))
+	for k in _meds[side].size():
+		var m: Medallion = _meds[side][k]
+		if m != null and str(m.battler.get("name", "")) == pname:
+			return m
+	return _med(side, 0)
 
 
 func sync_actives() -> void:
 	if runner == null:
 		return
+	_ensure_meds()
 	for side in 2:
 		var team: Array = runner.vm["teams"][side]
 		if team.is_empty():
 			continue
-		var m: Medallion = _meds[side]
-		m.set_battler(team[runner.vm["active"][side]])
-		m.anim_offset = Vector2.ZERO
-		m.modulate.a = 0.35 if bool(m.battler.get("fainted", false)) else 1.0
+		for k in _meds[side].size():
+			var m: Medallion = _meds[side][k]
+			var idx: int = int(runner.vm["actives"][side][k]) if k < runner.vm["actives"][side].size() else -1
+			if idx < 0 or idx >= team.size():
+				m.set_battler({})
+				m.modulate.a = 0.0
+				continue
+			m.set_battler(team[idx])
+			m.anim_offset = Vector2.ZERO
+			m.modulate.a = 0.35 if bool(m.battler.get("fainted", false)) else 1.0
 
 
 # ================================================================= background
@@ -185,27 +236,86 @@ func _draw() -> void:
 		draw_circle(Vector2(cx, cy), 2.0,
 			Color.from_hsv(float(hx % 360) / 360.0, 0.35, 0.8, flicker))
 	draw_line(Vector2(0, band_h + 8), Vector2(w, band_h + 8), Color("2e3550"), 1.0)
+	_draw_weather(w, h)
 	# centre line + circle, stadium style
 	var mid := Vector2(w * 0.51, h * 0.52)
 	draw_ellipse_outline(mid, w * 0.10, h * 0.055, Color("2e355077"), 1.5)
 	draw_line(Vector2(w * 0.40, h * 0.80), Vector2(w * 0.62, h * 0.24), Color("2e355055"), 1.5)
-	# platforms
+	# platforms (one per active slot; doubles gets a pair per side)
+	var slots_n := _slots_n()
 	for side in 2:
-		var s := _slot(side)
-		var pr := (w * 0.135) if side == 0 else (w * 0.115)
 		var club: Dictionary = runner.club_for_side(side) if runner != null else {}
 		var rim: Color = UI.club_color(club) if not club.is_empty() else Color("2e3550")
-		var plat_c := s + Vector2(0, (68.0 if side == 0 else 58.0))
-		draw_ellipse_fill(plat_c, pr, pr * 0.30, Color("11141d"))
-		draw_ellipse_fill(plat_c + Vector2(0, -3), pr, pr * 0.30, Color("222840"))
-		draw_ellipse_outline(plat_c + Vector2(0, -3), pr, pr * 0.30, rim * Color(1, 1, 1, 0.85), 2.0)
-		# soft shadow under the medallion
-		draw_ellipse_fill(plat_c + Vector2(0, -6), pr * 0.45, pr * 0.13, Color(0, 0, 0, 0.35))
-		if runner != null:
-			var font := get_theme_default_font()
-			var tag := str(club.get("short", "?")) + ("  ·  YOU" if side == runner.player_side else "")
-			var col := Color("f2f4fa") if side == runner.player_side else Color("8b91a8")
-			draw_string(font, plat_c + Vector2(-pr, 22), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, col)
+		for k in slots_n:
+			var s := _slot_pos(side, k)
+			var pr := ((w * 0.135) if side == 0 else (w * 0.115)) * (0.82 if slots_n > 1 else 1.0)
+			var drop := (68.0 if side == 0 else 58.0) * (0.82 if slots_n > 1 else 1.0)
+			var plat_c := s + Vector2(0, drop)
+			draw_ellipse_fill(plat_c, pr, pr * 0.30, Color("11141d"))
+			draw_ellipse_fill(plat_c + Vector2(0, -3), pr, pr * 0.30, Color("222840"))
+			draw_ellipse_outline(plat_c + Vector2(0, -3), pr, pr * 0.30, rim * Color(1, 1, 1, 0.85), 2.0)
+			# soft shadow under the medallion
+			draw_ellipse_fill(plat_c + Vector2(0, -6), pr * 0.45, pr * 0.13, Color(0, 0, 0, 0.35))
+			if runner != null and k == slots_n - 1:
+				var font := get_theme_default_font()
+				var tag := str(club.get("short", "?")) + ("  ·  YOU" if side == runner.player_side else "")
+				var col := Color("f2f4fa") if side == runner.player_side else Color("8b91a8")
+				draw_string(font, plat_c + Vector2(-pr, 22), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, col)
+
+
+## Ambient weather layer: atmosphere tint + animated particles + a labelled
+## chip in the top-right corner. Reads the runner's view model, so it stays in
+## step with the replayed event stream (and survives re-instancing mid-battle).
+func _draw_weather(w: float, h: float) -> void:
+	var wk := "" if runner == null else str(runner.vm.get("weather", ""))
+	if wk == "":
+		return
+	var spec: Dictionary = {
+		"sun": {"label": "HARSH SUNLIGHT", "col": Color("f0a848")},
+		"rain": {"label": "POURING RAIN", "col": Color("58a8f0")},
+		"sand": {"label": "SANDSTORM", "col": Color("d8c078")},
+		"hail": {"label": "HAIL", "col": Color("98d8d8")},
+	}.get(wk, {})
+	if spec.is_empty():
+		return
+	var col: Color = spec["col"]
+	draw_rect(Rect2(0, 0, w, h), Color(col.r, col.g, col.b, 0.05))
+	match wk:
+		"sun":
+			for i in 5:
+				var x0 := w * (0.1 + 0.2 * float(i)) + sin(_time * 0.4 + float(i)) * 18.0
+				var pts := PackedVector2Array([Vector2(x0, 0), Vector2(x0 + 26, 0),
+					Vector2(x0 + 96, h * 0.6), Vector2(x0 + 58, h * 0.6)])
+				draw_colored_polygon(pts, Color(col.r, col.g, col.b, 0.05))
+		"rain":
+			for i in 46:
+				var hx := absi(("r%d" % i).hash())
+				var x := fmod(float(hx % 887) / 887.0 * w + _time * 30.0, w)
+				var y := fmod(float((hx / 5) % 641) / 641.0 * h + _time * (300.0 + float(hx % 90)), h)
+				draw_line(Vector2(x, y), Vector2(x - 5, y + 14), Color(col.r, col.g, col.b, 0.4), 1.5)
+		"sand":
+			for i in 36:
+				var hx := absi(("s%d" % i).hash())
+				var y := fmod(float(hx % 733) / 733.0 * h + sin(_time * 2.0 + float(i)) * 12.0, h)
+				var x := fmod(float((hx / 3) % 911) / 911.0 * w + _time * (170.0 + float(hx % 120)), w)
+				draw_line(Vector2(x, y), Vector2(x + 12, y + 2), Color(col.r, col.g, col.b, 0.35), 2.0)
+		"hail":
+			for i in 26:
+				var hx := absi(("h%d" % i).hash())
+				var x := fmod(float(hx % 887) / 887.0 * w + sin(_time * 1.6 + float(i)) * 20.0, w)
+				var y := fmod(float((hx / 5) % 641) / 641.0 * h + _time * (120.0 + float(hx % 60)), h)
+				draw_circle(Vector2(x, y), 2.4, Color(col.r, col.g, col.b, 0.5))
+	# weather chip (top-right)
+	var font := get_theme_default_font()
+	var turns := 0 if runner == null else int(runner.vm.get("weather_turns", 0))
+	var txt: String = str(spec["label"]) + ((" · %d" % turns) if turns > 0 else "")
+	var tsz := font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 11)
+	var pad := Vector2(8, 5)
+	var box := Rect2(Vector2(w - tsz.x - pad.x * 2 - 10, 10), tsz + pad * 2)
+	draw_rect(box, Color("11141dcc"))
+	draw_rect(box, Color(col.r, col.g, col.b, 0.8), false, 1.0)
+	draw_string(font, box.position + Vector2(pad.x, pad.y + tsz.y * 0.72), txt,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 11, col)
 
 
 func draw_ellipse_fill(c: Vector2, rx: float, ry: float, col: Color) -> void:
@@ -234,44 +344,64 @@ func play_event(e: Dictionary) -> void:
 	match t:
 		"battle_start":
 			sync_actives()
-			_set_caption("BATTLE %d OF 3" % runner.battle_no, Color("9a8dff"), "")
+			if runner.doubles_now():
+				_set_caption("BATTLE %d OF 3 — 2v2 DOUBLES" % runner.battle_no,
+					Color("9a8dff"), "two actives per side · pick your targets")
+			else:
+				_set_caption("BATTLE %d OF 3" % runner.battle_no, Color("9a8dff"), "")
 		"switch":
-			_anim_switch(int(e["side"]))
+			_anim_switch(e)
 		"move_used":
 			_anim_move(e)
 		"damage":
 			_anim_damage(e)
 		"miss":
-			_anim_miss(int(e["side"]))
+			_anim_miss(e)
 		"faint":
-			_anim_faint(int(e["side"]), str(e.get("pokemon", "")))
+			_anim_faint(e)
 		"heal":
 			_anim_heal(e)
 		"status_applied":
 			_anim_status(e)
 		"stat_change":
 			_anim_stat(e)
+		"no_target":
+			_float_med(_med_from_event(e), "NO TARGET", Color("8b91a8"), 13)
 		"flinch":
-			_float_at(int(e["side"]), "FLINCHED", Color("e0b050"), 13)
+			_float_med(_med_from_event(e), "FLINCHED", Color("e0b050"), 13)
 		"confused_hit":
-			_float_at(int(e["side"]), "HIT ITSELF", Color("e0b050"), 13)
+			_float_med(_med_from_event(e), "HIT ITSELF", Color("e0b050"), 13)
 		"paralyzed":
-			_float_at(int(e["side"]), "FULLY PARALYSED", Color("f8d030"), 12)
+			_float_med(_med_from_event(e), "FULLY PARALYSED", Color("f8d030"), 12)
 		"asleep":
-			_float_at(int(e["side"]), "FROZEN" if e.get("frozen", false) else "ASLEEP",
+			_float_med(_med_from_event(e), "FROZEN" if e.get("frozen", false) else "ASLEEP",
 				Color("98d8d8") if e.get("frozen", false) else Color("8b91a8"), 12)
 		"item_used":
 			_anim_item(e)
+		"weather_start":
+			_anim_weather_start(e)
+		"weather_end":
+			_set_caption("THE SKIES CLEAR", Color("8b91a8"), "")
+		"weather_chip":
+			var wcol := Color("d8c078") if str(e.get("kind", "")) == "sand" else Color("98d8d8")
+			_float_med(_med_from_event(e), "-%d %s" % [int(e.get("amount", 0)),
+				"SAND" if str(e.get("kind", "")) == "sand" else "HAIL"], wcol, 12)
+		"ability_triggered":
+			_anim_ability(e)
 		"held_item":
-			_float_at(int(e["side"]), "◆ " + str(e.get("item_name", "")), Color("e0b050"), 12, -26.0)
+			_float_med(_med_from_event(e), "◆ " + str(e.get("item_name", "")), Color("e0b050"), 12, -26.0)
 		"battle_end":
 			var s: Array = runner.shorts()
 			_set_caption("BATTLE %d — %s TAKE IT" % [runner.battle_no, s[int(e["winner"])]],
 				Color("57c979") if int(e["winner"]) == runner.player_side else Color("e06060"), "")
 
 
-func _anim_switch(side: int) -> void:
-	var m: Medallion = _meds[side]
+func _anim_switch(e: Dictionary) -> void:
+	var side := int(e.get("side", 0))
+	var slot := int(e.get("slot", 0))
+	var m: Medallion = _med(side, slot)
+	if m == null:
+		return
 	var out_dir := -1.0 if side == 0 else 1.0
 	var tw := create_tween()
 	tw.tween_property(m, "anim_offset", Vector2(out_dir * 240.0, 10.0), 0.22)\
@@ -279,10 +409,34 @@ func _anim_switch(side: int) -> void:
 	tw.parallel().tween_property(m, "modulate:a", 0.0, 0.2)
 	tw.tween_callback(func():
 		var team: Array = runner.vm["teams"][side]
-		m.set_battler(team[runner.vm["active"][side]]))
+		var actives: Array = runner.vm["actives"][side]
+		var idx: int = int(actives[slot]) if slot < actives.size() else int(runner.vm["active"][side])
+		if idx >= 0 and idx < team.size():
+			m.set_battler(team[idx]))
 	tw.tween_property(m, "anim_offset", Vector2.ZERO, 0.3)\
 		.from(Vector2(out_dir * 240.0, -6.0)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(m, "modulate:a", 1.0, 0.25)
+
+
+## Where an attack from `side` should aim: the chosen target's medallion, or
+## the midpoint of the standing foes for spread moves.
+func _aim_point(e: Dictionary, side: int) -> Vector2:
+	if e.has("target_slot"):
+		var tm := _med(1 - side, int(e["target_slot"]))
+		if tm != null:
+			return tm.center() - global_position
+	var pts: Array = []
+	for k in _meds[1 - side].size():
+		var m: Medallion = _meds[1 - side][k]
+		if m != null and not m.battler.is_empty() and not bool(m.battler.get("fainted", false)):
+			pts.append(m.center() - global_position)
+	if pts.is_empty():
+		var f := _med(1 - side, 0)
+		return (f.center() - global_position) if f != null else size * 0.5
+	var acc := Vector2.ZERO
+	for p in pts:
+		acc += p
+	return acc / float(pts.size())
 
 
 func _anim_move(e: Dictionary) -> void:
@@ -292,11 +446,17 @@ func _anim_move(e: Dictionary) -> void:
 	var mtype := str(mv.get("type", "normal"))
 	var mcol: Color = DataStore.type_color(mtype)
 	var cat := str(mv.get("category", "phys"))
-	_set_caption("%s — %s" % [str(e.get("pokemon", "?")), mname], mcol,
-		"%s · %s" % [mtype.to_upper(), cat.to_upper()])
-	var me: Medallion = _meds[side]
-	var foe: Medallion = _meds[1 - side]
-	var to_foe := (_slot(1 - side) - _slot(side))
+	var sub := "%s · %s" % [mtype.to_upper(), cat.to_upper()]
+	if e.has("target"):
+		sub += " · at %s" % str(e["target"])
+	elif bool(e.get("spread", false)):
+		sub += " · SPREAD"
+	_set_caption("%s — %s" % [str(e.get("pokemon", "?")), mname], mcol, sub)
+	var me: Medallion = _med_from_event(e)
+	if me == null:
+		return
+	var aim := _aim_point(e, side)
+	var to_foe := aim - (me.center() - global_position)
 	match cat:
 		"phys":
 			var tw := create_tween()
@@ -304,9 +464,9 @@ func _anim_move(e: Dictionary) -> void:
 				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 			tw.tween_property(me, "anim_offset", Vector2.ZERO, 0.24)\
 				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			_burst(foe.center() - global_position, mcol, 7, 26.0, 0.12)
+			_burst(aim, mcol, 7, 26.0, 0.12)
 		"spec":
-			_projectile(me.center() - global_position, foe.center() - global_position, mcol, 8)
+			_projectile(me.center() - global_position, aim, mcol, 8)
 			var tw2 := create_tween()
 			tw2.tween_property(me, "anim_offset", to_foe.normalized() * 14.0, 0.1)
 			tw2.tween_property(me, "anim_offset", Vector2.ZERO, 0.16)
@@ -316,8 +476,9 @@ func _anim_move(e: Dictionary) -> void:
 
 
 func _anim_damage(e: Dictionary) -> void:
-	var side := int(e["side"])
-	var m: Medallion = _meds[side]
+	var m: Medallion = _med_from_event(e)
+	if m == null:
+		return
 	var amount := int(e.get("amount", 0))
 	var crit := bool(e.get("crit", false))
 	var eff := float(e.get("effectiveness", 1.0))
@@ -352,37 +513,43 @@ func _anim_damage(e: Dictionary) -> void:
 			_float_text(pos + Vector2(0, 20), "resisted", Color("6a7188"), 10)
 
 
-func _anim_miss(side: int) -> void:
-	## side = the attacker; the defender sidesteps out of the way.
-	var d: Medallion = _meds[1 - side]
+func _anim_miss(e: Dictionary) -> void:
+	## event side = the attacker; the targeted defender sidesteps out of the way.
+	var side := int(e.get("side", 0))
+	var d: Medallion = _med(1 - side, int(e.get("target_slot", 0)))
+	if d == null:
+		return
 	var tw := create_tween()
 	tw.tween_property(d, "anim_offset", Vector2(22.0 * (1.0 if 1 - side == 1 else -1.0), -6), 0.12)
 	tw.tween_property(d, "anim_offset", Vector2.ZERO, 0.18)
-	_float_at(1 - side, "MISS", Color("8b91a8"), 13)
+	_float_med(d, "MISS", Color("8b91a8"), 13)
 
 
-func _anim_faint(side: int, _name: String) -> void:
-	var m: Medallion = _meds[side]
+func _anim_faint(e: Dictionary) -> void:
+	var m: Medallion = _med_from_event(e)
+	if m == null:
+		return
 	var tw := create_tween()
 	tw.tween_property(m, "anim_offset", Vector2(0, 54.0), 0.5)\
 		.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(m, "modulate:a", 0.35, 0.5)
-	_float_at(side, "FAINTED", Color("e06060"), 16)
+	_float_med(m, "FAINTED", Color("e06060"), 16)
 	_burst(m.center() - global_position, Color("6a7188"), 8, 40.0, 0.0, true)
 
 
 func _anim_heal(e: Dictionary) -> void:
-	var side := int(e["side"])
-	var m: Medallion = _meds[side]
+	var m: Medallion = _med_from_event(e)
+	if m == null:
+		return
 	if bool(e.get("revived", false)):
 		m.modulate.a = 1.0
 		m.anim_offset = Vector2(0, 40)
 		var tw := create_tween()
 		tw.tween_property(m, "anim_offset", Vector2.ZERO, 0.4)\
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		_float_at(side, "REVIVED!", Color("57c979"), 15)
+		_float_med(m, "REVIVED!", Color("57c979"), 15)
 	else:
-		_float_at(side, "+%d" % int(e.get("amount", 0)), Color("57c979"), 15)
+		_float_med(m, "+%d" % int(e.get("amount", 0)), Color("57c979"), 15)
 	# rising sparkles
 	var base := m.center() - global_position
 	for i in 5:
@@ -391,35 +558,76 @@ func _anim_heal(e: Dictionary) -> void:
 
 
 func _anim_status(e: Dictionary) -> void:
-	var side := int(e["side"])
 	var st := str(e.get("status", ""))
 	var labels := {"burn": "BURNED!", "para": "PARALYSED!", "sleep": "ASLEEP!",
 		"poison": "POISONED!", "freeze": "FROZEN!", "confused": "CONFUSED!",
 		"cured": "CURED!", "woke": "WOKE UP", "thawed": "THAWED"}
 	var col: Color = UI.STATUS_COLORS.get(st, Color("57c979") if st in ["cured", "woke", "thawed"] else Color("e0b050"))
-	_float_at(side, str(labels.get(st, st.to_upper())), col, 14)
-	_ring(_meds[side].center() - global_position, col)
+	var m: Medallion = _med_from_event(e)
+	if m == null:
+		return
+	_float_med(m, str(labels.get(st, st.to_upper())), col, 14)
+	_ring(m.center() - global_position, col)
 
 
 func _anim_stat(e: Dictionary) -> void:
-	var side := int(e["side"])
 	var d := int(e.get("delta", 0))
 	var names := {"atk": "ATK", "def": "DEF", "spa": "SPA", "spd": "SPD",
 		"spe": "SPE", "acc": "ACC", "eva": "EVA"}
 	var arrow := "▲".repeat(mini(absi(d), 2)) if d > 0 else "▼".repeat(mini(absi(d), 2))
-	_float_at(side, "%s %s" % [arrow, names.get(str(e["stat"]), str(e["stat"]).to_upper())],
+	_float_med(_med_from_event(e), "%s %s" % [arrow, names.get(str(e["stat"]), str(e["stat"]).to_upper())],
 		Color("57c979") if d > 0 else Color("e06060"), 13)
+
+
+func _anim_weather_start(e: Dictionary) -> void:
+	var kind := str(e.get("kind", ""))
+	var caps := {"sun": ["THE SUNLIGHT TURNS HARSH", Color("f0a848")],
+		"rain": ["RAIN POUNDS THE ARENA", Color("58a8f0")],
+		"sand": ["A SANDSTORM KICKS UP", Color("d8c078")],
+		"hail": ["HAIL PELTS DOWN", Color("98d8d8")]}
+	var spec: Array = caps.get(kind, ["THE WEATHER SHIFTS", Color("8b91a8")])
+	var src := str(e.get("pokemon", ""))
+	var sub := ""
+	if src != "":
+		sub = ("%s's ability set it off" if str(e.get("source", "")) == "ability" else "summoned by %s") % src
+	_set_caption(spec[0], spec[1], sub)
+	# sweep a burst of weather-coloured particles across the sky band
+	for i in 7:
+		_spark(Vector2(size.x * (0.1 + 0.12 * float(i)), size.y * randf_range(0.08, 0.2)),
+			spec[1], Vector2(randf_range(-16, 16), randf_range(18, 44)), 0.7)
+
+
+func _anim_ability(e: Dictionary) -> void:
+	var m: Medallion = _med_from_event(e)
+	if m == null:
+		return
+	var ab := str(e.get("ability_name", e.get("ability", "?"))).to_upper()
+	var effect := str(e.get("effect", ""))
+	if effect in ["no_recoil"]:
+		return  # silent QoL trigger — a floater every hit would be noise
+	var col := Color("9a8dff")
+	if effect in ["immune", "absorb", "sturdy"]:
+		col = Color("e0b050")
+	_float_med(m, "◈ " + ab, col, 12, -30.0)
+	_ring(m.center() - global_position, col)
+	if effect in ["entry_stat", "weather", "sturdy", "immune", "absorb"]:
+		var subs := {"entry_stat": "takes the field", "weather": "changes the weather",
+			"sturdy": "hangs on at 1 HP", "immune": "no effect", "absorb": "soaks the attack up"}
+		_set_caption("%s — %s" % [str(e.get("pokemon", "?")), str(e.get("ability_name", "?"))],
+			col, str(subs.get(effect, "")))
 
 
 func _anim_item(e: Dictionary) -> void:
 	var side := int(e["side"])
 	var iname := str(e.get("item_name", "Item"))
 	_set_caption("ITEM — %s" % iname, Color("9a8dff"), "used on %s · costs the turn" % str(e.get("pokemon", "?")))
-	var target_active: bool = int(e.get("target_index", -1)) == int(runner.vm["active"][side])
-	var m: Medallion = _meds[side]
+	var actives: Array = runner.vm["actives"][side]
+	var t_idx := int(e.get("target_index", -1))
+	var target_slot := actives.find(t_idx)
 	var corner := Vector2(size.x * (0.12 if side == 0 else 0.88), size.y * 0.82)
 	_float_text(corner, "🧰 %s" % iname, Color("9a8dff"), 14)
-	if target_active:
+	var m: Medallion = _med(side, target_slot) if target_slot >= 0 else null
+	if m != null:
 		_projectile(corner, m.center() - global_position, Color("9a8dff"), 5)
 		_ring(m.center() - global_position, Color("9a8dff"))
 	else:
@@ -442,8 +650,9 @@ func _set_caption(text: String, col: Color, sub: String) -> void:
 	_cap_tween.parallel().tween_property(_sub_caption, "modulate:a", 0.0, 0.8)
 
 
-func _float_at(side: int, text: String, col: Color, fsize: int, dy := -40.0) -> void:
-	var m: Medallion = _meds[side]
+func _float_med(m: Medallion, text: String, col: Color, fsize: int, dy := -40.0) -> void:
+	if m == null:
+		return
 	_float_text(m.center() - global_position + Vector2(randf_range(-10, 10), -m.size.y * 0.5), text, col, fsize, dy)
 
 

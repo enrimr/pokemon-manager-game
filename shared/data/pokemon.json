@@ -25,7 +25,8 @@
    "Poison Sting",
    "Quick Attack",
    "Screech"
-  ]
+  ],
+  "ability": "overgrow"
  },
  {
   "id": 2,
@@ -53,7 +54,8 @@
    "Toxic",
    "Quick Attack",
    "Harden"
-  ]
+  ],
+  "ability": "overgrow"
  },
  {
   "id": 3,
@@ -81,7 +83,8 @@
    "Poison Sting",
    "Quick Attack",
    "Screech"
-  ]
+  ],
+  "ability": "overgrow"
  },
  {
   "id": 4,
@@ -106,7 +109,8 @@
    "Fire Punch",
    "Quick Attack",
    "Screech"
-  ]
+  ],
+  "ability": "blaze"
  },
  {
   "id": 5,
@@ -131,7 +135,8 @@
    "Flamethrower",
    "Quick Attack",
    "Double Team"
-  ]
+  ],
+  "ability": "blaze"
  },
  {
   "id": 6,
@@ -159,7 +164,8 @@
    "Peck",
    "Tackle",
    "Harden"
-  ]
+  ],
+  "ability": "blaze"
  },
  {
   "id": 7,
@@ -184,7 +190,8 @@
    "Water Gun",
    "Tackle",
    "Reflect"
-  ]
+  ],
+  "ability": "torrent"
  },
  {
   "id": 8,
@@ -209,7 +216,8 @@
    "Bubble Beam",
    "Tackle",
    "Screech"
-  ]
+  ],
+  "ability": "torrent"
  },
  {
   "id": 9,
@@ -234,7 +242,8 @@
    "Hydro Pump",
    "Swift",
    "Tail Whip"
-  ]
+  ],
+  "ability": "torrent"
  },
  {
   "id": 10,
@@ -259,7 +268,8 @@
    "Twineedle",
    "Body Slam",
    "Growl"
-  ]
+  ],
+  "ability": "shield_dust"
  },
  {
   "id": 11,
@@ -284,7 +294,8 @@
    "String Shot",
    "Quick Attack",
    "Double Team"
-  ]
+  ],
+  "ability": "shield_dust"
  },
  {
   "id": 12,
@@ -312,7 +323,8 @@
    "Fly",
    "Quick Attack",
    "Leer"
-  ]
+  ],
+  "ability": "compound_eyes"
  },
  {
   "id": 13,
@@ -340,7 +352,8 @@
    "Poison Sting",
    "Headbutt",
    "Leer"
-  ]
+  ],
+  "ability": "shield_dust"
  },
  {
   "id": 14,
@@ -368,7 +381,8 @@
    "Smog",
    "Body Slam",
    "Focus Energy"
-  ]
+  ],
+  "ability": "shield_dust"
  },
  {
   "id": 15,
@@ -396,7 +410,8 @@
    "Poison Sting",
    "Body Slam",
    "Swords Dance"
-  ]
+  ],
+  "ability": "swarm"
  },
  {
   "id": 16,
@@ -423,7 +438,8 @@
    "Gust",
    "Drill Peck",
    "Harden"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 17,
@@ -450,7 +466,8 @@
    "Peck",
    "Fly",
    "Harden"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 18,
@@ -477,7 +494,8 @@
    "Wing Attack",
    "Gust",
    "Light Screen"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 19,
@@ -501,7 +519,8 @@
    "Double-Edge",
    "Quick Attack",
    "Light Screen"
-  ]
+  ],
+  "ability": "guts"
  },
  {
   "id": 20,
@@ -525,7 +544,8 @@
    "Hyper Beam",
    "Headbutt",
    "Tail Whip"
-  ]
+  ],
+  "ability": "guts"
  },
  {
   "id": 21,
@@ -552,7 +572,8 @@
    "Wing Attack",
    "Drill Peck",
    "Double Team"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 22,
@@ -579,7 +600,8 @@
    "Gust",
    "Peck",
    "Growl"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 23,
@@ -604,7 +626,8 @@
    "Poison Sting",
    "Slash",
    "Harden"
-  ]
+  ],
+  "ability": "shed_skin"
  },
  {
   "id": 24,
@@ -629,7 +652,8 @@
    "Smog",
    "Slash",
    "Swords Dance"
-  ]
+  ],
+  "ability": "intimidate"
  },
  {
   "id": 25,
@@ -653,7 +677,8 @@
    "Thunder Wave",
    "Agility",
    "Thunder"
-  ]
+  ],
+  "ability": "static"
  },
  {
   "id": 26,
@@ -678,7 +703,8 @@
    "Thunder",
    "Quick Attack",
    "Agility"
-  ]
+  ],
+  "ability": "static"
  },
  {
   "id": 27,
@@ -703,7 +729,8 @@
    "Bone Club",
    "Quick Attack",
    "Harden"
-  ]
+  ],
+  "ability": "sand_veil"
  },
  {
   "id": 28,
@@ -728,7 +755,8 @@
    "Bone Club",
    "Body Slam",
    "Harden"
-  ]
+  ],
+  "ability": "sand_veil"
  },
  {
   "id": 29,
@@ -753,7 +781,8 @@
    "Poison Sting",
    "Slash",
    "Reflect"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 30,
@@ -778,7 +807,8 @@
    "Toxic",
    "Tackle",
    "Agility"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 31,
@@ -806,7 +836,8 @@
    "Sand Attack",
    "Slash",
    "Double Team"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 32,
@@ -831,7 +862,8 @@
    "Toxic",
    "Headbutt",
    "Focus Energy"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 33,
@@ -856,7 +888,8 @@
    "Sludge",
    "Body Slam",
    "Reflect"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 34,
@@ -884,7 +917,8 @@
    "Earthquake",
    "Tackle",
    "Focus Energy"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 35,
@@ -908,7 +942,8 @@
    "Headbutt",
    "Hyper Beam",
    "Double Team"
-  ]
+  ],
+  "ability": "cute_charm"
  },
  {
   "id": 36,
@@ -932,7 +967,8 @@
    "Slash",
    "Double-Edge",
    "Light Screen"
-  ]
+  ],
+  "ability": "cute_charm"
  },
  {
   "id": 37,
@@ -957,7 +993,8 @@
    "Fire Punch",
    "Tackle",
    "Leer"
-  ]
+  ],
+  "ability": "flash_fire"
  },
  {
   "id": 38,
@@ -982,7 +1019,8 @@
    "Fire Blast",
    "Quick Attack",
    "Agility"
-  ]
+  ],
+  "ability": "flash_fire"
  },
  {
   "id": 39,
@@ -1006,7 +1044,8 @@
    "Swift",
    "Double-Edge",
    "Swords Dance"
-  ]
+  ],
+  "ability": "cute_charm"
  },
  {
   "id": 40,
@@ -1030,7 +1069,8 @@
    "Tackle",
    "Headbutt",
    "Tail Whip"
-  ]
+  ],
+  "ability": "cute_charm"
  },
  {
   "id": 41,
@@ -1058,7 +1098,8 @@
    "Peck",
    "Slash",
    "Double Team"
-  ]
+  ],
+  "ability": "inner_focus"
  },
  {
   "id": 42,
@@ -1086,7 +1127,8 @@
    "Fly",
    "Body Slam",
    "Screech"
-  ]
+  ],
+  "ability": "inner_focus"
  },
  {
   "id": 43,
@@ -1114,7 +1156,8 @@
    "Poison Sting",
    "Quick Attack",
    "Growl"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 44,
@@ -1142,7 +1185,8 @@
    "Smog",
    "Quick Attack",
    "Light Screen"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 45,
@@ -1170,7 +1214,8 @@
    "Sludge",
    "Quick Attack",
    "Growl"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 46,
@@ -1198,7 +1243,8 @@
    "Sleep Powder",
    "Quick Attack",
    "Growl"
-  ]
+  ],
+  "ability": "effect_spore"
  },
  {
   "id": 47,
@@ -1226,7 +1272,8 @@
    "Petal Dance",
    "Body Slam",
    "Agility"
-  ]
+  ],
+  "ability": "effect_spore"
  },
  {
   "id": 48,
@@ -1254,7 +1301,8 @@
    "Toxic",
    "Slash",
    "Double Team"
-  ]
+  ],
+  "ability": "shield_dust"
  },
  {
   "id": 49,
@@ -1282,7 +1330,8 @@
    "Acid",
    "Tackle",
    "Reflect"
-  ]
+  ],
+  "ability": "shield_dust"
  },
  {
   "id": 50,
@@ -1307,7 +1356,8 @@
    "Dig",
    "Slash",
    "Double Team"
-  ]
+  ],
+  "ability": "sand_veil"
  },
  {
   "id": 51,
@@ -1332,7 +1382,8 @@
    "Earthquake",
    "Quick Attack",
    "Swords Dance"
-  ]
+  ],
+  "ability": "sand_veil"
  },
  {
   "id": 52,
@@ -1356,7 +1407,8 @@
    "Swift",
    "Hyper Beam",
    "Leer"
-  ]
+  ],
+  "ability": "limber"
  },
  {
   "id": 53,
@@ -1380,7 +1432,8 @@
    "Swift",
    "Quick Attack",
    "Growl"
-  ]
+  ],
+  "ability": "limber"
  },
  {
   "id": 54,
@@ -1405,7 +1458,8 @@
    "Surf",
    "Tackle",
    "Double Team"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 55,
@@ -1430,7 +1484,8 @@
    "Waterfall",
    "Quick Attack",
    "Reflect"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 56,
@@ -1455,7 +1510,8 @@
    "Karate Chop",
    "Tackle",
    "Screech"
-  ]
+  ],
+  "ability": "guts"
  },
  {
   "id": 57,
@@ -1480,7 +1536,8 @@
    "Double Kick",
    "Tackle",
    "Screech"
-  ]
+  ],
+  "ability": "guts"
  },
  {
   "id": 58,
@@ -1505,7 +1562,8 @@
    "Ember",
    "Headbutt",
    "Reflect"
-  ]
+  ],
+  "ability": "intimidate"
  },
  {
   "id": 59,
@@ -1530,7 +1588,8 @@
    "Fire Blast",
    "Headbutt",
    "Reflect"
-  ]
+  ],
+  "ability": "intimidate"
  },
  {
   "id": 60,
@@ -1555,7 +1614,8 @@
    "Hydro Pump",
    "Slash",
    "Reflect"
-  ]
+  ],
+  "ability": "water_absorb"
  },
  {
   "id": 61,
@@ -1580,7 +1640,8 @@
    "Waterfall",
    "Tackle",
    "Agility"
-  ]
+  ],
+  "ability": "water_absorb"
  },
  {
   "id": 62,
@@ -1608,7 +1669,8 @@
    "Submission",
    "Body Slam",
    "Swords Dance"
-  ]
+  ],
+  "ability": "water_absorb"
  },
  {
   "id": 63,
@@ -1633,7 +1695,8 @@
    "Recover",
    "Quick Attack",
    "Focus Energy"
-  ]
+  ],
+  "ability": "synchronize"
  },
  {
   "id": 64,
@@ -1658,7 +1721,8 @@
    "Confusion",
    "Tackle",
    "Leer"
-  ]
+  ],
+  "ability": "synchronize"
  },
  {
   "id": 65,
@@ -1682,7 +1746,8 @@
    "Psybeam",
    "Reflect",
    "Confusion"
-  ]
+  ],
+  "ability": "synchronize"
  },
  {
   "id": 66,
@@ -1707,7 +1772,8 @@
    "Karate Chop",
    "Body Slam",
    "Tail Whip"
-  ]
+  ],
+  "ability": "guts"
  },
  {
   "id": 67,
@@ -1732,7 +1798,8 @@
    "Karate Chop",
    "Slash",
    "Leer"
-  ]
+  ],
+  "ability": "guts"
  },
  {
   "id": 68,
@@ -1756,7 +1823,8 @@
    "Seismic Toss",
    "Body Slam",
    "Leer"
-  ]
+  ],
+  "ability": "guts"
  },
  {
   "id": 69,
@@ -1784,7 +1852,8 @@
    "Poison Sting",
    "Slash",
    "Agility"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 70,
@@ -1812,7 +1881,8 @@
    "Acid",
    "Quick Attack",
    "Harden"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 71,
@@ -1840,7 +1910,8 @@
    "Poison Sting",
    "Headbutt",
    "Tail Whip"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 72,
@@ -1868,7 +1939,8 @@
    "Sludge",
    "Swift",
    "Harden"
-  ]
+  ],
+  "ability": "clear_body"
  },
  {
   "id": 73,
@@ -1896,7 +1968,8 @@
    "Acid",
    "Swift",
    "Double Team"
-  ]
+  ],
+  "ability": "clear_body"
  },
  {
   "id": 74,
@@ -1923,7 +1996,8 @@
    "Sand Attack",
    "Quick Attack",
    "Double Team"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 75,
@@ -1950,7 +2024,8 @@
    "Sand Attack",
    "Body Slam",
    "Growl"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 76,
@@ -1977,7 +2052,8 @@
    "Sand Attack",
    "Body Slam",
    "Focus Energy"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 77,
@@ -2002,7 +2078,8 @@
    "Fire Punch",
    "Tackle",
    "Double Team"
-  ]
+  ],
+  "ability": "flash_fire"
  },
  {
   "id": 78,
@@ -2027,7 +2104,8 @@
    "Flamethrower",
    "Headbutt",
    "Double Team"
-  ]
+  ],
+  "ability": "flash_fire"
  },
  {
   "id": 79,
@@ -2055,7 +2133,8 @@
    "Psychic",
    "Tackle",
    "Light Screen"
-  ]
+  ],
+  "ability": "own_tempo"
  },
  {
   "id": 80,
@@ -2083,7 +2162,8 @@
    "Recover",
    "Tackle",
    "Double Team"
-  ]
+  ],
+  "ability": "own_tempo"
  },
  {
   "id": 81,
@@ -2108,7 +2188,8 @@
    "Thunderbolt",
    "Tackle",
    "Agility"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 82,
@@ -2133,7 +2214,8 @@
    "Thunder Shock",
    "Tackle",
    "Focus Energy"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 83,
@@ -2160,7 +2242,8 @@
    "Peck",
    "Gust",
    "Screech"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 84,
@@ -2187,7 +2270,8 @@
    "Drill Peck",
    "Fly",
    "Screech"
-  ]
+  ],
+  "ability": "early_bird"
  },
  {
   "id": 85,
@@ -2214,7 +2298,8 @@
    "Peck",
    "Gust",
    "Screech"
-  ]
+  ],
+  "ability": "early_bird"
  },
  {
   "id": 86,
@@ -2239,7 +2324,8 @@
    "Surf",
    "Headbutt",
    "Focus Energy"
-  ]
+  ],
+  "ability": "thick_fat"
  },
  {
   "id": 87,
@@ -2267,7 +2353,8 @@
    "Ice Punch",
    "Tackle",
    "Agility"
-  ]
+  ],
+  "ability": "thick_fat"
  },
  {
   "id": 88,
@@ -2292,7 +2379,8 @@
    "Toxic",
    "Tackle",
    "Screech"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 89,
@@ -2317,7 +2405,8 @@
    "Smog",
    "Body Slam",
    "Screech"
-  ]
+  ],
+  "ability": "poison_point"
  },
  {
   "id": 90,
@@ -2342,7 +2431,8 @@
    "Bubble Beam",
    "Slash",
    "Harden"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 91,
@@ -2370,7 +2460,8 @@
    "Aurora Beam",
    "Slash",
    "Swords Dance"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 92,
@@ -2398,7 +2489,8 @@
    "Toxic",
    "Tackle",
    "Swords Dance"
-  ]
+  ],
+  "ability": "levitate"
  },
  {
   "id": 93,
@@ -2426,7 +2518,8 @@
    "Sludge",
    "Tackle",
    "Light Screen"
-  ]
+  ],
+  "ability": "levitate"
  },
  {
   "id": 94,
@@ -2452,7 +2545,8 @@
    "Dream Eater",
    "Sludge",
    "Psychic"
-  ]
+  ],
+  "ability": "levitate"
  },
  {
   "id": 95,
@@ -2479,7 +2573,8 @@
    "Earthquake",
    "Slash",
    "Tail Whip"
-  ]
+  ],
+  "ability": "sturdy"
  },
  {
   "id": 96,
@@ -2504,7 +2599,8 @@
    "Recover",
    "Quick Attack",
    "Harden"
-  ]
+  ],
+  "ability": "insomnia"
  },
  {
   "id": 97,
@@ -2529,7 +2625,8 @@
    "Psychic",
    "Quick Attack",
    "Screech"
-  ]
+  ],
+  "ability": "insomnia"
  },
  {
   "id": 98,
@@ -2554,7 +2651,8 @@
    "Hydro Pump",
    "Quick Attack",
    "Leer"
-  ]
+  ],
+  "ability": "hyper_cutter"
  },
  {
   "id": 99,
@@ -2579,7 +2677,8 @@
    "Bubble Beam",
    "Quick Attack",
    "Double Team"
-  ]
+  ],
+  "ability": "hyper_cutter"
  },
  {
   "id": 100,
@@ -2604,7 +2703,8 @@
    "Thunderbolt",
    "Tackle",
    "Leer"
-  ]
+  ],
+  "ability": "static"
  },
  {
   "id": 101,
@@ -2629,7 +2729,8 @@
    "Thunder",
    "Tackle",
    "Leer"
-  ]
+  ],
+  "ability": "static"
  },
  {
   "id": 102,
@@ -2657,7 +2758,8 @@
    "Confusion",
    "Quick Attack",
    "Reflect"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 103,
@@ -2684,7 +2786,8 @@
    "Psybeam",
    "Agility",
    "Tackle"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 104,
@@ -2709,7 +2812,8 @@
    "Dig",
    "Slash",
    "Harden"
-  ]
+  ],
+  "ability": "rock_head"
  },
  {
   "id": 105,
@@ -2734,7 +2838,8 @@
    "Dig",
    "Slash",
    "Double Team"
-  ]
+  ],
+  "ability": "rock_head"
  },
  {
   "id": 106,
@@ -2759,7 +2864,8 @@
    "Submission",
    "Slash",
    "Agility"
-  ]
+  ],
+  "ability": "limber"
  },
  {
   "id": 107,
@@ -2784,7 +2890,8 @@
    "Seismic Toss",
    "Headbutt",
    "Tail Whip"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 108,
@@ -2808,7 +2915,8 @@
    "Body Slam",
    "Swift",
    "Double Team"
-  ]
+  ],
+  "ability": "own_tempo"
  },
  {
   "id": 109,
@@ -2833,7 +2941,8 @@
    "Toxic",
    "Slash",
    "Screech"
-  ]
+  ],
+  "ability": "levitate"
  },
  {
   "id": 110,
@@ -2858,7 +2967,8 @@
    "Acid",
    "Quick Attack",
    "Leer"
-  ]
+  ],
+  "ability": "levitate"
  },
  {
   "id": 111,
@@ -2885,7 +2995,8 @@
    "Rock Slide",
    "Slash",
    "Tail Whip"
-  ]
+  ],
+  "ability": "rock_head"
  },
  {
   "id": 112,
@@ -2912,7 +3023,8 @@
    "Rock Throw",
    "Tackle",
    "Light Screen"
-  ]
+  ],
+  "ability": "rock_head"
  },
  {
   "id": 113,
@@ -2936,7 +3048,8 @@
    "Sing",
    "Light Screen",
    "Seismic Toss"
-  ]
+  ],
+  "ability": "natural_cure"
  },
  {
   "id": 114,
@@ -2961,7 +3074,8 @@
    "Petal Dance",
    "Swift",
    "Harden"
-  ]
+  ],
+  "ability": "chlorophyll"
  },
  {
   "id": 115,
@@ -2985,7 +3099,8 @@
    "Double-Edge",
    "Body Slam",
    "Swords Dance"
-  ]
+  ],
+  "ability": "early_bird"
  },
  {
   "id": 116,
@@ -3010,7 +3125,8 @@
    "Hydro Pump",
    "Quick Attack",
    "Harden"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 117,
@@ -3035,7 +3151,8 @@
    "Bubble Beam",
    "Quick Attack",
    "Screech"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 118,
@@ -3060,7 +3177,8 @@
    "Surf",
    "Body Slam",
    "Growl"
-  ]
+  ],
+  "ability": "water_veil"
  },
  {
   "id": 119,
@@ -3085,7 +3203,8 @@
    "Surf",
    "Tackle",
    "Screech"
-  ]
+  ],
+  "ability": "water_veil"
  },
  {
   "id": 120,
@@ -3110,7 +3229,8 @@
    "Bubble Beam",
    "Swift",
    "Agility"
-  ]
+  ],
+  "ability": "natural_cure"
  },
  {
   "id": 121,
@@ -3138,7 +3258,8 @@
    "Recover",
    "Quick Attack",
    "Leer"
-  ]
+  ],
+  "ability": "natural_cure"
  },
  {
   "id": 122,
@@ -3163,7 +3284,8 @@
    "Agility",
    "Swift",
    "Tail Whip"
-  ]
+  ],
+  "ability": "inner_focus"
  },
  {
   "id": 123,
@@ -3191,7 +3313,8 @@
    "Gust",
    "Quick Attack",
    "Focus Energy"
-  ]
+  ],
+  "ability": "swarm"
  },
  {
   "id": 124,
@@ -3219,7 +3342,8 @@
    "Confusion",
    "Tackle",
    "Growl"
-  ]
+  ],
+  "ability": "own_tempo"
  },
  {
   "id": 125,
@@ -3244,7 +3368,8 @@
    "Thunder Punch",
    "Tackle",
    "Tail Whip"
-  ]
+  ],
+  "ability": "static"
  },
  {
   "id": 126,
@@ -3269,7 +3394,8 @@
    "Fire Blast",
    "Swift",
    "Double Team"
-  ]
+  ],
+  "ability": "flame_body"
  },
  {
   "id": 127,
@@ -3294,7 +3420,8 @@
    "Pin Missile",
    "Body Slam",
    "Swords Dance"
-  ]
+  ],
+  "ability": "hyper_cutter"
  },
  {
   "id": 128,
@@ -3318,7 +3445,8 @@
    "Quick Attack",
    "Body Slam",
    "Reflect"
-  ]
+  ],
+  "ability": "intimidate"
  },
  {
   "id": 129,
@@ -3341,7 +3469,8 @@
    "Tackle",
    "Slash",
    "Screech"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 130,
@@ -3369,7 +3498,8 @@
    "Peck",
    "Slash",
    "Focus Energy"
-  ]
+  ],
+  "ability": "intimidate"
  },
  {
   "id": 131,
@@ -3397,7 +3527,8 @@
    "Ice Punch",
    "Tackle",
    "Double Team"
-  ]
+  ],
+  "ability": "water_absorb"
  },
  {
   "id": 132,
@@ -3421,7 +3552,8 @@
    "Double-Edge",
    "Slash",
    "Harden"
-  ]
+  ],
+  "ability": "limber"
  },
  {
   "id": 133,
@@ -3445,7 +3577,8 @@
    "Swift",
    "Hyper Beam",
    "Leer"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 134,
@@ -3470,7 +3603,8 @@
    "Bubble Beam",
    "Quick Attack",
    "Harden"
-  ]
+  ],
+  "ability": "water_absorb"
  },
  {
   "id": 135,
@@ -3495,7 +3629,8 @@
    "Thunder Shock",
    "Quick Attack",
    "Swords Dance"
-  ]
+  ],
+  "ability": "volt_absorb"
  },
  {
   "id": 136,
@@ -3520,7 +3655,8 @@
    "Flamethrower",
    "Headbutt",
    "Leer"
-  ]
+  ],
+  "ability": "flash_fire"
  },
  {
   "id": 137,
@@ -3544,7 +3680,8 @@
    "Double-Edge",
    "Slash",
    "Tail Whip"
-  ]
+  ],
+  "ability": "keen_eye"
  },
  {
   "id": 138,
@@ -3571,7 +3708,8 @@
    "Hydro Pump",
    "Swift",
    "Reflect"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 139,
@@ -3598,7 +3736,8 @@
    "Bubble Beam",
    "Swift",
    "Agility"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 140,
@@ -3625,7 +3764,8 @@
    "Water Gun",
    "Slash",
    "Harden"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 141,
@@ -3652,7 +3792,8 @@
    "Bubble Beam",
    "Headbutt",
    "Leer"
-  ]
+  ],
+  "ability": "swift_swim"
  },
  {
   "id": 142,
@@ -3679,7 +3820,8 @@
    "Peck",
    "Tackle",
    "Focus Energy"
-  ]
+  ],
+  "ability": "rock_head"
  },
  {
   "id": 143,
@@ -3703,7 +3845,8 @@
    "Hyper Beam",
    "Earthquake",
    "Amnesia"
-  ]
+  ],
+  "ability": "thick_fat"
  },
  {
   "id": 144,
@@ -3731,7 +3874,8 @@
    "Gust",
    "Quick Attack",
    "Screech"
-  ]
+  ],
+  "ability": "pressure"
  },
  {
   "id": 145,
@@ -3759,7 +3903,8 @@
    "Wing Attack",
    "Quick Attack",
    "Reflect"
-  ]
+  ],
+  "ability": "pressure"
  },
  {
   "id": 146,
@@ -3787,7 +3932,8 @@
    "Gust",
    "Tackle",
    "Light Screen"
-  ]
+  ],
+  "ability": "pressure"
  },
  {
   "id": 147,
@@ -3811,7 +3957,8 @@
    "Dragon Rage",
    "Slash",
    "Swords Dance"
-  ]
+  ],
+  "ability": "shed_skin"
  },
  {
   "id": 148,
@@ -3835,7 +3982,8 @@
    "Dragon Breath",
    "Body Slam",
    "Focus Energy"
-  ]
+  ],
+  "ability": "shed_skin"
  },
  {
   "id": 149,
@@ -3861,7 +4009,8 @@
    "Agility",
    "Surf",
    "Thunder Wave"
-  ]
+  ],
+  "ability": "inner_focus"
  },
  {
   "id": 150,
@@ -3886,7 +4035,8 @@
    "Ice Beam",
    "Thunderbolt",
    "Amnesia"
-  ]
+  ],
+  "ability": "pressure"
  },
  {
   "id": 151,
@@ -3911,6 +4061,2685 @@
    "Soft-Boiled",
    "Swords Dance",
    "Body Slam"
-  ]
+  ],
+  "ability": "synchronize"
+ },
+ {
+  "id": 152,
+  "name": "Chikorita",
+  "types": [
+   "grass"
+  ],
+  "base": {
+   "hp": 45,
+   "atk": 49,
+   "def": 65,
+   "spa": 49,
+   "spd": 65,
+   "spe": 45
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Vine Whip",
+   "Solar Beam",
+   "Giga Drain",
+   "Synthesis",
+   "Tackle",
+   "Focus Energy"
+  ],
+  "ability": "overgrow"
+ },
+ {
+  "id": 153,
+  "name": "Bayleef",
+  "types": [
+   "grass"
+  ],
+  "base": {
+   "hp": 60,
+   "atk": 62,
+   "def": 80,
+   "spa": 63,
+   "spd": 80,
+   "spe": 60
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Petal Dance",
+   "Sleep Powder",
+   "Stun Spore",
+   "Vine Whip",
+   "Swift",
+   "Harden"
+  ],
+  "ability": "overgrow"
+ },
+ {
+  "id": 154,
+  "name": "Meganium",
+  "types": [
+   "grass"
+  ],
+  "base": {
+   "hp": 80,
+   "atk": 82,
+   "def": 100,
+   "spa": 83,
+   "spd": 100,
+   "spe": 80
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Synthesis",
+   "Sleep Powder",
+   "Stun Spore",
+   "Petal Dance",
+   "Quick Attack",
+   "Light Screen"
+  ],
+  "ability": "overgrow"
+ },
+ {
+  "id": 155,
+  "name": "Cyndaquil",
+  "types": [
+   "fire"
+  ],
+  "base": {
+   "hp": 39,
+   "atk": 52,
+   "def": 43,
+   "spa": 60,
+   "spd": 50,
+   "spe": 65
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Fire Punch",
+   "Flame Wheel",
+   "Flamethrower",
+   "Ember",
+   "Quick Attack",
+   "Leer"
+  ],
+  "ability": "blaze"
+ },
+ {
+  "id": 156,
+  "name": "Quilava",
+  "types": [
+   "fire"
+  ],
+  "base": {
+   "hp": 58,
+   "atk": 64,
+   "def": 58,
+   "spa": 80,
+   "spd": 65,
+   "spe": 80
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Flame Wheel",
+   "Flamethrower",
+   "Fire Spin",
+   "Fire Punch",
+   "Tackle",
+   "Leer"
+  ],
+  "ability": "blaze"
+ },
+ {
+  "id": 157,
+  "name": "Typhlosion",
+  "types": [
+   "fire"
+  ],
+  "base": {
+   "hp": 78,
+   "atk": 84,
+   "def": 78,
+   "spa": 109,
+   "spd": 85,
+   "spe": 100
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Flamethrower",
+   "Fire Blast",
+   "Swift",
+   "Quick Attack",
+   "Smokescreen"
+  ],
+  "ability": "blaze"
+ },
+ {
+  "id": 158,
+  "name": "Totodile",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 50,
+   "atk": 65,
+   "def": 64,
+   "spa": 44,
+   "spd": 48,
+   "spe": 43
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Bubble Beam",
+   "Surf",
+   "Waterfall",
+   "Water Gun",
+   "Tackle",
+   "Reflect"
+  ],
+  "ability": "torrent"
+ },
+ {
+  "id": 159,
+  "name": "Croconaw",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 80,
+   "def": 80,
+   "spa": 59,
+   "spd": 63,
+   "spe": 58
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Bubble Beam",
+   "Whirlpool",
+   "Hydro Pump",
+   "Water Gun",
+   "Body Slam",
+   "Harden"
+  ],
+  "ability": "torrent"
+ },
+ {
+  "id": 160,
+  "name": "Feraligatr",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 85,
+   "atk": 105,
+   "def": 100,
+   "spa": 79,
+   "spd": 83,
+   "spe": 78
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Surf",
+   "Crunch",
+   "Slash",
+   "Ice Punch",
+   "Screech"
+  ],
+  "ability": "torrent"
+ },
+ {
+  "id": 161,
+  "name": "Sentret",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 35,
+   "atk": 46,
+   "def": 34,
+   "spa": 35,
+   "spd": 45,
+   "spe": 20
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Body Slam",
+   "Swift",
+   "Headbutt",
+   "Reflect"
+  ],
+  "ability": "keen_eye"
+ },
+ {
+  "id": 162,
+  "name": "Furret",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 85,
+   "atk": 76,
+   "def": 64,
+   "spa": 45,
+   "spd": 55,
+   "spe": 90
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Quick Attack",
+   "Double-Edge",
+   "Tackle",
+   "Return",
+   "Harden"
+  ],
+  "ability": "keen_eye"
+ },
+ {
+  "id": 163,
+  "name": "Hoothoot",
+  "types": [
+   "normal",
+   "flying"
+  ],
+  "base": {
+   "hp": 60,
+   "atk": 30,
+   "def": 30,
+   "spa": 36,
+   "spd": 56,
+   "spe": 50
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Body Slam",
+   "Return",
+   "Tackle",
+   "Gust",
+   "Peck",
+   "Wing Attack",
+   "Screech"
+  ],
+  "ability": "insomnia"
+ },
+ {
+  "id": 164,
+  "name": "Noctowl",
+  "types": [
+   "normal",
+   "flying"
+  ],
+  "base": {
+   "hp": 100,
+   "atk": 50,
+   "def": 50,
+   "spa": 76,
+   "spd": 96,
+   "spe": 70
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Double-Edge",
+   "Headbutt",
+   "Return",
+   "Gust",
+   "Wing Attack",
+   "Peck",
+   "Reflect"
+  ],
+  "ability": "insomnia"
+ },
+ {
+  "id": 165,
+  "name": "Ledyba",
+  "types": [
+   "bug",
+   "flying"
+  ],
+  "base": {
+   "hp": 40,
+   "atk": 20,
+   "def": 30,
+   "spa": 40,
+   "spd": 80,
+   "spe": 55
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Twineedle",
+   "Leech Life",
+   "Fury Cutter",
+   "Peck",
+   "Drill Peck",
+   "Fly",
+   "Quick Attack",
+   "Agility"
+  ],
+  "ability": "early_bird"
+ },
+ {
+  "id": 166,
+  "name": "Ledian",
+  "types": [
+   "bug",
+   "flying"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 35,
+   "def": 50,
+   "spa": 55,
+   "spd": 110,
+   "spe": 85
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Leech Life",
+   "Megahorn",
+   "Twineedle",
+   "Fly",
+   "Peck",
+   "Wing Attack",
+   "Quick Attack",
+   "Light Screen"
+  ],
+  "ability": "early_bird"
+ },
+ {
+  "id": 167,
+  "name": "Spinarak",
+  "types": [
+   "bug",
+   "poison"
+  ],
+  "base": {
+   "hp": 40,
+   "atk": 60,
+   "def": 40,
+   "spa": 40,
+   "spd": 40,
+   "spe": 30
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Twineedle",
+   "String Shot",
+   "Leech Life",
+   "Sludge Bomb",
+   "Sludge",
+   "Toxic",
+   "Tackle",
+   "Swords Dance"
+  ],
+  "ability": "swarm"
+ },
+ {
+  "id": 168,
+  "name": "Ariados",
+  "types": [
+   "bug",
+   "poison"
+  ],
+  "base": {
+   "hp": 70,
+   "atk": 90,
+   "def": 70,
+   "spa": 60,
+   "spd": 60,
+   "spe": 40
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Pin Missile",
+   "Megahorn",
+   "Twineedle",
+   "Smog",
+   "Acid",
+   "Sludge",
+   "Tackle",
+   "Light Screen"
+  ],
+  "ability": "swarm"
+ },
+ {
+  "id": 169,
+  "name": "Crobat",
+  "types": [
+   "poison",
+   "flying"
+  ],
+  "base": {
+   "hp": 85,
+   "atk": 90,
+   "def": 80,
+   "spa": 70,
+   "spd": 80,
+   "spe": 130
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Wing Attack",
+   "Bite",
+   "Confuse Ray",
+   "Toxic",
+   "Agility"
+  ],
+  "ability": "inner_focus"
+ },
+ {
+  "id": 170,
+  "name": "Chinchou",
+  "types": [
+   "water",
+   "electric"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 38,
+   "def": 38,
+   "spa": 56,
+   "spd": 56,
+   "spe": 67
+  },
+  "growth": "slow",
+  "evolves": true,
+  "learnset": [
+   "Bubble Beam",
+   "Waterfall",
+   "Surf",
+   "Thunder Shock",
+   "Thunder Wave",
+   "Spark",
+   "Swift",
+   "Leer"
+  ],
+  "ability": "volt_absorb"
+ },
+ {
+  "id": 171,
+  "name": "Lanturn",
+  "types": [
+   "water",
+   "electric"
+  ],
+  "base": {
+   "hp": 125,
+   "atk": 58,
+   "def": 58,
+   "spa": 76,
+   "spd": 76,
+   "spe": 67
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Bubble Beam",
+   "Waterfall",
+   "Hydro Pump",
+   "Thunder Shock",
+   "Spark",
+   "Thunder",
+   "Swift",
+   "Swords Dance"
+  ],
+  "ability": "volt_absorb"
+ },
+ {
+  "id": 172,
+  "name": "Pichu",
+  "types": [
+   "electric"
+  ],
+  "base": {
+   "hp": 20,
+   "atk": 40,
+   "def": 15,
+   "spa": 35,
+   "spd": 35,
+   "spe": 60
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Thunder Wave",
+   "Thunder Shock",
+   "Thunderbolt",
+   "Thunder",
+   "Slash",
+   "Leer"
+  ],
+  "ability": "static"
+ },
+ {
+  "id": 173,
+  "name": "Cleffa",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 50,
+   "atk": 25,
+   "def": 28,
+   "spa": 45,
+   "spd": 55,
+   "spe": 15
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Return",
+   "Tackle",
+   "Swift",
+   "Double-Edge",
+   "Double Team"
+  ],
+  "ability": "cute_charm"
+ },
+ {
+  "id": 174,
+  "name": "Igglybuff",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 30,
+   "def": 15,
+   "spa": 40,
+   "spd": 20,
+   "spe": 15
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Quick Attack",
+   "Headbutt",
+   "Tackle",
+   "Double-Edge",
+   "Agility"
+  ],
+  "ability": "cute_charm"
+ },
+ {
+  "id": 175,
+  "name": "Togepi",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 35,
+   "atk": 20,
+   "def": 65,
+   "spa": 40,
+   "spd": 65,
+   "spe": 20
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Return",
+   "Slash",
+   "Headbutt",
+   "Double-Edge",
+   "Harden"
+  ],
+  "ability": "serene_grace"
+ },
+ {
+  "id": 176,
+  "name": "Togetic",
+  "types": [
+   "normal",
+   "flying"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 40,
+   "def": 85,
+   "spa": 80,
+   "spd": 105,
+   "spe": 40
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Swift",
+   "Return",
+   "Body Slam",
+   "Drill Peck",
+   "Fly",
+   "Gust",
+   "Swords Dance"
+  ],
+  "ability": "serene_grace"
+ },
+ {
+  "id": 177,
+  "name": "Natu",
+  "types": [
+   "psychic",
+   "flying"
+  ],
+  "base": {
+   "hp": 40,
+   "atk": 50,
+   "def": 45,
+   "spa": 70,
+   "spd": 45,
+   "spe": 70
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Psychic",
+   "Confusion",
+   "Hypnosis",
+   "Drill Peck",
+   "Fly",
+   "Peck",
+   "Quick Attack",
+   "Harden"
+  ],
+  "ability": "synchronize"
+ },
+ {
+  "id": 178,
+  "name": "Xatu",
+  "types": [
+   "psychic",
+   "flying"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 75,
+   "def": 70,
+   "spa": 95,
+   "spd": 70,
+   "spe": 95
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Agility",
+   "Future Sight",
+   "Hypnosis",
+   "Drill Peck",
+   "Peck",
+   "Gust",
+   "Quick Attack",
+   "Swords Dance"
+  ],
+  "ability": "synchronize"
+ },
+ {
+  "id": 179,
+  "name": "Mareep",
+  "types": [
+   "electric"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 40,
+   "def": 40,
+   "spa": 65,
+   "spd": 45,
+   "spe": 35
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Thunder Punch",
+   "Thunder",
+   "Thunderbolt",
+   "Thunder Wave",
+   "Tackle",
+   "Swords Dance"
+  ],
+  "ability": "static"
+ },
+ {
+  "id": 180,
+  "name": "Flaaffy",
+  "types": [
+   "electric"
+  ],
+  "base": {
+   "hp": 70,
+   "atk": 55,
+   "def": 55,
+   "spa": 80,
+   "spd": 60,
+   "spe": 45
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Thunder Wave",
+   "Thunder Shock",
+   "Thunder",
+   "Thunder Punch",
+   "Quick Attack",
+   "Screech"
+  ],
+  "ability": "static"
+ },
+ {
+  "id": 181,
+  "name": "Ampharos",
+  "types": [
+   "electric"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 75,
+   "def": 75,
+   "spa": 115,
+   "spd": 90,
+   "spe": 55
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Thunderbolt",
+   "Zap Cannon",
+   "Thunder Wave",
+   "Fire Punch",
+   "Light Screen"
+  ],
+  "ability": "static"
+ },
+ {
+  "id": 182,
+  "name": "Bellossom",
+  "types": [
+   "grass"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 80,
+   "def": 85,
+   "spa": 90,
+   "spd": 100,
+   "spe": 50
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Petal Dance",
+   "Solar Beam",
+   "Mega Drain",
+   "Stun Spore",
+   "Swift",
+   "Light Screen"
+  ],
+  "ability": "chlorophyll"
+ },
+ {
+  "id": 183,
+  "name": "Marill",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 70,
+   "atk": 20,
+   "def": 50,
+   "spa": 20,
+   "spd": 50,
+   "spe": 40
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Hydro Pump",
+   "Bubble Beam",
+   "Surf",
+   "Whirlpool",
+   "Slash",
+   "Swords Dance"
+  ],
+  "ability": "huge_power"
+ },
+ {
+  "id": 184,
+  "name": "Azumarill",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 100,
+   "atk": 50,
+   "def": 80,
+   "spa": 50,
+   "spd": 80,
+   "spe": 50
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Waterfall",
+   "Hydro Pump",
+   "Water Gun",
+   "Bubble Beam",
+   "Quick Attack",
+   "Leer"
+  ],
+  "ability": "huge_power"
+ },
+ {
+  "id": 185,
+  "name": "Sudowoodo",
+  "types": [
+   "rock"
+  ],
+  "base": {
+   "hp": 70,
+   "atk": 100,
+   "def": 115,
+   "spa": 30,
+   "spd": 65,
+   "spe": 30
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Ancient Power",
+   "Rock Throw",
+   "Rock Slide",
+   "Rollout",
+   "Slash",
+   "Harden"
+  ],
+  "ability": "rock_head"
+ },
+ {
+  "id": 186,
+  "name": "Politoed",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 75,
+   "def": 75,
+   "spa": 90,
+   "spd": 100,
+   "spe": 70
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Surf",
+   "Waterfall",
+   "Bubble Beam",
+   "Whirlpool",
+   "Tackle",
+   "Growl"
+  ],
+  "ability": "water_absorb"
+ },
+ {
+  "id": 187,
+  "name": "Hoppip",
+  "types": [
+   "grass",
+   "flying"
+  ],
+  "base": {
+   "hp": 35,
+   "atk": 35,
+   "def": 40,
+   "spa": 35,
+   "spd": 55,
+   "spe": 50
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Vine Whip",
+   "Stun Spore",
+   "Razor Leaf",
+   "Peck",
+   "Wing Attack",
+   "Gust",
+   "Quick Attack",
+   "Harden"
+  ],
+  "ability": "chlorophyll"
+ },
+ {
+  "id": 188,
+  "name": "Skiploom",
+  "types": [
+   "grass",
+   "flying"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 45,
+   "def": 50,
+   "spa": 45,
+   "spd": 65,
+   "spe": 80
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Giga Drain",
+   "Mega Drain",
+   "Synthesis",
+   "Gust",
+   "Fly",
+   "Drill Peck",
+   "Headbutt",
+   "Focus Energy"
+  ],
+  "ability": "chlorophyll"
+ },
+ {
+  "id": 189,
+  "name": "Jumpluff",
+  "types": [
+   "grass",
+   "flying"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 55,
+   "def": 70,
+   "spa": 55,
+   "spd": 95,
+   "spe": 110
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Synthesis",
+   "Razor Leaf",
+   "Solar Beam",
+   "Fly",
+   "Gust",
+   "Drill Peck",
+   "Quick Attack",
+   "Agility"
+  ],
+  "ability": "chlorophyll"
+ },
+ {
+  "id": 190,
+  "name": "Aipom",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 70,
+   "def": 55,
+   "spa": 40,
+   "spd": 55,
+   "spe": 85
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Hyper Beam",
+   "Return",
+   "Tackle",
+   "Headbutt",
+   "Agility"
+  ],
+  "ability": "limber"
+ },
+ {
+  "id": 191,
+  "name": "Sunkern",
+  "types": [
+   "grass"
+  ],
+  "base": {
+   "hp": 30,
+   "atk": 30,
+   "def": 30,
+   "spa": 30,
+   "spd": 30,
+   "spe": 30
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Sleep Powder",
+   "Mega Drain",
+   "Petal Dance",
+   "Solar Beam",
+   "Quick Attack",
+   "Agility"
+  ],
+  "ability": "chlorophyll"
+ },
+ {
+  "id": 192,
+  "name": "Sunflora",
+  "types": [
+   "grass"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 75,
+   "def": 55,
+   "spa": 105,
+   "spd": 85,
+   "spe": 30
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Solar Beam",
+   "Vine Whip",
+   "Petal Dance",
+   "Stun Spore",
+   "Swift",
+   "Focus Energy"
+  ],
+  "ability": "chlorophyll"
+ },
+ {
+  "id": 193,
+  "name": "Yanma",
+  "types": [
+   "bug",
+   "flying"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 65,
+   "def": 45,
+   "spa": 75,
+   "spd": 45,
+   "spe": 95
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Pin Missile",
+   "Megahorn",
+   "Twineedle",
+   "Wing Attack",
+   "Fly",
+   "Gust",
+   "Swift",
+   "Swords Dance"
+  ],
+  "ability": "speed_boost"
+ },
+ {
+  "id": 194,
+  "name": "Wooper",
+  "types": [
+   "water",
+   "ground"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 45,
+   "def": 45,
+   "spa": 25,
+   "spd": 25,
+   "spe": 15
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Bubble Beam",
+   "Whirlpool",
+   "Hydro Pump",
+   "Mud-Slap",
+   "Earthquake",
+   "Sand Attack",
+   "Headbutt",
+   "Double Team"
+  ],
+  "ability": "water_absorb"
+ },
+ {
+  "id": 195,
+  "name": "Quagsire",
+  "types": [
+   "water",
+   "ground"
+  ],
+  "base": {
+   "hp": 95,
+   "atk": 85,
+   "def": 85,
+   "spa": 65,
+   "spd": 65,
+   "spe": 35
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Hydro Pump",
+   "Whirlpool",
+   "Bubble Beam",
+   "Magnitude",
+   "Bone Club",
+   "Mud-Slap",
+   "Body Slam",
+   "Growl"
+  ],
+  "ability": "water_absorb"
+ },
+ {
+  "id": 196,
+  "name": "Espeon",
+  "types": [
+   "psychic"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 65,
+   "def": 60,
+   "spa": 130,
+   "spd": 95,
+   "spe": 110
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Psychic",
+   "Psybeam",
+   "Morning Sun",
+   "Swift",
+   "Reflect"
+  ],
+  "ability": "synchronize"
+ },
+ {
+  "id": 197,
+  "name": "Umbreon",
+  "types": [
+   "dark"
+  ],
+  "base": {
+   "hp": 95,
+   "atk": 65,
+   "def": 110,
+   "spa": 60,
+   "spd": 130,
+   "spe": 65
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Feint Attack",
+   "Crunch",
+   "Moonlight",
+   "Toxic",
+   "Confuse Ray",
+   "Screech"
+  ],
+  "ability": "synchronize"
+ },
+ {
+  "id": 198,
+  "name": "Murkrow",
+  "types": [
+   "dark",
+   "flying"
+  ],
+  "base": {
+   "hp": 60,
+   "atk": 85,
+   "def": 42,
+   "spa": 85,
+   "spd": 42,
+   "spe": 91
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Bite",
+   "Thief",
+   "Pursuit",
+   "Wing Attack",
+   "Drill Peck",
+   "Fly",
+   "Quick Attack",
+   "Screech"
+  ],
+  "ability": "keen_eye"
+ },
+ {
+  "id": 199,
+  "name": "Slowking",
+  "types": [
+   "water",
+   "psychic"
+  ],
+  "base": {
+   "hp": 95,
+   "atk": 75,
+   "def": 80,
+   "spa": 100,
+   "spd": 110,
+   "spe": 30
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Waterfall",
+   "Whirlpool",
+   "Bubble Beam",
+   "Psychic",
+   "Future Sight",
+   "Confusion",
+   "Tackle",
+   "Focus Energy"
+  ],
+  "ability": "own_tempo"
+ },
+ {
+  "id": 200,
+  "name": "Misdreavus",
+  "types": [
+   "ghost"
+  ],
+  "base": {
+   "hp": 60,
+   "atk": 60,
+   "def": 60,
+   "spa": 85,
+   "spd": 85,
+   "spe": 85
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Night Shade",
+   "Lick",
+   "Shadow Ball",
+   "Confuse Ray",
+   "Tackle",
+   "Screech"
+  ],
+  "ability": "levitate"
+ },
+ {
+  "id": 201,
+  "name": "Unown",
+  "types": [
+   "psychic"
+  ],
+  "base": {
+   "hp": 48,
+   "atk": 72,
+   "def": 48,
+   "spa": 72,
+   "spd": 48,
+   "spe": 48
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Agility",
+   "Confusion",
+   "Psychic",
+   "Hypnosis",
+   "Body Slam",
+   "Double Team"
+  ],
+  "ability": "levitate"
+ },
+ {
+  "id": 202,
+  "name": "Wobbuffet",
+  "types": [
+   "psychic"
+  ],
+  "base": {
+   "hp": 190,
+   "atk": 33,
+   "def": 58,
+   "spa": 33,
+   "spd": 58,
+   "spe": 33
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Hypnosis",
+   "Psychic",
+   "Confusion",
+   "Future Sight",
+   "Slash",
+   "Tail Whip"
+  ],
+  "ability": "insomnia"
+ },
+ {
+  "id": 203,
+  "name": "Girafarig",
+  "types": [
+   "normal",
+   "psychic"
+  ],
+  "base": {
+   "hp": 70,
+   "atk": 80,
+   "def": 65,
+   "spa": 90,
+   "spd": 65,
+   "spe": 85
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Tackle",
+   "Swift",
+   "Body Slam",
+   "Recover",
+   "Psybeam",
+   "Agility",
+   "Swords Dance"
+  ],
+  "ability": "inner_focus"
+ },
+ {
+  "id": 204,
+  "name": "Pineco",
+  "types": [
+   "bug"
+  ],
+  "base": {
+   "hp": 50,
+   "atk": 65,
+   "def": 90,
+   "spa": 35,
+   "spd": 35,
+   "spe": 15
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "String Shot",
+   "Pin Missile",
+   "Leech Life",
+   "Twineedle",
+   "Headbutt",
+   "Double Team"
+  ],
+  "ability": "swarm"
+ },
+ {
+  "id": 205,
+  "name": "Forretress",
+  "types": [
+   "bug",
+   "steel"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 90,
+   "def": 140,
+   "spa": 60,
+   "spd": 60,
+   "spe": 40
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Leech Life",
+   "Pin Missile",
+   "Fury Cutter",
+   "Metal Claw",
+   "Steel Wing",
+   "Iron Tail",
+   "Body Slam",
+   "Reflect"
+  ],
+  "ability": "sturdy"
+ },
+ {
+  "id": 206,
+  "name": "Dunsparce",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 100,
+   "atk": 70,
+   "def": 70,
+   "spa": 65,
+   "spd": 65,
+   "spe": 45
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Headbutt",
+   "Double-Edge",
+   "Tackle",
+   "Light Screen"
+  ],
+  "ability": "serene_grace"
+ },
+ {
+  "id": 207,
+  "name": "Gligar",
+  "types": [
+   "ground",
+   "flying"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 75,
+   "def": 105,
+   "spa": 35,
+   "spd": 65,
+   "spe": 85
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Dig",
+   "Bone Club",
+   "Sand Attack",
+   "Drill Peck",
+   "Fly",
+   "Wing Attack",
+   "Body Slam",
+   "Focus Energy"
+  ],
+  "ability": "hyper_cutter"
+ },
+ {
+  "id": 208,
+  "name": "Steelix",
+  "types": [
+   "steel",
+   "ground"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 85,
+   "def": 200,
+   "spa": 55,
+   "spd": 65,
+   "spe": 30
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Iron Tail",
+   "Earthquake",
+   "Rock Slide",
+   "Crunch",
+   "Harden",
+   "Screech"
+  ],
+  "ability": "sturdy"
+ },
+ {
+  "id": 209,
+  "name": "Snubbull",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 60,
+   "atk": 80,
+   "def": 50,
+   "spa": 40,
+   "spd": 40,
+   "spe": 30
+  },
+  "growth": "fast",
+  "evolves": true,
+  "learnset": [
+   "Swift",
+   "Quick Attack",
+   "Headbutt",
+   "Double-Edge",
+   "Focus Energy"
+  ],
+  "ability": "intimidate"
+ },
+ {
+  "id": 210,
+  "name": "Granbull",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 120,
+   "def": 75,
+   "spa": 60,
+   "spd": 60,
+   "spe": 45
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Headbutt",
+   "Body Slam",
+   "Tackle",
+   "Slash",
+   "Harden"
+  ],
+  "ability": "intimidate"
+ },
+ {
+  "id": 211,
+  "name": "Qwilfish",
+  "types": [
+   "water",
+   "poison"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 95,
+   "def": 75,
+   "spa": 55,
+   "spd": 55,
+   "spe": 85
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Water Gun",
+   "Waterfall",
+   "Bubble Beam",
+   "Sludge",
+   "Toxic",
+   "Sludge Bomb",
+   "Tackle",
+   "Screech"
+  ],
+  "ability": "poison_point"
+ },
+ {
+  "id": 212,
+  "name": "Scizor",
+  "types": [
+   "bug",
+   "steel"
+  ],
+  "base": {
+   "hp": 70,
+   "atk": 130,
+   "def": 100,
+   "spa": 55,
+   "spd": 80,
+   "spe": 65
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Metal Claw",
+   "Fury Cutter",
+   "Slash",
+   "Wing Attack",
+   "Swords Dance",
+   "Agility"
+  ],
+  "ability": "shield_dust"
+ },
+ {
+  "id": 213,
+  "name": "Shuckle",
+  "types": [
+   "bug",
+   "rock"
+  ],
+  "base": {
+   "hp": 20,
+   "atk": 10,
+   "def": 230,
+   "spa": 10,
+   "spd": 230,
+   "spe": 5
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Fury Cutter",
+   "Leech Life",
+   "Megahorn",
+   "Rollout",
+   "Rock Slide",
+   "Rock Throw",
+   "Quick Attack",
+   "Focus Energy"
+  ],
+  "ability": "sturdy"
+ },
+ {
+  "id": 214,
+  "name": "Heracross",
+  "types": [
+   "bug",
+   "fighting"
+  ],
+  "base": {
+   "hp": 80,
+   "atk": 125,
+   "def": 75,
+   "spa": 40,
+   "spd": 95,
+   "spe": 85
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Megahorn",
+   "Cross Chop",
+   "Earthquake",
+   "Fury Cutter",
+   "Focus Energy"
+  ],
+  "ability": "guts"
+ },
+ {
+  "id": 215,
+  "name": "Sneasel",
+  "types": [
+   "dark",
+   "ice"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 95,
+   "def": 55,
+   "spa": 35,
+   "spd": 75,
+   "spe": 115
+  },
+  "growth": "medium_slow",
+  "evolves": true,
+  "learnset": [
+   "Feint Attack",
+   "Bite",
+   "Thief",
+   "Ice Beam",
+   "Blizzard",
+   "Powder Snow",
+   "Headbutt",
+   "Focus Energy"
+  ],
+  "ability": "keen_eye"
+ },
+ {
+  "id": 216,
+  "name": "Teddiursa",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 60,
+   "atk": 80,
+   "def": 50,
+   "spa": 50,
+   "spd": 50,
+   "spe": 40
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Tackle",
+   "Body Slam",
+   "Headbutt",
+   "Agility"
+  ],
+  "ability": "guts"
+ },
+ {
+  "id": 217,
+  "name": "Ursaring",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 130,
+   "def": 75,
+   "spa": 75,
+   "spd": 75,
+   "spe": 55
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Headbutt",
+   "Return",
+   "Slash",
+   "Harden"
+  ],
+  "ability": "guts"
+ },
+ {
+  "id": 218,
+  "name": "Slugma",
+  "types": [
+   "fire"
+  ],
+  "base": {
+   "hp": 40,
+   "atk": 40,
+   "def": 40,
+   "spa": 70,
+   "spd": 40,
+   "spe": 20
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Fire Punch",
+   "Ember",
+   "Fire Blast",
+   "Flame Wheel",
+   "Swift",
+   "Light Screen"
+  ],
+  "ability": "flame_body"
+ },
+ {
+  "id": 219,
+  "name": "Magcargo",
+  "types": [
+   "fire",
+   "rock"
+  ],
+  "base": {
+   "hp": 50,
+   "atk": 50,
+   "def": 120,
+   "spa": 80,
+   "spd": 80,
+   "spe": 30
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Flamethrower",
+   "Flame Wheel",
+   "Fire Blast",
+   "Ancient Power",
+   "Rock Slide",
+   "Rock Throw",
+   "Quick Attack",
+   "Screech"
+  ],
+  "ability": "rock_head"
+ },
+ {
+  "id": 220,
+  "name": "Swinub",
+  "types": [
+   "ice",
+   "ground"
+  ],
+  "base": {
+   "hp": 50,
+   "atk": 50,
+   "def": 40,
+   "spa": 30,
+   "spd": 30,
+   "spe": 50
+  },
+  "growth": "slow",
+  "evolves": true,
+  "learnset": [
+   "Aurora Beam",
+   "Blizzard",
+   "Powder Snow",
+   "Earthquake",
+   "Magnitude",
+   "Mud-Slap",
+   "Headbutt",
+   "Swords Dance"
+  ],
+  "ability": "thick_fat"
+ },
+ {
+  "id": 221,
+  "name": "Piloswine",
+  "types": [
+   "ice",
+   "ground"
+  ],
+  "base": {
+   "hp": 100,
+   "atk": 100,
+   "def": 80,
+   "spa": 60,
+   "spd": 60,
+   "spe": 50
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Ice Beam",
+   "Icy Wind",
+   "Blizzard",
+   "Magnitude",
+   "Sand Attack",
+   "Dig",
+   "Body Slam",
+   "Focus Energy"
+  ],
+  "ability": "thick_fat"
+ },
+ {
+  "id": 222,
+  "name": "Corsola",
+  "types": [
+   "water",
+   "rock"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 55,
+   "def": 85,
+   "spa": 65,
+   "spd": 85,
+   "spe": 35
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Bubble Beam",
+   "Waterfall",
+   "Whirlpool",
+   "Rollout",
+   "Ancient Power",
+   "Rock Throw",
+   "Tackle",
+   "Growl"
+  ],
+  "ability": "natural_cure"
+ },
+ {
+  "id": 223,
+  "name": "Remoraid",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 35,
+   "atk": 65,
+   "def": 35,
+   "spa": 65,
+   "spd": 35,
+   "spe": 65
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Hydro Pump",
+   "Bubble Beam",
+   "Water Gun",
+   "Surf",
+   "Slash",
+   "Double Team"
+  ],
+  "ability": "swift_swim"
+ },
+ {
+  "id": 224,
+  "name": "Octillery",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 105,
+   "def": 75,
+   "spa": 105,
+   "spd": 75,
+   "spe": 45
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Waterfall",
+   "Water Gun",
+   "Hydro Pump",
+   "Surf",
+   "Slash",
+   "Harden"
+  ],
+  "ability": "swift_swim"
+ },
+ {
+  "id": 225,
+  "name": "Delibird",
+  "types": [
+   "ice",
+   "flying"
+  ],
+  "base": {
+   "hp": 45,
+   "atk": 55,
+   "def": 45,
+   "spa": 65,
+   "spd": 45,
+   "spe": 75
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Present",
+   "Icy Wind",
+   "Fly",
+   "Quick Attack"
+  ],
+  "ability": "vital_spirit"
+ },
+ {
+  "id": 226,
+  "name": "Mantine",
+  "types": [
+   "water",
+   "flying"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 40,
+   "def": 70,
+   "spa": 80,
+   "spd": 140,
+   "spe": 70
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Waterfall",
+   "Surf",
+   "Whirlpool",
+   "Wing Attack",
+   "Fly",
+   "Gust",
+   "Swift",
+   "Screech"
+  ],
+  "ability": "water_absorb"
+ },
+ {
+  "id": 227,
+  "name": "Skarmory",
+  "types": [
+   "steel",
+   "flying"
+  ],
+  "base": {
+   "hp": 65,
+   "atk": 80,
+   "def": 140,
+   "spa": 40,
+   "spd": 70,
+   "spe": 70
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Steel Wing",
+   "Iron Tail",
+   "Metal Claw",
+   "Wing Attack",
+   "Fly",
+   "Peck",
+   "Headbutt",
+   "Harden"
+  ],
+  "ability": "sturdy"
+ },
+ {
+  "id": 228,
+  "name": "Houndour",
+  "types": [
+   "dark",
+   "fire"
+  ],
+  "base": {
+   "hp": 45,
+   "atk": 60,
+   "def": 30,
+   "spa": 80,
+   "spd": 50,
+   "spe": 65
+  },
+  "growth": "slow",
+  "evolves": true,
+  "learnset": [
+   "Crunch",
+   "Pursuit",
+   "Thief",
+   "Ember",
+   "Fire Punch",
+   "Flame Wheel",
+   "Swift",
+   "Tail Whip"
+  ],
+  "ability": "flash_fire"
+ },
+ {
+  "id": 229,
+  "name": "Houndoom",
+  "types": [
+   "dark",
+   "fire"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 90,
+   "def": 50,
+   "spa": 110,
+   "spd": 80,
+   "spe": 95
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Crunch",
+   "Pursuit",
+   "Thief",
+   "Fire Blast",
+   "Ember",
+   "Fire Spin",
+   "Tackle",
+   "Tail Whip"
+  ],
+  "ability": "flash_fire"
+ },
+ {
+  "id": 230,
+  "name": "Kingdra",
+  "types": [
+   "water",
+   "dragon"
+  ],
+  "base": {
+   "hp": 75,
+   "atk": 95,
+   "def": 95,
+   "spa": 95,
+   "spd": 95,
+   "spe": 85
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Surf",
+   "Hydro Pump",
+   "Twister",
+   "Ice Beam",
+   "Agility",
+   "Smokescreen"
+  ],
+  "ability": "swift_swim"
+ },
+ {
+  "id": 231,
+  "name": "Phanpy",
+  "types": [
+   "ground"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 60,
+   "def": 60,
+   "spa": 40,
+   "spd": 40,
+   "spe": 40
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Magnitude",
+   "Earthquake",
+   "Bone Club",
+   "Sand Attack",
+   "Quick Attack",
+   "Agility"
+  ],
+  "ability": "rock_head"
+ },
+ {
+  "id": 232,
+  "name": "Donphan",
+  "types": [
+   "ground"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 120,
+   "def": 120,
+   "spa": 60,
+   "spd": 60,
+   "spe": 50
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Sand Attack",
+   "Magnitude",
+   "Mud-Slap",
+   "Earthquake",
+   "Quick Attack",
+   "Focus Energy"
+  ],
+  "ability": "rock_head"
+ },
+ {
+  "id": 233,
+  "name": "Porygon2",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 85,
+   "atk": 80,
+   "def": 90,
+   "spa": 105,
+   "spd": 95,
+   "spe": 60
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Headbutt",
+   "Return",
+   "Body Slam",
+   "Slash",
+   "Harden"
+  ],
+  "ability": "serene_grace"
+ },
+ {
+  "id": 234,
+  "name": "Stantler",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 73,
+   "atk": 95,
+   "def": 62,
+   "spa": 85,
+   "spd": 65,
+   "spe": 85
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Return",
+   "Headbutt",
+   "Swift",
+   "Slash",
+   "Harden"
+  ],
+  "ability": "intimidate"
+ },
+ {
+  "id": 235,
+  "name": "Smeargle",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 55,
+   "atk": 20,
+   "def": 35,
+   "spa": 20,
+   "spd": 45,
+   "spe": 75
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Sketch",
+   "Tackle",
+   "Swift",
+   "Double Team"
+  ],
+  "ability": "guts"
+ },
+ {
+  "id": 236,
+  "name": "Tyrogue",
+  "types": [
+   "fighting"
+  ],
+  "base": {
+   "hp": 35,
+   "atk": 35,
+   "def": 35,
+   "spa": 35,
+   "spd": 35,
+   "spe": 35
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Low Kick",
+   "High Jump Kick",
+   "Submission",
+   "Seismic Toss",
+   "Tackle",
+   "Swords Dance"
+  ],
+  "ability": "guts"
+ },
+ {
+  "id": 237,
+  "name": "Hitmontop",
+  "types": [
+   "fighting"
+  ],
+  "base": {
+   "hp": 50,
+   "atk": 95,
+   "def": 95,
+   "spa": 35,
+   "spd": 110,
+   "spe": 70
+  },
+  "growth": "medium_fast",
+  "evolves": false,
+  "learnset": [
+   "Low Kick",
+   "Cross Chop",
+   "Submission",
+   "Seismic Toss",
+   "Headbutt",
+   "Screech"
+  ],
+  "ability": "intimidate"
+ },
+ {
+  "id": 238,
+  "name": "Smoochum",
+  "types": [
+   "ice",
+   "psychic"
+  ],
+  "base": {
+   "hp": 45,
+   "atk": 30,
+   "def": 15,
+   "spa": 85,
+   "spd": 65,
+   "spe": 65
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Icy Wind",
+   "Powder Snow",
+   "Blizzard",
+   "Future Sight",
+   "Psychic",
+   "Agility",
+   "Quick Attack",
+   "Growl"
+  ],
+  "ability": "own_tempo"
+ },
+ {
+  "id": 239,
+  "name": "Elekid",
+  "types": [
+   "electric"
+  ],
+  "base": {
+   "hp": 45,
+   "atk": 63,
+   "def": 37,
+   "spa": 65,
+   "spd": 55,
+   "spe": 95
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Spark",
+   "Thunder Shock",
+   "Thunderbolt",
+   "Thunder",
+   "Quick Attack",
+   "Leer"
+  ],
+  "ability": "static"
+ },
+ {
+  "id": 240,
+  "name": "Magby",
+  "types": [
+   "fire"
+  ],
+  "base": {
+   "hp": 45,
+   "atk": 75,
+   "def": 37,
+   "spa": 70,
+   "spd": 55,
+   "spe": 83
+  },
+  "growth": "medium_fast",
+  "evolves": true,
+  "learnset": [
+   "Fire Spin",
+   "Flamethrower",
+   "Flame Wheel",
+   "Fire Blast",
+   "Quick Attack",
+   "Growl"
+  ],
+  "ability": "flame_body"
+ },
+ {
+  "id": 241,
+  "name": "Miltank",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 95,
+   "atk": 80,
+   "def": 105,
+   "spa": 40,
+   "spd": 70,
+   "spe": 100
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Slash",
+   "Body Slam",
+   "Double-Edge",
+   "Headbutt",
+   "Screech"
+  ],
+  "ability": "thick_fat"
+ },
+ {
+  "id": 242,
+  "name": "Blissey",
+  "types": [
+   "normal"
+  ],
+  "base": {
+   "hp": 255,
+   "atk": 10,
+   "def": 10,
+   "spa": 75,
+   "spd": 135,
+   "spe": 55
+  },
+  "growth": "fast",
+  "evolves": false,
+  "learnset": [
+   "Soft-Boiled",
+   "Seismic Toss",
+   "Sing",
+   "Light Screen",
+   "Toxic"
+  ],
+  "ability": "natural_cure"
+ },
+ {
+  "id": 243,
+  "name": "Raikou",
+  "types": [
+   "electric"
+  ],
+  "base": {
+   "hp": 90,
+   "atk": 85,
+   "def": 75,
+   "spa": 115,
+   "spd": 100,
+   "spe": 115
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Thunderbolt",
+   "Crunch",
+   "Zap Cannon",
+   "Quick Attack",
+   "Reflect"
+  ],
+  "ability": "pressure"
+ },
+ {
+  "id": 244,
+  "name": "Entei",
+  "types": [
+   "fire"
+  ],
+  "base": {
+   "hp": 115,
+   "atk": 115,
+   "def": 85,
+   "spa": 90,
+   "spd": 75,
+   "spe": 100
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Fire Blast",
+   "Sacred Fire",
+   "Bite",
+   "Stomp",
+   "Swagger"
+  ],
+  "ability": "pressure"
+ },
+ {
+  "id": 245,
+  "name": "Suicune",
+  "types": [
+   "water"
+  ],
+  "base": {
+   "hp": 100,
+   "atk": 75,
+   "def": 115,
+   "spa": 90,
+   "spd": 115,
+   "spe": 85
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Surf",
+   "Aurora Beam",
+   "Ice Beam",
+   "Mist",
+   "Rain Dance"
+  ],
+  "ability": "pressure"
+ },
+ {
+  "id": 246,
+  "name": "Larvitar",
+  "types": [
+   "rock",
+   "ground"
+  ],
+  "base": {
+   "hp": 50,
+   "atk": 64,
+   "def": 50,
+   "spa": 45,
+   "spd": 50,
+   "spe": 41
+  },
+  "growth": "slow",
+  "evolves": true,
+  "learnset": [
+   "Rock Throw",
+   "Ancient Power",
+   "Rock Slide",
+   "Dig",
+   "Earthquake",
+   "Mud-Slap",
+   "Headbutt",
+   "Swords Dance"
+  ],
+  "ability": "guts"
+ },
+ {
+  "id": 247,
+  "name": "Pupitar",
+  "types": [
+   "rock",
+   "ground"
+  ],
+  "base": {
+   "hp": 70,
+   "atk": 84,
+   "def": 70,
+   "spa": 65,
+   "spd": 70,
+   "spe": 51
+  },
+  "growth": "slow",
+  "evolves": true,
+  "learnset": [
+   "Rock Slide",
+   "Rock Throw",
+   "Rollout",
+   "Bone Club",
+   "Sand Attack",
+   "Dig",
+   "Quick Attack",
+   "Leer"
+  ],
+  "ability": "shed_skin"
+ },
+ {
+  "id": 248,
+  "name": "Tyranitar",
+  "types": [
+   "rock",
+   "dark"
+  ],
+  "base": {
+   "hp": 100,
+   "atk": 134,
+   "def": 110,
+   "spa": 95,
+   "spd": 100,
+   "spe": 61
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Crunch",
+   "Rock Slide",
+   "Earthquake",
+   "Fire Blast",
+   "Scary Face"
+  ],
+  "ability": "sand_stream"
+ },
+ {
+  "id": 249,
+  "name": "Lugia",
+  "types": [
+   "psychic",
+   "flying"
+  ],
+  "base": {
+   "hp": 106,
+   "atk": 90,
+   "def": 130,
+   "spa": 90,
+   "spd": 154,
+   "spe": 110
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Aeroblast",
+   "Psychic",
+   "Recover",
+   "Rain Dance",
+   "Ancient Power"
+  ],
+  "ability": "pressure"
+ },
+ {
+  "id": 250,
+  "name": "Ho-Oh",
+  "types": [
+   "fire",
+   "flying"
+  ],
+  "base": {
+   "hp": 106,
+   "atk": 130,
+   "def": 90,
+   "spa": 110,
+   "spd": 154,
+   "spe": 90
+  },
+  "growth": "slow",
+  "evolves": false,
+  "learnset": [
+   "Sacred Fire",
+   "Fire Blast",
+   "Ancient Power",
+   "Recover",
+   "Sunny Day"
+  ],
+  "ability": "pressure"
+ },
+ {
+  "id": 251,
+  "name": "Celebi",
+  "types": [
+   "psychic",
+   "grass"
+  ],
+  "base": {
+   "hp": 100,
+   "atk": 100,
+   "def": 100,
+   "spa": 100,
+   "spd": 100,
+   "spe": 100
+  },
+  "growth": "medium_slow",
+  "evolves": false,
+  "learnset": [
+   "Psychic",
+   "Giga Drain",
+   "Ancient Power",
+   "Recover",
+   "Heal Bell"
+  ],
+  "ability": "natural_cure"
  }
 ]

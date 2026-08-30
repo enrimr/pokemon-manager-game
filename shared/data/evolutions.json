@@ -1,0 +1,867 @@
+{
+ "evolutions": {
+  "1": [
+   {
+    "level": 16,
+    "method": "level",
+    "to": 2
+   }
+  ],
+  "10": [
+   {
+    "level": 7,
+    "method": "level",
+    "to": 11
+   }
+  ],
+  "100": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 101
+   }
+  ],
+  "102": [
+   {
+    "method": "stone",
+    "stone": "leaf_stone",
+    "to": 103
+   }
+  ],
+  "104": [
+   {
+    "level": 28,
+    "method": "level",
+    "to": 105
+   }
+  ],
+  "109": [
+   {
+    "level": 35,
+    "method": "level",
+    "to": 110
+   }
+  ],
+  "11": [
+   {
+    "level": 10,
+    "method": "level",
+    "to": 12
+   }
+  ],
+  "111": [
+   {
+    "level": 42,
+    "method": "level",
+    "to": 112
+   }
+  ],
+  "113": [
+   {
+    "dev": 15,
+    "kind": "bond",
+    "method": "development",
+    "morale": 80,
+    "to": 242
+   }
+  ],
+  "116": [
+   {
+    "level": 32,
+    "method": "level",
+    "to": 117
+   }
+  ],
+  "117": [
+   {
+    "method": "stone",
+    "stone": "dragon_scale",
+    "to": 230
+   }
+  ],
+  "118": [
+   {
+    "level": 33,
+    "method": "level",
+    "to": 119
+   }
+  ],
+  "120": [
+   {
+    "method": "stone",
+    "stone": "water_stone",
+    "to": 121
+   }
+  ],
+  "123": [
+   {
+    "method": "stone",
+    "stone": "metal_coat",
+    "to": 212
+   }
+  ],
+  "129": [
+   {
+    "level": 20,
+    "method": "level",
+    "to": 130
+   }
+  ],
+  "13": [
+   {
+    "level": 7,
+    "method": "level",
+    "to": 14
+   }
+  ],
+  "133": [
+   {
+    "method": "stone",
+    "stone": "water_stone",
+    "to": 134
+   },
+   {
+    "method": "stone",
+    "stone": "thunder_stone",
+    "to": 135
+   },
+   {
+    "method": "stone",
+    "stone": "fire_stone",
+    "to": 136
+   },
+   {
+    "method": "stone",
+    "stone": "sun_stone",
+    "to": 196
+   },
+   {
+    "method": "stone",
+    "stone": "moon_stone",
+    "to": 197
+   }
+  ],
+  "137": [
+   {
+    "method": "stone",
+    "stone": "up_grade",
+    "to": 233
+   }
+  ],
+  "138": [
+   {
+    "level": 40,
+    "method": "level",
+    "to": 139
+   }
+  ],
+  "14": [
+   {
+    "level": 10,
+    "method": "level",
+    "to": 15
+   }
+  ],
+  "140": [
+   {
+    "level": 40,
+    "method": "level",
+    "to": 141
+   }
+  ],
+  "147": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 148
+   }
+  ],
+  "148": [
+   {
+    "level": 55,
+    "method": "level",
+    "to": 149
+   }
+  ],
+  "152": [
+   {
+    "level": 16,
+    "method": "level",
+    "to": 153
+   }
+  ],
+  "153": [
+   {
+    "level": 32,
+    "method": "level",
+    "to": 154
+   }
+  ],
+  "155": [
+   {
+    "level": 14,
+    "method": "level",
+    "to": 156
+   }
+  ],
+  "156": [
+   {
+    "level": 36,
+    "method": "level",
+    "to": 157
+   }
+  ],
+  "158": [
+   {
+    "level": 18,
+    "method": "level",
+    "to": 159
+   }
+  ],
+  "159": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 160
+   }
+  ],
+  "16": [
+   {
+    "level": 18,
+    "method": "level",
+    "to": 17
+   }
+  ],
+  "161": [
+   {
+    "level": 15,
+    "method": "level",
+    "to": 162
+   }
+  ],
+  "163": [
+   {
+    "level": 20,
+    "method": "level",
+    "to": 164
+   }
+  ],
+  "165": [
+   {
+    "level": 18,
+    "method": "level",
+    "to": 166
+   }
+  ],
+  "167": [
+   {
+    "level": 22,
+    "method": "level",
+    "to": 168
+   }
+  ],
+  "17": [
+   {
+    "level": 36,
+    "method": "level",
+    "to": 18
+   }
+  ],
+  "170": [
+   {
+    "level": 27,
+    "method": "level",
+    "to": 171
+   }
+  ],
+  "172": [
+   {
+    "dev": 15,
+    "kind": "bond",
+    "method": "development",
+    "morale": 80,
+    "to": 25
+   }
+  ],
+  "173": [
+   {
+    "dev": 15,
+    "kind": "bond",
+    "method": "development",
+    "morale": 80,
+    "to": 35
+   }
+  ],
+  "174": [
+   {
+    "dev": 15,
+    "kind": "bond",
+    "method": "development",
+    "morale": 80,
+    "to": 39
+   }
+  ],
+  "175": [
+   {
+    "dev": 15,
+    "kind": "bond",
+    "method": "development",
+    "morale": 80,
+    "to": 176
+   }
+  ],
+  "177": [
+   {
+    "level": 25,
+    "method": "level",
+    "to": 178
+   }
+  ],
+  "179": [
+   {
+    "level": 15,
+    "method": "level",
+    "to": 180
+   }
+  ],
+  "180": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 181
+   }
+  ],
+  "183": [
+   {
+    "level": 18,
+    "method": "level",
+    "to": 184
+   }
+  ],
+  "187": [
+   {
+    "level": 18,
+    "method": "level",
+    "to": 188
+   }
+  ],
+  "188": [
+   {
+    "level": 27,
+    "method": "level",
+    "to": 189
+   }
+  ],
+  "19": [
+   {
+    "level": 20,
+    "method": "level",
+    "to": 20
+   }
+  ],
+  "191": [
+   {
+    "method": "stone",
+    "stone": "sun_stone",
+    "to": 192
+   }
+  ],
+  "194": [
+   {
+    "level": 20,
+    "method": "level",
+    "to": 195
+   }
+  ],
+  "2": [
+   {
+    "level": 32,
+    "method": "level",
+    "to": 3
+   }
+  ],
+  "204": [
+   {
+    "level": 31,
+    "method": "level",
+    "to": 205
+   }
+  ],
+  "209": [
+   {
+    "level": 23,
+    "method": "level",
+    "to": 210
+   }
+  ],
+  "21": [
+   {
+    "level": 20,
+    "method": "level",
+    "to": 22
+   }
+  ],
+  "216": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 217
+   }
+  ],
+  "218": [
+   {
+    "level": 38,
+    "method": "level",
+    "to": 219
+   }
+  ],
+  "220": [
+   {
+    "level": 33,
+    "method": "level",
+    "to": 221
+   }
+  ],
+  "223": [
+   {
+    "level": 25,
+    "method": "level",
+    "to": 224
+   }
+  ],
+  "228": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 229
+   }
+  ],
+  "23": [
+   {
+    "level": 22,
+    "method": "level",
+    "to": 24
+   }
+  ],
+  "231": [
+   {
+    "level": 25,
+    "method": "level",
+    "to": 232
+   }
+  ],
+  "236": [
+   {
+    "cond": "atk>def",
+    "level": 20,
+    "method": "level",
+    "to": 106
+   },
+   {
+    "cond": "def>atk",
+    "level": 20,
+    "method": "level",
+    "to": 107
+   },
+   {
+    "cond": "atk=def",
+    "level": 20,
+    "method": "level",
+    "to": 237
+   }
+  ],
+  "238": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 124
+   }
+  ],
+  "239": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 125
+   }
+  ],
+  "240": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 126
+   }
+  ],
+  "246": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 247
+   }
+  ],
+  "247": [
+   {
+    "level": 55,
+    "method": "level",
+    "to": 248
+   }
+  ],
+  "25": [
+   {
+    "method": "stone",
+    "stone": "thunder_stone",
+    "to": 26
+   }
+  ],
+  "27": [
+   {
+    "level": 22,
+    "method": "level",
+    "to": 28
+   }
+  ],
+  "29": [
+   {
+    "level": 16,
+    "method": "level",
+    "to": 30
+   }
+  ],
+  "30": [
+   {
+    "method": "stone",
+    "stone": "moon_stone",
+    "to": 31
+   }
+  ],
+  "32": [
+   {
+    "level": 16,
+    "method": "level",
+    "to": 33
+   }
+  ],
+  "33": [
+   {
+    "method": "stone",
+    "stone": "moon_stone",
+    "to": 34
+   }
+  ],
+  "35": [
+   {
+    "method": "stone",
+    "stone": "moon_stone",
+    "to": 36
+   }
+  ],
+  "37": [
+   {
+    "method": "stone",
+    "stone": "fire_stone",
+    "to": 38
+   }
+  ],
+  "39": [
+   {
+    "method": "stone",
+    "stone": "moon_stone",
+    "to": 40
+   }
+  ],
+  "4": [
+   {
+    "level": 16,
+    "method": "level",
+    "to": 5
+   }
+  ],
+  "41": [
+   {
+    "level": 22,
+    "method": "level",
+    "to": 42
+   }
+  ],
+  "42": [
+   {
+    "dev": 15,
+    "kind": "bond",
+    "method": "development",
+    "morale": 80,
+    "to": 169
+   }
+  ],
+  "43": [
+   {
+    "level": 21,
+    "method": "level",
+    "to": 44
+   }
+  ],
+  "44": [
+   {
+    "method": "stone",
+    "stone": "leaf_stone",
+    "to": 45
+   },
+   {
+    "method": "stone",
+    "stone": "sun_stone",
+    "to": 182
+   }
+  ],
+  "46": [
+   {
+    "level": 24,
+    "method": "level",
+    "to": 47
+   }
+  ],
+  "48": [
+   {
+    "level": 31,
+    "method": "level",
+    "to": 49
+   }
+  ],
+  "5": [
+   {
+    "level": 36,
+    "method": "level",
+    "to": 6
+   }
+  ],
+  "50": [
+   {
+    "level": 26,
+    "method": "level",
+    "to": 51
+   }
+  ],
+  "52": [
+   {
+    "level": 28,
+    "method": "level",
+    "to": 53
+   }
+  ],
+  "54": [
+   {
+    "level": 33,
+    "method": "level",
+    "to": 55
+   }
+  ],
+  "56": [
+   {
+    "level": 28,
+    "method": "level",
+    "to": 57
+   }
+  ],
+  "58": [
+   {
+    "method": "stone",
+    "stone": "fire_stone",
+    "to": 59
+   }
+  ],
+  "60": [
+   {
+    "level": 25,
+    "method": "level",
+    "to": 61
+   }
+  ],
+  "61": [
+   {
+    "method": "stone",
+    "stone": "water_stone",
+    "to": 62
+   },
+   {
+    "method": "stone",
+    "stone": "kings_rock",
+    "to": 186
+   }
+  ],
+  "63": [
+   {
+    "level": 16,
+    "method": "level",
+    "to": 64
+   }
+  ],
+  "64": [
+   {
+    "dev": 36,
+    "kind": "trade",
+    "level": 28,
+    "method": "development",
+    "to": 65
+   }
+  ],
+  "66": [
+   {
+    "level": 28,
+    "method": "level",
+    "to": 67
+   }
+  ],
+  "67": [
+   {
+    "dev": 36,
+    "kind": "trade",
+    "level": 28,
+    "method": "development",
+    "to": 68
+   }
+  ],
+  "69": [
+   {
+    "level": 21,
+    "method": "level",
+    "to": 70
+   }
+  ],
+  "7": [
+   {
+    "level": 16,
+    "method": "level",
+    "to": 8
+   }
+  ],
+  "70": [
+   {
+    "method": "stone",
+    "stone": "leaf_stone",
+    "to": 71
+   }
+  ],
+  "72": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 73
+   }
+  ],
+  "74": [
+   {
+    "level": 25,
+    "method": "level",
+    "to": 75
+   }
+  ],
+  "75": [
+   {
+    "dev": 36,
+    "kind": "trade",
+    "level": 28,
+    "method": "development",
+    "to": 76
+   }
+  ],
+  "77": [
+   {
+    "level": 40,
+    "method": "level",
+    "to": 78
+   }
+  ],
+  "79": [
+   {
+    "level": 37,
+    "method": "level",
+    "to": 80
+   },
+   {
+    "method": "stone",
+    "stone": "kings_rock",
+    "to": 199
+   }
+  ],
+  "8": [
+   {
+    "level": 36,
+    "method": "level",
+    "to": 9
+   }
+  ],
+  "81": [
+   {
+    "level": 30,
+    "method": "level",
+    "to": 82
+   }
+  ],
+  "84": [
+   {
+    "level": 31,
+    "method": "level",
+    "to": 85
+   }
+  ],
+  "86": [
+   {
+    "level": 34,
+    "method": "level",
+    "to": 87
+   }
+  ],
+  "88": [
+   {
+    "level": 38,
+    "method": "level",
+    "to": 89
+   }
+  ],
+  "90": [
+   {
+    "method": "stone",
+    "stone": "water_stone",
+    "to": 91
+   }
+  ],
+  "92": [
+   {
+    "level": 25,
+    "method": "level",
+    "to": 93
+   }
+  ],
+  "93": [
+   {
+    "dev": 36,
+    "kind": "trade",
+    "level": 28,
+    "method": "development",
+    "to": 94
+   }
+  ],
+  "95": [
+   {
+    "method": "stone",
+    "stone": "metal_coat",
+    "to": 208
+   }
+  ],
+  "96": [
+   {
+    "level": 26,
+    "method": "level",
+    "to": 97
+   }
+  ],
+  "98": [
+   {
+    "level": 28,
+    "method": "level",
+    "to": 99
+   }
+  ]
+ },
+ "meta": {
+  "dev_per_level": 6,
+  "notes": "dev = training development points (training service total_gained). level evos use effective level = level + dev/dev_per_level. trade evos are high-development milestones; bond evos need dev + morale. Espeon/Umbreon via Sun/Moon Stone (design liberty, no day/night)."
+ }
+}

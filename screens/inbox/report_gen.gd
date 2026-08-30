@@ -15,6 +15,7 @@ var news: RefCounted           # news_gen.gd instance (shared helpers)
 var board: RefCounted          # board_room.gd instance (set by screen.gd)
 var economy: RefCounted        # economy.gd instance (set by screen.gd)
 var people: RefCounted         # people_gen.gd instance (set by screen.gd)
+var evolutions: RefCounted     # evolution_gen.gd instance (set by screen.gd)
 var _resim_cache: Dictionary = {}
 
 
@@ -25,6 +26,9 @@ func _init(news_gen: RefCounted) -> void:
 ## -> {"bbcode": String, "actions": [{"label","screen"}], "banner": Dictionary}
 func render(msg: Dictionary) -> Dictionary:
 	var uid := str(msg.get("uid", ""))
+	# evolution approval flow / staff hints / transformation reports
+	if evolutions != null and (uid.begins_with("evo:") or str(msg.get("kind", "")).begins_with("evo_")):
+		return evolutions.render(msg)
 	match str(msg.get("cat", "")):
 		"match":
 			if uid.begins_with("prematch:"):

@@ -122,6 +122,21 @@ func _maybe_setup_demo() -> void:
 			for i in 200:
 				if runner.consume_next().is_empty():
 					break
+		"doubles":
+			# Manual 2v2 doubles: fabricate a cup-format tie, skip to game 2
+			# (the doubles game) and halt at the action bar awaiting slot input.
+			runner.fixture = runner.fixture.duplicate(true)
+			runner.fixture["comp"] = "cup"
+			runner.fixture["round"] = clampi(int(runner.fixture.get("round", 1)), 1, 5)
+			runner.set_policy("full_control", false)
+			runner.confirm_lineup()
+			runner.skip_battle()
+			if not runner.series_decided():
+				runner.next_battle()
+				runner.set_policy("full_control", true)
+				for i in 400:
+					if runner.consume_next().is_empty():
+						break
 		"post":
 			runner.instant_result()
 		_:

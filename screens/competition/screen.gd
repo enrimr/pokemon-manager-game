@@ -25,10 +25,20 @@ var _views: Dictionary = {}
 var _dirty: Dictionary = {}
 var _current := "table"
 
+# competition context: a league id ("kanto"/"johto") or "cup" (Indigo Cup).
+# FM lets you browse ANY competition — every tab renders for this context.
+var _comp_ctx := ""
+var _ctx_buttons: Dictionary = {}
+
+var _hdr_title: Label
+var _hdr_sub: Label
 var _hdr_round: Label
+var _hdr_round_cap: Label
 var _hdr_pos: Label
+var _hdr_pos_cap: Label
 var _hdr_next: Label
 var _hdr_leader: Label
+var _hdr_leader_cap: Label
 
 # entity drill-down (club / Pokémon profiles) layered over the tabs
 var _profile_wrap: VBoxContainer
@@ -38,6 +48,7 @@ var _nav_stack: Array = []      # [{"kind":"club"|"pokemon","id":...}, ...]
 
 
 func _ready() -> void:
+	_comp_ctx = GameState.player_league_id()
 	var root := VBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_theme_constant_override("separation", 8)
@@ -85,6 +96,7 @@ func _ready() -> void:
 
 	GameState.table_updated.connect(_on_data_changed)
 	GameState.date_changed.connect(func(_d): _on_data_changed())
+	_apply_ctx(_comp_ctx)
 	_select_tab("table")
 
 
@@ -100,6 +112,9 @@ func on_show() -> void:
 		GameState.save_game()
 	for key in _dirty:
 		_dirty[key] = true
+	var lg := OS.get_environment("COMP_DEV_LEAGUE")
+	if lg != "" and (lg == "cup" or GameState.leagues().any(func(l): return str(l["id"]) == lg)):
+		comp_set_league(lg)
 	var tab := OS.get_environment("COMP_DEV_TAB")
 	if tab != "" and _views.has(tab):
 		_select_tab(tab)
@@ -145,6 +160,63 @@ func _on_data_changed() -> void:
 			_refresh_current()
 
 
+# --------------------------------------------------- competition switching
+
+## Public: switch which competition every tab renders (league id or "cup").
+## Tabs call this too (UI walk) when a cross-league link needs the context to
+## follow, e.g. opening a Johto fixture while browsing Kanto.
+func comp_set_league(ctx: String) -> void:
+	if ctx == _comp_ctx:
+		_apply_ctx(ctx)   # re-assert button states (re-click of active toggle)
+		return
+	_apply_ctx(ctx)
+	for key in _dirty:
+		_dirty[key] = true
+	if not _nav_stack.is_empty():
+		_close_profile()
+	if ctx == "cup" and _current == "table":
+		_select_tab("cup")   # a knockout has no league table
+	else:
+		_select_tab(_current)
+	_refresh_header()
+
+
+## Push the context into every tab that understands it and restyle the switcher.
+func _apply_ctx(ctx: String) -> void:
+	_comp_ctx = ctx
+	var lg := ctx if ctx != "cup" else GameState.player_league_id()
+	for k in _views:
+		if _views[k].has_method("set_league_context"):
+			_views[k].set_league_context(lg, ctx == "cup")
+	for k in _ctx_buttons:
+		var b: Button = _ctx_buttons[k]
+		var active: bool = k == ctx
+		b.set_pressed_no_signal(active)
+		var col: Color = UI.league_color(str(k)) if k != "cup" else Color(0.83, 0.68, 0.21)
+		b.add_theme_color_override("font_color", col.lightened(0.3) if active else TB.COL_TEXT_DIM)
+		b.add_theme_stylebox_override("normal", _ctx_style(active, col))
+		b.add_theme_stylebox_override("hover", _ctx_style(true, col))
+		b.add_theme_stylebox_override("pressed", _ctx_style(true, col))
+	# a cup context greys out the League Table tab
+	if _tab_buttons.has("table"):
+		var tb: Button = _tab_buttons["table"]
+		tb.disabled = ctx == "cup"
+		tb.tooltip_text = "Knockout competition — no league table" if ctx == "cup" else ""
+
+
+func _ctx_style(active: bool, col: Color) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	sb.set_corner_radius_all(3)
+	sb.bg_color = Color(col.r, col.g, col.b, 0.14) if active else TB.COL_PANEL
+	sb.border_color = Color(col.r, col.g, col.b, 0.8) if active else TB.COL_BORDER
+	sb.set_border_width_all(1)
+	return sb
+
+
 # ------------------------------------------------- entity click-through nav
 
 ## Single entry point for every entity hyperlink on this screen (and for the
@@ -165,6 +237,11 @@ func comp_navigate(ctx: Dictionary) -> void:
 		"tab":
 			if _views.has(id):
 				_select_tab(id)
+		"league":
+			_close_profile()
+			comp_set_league(id)
+			if id != "cup" and _current != "table":
+				_select_tab("table")
 
 
 ## Shell hands global-search results (clubs, rival Pokémon) to this screen.
@@ -291,19 +368,22 @@ func _build_header() -> Control:
 
 	var name_box := VBoxContainer.new()
 	name_box.add_theme_constant_override("separation", 0)
-	var title := Label.new()
-	title.text = str(GameState.world["meta"]["league_name"]).to_upper()
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", Color.WHITE)
-	name_box.add_child(title)
-	name_box.add_child(UI.dim("with the Indigo Cup · Season %s" % GameState.season_start.split("-")[0], 12))
+	_hdr_title = Label.new()
+	_hdr_title.add_theme_font_size_override("font_size", 22)
+	_hdr_title.add_theme_color_override("font_color", Color.WHITE)
+	name_box.add_child(_hdr_title)
+	_hdr_sub = UI.dim("", 12)
+	name_box.add_child(_hdr_sub)
 	name_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(name_box)
 
 	_hdr_round = _header_stat(h, "MATCHDAY")
+	_hdr_round_cap = _hdr_round.get_parent().get_child(1)
 	_hdr_pos = _header_stat(h, "YOUR POSITION")
+	_hdr_pos_cap = _hdr_pos.get_parent().get_child(1)
 	_hdr_next = _header_stat(h, "NEXT MATCHDAY")
 	_hdr_leader = _header_stat(h, "LEADER")
+	_hdr_leader_cap = _hdr_leader.get_parent().get_child(1)
 	return panel
 
 
@@ -324,23 +404,48 @@ func _header_stat(parent: HBoxContainer, caption: String) -> Label:
 
 
 func _refresh_header() -> void:
-	var fixtures: Array = GameState.fixtures
+	if _comp_ctx == "cup":
+		_refresh_header_cup()
+		return
+	var season_y: String = GameState.season_start.split("-")[0]
+	_hdr_title.text = GameState.league_name(_comp_ctx).to_upper()
+	var other := ""
+	for lg in GameState.leagues():
+		if str(lg["id"]) != _comp_ctx:
+			other = str(lg["name"])
+	_hdr_sub.text = "with the %s and the %s · Season %s" % [other, GameState.cup_name(), season_y] \
+		if other != "" else "with the %s · Season %s" % [GameState.cup_name(), season_y]
+
+	var lg_fixtures: Array = Season.league_fixtures(GameState.fixtures, _comp_ctx)
 	var completed := 0
-	for f in fixtures:
-		if f["comp"] == "league" and f["played"]:
+	for f in lg_fixtures:
+		if f["played"]:
 			completed = maxi(completed, int(f["round"]))
-	var total := Season.total_league_rounds(fixtures)
+	var total := Season.total_league_rounds(lg_fixtures)
+	_hdr_round_cap.text = "MATCHDAY"
 	_hdr_round.text = "%d / %d" % [completed, total]
 
-	var pos := GameState.player_table_position()
-	var no_games := true
-	for r in GameState.league_table():
-		if GameState.is_player_club(r["club_id"]):
-			no_games = int(r.get("played", 0)) == 0
-	_hdr_pos.text = "—" if no_games else _ord(pos)
-	_hdr_pos.add_theme_color_override("font_color", TB.COL_ACCENT.lightened(0.35))
+	# "your position" only exists inside the player's own championship —
+	# browsing the other league shows its front-runner gap instead.
+	var table: Array = GameState.league_table(_comp_ctx)
+	if _comp_ctx == GameState.player_league_id():
+		_hdr_pos_cap.text = "YOUR POSITION"
+		var pos := GameState.player_table_position()
+		var no_games := true
+		for r in table:
+			if GameState.is_player_club(r["club_id"]):
+				no_games = int(r.get("played", 0)) == 0
+		_hdr_pos.text = "—" if no_games else _ord(pos)
+		_hdr_pos.add_theme_color_override("font_color", TB.COL_ACCENT.lightened(0.35))
+	else:
+		_hdr_pos_cap.text = "TITLE GAP 1st-2nd"
+		if table.size() >= 2 and int(table[0]["played"]) > 0:
+			_hdr_pos.text = "%d pts" % (int(table[0]["points"]) - int(table[1]["points"]))
+		else:
+			_hdr_pos.text = "—"
+		_hdr_pos.add_theme_color_override("font_color", Color.WHITE)
 
-	var upcoming: Array = fixtures.filter(func(f): return not f["played"] and f["date"] > GameState.current_date)
+	var upcoming: Array = lg_fixtures.filter(func(f): return not f["played"] and f["date"] > GameState.current_date)
 	if upcoming.is_empty():
 		_hdr_next.text = "Season over"
 	else:
@@ -348,12 +453,62 @@ func _refresh_header() -> void:
 		var days := Season.days_between(GameState.current_date, upcoming[0]["date"])
 		_hdr_next.text = "%s (%dd)" % [UI.short_date(upcoming[0]["date"]), days]
 
-	var table: Array = GameState.league_table()
+	_hdr_leader_cap.text = "LEADER"
 	if table.is_empty() or int(table[0]["played"]) == 0:
 		_hdr_leader.text = "-"
 	else:
 		var leader := GameState.club(table[0]["club_id"])
 		_hdr_leader.text = "%s · %d pts" % [leader.get("short", "?"), int(table[0]["points"])]
+
+
+func _refresh_header_cup() -> void:
+	_hdr_title.text = GameState.cup_name().to_upper()
+	var names: Array = GameState.leagues().map(func(l): return str(l["name"]))
+	_hdr_sub.text = "cross-league knockout · clubs from the %s · Season %s" % [
+		" and ".join(names), GameState.season_start.split("-")[0]]
+	var cup: Array = Season.cup_fixtures(GameState.fixtures)
+	var max_round := 0
+	var total_rounds := 5
+	for f in cup:
+		max_round = maxi(max_round, int(f["round"]))
+	_hdr_round_cap.text = "ROUND"
+	_hdr_round.text = "%s (%d/%d)" % [Season.cup_round_name(max_round), max_round, total_rounds] \
+		if max_round > 0 else "Draw pending"
+
+	# your cup status
+	_hdr_pos_cap.text = "YOUR STATUS"
+	var pid: String = GameState.world["meta"]["player_club_id"]
+	var out_round := 0
+	for f in cup:
+		if f["played"] and (f["home"] == pid or f["away"] == pid) \
+				and Season.fixture_winner(f) != pid:
+			out_round = int(f["round"])
+	var current: Array = cup.filter(func(f): return int(f["round"]) == max_round)
+	var final_done: bool = max_round == total_rounds \
+		and not current.any(func(f): return not f["played"])
+	if final_done and Season.fixture_winner(current[0]) == pid:
+		_hdr_pos.text = "Champions"
+		_hdr_pos.add_theme_color_override("font_color", Color(0.95, 0.83, 0.4))
+	elif out_round > 0:
+		_hdr_pos.text = "Out (%s)" % Season.cup_round_name(out_round)
+		_hdr_pos.add_theme_color_override("font_color", UI.COL_LOSS)
+	else:
+		_hdr_pos.text = "In the draw"
+		_hdr_pos.add_theme_color_override("font_color", UI.COL_WIN)
+
+	var upcoming: Array = cup.filter(func(f): return not f["played"] and f["date"] > GameState.current_date)
+	if upcoming.is_empty():
+		_hdr_next.text = "Final played" if final_done else "Next draw pending"
+	else:
+		upcoming.sort_custom(func(a, b): return a["date"] < b["date"])
+		var days := Season.days_between(GameState.current_date, upcoming[0]["date"])
+		_hdr_next.text = "%s (%dd)" % [UI.short_date(upcoming[0]["date"]), days]
+
+	_hdr_leader_cap.text = "HOLDERS / WINNERS"
+	if final_done:
+		_hdr_leader.text = str(GameState.club(Season.fixture_winner(current[0])).get("short", "?"))
+	else:
+		_hdr_leader.text = "TBD"
 
 
 # ------------------------------------------------------------------ tabs
@@ -373,6 +528,27 @@ func _build_tab_bar() -> Control:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.add_child(spacer)
+
+	# competition switcher (FM: browse any competition, not just your own)
+	var cap := UI.dim("COMPETITION", 10)
+	cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.add_child(cap)
+	var entries: Array = []
+	for lg in GameState.leagues():
+		entries.append([str(lg["id"]), str(lg["name"])])
+	entries.append(["cup", GameState.cup_name()])
+	for entry in entries:
+		var b := Button.new()
+		b.text = str(entry[1])
+		b.toggle_mode = true
+		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(108, 28)
+		b.add_theme_font_size_override("font_size", 12)
+		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		b.tooltip_text = "Browse the %s" % entry[1]
+		b.pressed.connect(comp_set_league.bind(str(entry[0])))
+		bar.add_child(b)
+		_ctx_buttons[str(entry[0])] = b
 	return bar
 
 

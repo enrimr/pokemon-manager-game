@@ -1,0 +1,388 @@
+{
+ "intimidate": {
+  "id": "intimidate",
+  "name": "Intimidate",
+  "effects": [
+   "on_switch_in:stat:atk:-1:foe"
+  ],
+  "desc": "Lowers the foe's Attack one stage on switch-in."
+ },
+ "levitate": {
+  "id": "levitate",
+  "name": "Levitate",
+  "effects": [
+   "immune:ground"
+  ],
+  "desc": "Immune to Ground-type moves."
+ },
+ "static": {
+  "id": "static",
+  "name": "Static",
+  "effects": [
+   "contact_status:para:0.3"
+  ],
+  "desc": "30% to paralyze attackers on contact."
+ },
+ "flash_fire": {
+  "id": "flash_fire",
+  "name": "Flash Fire",
+  "effects": [
+   "absorb:fire"
+  ],
+  "desc": "Immune to Fire moves; powers up its own Fire moves when hit by one."
+ },
+ "sturdy": {
+  "id": "sturdy",
+  "name": "Sturdy",
+  "effects": [
+   "sturdy"
+  ],
+  "desc": "Survives a one-hit KO from full HP with 1 HP."
+ },
+ "speed_boost": {
+  "id": "speed_boost",
+  "name": "Speed Boost",
+  "effects": [
+   "end_turn_stat:spe:+1"
+  ],
+  "desc": "Speed rises one stage at the end of each turn."
+ },
+ "drizzle": {
+  "id": "drizzle",
+  "name": "Drizzle",
+  "effects": [
+   "on_switch_in:weather:rain"
+  ],
+  "desc": "Summons rain on switch-in."
+ },
+ "drought": {
+  "id": "drought",
+  "name": "Drought",
+  "effects": [
+   "on_switch_in:weather:sun"
+  ],
+  "desc": "Summons harsh sunlight on switch-in."
+ },
+ "sand_stream": {
+  "id": "sand_stream",
+  "name": "Sand Stream",
+  "effects": [
+   "on_switch_in:weather:sand"
+  ],
+  "desc": "Whips up a sandstorm on switch-in."
+ },
+ "chlorophyll": {
+  "id": "chlorophyll",
+  "name": "Chlorophyll",
+  "effects": [
+   "weather_speed:sun:2.0"
+  ],
+  "desc": "Doubles Speed in harsh sunlight."
+ },
+ "swift_swim": {
+  "id": "swift_swim",
+  "name": "Swift Swim",
+  "effects": [
+   "weather_speed:rain:2.0"
+  ],
+  "desc": "Doubles Speed in rain."
+ },
+ "guts": {
+  "id": "guts",
+  "name": "Guts",
+  "effects": [
+   "status_boost:atk:1.5"
+  ],
+  "desc": "Attack x1.5 while statused."
+ },
+ "thick_fat": {
+  "id": "thick_fat",
+  "name": "Thick Fat",
+  "effects": [
+   "resist:fire:0.5",
+   "resist:ice:0.5"
+  ],
+  "desc": "Halves damage from Fire and Ice moves."
+ },
+ "volt_absorb": {
+  "id": "volt_absorb",
+  "name": "Volt Absorb",
+  "effects": [
+   "absorb:electric:heal:0.25"
+  ],
+  "desc": "Heals 25% when hit by Electric moves."
+ },
+ "water_absorb": {
+  "id": "water_absorb",
+  "name": "Water Absorb",
+  "effects": [
+   "absorb:water:heal:0.25"
+  ],
+  "desc": "Heals 25% when hit by Water moves."
+ },
+ "poison_point": {
+  "id": "poison_point",
+  "name": "Poison Point",
+  "effects": [
+   "contact_status:poison:0.3"
+  ],
+  "desc": "30% to poison attackers on contact."
+ },
+ "flame_body": {
+  "id": "flame_body",
+  "name": "Flame Body",
+  "effects": [
+   "contact_status:burn:0.3"
+  ],
+  "desc": "30% to burn attackers on contact."
+ },
+ "effect_spore": {
+  "id": "effect_spore",
+  "name": "Effect Spore",
+  "effects": [
+   "contact_status:spore:0.3"
+  ],
+  "desc": "30% to sleep/poison/paralyze attackers on contact."
+ },
+ "rough_skin": {
+  "id": "rough_skin",
+  "name": "Rough Skin",
+  "effects": [
+   "contact_damage:0.125"
+  ],
+  "desc": "Attackers lose 1/8 max HP on contact."
+ },
+ "overgrow": {
+  "id": "overgrow",
+  "name": "Overgrow",
+  "effects": [
+   "pinch_boost:grass:1.5"
+  ],
+  "desc": "Grass moves x1.5 below 1/3 HP."
+ },
+ "blaze": {
+  "id": "blaze",
+  "name": "Blaze",
+  "effects": [
+   "pinch_boost:fire:1.5"
+  ],
+  "desc": "Fire moves x1.5 below 1/3 HP."
+ },
+ "torrent": {
+  "id": "torrent",
+  "name": "Torrent",
+  "effects": [
+   "pinch_boost:water:1.5"
+  ],
+  "desc": "Water moves x1.5 below 1/3 HP."
+ },
+ "swarm": {
+  "id": "swarm",
+  "name": "Swarm",
+  "effects": [
+   "pinch_boost:bug:1.5"
+  ],
+  "desc": "Bug moves x1.5 below 1/3 HP."
+ },
+ "hustle": {
+  "id": "hustle",
+  "name": "Hustle",
+  "effects": [
+   "mult:atk:1.5",
+   "acc_mult:phys:0.8"
+  ],
+  "desc": "Attack x1.5 but physical accuracy x0.8."
+ },
+ "huge_power": {
+  "id": "huge_power",
+  "name": "Huge Power",
+  "effects": [
+   "mult:atk:2.0"
+  ],
+  "desc": "Doubles Attack."
+ },
+ "natural_cure": {
+  "id": "natural_cure",
+  "name": "Natural Cure",
+  "effects": [
+   "heal_status_on_switch"
+  ],
+  "desc": "Status conditions heal on switch-out."
+ },
+ "serene_grace": {
+  "id": "serene_grace",
+  "name": "Serene Grace",
+  "effects": [
+   "effect_chance_mult:2.0"
+  ],
+  "desc": "Doubles move secondary-effect chances."
+ },
+ "shed_skin": {
+  "id": "shed_skin",
+  "name": "Shed Skin",
+  "effects": [
+   "end_turn_cure:0.33"
+  ],
+  "desc": "33% each turn to shrug off a status condition."
+ },
+ "immunity": {
+  "id": "immunity",
+  "name": "Immunity",
+  "effects": [
+   "immune_status:poison"
+  ],
+  "desc": "Cannot be poisoned."
+ },
+ "limber": {
+  "id": "limber",
+  "name": "Limber",
+  "effects": [
+   "immune_status:para"
+  ],
+  "desc": "Cannot be paralyzed."
+ },
+ "insomnia": {
+  "id": "insomnia",
+  "name": "Insomnia",
+  "effects": [
+   "immune_status:sleep"
+  ],
+  "desc": "Cannot fall asleep."
+ },
+ "vital_spirit": {
+  "id": "vital_spirit",
+  "name": "Vital Spirit",
+  "effects": [
+   "immune_status:sleep"
+  ],
+  "desc": "Cannot fall asleep."
+ },
+ "water_veil": {
+  "id": "water_veil",
+  "name": "Water Veil",
+  "effects": [
+   "immune_status:burn"
+  ],
+  "desc": "Cannot be burned."
+ },
+ "magma_armor": {
+  "id": "magma_armor",
+  "name": "Magma Armor",
+  "effects": [
+   "immune_status:freeze"
+  ],
+  "desc": "Cannot be frozen."
+ },
+ "own_tempo": {
+  "id": "own_tempo",
+  "name": "Own Tempo",
+  "effects": [
+   "immune_confuse"
+  ],
+  "desc": "Cannot be confused."
+ },
+ "inner_focus": {
+  "id": "inner_focus",
+  "name": "Inner Focus",
+  "effects": [
+   "immune_flinch"
+  ],
+  "desc": "Cannot flinch."
+ },
+ "keen_eye": {
+  "id": "keen_eye",
+  "name": "Keen Eye",
+  "effects": [
+   "no_acc_drop"
+  ],
+  "desc": "Accuracy cannot be lowered."
+ },
+ "hyper_cutter": {
+  "id": "hyper_cutter",
+  "name": "Hyper Cutter",
+  "effects": [
+   "no_atk_drop"
+  ],
+  "desc": "Attack cannot be lowered."
+ },
+ "clear_body": {
+  "id": "clear_body",
+  "name": "Clear Body",
+  "effects": [
+   "no_stat_drop"
+  ],
+  "desc": "Stats cannot be lowered by opponents."
+ },
+ "shield_dust": {
+  "id": "shield_dust",
+  "name": "Shield Dust",
+  "effects": [
+   "no_secondary_effects"
+  ],
+  "desc": "Blocks incoming moves' secondary effects."
+ },
+ "rock_head": {
+  "id": "rock_head",
+  "name": "Rock Head",
+  "effects": [
+   "no_recoil"
+  ],
+  "desc": "Takes no recoil damage."
+ },
+ "synchronize": {
+  "id": "synchronize",
+  "name": "Synchronize",
+  "effects": [
+   "reflect_status"
+  ],
+  "desc": "Passes burns/poison/paralysis back to the inflicter."
+ },
+ "pressure": {
+  "id": "pressure",
+  "name": "Pressure",
+  "effects": [
+   "pp_pressure:2"
+  ],
+  "desc": "Foes spend 2 PP per move."
+ },
+ "early_bird": {
+  "id": "early_bird",
+  "name": "Early Bird",
+  "effects": [
+   "sleep_half"
+  ],
+  "desc": "Wakes from sleep twice as fast."
+ },
+ "sand_veil": {
+  "id": "sand_veil",
+  "name": "Sand Veil",
+  "effects": [
+   "weather_eva:sand:0.8"
+  ],
+  "desc": "Evasion up in a sandstorm."
+ },
+ "rain_dish": {
+  "id": "rain_dish",
+  "name": "Rain Dish",
+  "effects": [
+   "weather_heal:rain:0.0625"
+  ],
+  "desc": "Heals 1/16 max HP each turn in rain."
+ },
+ "cute_charm": {
+  "id": "cute_charm",
+  "name": "Cute Charm",
+  "effects": [
+   "contact_status:confuse:0.3"
+  ],
+  "desc": "30% to infatuate/confuse attackers on contact."
+ },
+ "compound_eyes": {
+  "id": "compound_eyes",
+  "name": "Compound Eyes",
+  "effects": [
+   "acc_mult:all:1.3"
+  ],
+  "desc": "Accuracy x1.3."
+ }
+}

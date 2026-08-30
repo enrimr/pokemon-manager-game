@@ -255,6 +255,8 @@ static func days_between(from_date: String, to_date: String) -> int:
 
 
 ## Effective battle stats for a squad instance (same math the engine uses).
+## Nature-adjusted: +10% / -10% on one non-HP stat, floored, exactly like
+## BattleEngine._init_battler — what you read here is what fights.
 static func effective_stats(inst: Dictionary) -> Dictionary:
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 	var lvl := int(inst.get("level", 20))
@@ -263,7 +265,132 @@ static func effective_stats(inst: Dictionary) -> Dictionary:
 	var out := {}
 	for k in ["hp", "atk", "def", "spa", "spd", "spe"]:
 		out[k] = DataStore.calc_stat(int(base[k]), int(ivs.get(k, 8)), lvl, k == "hp")
+	return apply_nature(out, str(inst.get("nature", "Hardy")))
+
+
+## Pre-nature stats (species/IV/level math only) — for "what the nature does" UI.
+static func raw_stats(inst: Dictionary) -> Dictionary:
+	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
+	var lvl := int(inst.get("level", 20))
+	var ivs: Dictionary = inst.get("ivs", {})
+	var base: Dictionary = sp["base"]
+	var out := {}
+	for k in ["hp", "atk", "def", "spa", "spd", "spe"]:
+		out[k] = DataStore.calc_stat(int(base[k]), int(ivs.get(k, 8)), lvl, k == "hp")
 	return out
+
+
+# --------------------------------------------------- natures & battle abilities
+
+const STAT_SHORT := {"hp": "HP", "atk": "Atk", "def": "Def",
+	"spa": "SpA", "spd": "SpD", "spe": "Spe"}
+
+
+## Apply a nature to a stats dict in place-copy: engine-identical math
+## (+10% floored on plus, -10% floored min 1 on minus, never HP).
+static func apply_nature(stats: Dictionary, nature_name: String) -> Dictionary:
+	var out := stats.duplicate()
+	var nat: Dictionary = DataStore.nature(nature_name)
+	if nat.is_empty():
+		return out
+	var plus: Variant = nat.get("plus")
+	var minus: Variant = nat.get("minus")
+	if plus != null and str(plus) != "hp" and out.has(str(plus)):
+		out[str(plus)] = int(floor(float(out[str(plus)]) * 1.1))
+	if minus != null and str(minus) != "hp" and out.has(str(minus)):
+		out[str(minus)] = maxi(1, int(floor(float(out[str(minus)]) * 0.9)))
+	return out
+
+
+static func nature_name(inst: Dictionary) -> String:
+	return str(inst.get("nature", "Hardy"))
+
+
+## +1 if this nature boosts stat `key`, -1 if it hinders it, else 0.
+static func nature_dir(inst: Dictionary, key: String) -> int:
+	var nat: Dictionary = DataStore.nature(nature_name(inst))
+	if str(nat.get("plus", "")) == key:
+		return 1
+	if str(nat.get("minus", "")) == key:
+		return -1
+	return 0
+
+
+## "Calm (+SpD, -Atk)" or "Hardy (neutral)".
+static func nature_text(inst: Dictionary) -> String:
+	var n := nature_name(inst)
+	var nat: Dictionary = DataStore.nature(n)
+	var plus: Variant = nat.get("plus")
+	var minus: Variant = nat.get("minus")
+	if plus == null or minus == null:
+		return "%s (neutral)" % n
+	return "%s (+%s, −%s)" % [n, STAT_SHORT.get(str(plus), str(plus)),
+		STAT_SHORT.get(str(minus), str(minus))]
+
+
+## Full tooltip: exactly what the nature does to THIS battler's numbers.
+static func nature_tip(inst: Dictionary) -> String:
+	var n := nature_name(inst)
+	var nat: Dictionary = DataStore.nature(n)
+	var plus: Variant = nat.get("plus")
+	var minus: Variant = nat.get("minus")
+	if plus == null or minus == null:
+		return "%s nature — neutral: no stat is boosted or hindered." % n
+	var raw := raw_stats(inst)
+	var fin := apply_nature(raw, n)
+	return "%s nature — battle stats are modified at battle start:\n+10%% %s (%d -> %d)   −10%% %s (%d -> %d)\nAll stats shown on this screen already include the nature." % [
+		n, STAT_SHORT.get(str(plus), str(plus)), int(raw[str(plus)]), int(fin[str(plus)]),
+		STAT_SHORT.get(str(minus), str(minus)), int(raw[str(minus)]), int(fin[str(minus)])]
+
+
+## The battle ability id of an instance (species fallback for old saves).
+static func ability_id(inst: Dictionary) -> String:
+	var ab := str(inst.get("ability", ""))
+	if ab != "":
+		return ab
+	return str(DataStore.species(int(inst["species_id"])).get("ability", ""))
+
+
+static func ability_label(inst: Dictionary) -> String:
+	var id := ability_id(inst)
+	return DataStore.ability_name(id) if id != "" else "—"
+
+
+## Tooltip: ability name, effect text and any type immunities it grants.
+static func ability_tip(inst: Dictionary) -> String:
+	var id := ability_id(inst)
+	if id == "":
+		return "No battle ability."
+	var ab: Dictionary = DataStore.ability(id)
+	var s := "%s — %s" % [str(ab.get("name", id)), str(ab.get("desc", ""))]
+	var imm := ability_immunities(id)
+	if not imm.is_empty():
+		s += "\nTakes ZERO damage from %s moves — the type chart alone understates this battler." % \
+			"/".join(imm.map(func(t): return str(t).capitalize()))
+	return s
+
+
+## Attack types this ability makes the holder IMMUNE to (immune:t / absorb:t).
+static func ability_immunities(ability_id_: String) -> Array:
+	var out: Array = []
+	for e in DataStore.ability(ability_id_).get("effects", []):
+		var parts: Array = str(e).split(":")
+		if parts[0] in ["immune", "absorb"] and parts.size() >= 2:
+			out.append(str(parts[1]))
+	return out
+
+
+## Ability-aware defensive multiplier: type chart x ability immunity/resist —
+## the number the battle engine actually applies to incoming `atk_type` moves.
+static func defense_multiplier(types: Array, ability_id_: String, atk_type: String) -> float:
+	var m := DataStore.effectiveness(atk_type, types)
+	for e in DataStore.ability(ability_id_).get("effects", []):
+		var parts: Array = str(e).split(":")
+		if parts[0] in ["immune", "absorb"] and parts.size() >= 2 and str(parts[1]) == atk_type:
+			return 0.0
+		if parts[0] == "resist" and parts.size() >= 3 and str(parts[1]) == atk_type:
+			m *= float(parts[2])
+	return m
 
 
 static func display_name(inst: Dictionary) -> String:

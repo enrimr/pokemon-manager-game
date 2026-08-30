@@ -76,6 +76,29 @@ Instance: `{uid, species_id, species, nickname, level, ivs:{..0-15}, moves:[4], 
 Staff: `{name, role: coach|scout|physio, ratings:{attacking, defending, fitness, judging_ability, judging_potential, youth} (1-20)}`
 Prospects additionally have `potential (1-20)` and `scouted_pct`.
 
+### Gen-2 dataset extension (additive — nothing above changed shape)
+
+- **pokemon.json** now has **251 species** (152-251 = Johto, incl. `dark`/`steel` types).
+  Every species gained one new field: `ability` (an abilities.json id).
+- **moves.json** now has **208 moves** (+72 gen-2, Bite retyped to dark). New inert tag
+  `weather:<sun|rain|sand>` (engine ignores unknown tags; battle-depth wires it).
+- **typechart.json** is the modern 18-type chart (gen-2 corrections applied: dark & steel
+  rows/cols, bug/poison 0.5, ghost/psychic 2, steel resists, poison can't hit steel).
+  `fairy` exists in chart+types as forward-compat; no fairy species/moves yet.
+- **natures.json** — `{ "<Name>": {plus: "atk"|..|null, minus: ...|null} }`, the 25 real
+  natures (+10%/-10%; 5 neutral). `DataStore.nature(name)`.
+- **abilities.json** — `{ "<id>": {id, name, effects:[tags], desc} }`, 48 real abilities
+  with machine-readable tags (grammar documented atop the ABILITIES table in
+  tools/gen_data.py). `DataStore.ability(id)`, `ability_name(id)`.
+- **world.json instances** (squad/free agent/prospect) each gained two fields:
+  `nature` (natures.json name) and `ability` (abilities.json id, = species ability).
+- `DataStore.make_battler()` copies `nature` + `ability` onto the battler dict
+  (with `"Hardy"` / species-ability fallbacks for pre-gen-2 saves). **Neither is
+  applied to stats or battle logic yet** — that's the battle-depth piece's contract.
+- Regeneration is deterministic; gen-1 species rows, gen-1 move rows (except Bite),
+  items.json and the whole world.json (modulo the two new instance fields) are
+  byte-identical to the pre-gen-2 output.
+
 Dates are ISO strings (`"2026-08-01"`); they compare correctly with `<`/`>` and
 `Season.date_add(date, days)` does calendar math.
 
@@ -207,3 +230,203 @@ method signatures and the event/fixture dict schemas above are frozen contracts.
 
 No copyrighted sprites or artwork anywhere. Visual identity = type-colored badges/monograms
 (`DataStore.type_color`) + FM-style data density.
+
+## Two-league world (Kanto + Johto) — leagues piece
+
+The world is now **32 clubs in two 16-club leagues**, each with its own double
+round-robin championship; the **Indigo Cup** is a 32-club cross-league knockout
+(5 rounds: First Round, Second Round, Quarter-Final, Semi-Final, Final).
+
+**world.json additions** (everything above stays shape-compatible):
+- `meta.leagues`: `[{"id":"kanto","name":"Kanto League"},{"id":"johto","name":"Johto League"}]`
+- `meta.cup_name`: `"Indigo Cup"`
+- `meta.league_name` now always names the **player's** league (GameState keeps
+  it in sync on career start/club choice) — every screen that renders it as its
+  competition title keeps working untouched.
+- every club has `league: "kanto"|"johto"`. Johto squads/free agents/prospects
+  are gen-2 flavoured (~80% Johto natives, no legendaries/Unown) and carry an
+  **inert** `native_region: "Johto"` field (the transfers piece's regional
+  scouting maps them by type today — cross-region watches already pay domestic
+  travel days — and can adopt a first-class Johto region later; do NOT set a
+  live `region` key on domestic instances, the coverage board only knows its
+  own REGIONS).
+
+**Fixtures**: `fixture["league"]` = `"kanto"|"johto"` for league fixtures
+(`""`/absent = cup). Fixture ids are prefixed per league ("L…" Kanto, "J…"
+Johto, "C…" cup) via the new optional `Season.make_league_fixtures(ids, start,
+id_prefix="L", league_id="")` params. `Season.compute_table` (and the club
+stats aggregates) silently skip fixtures involving clubs outside the passed id
+set, so passing one league's ids with `GameState.fixtures` is safe; cup stats
+credit the tracked side of a cross-league tie.
+
+**GameState league API** (existing calls keep their per-league semantics):
+- `club_ids()` -> the PLAYER'S league's club ids (unchanged behaviour for all
+  table/stats screens). `all_club_ids()` -> all 32.
+- `leagues()` -> `[{id,name}]`; `league_club_ids(id)`; `league_of(club_id)`;
+  `player_league_id()`; `league_name(id="")`; `cup_name()`.
+- `league_table(league_id="")` -> standings (default: player's league).
+- `new_career(seed, club_id="")` — optional club choice from either league;
+  plain boot still defaults to Pallet Pioneers.
+
+**New-career club picker** (`shell/club_picker.gd`): FM-style full-screen
+selector opened by the top-bar menu's "New Career" — league tabs, one row per
+club (type-coloured crest, manager, reputation meter, balance, world-percentile
+squad-strength stars + top-six avg level), double-click or "Start at <club>".
+
+**Save compatibility**: saves are `version: 2`. `GameState.boot()` (called
+from `_ready`) detects a v1/corrupt save, starts a fresh career instead of
+crashing, posts a clear inbox note ("Save file from an earlier era") and
+immediately writes a v2 save.
+
+## Simulation services (drop-in convention for later builders)
+
+Any script at **`res://shared/sim/services/*.gd`** is auto-loaded by GameState
+at career start — new career AND save load — ticked daily, and persisted inside
+the save. **No GameState/project.godot edits needed**; drop the file in.
+
+```gdscript
+# res://shared/sim/services/my_service.gd
+extends RefCounted            # any Object subclass works
+
+# ALL hooks are optional (discovered with has_method):
+
+func service_id() -> String:                  # unique id for persistence.
+	return "my_service"                       # default: file basename.
+
+func on_career_started(gs) -> void:           # after new_career OR load_game,
+	pass                                      # world + saved state are ready.
+
+func on_day(gs, date: String) -> void:        # every GameState.advance_day(),
+	pass                                      # after fixtures/economy settle.
+
+func save_state() -> Dictionary:              # JSON-safe dict; stored under
+	return {}                                 # world.meta.services[service_id].
+
+func load_state(state: Dictionary) -> void:   # restored BEFORE
+	pass                                      # on_career_started fires.
+```
+
+Details:
+- `gs` is the GameState autoload (use its public API/signals).
+- Load order is alphabetical by filename; instances live until the next
+  career start/load. `GameState.register_service(obj)` registers an already
+  constructed object with the same lifecycle (used by tests).
+- State rides `world.meta.services`, so it saves/loads with the world and
+  numbers come back as JSON floats — cast in `load_state`.
+- sim_check drops a probe service in and verifies discovery, daily ticking and
+  state round-trip; keep services deterministic (seed off GameState.career_seed
+  + date, like `_ai_daily_items`).
+
+## Battle depth: natures, abilities, weather (battle-depth piece)
+
+All three are engine-internal and deterministic (same teams + seed = same battle).
+The battler fields `nature` and `ability` set by `DataStore.make_battler` are now
+load-bearing; pre-gen-2 fallbacks ("Hardy", species ability) keep old saves valid.
+
+- **Natures** — applied once when battlers are initialised: +10% / -10% on one
+  non-HP stat (floored; never HP). Visible in `active_battler()["stats"]`.
+- **Abilities** — every tag in abilities.json fires at its hook. Entry
+  (Intimidate, Drizzle/Drought/Sand Stream), immunity/absorb (Levitate,
+  Flash Fire — charges its own Fire moves x1.5 — Water/Volt Absorb), contact
+  (Static, Poison Point, Flame Body, Effect Spore, Cute Charm, Rough Skin;
+  "contact" = physical moves), survival (Sturdy, reusable), end-of-turn
+  (Speed Boost, Shed Skin, Rain Dish), conditional multipliers (Guts — also
+  ignores the burn Attack drop — Thick Fat, Huge Power, Hustle, Chlorophyll,
+  Swift Swim, pinch boosts Overgrow/Blaze/Torrent/Swarm), status/stat
+  protection (Immunity, Limber, Insomnia, Vital Spirit, Water Veil, Magma
+  Armor, Own Tempo, Inner Focus, Keen Eye, Hyper Cutter, Clear Body, Shield
+  Dust), plus Natural Cure, Synchronize, Pressure, Early Bird, Sand Veil,
+  Compound Eyes, Serene Grace, Rock Head. Unknown tags stay inert.
+- **Weather** — `eng.weather() -> ""|"sun"|"rain"|"sand"|"hail"`,
+  `eng.weather_turns_left() -> int`. Sunny Day / Rain Dance / Sandstorm
+  (`weather:<kind>` move tag) last 5 turns; auto-weather abilities 8.
+  Sun: fire x1.5 / water x0.5; rain: the reverse. Sandstorm chips non
+  rock/ground/steel 1/16 per turn (Sand Veil holders exempt) and gives Rock
+  types SpD x1.5; hail chips non-ice 1/16. The AI scores weather-boosted
+  moves higher and knows when to cast a weather move.
+
+New event types (all with commentary_hook lines alongside):
+
+- `ability_triggered {side, pokemon, ability, ability_name, effect}` — effect
+  is the fired tag, e.g. "entry_stat", "immune", "absorb", "contact_status",
+  "sturdy", "end_turn_stat", "pinch_boost", "resist", "reflect_status".
+- `weather_start {kind, turns, source: "move"|"ability", side, pokemon}`
+- `weather_end {kind}`
+- `weather_chip {side, pokemon, kind, amount, hp_left, max_hp}`
+
+`preview_move` now folds in weather, pinch/charge boosts and Thick Fat, and
+returns `est_frac 0` against ability-immune targets. sim_check covers natures,
+10+ abilities, weather lifecycle and depth determinism.
+
+## Evolutions (evolutions piece)
+
+Gen 1+2 evolution chains with an FM-style **manager approval** flow. Mechanics
+live in the drop-in service `res://shared/sim/services/evolution.gd`
+(auto-loaded, daily tick, persisted under `world.meta.services.evolution`);
+the chain data is `shared/data/evolutions.json`; evolution stones/items are
+ordinary shop items in `items.json`. Both data changes are produced by
+`artifacts/evolutions/gen_evolutions.py` (idempotent — rerun it after any
+`tools/gen_data.py` regeneration to restore the stone items). UI pieces
+consume the service — nothing here renders.
+
+**evolutions.json** — `{meta: {dev_per_level}, evolutions: {"<species_id>":
+[{to, method, ...}]}}`. 113 species, 122 edges (Eevee is a 5-way branch).
+Methods:
+- `level` (`{level, cond?}`) — mainline level thresholds. Levels are static in
+  this world, so the test is **effective level** = instance level +
+  `dev_points / dev_per_level` (6), where dev points are the training piece's
+  recorded development (`total_gained`). Tyrogue branches on base+IV
+  Atk/Def via `cond: "atk>def" | "def>atk" | "atk=def"`.
+- `development` (`{dev, level?, morale?, kind}`) — mainline **trade evos**
+  (Alakazam, Machamp, Golem, Gengar) are high-development milestones
+  (`kind:"trade"`, dev ≥ 36 + level gate); **happiness evos** (Crobat,
+  Blissey, the babies) are `kind:"bond"` (dev ≥ 15 and morale ≥ 80).
+- `stone` (`{stone}`) — consumes one item from club stock. New shop items:
+  fire/water/thunder/leaf/moon/sun stones, metal_coat, dragon_scale, up_grade
+  (class `usable`, inert `evolve:*` tag — never a battle action); King's Rock
+  doubles as Politoed/Slowking trigger. Espeon/Umbreon go via Sun/Moon Stone
+  (documented liberty: no day/night clock).
+
+### Service API (`EvolutionService`, via `EvolutionService.instance` or
+`load("res://shared/sim/services/evolution.gd").instance`; set on career
+start/load)
+
+```gdscript
+# signals
+pending_added(entry)                    # a player mon awaits your decision
+pending_changed                         # approval queue mutated
+evolved(uid, from_id, to_id, club_id)   # any club's instance transformed
+
+# queries
+chain_of(species_id) -> Array           # raw options ([] = final form)
+eligibility(inst) -> Array              # [{to, to_name, method, ok, why}]
+stone_options(uid) -> Array             # [{item_id, item_name, to, to_name, owned}]
+pending() / is_pending(uid) / pending_for(uid)
+dev_points(uid) / dev_levels(uid) / effective_level(inst)
+recent_evolutions(days=7) / evolution_log()
+
+# actions (return "" or an error string)
+approve(uid)              # transform now: +6 morale, inbox follow-up
+postpone(uid)             # -3 morale (the mon feels held back); offer
+                          # returns after 14 days if still eligible
+use_stone(uid, item_id)   # spend a stone from stock = instant approval
+```
+
+Flow: the daily tick scans the player squad; when a non-stone option is
+satisfied the mon enters the **pending** queue and an inbox message asks for
+a decision (stone routes get a one-time staff hint instead — buy the stone,
+`use_stone` whenever). **Approval transforms the instance in place**: species
+id/name (nickname preserved if custom), base stats/types/growth follow the new
+species via DataStore, ability updates unless customised, moves are kept and
+the pre-evo learnset is merged into `inst["learnset_extra"]` (still learnable
+in training), +6 morale. AI clubs evolve autonomously on a seeded daily check
+(level evos 2 levels late, trade proxies at Lv 34, bond at Lv 24 + morale,
+stones bought from club funds at Lv 30) — deterministic per
+career_seed+date+club, at most one per club per day.
+
+Persistence: pending queue, postponements, stone hints and the world evolution
+log ride `save_state()/load_state()`. Proof driver:
+`res://artifacts/evolutions/driver.tscn` (headless; prints
+`EVOLUTION DRIVER OK`) — full Charmander→Charizard chain via real training
+weeks, Eevee via shop purchase + `use_stone`, postpone tradeoff, AI-club
+evolutions with a determinism replay, and a save/load roundtrip.

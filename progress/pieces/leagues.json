@@ -1,0 +1,14 @@
+{
+ "piece": "leagues",
+ "fm_reference": "FM24 new-game club selection (league tabs, club rows w/ rep, balance, squad strength) + FM multi-nation league structure with cross-league cup and regional scouting networks",
+ "status": "critic",
+ "round": 1,
+ "verdict": null,
+ "biggest_gap": null,
+ "history": [
+  "gen-2 dataset done: 251 species, 208 moves, 18-type chart, natures.json, abilities.json, instances carry nature+ability; smoke OK",
+  "leagues built: Kanto+Johto 16-club leagues (Johto gen-2 squads via gen_data.py), cross-league 32-club Indigo Cup (5 rounds), FM-style new-career club picker (league tabs, rep/balance/strength rows), services drop-in convention in GameState (documented), save v2 + graceful v1 recovery, sim_check extended (both leagues, cup, dark/psychic chart, services, v1-save); SMOKE OK, screenshots verified",
+  "leagues-ui built: competition switcher (Kanto/Johto/Indigo Cup) drives header+all tabs; per-league table/fixtures/graph/footers; cup bracket w/ league badges + Road to the Final view (player run + every round results); overview shows both title races + cross-league cup card; stats centre REGION filter w/ all-regions merge (Lg column, scoped percentiles/leaders/hub); club profiles state league + per-league position/trend; fixed pos-history & club-stats cache bleed, float scores after save load, stale 16-club cup-final checks; league_check.tscn (27 checks) + nav_check + SMOKE OK; 10 screenshots verified"
+ ],
+ "updated": "2026-08-30 11:55"
+}

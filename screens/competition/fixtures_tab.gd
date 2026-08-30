@@ -8,6 +8,8 @@ const TB := preload("res://shared/theme/theme_builder.gd")
 var _comp_filter := "all"       # all | league | cup
 var _mine_only := false
 var _selected_fid := ""
+var league_id := ""             # which league's fixtures ("" = player's)
+var _cup_focus := false         # competition switcher parked on the cup
 
 var _list_box: VBoxContainer
 var _scroll: ScrollContainer
@@ -47,7 +49,7 @@ func _ready() -> void:
 func _build_controls() -> void:
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 6)
-	for entry in [["all", "All Competitions"], ["league", "Indigo League"], ["cup", "Indigo Cup"]]:
+	for entry in [["all", "All Competitions"], ["league", GameState.league_name()], ["cup", GameState.cup_name()]]:
 		var b := Button.new()
 		b.text = entry[1]
 		b.toggle_mode = true
@@ -74,6 +76,31 @@ func _build_controls() -> void:
 	add_child(bar)
 
 
+## Competition-switcher hook (screen.gd). Cup context focuses the cup filter;
+## returning to a league restores the full schedule for that league.
+func set_league_context(lg: String, cup: bool) -> void:
+	league_id = lg
+	if cup:
+		_comp_filter = "cup"
+	elif _cup_focus:
+		_comp_filter = "all"
+	_cup_focus = cup
+	if not _filter_buttons.is_empty():
+		for k in _filter_buttons:
+			_filter_buttons[k].set_pressed_no_signal(k == _comp_filter)
+
+
+func _lg() -> String:
+	return league_id if league_id != "" else GameState.player_league_id()
+
+
+func _in_league(f: Dictionary) -> bool:
+	if f["comp"] != "league":
+		return true   # cup ties are cross-league, always shown
+	var tag := str(f.get("league", ""))
+	return tag == "" or tag == _lg()
+
+
 func _on_filter(which: String) -> void:
 	_comp_filter = which
 	for k in _filter_buttons:
@@ -87,9 +114,13 @@ func refresh() -> void:
 	_row_buttons.clear()
 	_current_round_anchor = null
 
+	_filter_buttons["league"].text = GameState.league_name(_lg())
+	_filter_buttons["cup"].text = GameState.cup_name()
 	var pid: String = GameState.world["meta"]["player_club_id"]
 	var fixtures: Array = GameState.fixtures.filter(func(f):
 		if _comp_filter != "all" and f["comp"] != _comp_filter:
+			return false
+		if not _in_league(f):
 			return false
 		if _mine_only and f["home"] != pid and f["away"] != pid:
 			return false
@@ -163,9 +194,9 @@ func _group_header(g: Dictionary) -> Control:
 	p.add_child(h)
 	var title := ""
 	if g["comp"] == "league":
-		title = "MATCHDAY %d" % g["round"]
+		title = "%s · MATCHDAY %d" % [GameState.league_name(_lg()).to_upper(), g["round"]]
 	else:
-		title = "INDIGO CUP · %s" % Season.cup_round_name(g["round"]).to_upper()
+		title = "%s · %s" % [GameState.cup_name().to_upper(), Season.cup_round_name(g["round"]).to_upper()]
 	var l := UI.label(title, 12, TB.COL_TEXT)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(l)
@@ -203,6 +234,10 @@ func _fixture_row(f: Dictionary) -> Button:
 	home_l.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	home_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(home_l)
+	if f["comp"] == "cup":   # cross-league tie: badge each club's championship
+		var hc := UI.league_chip(GameState.league_of(str(f["home"])))
+		hc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		h.add_child(hc)
 	var hm := UI.monogram(home, 20, 9)
 	hm.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(hm)
@@ -218,6 +253,10 @@ func _fixture_row(f: Dictionary) -> Button:
 	var am := UI.monogram(away, 20, 9)
 	am.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(am)
+	if f["comp"] == "cup":
+		var ac := UI.league_chip(GameState.league_of(str(f["away"])))
+		ac.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		h.add_child(ac)
 	var away_l := UI.link(str(away.get("name", f["away"])), 13,
 		_club_text_color(f["away"], pid, aw, played),
 		{"kind": "club", "id": str(f["away"])},
@@ -265,6 +304,14 @@ func select_fixture(fid: String) -> void:
 	var f := _find_fixture(fid)
 	# make sure the row is visible under the current filters
 	if not f.is_empty():
+		# a fixture from the other league pulls the whole competition context over
+		var tag := str(f.get("league", ""))
+		if f["comp"] == "league" and tag != "" and tag != _lg():
+			var n: Node = get_parent()
+			while n != null and not n.has_method("comp_set_league"):
+				n = n.get_parent()
+			if n != null:
+				n.call("comp_set_league", tag)
 		if _comp_filter != "all" and str(f["comp"]) != _comp_filter:
 			_comp_filter = "all"
 			for k in _filter_buttons:
@@ -315,8 +362,9 @@ func _render_detail() -> void:
 	var home: Dictionary = GameState.club(f["home"])
 	var away: Dictionary = GameState.club(f["away"])
 
-	var comp_name: String = "Indigo League · Matchday %d" % int(f["round"]) if f["comp"] == "league" \
-		else "Indigo Cup · %s" % Season.cup_round_name(int(f["round"]))
+	var comp_name: String = "%s · Matchday %d" % [
+		GameState.league_name(str(f.get("league", ""))), int(f["round"])] if f["comp"] == "league" \
+		else "%s · %s" % [GameState.cup_name(), Season.cup_round_name(int(f["round"]))]
 	_detail_body.add_child(UI.dim("%s · %s %s" % [comp_name, UI.weekday(f["date"]), Season.pretty_date(f["date"])], 12))
 	_detail_body.add_child(UI.vspace(2))
 
@@ -446,10 +494,19 @@ func _render_preview(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 	var days := Season.days_between(GameState.current_date, f["date"])
 	_detail_body.add_child(UI.kv_row("Kick-off", "%s · in %d day%s" % [
 		Season.pretty_date(f["date"]), days, "" if days == 1 else "s"]))
-	var positions := Season.table_positions(GameState.league_table())
-	_detail_body.add_child(UI.kv_row("League position",
-		"%s  %s   ·   %s  %s" % [home["short"], _ord(positions.get(f["home"], 0)),
-			away["short"], _ord(positions.get(f["away"], 0))]))
+	# each club's standing in ITS OWN championship (cup ties cross leagues)
+	var lg_h := GameState.league_of(str(f["home"]))
+	var lg_a := GameState.league_of(str(f["away"]))
+	var pos_h: int = Season.table_positions(GameState.league_table(lg_h)).get(f["home"], 0)
+	var pos_a: int = Season.table_positions(GameState.league_table(lg_a)).get(f["away"], 0)
+	if lg_h == lg_a:
+		_detail_body.add_child(UI.kv_row("League position",
+			"%s  %s   ·   %s  %s" % [home["short"], _ord(pos_h), away["short"], _ord(pos_a)]))
+	else:
+		_detail_body.add_child(UI.kv_row("League position",
+			"%s  %s (%s)   ·   %s  %s (%s)" % [
+				home["short"], _ord(pos_h), UI.league_tag(lg_h),
+				away["short"], _ord(pos_a), UI.league_tag(lg_a)]))
 	_detail_body.add_child(UI.vspace(2))
 	for entry in [[home, f["home"]], [away, f["away"]]]:
 		var row := HBoxContainer.new()

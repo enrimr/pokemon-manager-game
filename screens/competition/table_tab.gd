@@ -21,6 +21,9 @@ const SPLITS := [
 	["graph", "Position Graph"],
 ]
 
+## Which league's standings to show ("" = the player's league).
+var league_id := ""
+
 var _tree: Tree
 var _graph   # Charts.PositionChart (untyped: inner-class Control)
 var _footer: Label
@@ -116,6 +119,15 @@ func _ready() -> void:
 			_mode = dev_mode
 
 
+## Competition-switcher hook (screen.gd): render this league's standings.
+func set_league_context(lg: String, _cup: bool) -> void:
+	league_id = lg
+
+
+func _lg() -> String:
+	return league_id if league_id != "" else GameState.player_league_id()
+
+
 func _set_mode(mode: String) -> void:
 	_mode = mode
 	_sort_col = 0
@@ -152,11 +164,11 @@ func refresh() -> void:
 
 	_tree.clear()
 	var root := _tree.create_item()
-	var fixtures: Array = GameState.fixtures
-	var table: Array = Season.compute_table_variant(GameState.club_ids(), fixtures, _mode)
+	var club_ids: Array = GameState.league_club_ids(_lg())
+	var fixtures: Array = Season.league_fixtures(GameState.fixtures, _lg())
+	var table: Array = Season.compute_table_variant(club_ids, fixtures, _mode)
 	var n := table.size()
-	var played_league: Array = fixtures.filter(func(f):
-		return f["comp"] == "league" and f["played"])
+	var played_league: Array = fixtures.filter(func(f): return f["played"])
 	var completed := 0
 	var last_date := ""
 	for f in played_league:
@@ -166,7 +178,7 @@ func refresh() -> void:
 	var prev_pos := {}
 	if _mode == "overall" and completed >= 2:
 		var before: Array = played_league.filter(func(f): return str(f["date"]) < last_date)
-		prev_pos = Season.table_positions(Season.compute_table(GameState.club_ids(), before))
+		prev_pos = Season.table_positions(Season.compute_table(club_ids, before))
 
 	# rows keep their split-table position, then reorder by the active sort
 	var rows: Array = []
@@ -245,20 +257,21 @@ func refresh() -> void:
 		"form": split_note = " · last 5 matches per club"
 	if completed <= 0:
 		_footer.text = "%s · season starts %s · %d clubs" % [
-			GameState.world["meta"]["league_name"], Season.pretty_date(
+			GameState.league_name(_lg()), Season.pretty_date(
 				Season.date_add(GameState.season_start, Season.LEAGUE_ROUND_OFFSET)), n]
 	else:
 		_footer.text = "%s · after Matchday %d of %d%s · click a club for its profile" % [
-			GameState.world["meta"]["league_name"], completed, total, split_note]
+			GameState.league_name(_lg()), completed, total, split_note]
 
 
 ## Feed the multi-club position tracker (Season.position_history) and set the
 ## footer. Clubs ordered by current position so hover z-order feels natural.
 func _refresh_graph() -> void:
-	var club_ids: Array = GameState.club_ids()
-	var hist: Dictionary = Season.position_history(club_ids, GameState.fixtures)
+	var club_ids: Array = GameState.league_club_ids(_lg())
+	var hist: Dictionary = Season.position_history(club_ids,
+		Season.league_fixtures(GameState.fixtures, _lg()))
 	var series: Array = []
-	var table: Array = GameState.league_table()
+	var table: Array = GameState.league_table(_lg())
 	for row in table:
 		var cid: String = str(row["club_id"])
 		var club: Dictionary = GameState.club(cid)

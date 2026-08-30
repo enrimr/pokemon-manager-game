@@ -93,6 +93,7 @@ const TEAM_CATEGORIES := [
 var _note: Label
 var _view := "centre"
 var _view_buttons: Dictionary = {}
+var _lg_sel: OptionButton     # region scope: "" = all regions merged
 
 # --- Stats Centre widgets/state
 var _centre: VBoxContainer
@@ -156,6 +157,25 @@ func _ready() -> void:
 		b.pressed.connect(_set_view.bind(entry[0]))
 		head.add_child(b)
 		_view_buttons[entry[0]] = b
+
+	# region scope: either league on its own, or an all-regions merge view
+	var rcap := _toolbar_cap("REGION")
+	head.add_child(rcap)
+	_lg_sel = OptionButton.new()
+	_lg_sel.add_item("All Regions")
+	_lg_sel.set_item_metadata(0, "")
+	for lg in GameState.leagues():
+		var idx := _lg_sel.item_count
+		_lg_sel.add_item(str(lg["name"]))
+		_lg_sel.set_item_metadata(idx, str(lg["id"]))
+		if str(lg["id"]) == GameState.player_league_id():
+			_lg_sel.select(idx)
+	_lg_sel.custom_minimum_size.x = 138
+	_lg_sel.focus_mode = Control.FOCUS_NONE
+	_lg_sel.tooltip_text = "Scope every stat view to one league, or merge both regions"
+	_lg_sel.item_selected.connect(func(_i): refresh())
+	head.add_child(_lg_sel)
+
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(sp)
@@ -167,11 +187,23 @@ func _ready() -> void:
 	_build_teams()
 	_build_hub()
 	_build_leaders()
-	# Screenshot-harness hook only: pre-select a Stats view (inert in play).
+	# Screenshot-harness hooks only: pre-select a Stats view/region (inert in play).
 	var dev_view := OS.get_environment("COMP_DEV_STATS_VIEW")
 	if dev_view in ["centre", "teams", "hub", "leaders"]:
 		_view = dev_view
+	_apply_dev_region()
 	_apply_view()
+
+
+## Screenshot-harness hook only (inert in play): force the region scope.
+## Re-applied on refresh because the screen's competition switcher context is
+## pushed after tab _ready and would otherwise override it.
+func _apply_dev_region() -> void:
+	var dev_region := OS.get_environment("COMP_DEV_STATS_REGION")
+	if dev_region == "all":
+		_set_option(_lg_sel, "")
+	elif dev_region != "":
+		_set_option(_lg_sel, dev_region)
 
 
 # ================================================================ Stats Centre
@@ -288,6 +320,52 @@ func _toolbar_cap(text: String) -> Label:
 	return l
 
 
+# ------------------------------------------------------------- region scope
+
+var _cup_focus := false
+
+
+## Competition-switcher hook (screen.gd): a league context scopes the region
+## filter to that league; the cup context merges regions and counts cup only.
+func set_league_context(lg: String, cup: bool) -> void:
+	if _lg_sel == null:
+		return
+	_set_option(_lg_sel, "" if cup else lg)
+	if cup:
+		_set_option(_comp_sel, "cup")
+		_set_option(_tcomp_sel, "cup")
+	elif _cup_focus:
+		_set_option(_comp_sel, "all")
+		_set_option(_tcomp_sel, "all")
+	_cup_focus = cup
+
+
+func _set_option(ob: OptionButton, meta: String) -> void:
+	for i in ob.item_count:
+		if str(ob.get_item_metadata(i)) == meta:
+			ob.select(i)
+			return
+
+
+func _lg_filter() -> String:
+	return str(_lg_sel.get_selected_metadata()) if _lg_sel != null else ""
+
+
+func _lg_ids() -> Array:
+	var f := _lg_filter()
+	return GameState.all_club_ids() if f == "" else GameState.league_club_ids(f)
+
+
+## Does this club fall inside the region scope? (unattached rows: merge only)
+func _club_in_scope(club: Dictionary) -> bool:
+	var f := _lg_filter()
+	if f == "":
+		return true
+	if club.is_empty():
+		return false
+	return GameState.league_of(str(club.get("id", ""))) == f
+
+
 ## Percentile shading legend chip row (red -> neutral -> green swatches).
 func _pctl_legend() -> Control:
 	var h := HBoxContainer.new()
@@ -402,11 +480,13 @@ func _on_title_clicked(col: int, mouse_button_index: int) -> void:
 
 
 func _rebuild_table() -> void:
-	# column layout for the selected category
+	# column layout for the selected category (+ league column when merged)
 	_cols = ["rank", "name", "club", "type", "level"]
+	if _lg_filter() == "":
+		_cols.append("lg")
 	_cols.append_array(_current_cat_keys())
 	if not _cols.has(_sort_key):
-		_sort_key = "rating" if _current_cat_keys().has("rating") else str(_cols[5])
+		_sort_key = "rating" if _current_cat_keys().has("rating") else str(_current_cat_keys()[0])
 		_sort_asc = false
 	_tree.clear()
 	_tree.columns = _cols.size()
@@ -424,6 +504,7 @@ func _rebuild_table() -> void:
 			"club": title = "Club"; width = 62; tip = "Owning club"
 			"type": title = "Type"; width = 108
 			"level": title = "Lv"; width = 42
+			"lg": title = "Lg"; width = 46; tip = "League the owning club competes in"
 			_:
 				title = STAT_DEFS[key]["title"]
 				width = STAT_DEFS[key]["w"]
@@ -500,8 +581,16 @@ func _rebuild_table() -> void:
 		item.set_custom_color(4, TB.COL_TEXT_DIM)
 		item.set_text_alignment(4, HORIZONTAL_ALIGNMENT_CENTER)
 
+		var base := _cols.size() - stat_keys.size()
+		if _cols.has("lg"):
+			var lgid := str(r.get("lg", ""))
+			item.set_text(5, UI.league_tag(lgid) if lgid != "" else "-")
+			item.set_custom_color(5, UI.league_color(lgid).lightened(0.25)
+				if lgid != "" else TB.COL_TEXT_DIM)
+			item.set_text_alignment(5, HORIZONTAL_ALIGNMENT_CENTER)
+
 		for si in stat_keys.size():
-			var col := 5 + si
+			var col := base + si
 			var key: String = stat_keys[si]
 			item.set_text(col, _fmt_stat(key, r))
 			item.set_text_alignment(col, HORIZONTAL_ALIGNMENT_CENTER)
@@ -522,7 +611,7 @@ func _rebuild_table() -> void:
 		if not club.is_empty() and GameState.is_player_club(str(club.get("id", ""))):
 			# with percentile shading on, keep the "your club" wash off the
 			# stat cells so the percentile tints stay readable
-			var last_col: int = 5 if not pctls.is_empty() else _tree.columns
+			var last_col: int = base if not pctls.is_empty() else _tree.columns
 			for c in last_col:
 				item.set_custom_bg_color(c, UI.COL_PLAYER_ROW)
 
@@ -534,6 +623,8 @@ func _build_rows(comp: String) -> Array:
 	var rows: Array = []
 	var seen := {}
 	for c in GameState.world["clubs"]:
+		if not _club_in_scope(c):
+			continue   # region scope: no stat bleed between the leagues
 		for inst in c["squad"]:
 			var uid := str(inst["uid"])
 			seen[uid] = true
@@ -543,9 +634,12 @@ func _build_rows(comp: String) -> Array:
 	for uid in stats:
 		if seen.has(str(uid)):
 			continue
+		var owner := UI.club_of_uid(str(uid))
+		if not _club_in_scope(owner):
+			continue
 		var s: Dictionary = stats[uid]
 		rows.append(_make_row(str(uid), str(s["name"]), str(s["species"]),
-			[], int(s["level"]), UI.club_of_uid(str(uid)), s))
+			[], int(s["level"]), owner, s))
 	return rows
 
 
@@ -559,6 +653,7 @@ func _make_row(uid: String, pname: String, species: String, types: Array,
 	return {
 		"uid": uid, "name": pname, "species": species, "types": types,
 		"level": level, "club": club,
+		"lg": GameState.league_of(str(club.get("id", ""))) if not club.is_empty() else "",
 		"apps": apps,
 		"wins": int(s.get("wins", 0)),
 		"winpct": 100.0 * float(s.get("wins", 0)) / d,
@@ -732,6 +827,8 @@ func _rebuild_teams() -> void:
 
 func _rebuild_teams_table() -> void:
 	_tcols = ["rank", "name"]
+	if _lg_filter() == "":
+		_tcols.append("lg")
 	_tcols.append_array(_team_cat_keys())
 	if not _tcols.has(_tsort_key):
 		var keys := _team_cat_keys()
@@ -748,6 +845,7 @@ func _rebuild_teams_table() -> void:
 		match key:
 			"rank": width = 36; col_title = "#"
 			"name": col_title = "Club"; tip = "Club (click for profile)"
+			"lg": col_title = "Lg"; width = 46; tip = "League the club competes in"
 			_:
 				col_title = TEAM_DEFS[key]["title"]
 				width = TEAM_DEFS[key]["w"]
@@ -796,8 +894,15 @@ func _rebuild_teams_table() -> void:
 		UI.cell_link(item, 1, {"kind": "club", "id": str(r["cid"])},
 			"%s — view club profile" % r["name"])
 
+		var base := _tcols.size() - stat_keys.size()
+		if _tcols.has("lg"):
+			var lgid := str(r.get("lg", ""))
+			item.set_text(2, UI.league_tag(lgid))
+			item.set_custom_color(2, UI.league_color(lgid).lightened(0.25))
+			item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER)
+
 		for si in stat_keys.size():
-			var col := 2 + si
+			var col := base + si
 			var key: String = stat_keys[si]
 			item.set_text(col, _fmt_team(key, r))
 			item.set_text_alignment(col, HORIZONTAL_ALIGNMENT_CENTER)
@@ -811,14 +916,14 @@ func _rebuild_teams_table() -> void:
 					TEAM_DEFS[key]["title"], _fmt_team(key, r), roundi(p * 100.0)])
 
 		if GameState.is_player_club(str(r["cid"])):
-			var last_col: int = 2 if not pctls.is_empty() else _ttree.columns
+			var last_col: int = base if not pctls.is_empty() else _ttree.columns
 			for c in last_col:
 				item.set_custom_bg_color(c, UI.COL_PLAYER_ROW)
 
 
 ## One stats row per club, from Season.season_club_stats (scores + recorded details).
 func _build_team_rows(comp: String) -> Array:
-	var stats: Dictionary = Season.season_club_stats(GameState.club_ids(), GameState.fixtures, comp)
+	var stats: Dictionary = Season.season_club_stats(_lg_ids(), GameState.fixtures, comp)
 	var rows: Array = []
 	for cid in stats:
 		var s: Dictionary = stats[cid]
@@ -836,6 +941,7 @@ func _build_team_rows(comp: String) -> Array:
 		rows.append({
 			"cid": str(cid), "club": club, "name": str(club.get("name", cid)),
 			"short": str(club.get("short", "?")),
+			"lg": GameState.league_of(str(cid)),
 			"matches": m, "mw": int(s["mw"]), "ml": int(s["ml"]),
 			"winpct": 100.0 * float(s["mw"]) / md, "pts": int(s["pts"]),
 			"bw": int(s["bw"]), "bl": int(s["bl"]),
@@ -1168,9 +1274,11 @@ func _apply_view() -> void:
 
 
 func refresh() -> void:
+	_apply_dev_region()
 	var played_n: int = GameState.fixtures.filter(func(f): return f["played"]).size()
-	_note.text = "computed from %d simulated match%s · details recorded at play time" % [
-		played_n, "" if played_n == 1 else "es"]
+	var scope: String = "all regions" if _lg_filter() == "" else GameState.league_name(_lg_filter())
+	_note.text = "%s · computed from %d simulated match%s (world-wide)" % [
+		scope, played_n, "" if played_n == 1 else "es"]
 	match _view:
 		"centre":
 			_rebuild_table()
@@ -1203,6 +1311,8 @@ func _refresh_leaders(played_n: int) -> void:
 		var r: Dictionary = s.duplicate()
 		r["uid"] = uid
 		r["club"] = club_of.get(uid, {})
+		if not _club_in_scope(r["club"]):
+			continue   # leaders board honours the region scope
 		r["avg_rating"] = float(s["rating_sum"]) / maxi(int(s["battles"]), 1)
 		rows.append(r)
 
@@ -1236,7 +1346,7 @@ func _refresh_leaders(played_n: int) -> void:
 		func(_r): return Color.WHITE))
 
 	# --- Club battle win-rates
-	var crec := Season.club_battle_stats(GameState.club_ids(), GameState.fixtures)
+	var crec := Season.club_battle_stats(_lg_ids(), GameState.fixtures)
 	var clubs: Array = []
 	for cid in crec:
 		var c: Dictionary = crec[cid]

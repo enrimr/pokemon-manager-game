@@ -25,46 +25,76 @@ var career_seed: int = 0
 var auto_sim_player_matches := true # match piece can set false and intercept
 
 var _clubs_by_id: Dictionary = {}
-var _table_cache: Array = []
+var _table_cache: Dictionary = {}   # league_id -> table rows
 var _table_dirty := true
 var _economy: RefCounted = null     # inbox piece's economy.gd, ticked daily
 var _economy_checked := false
+var _services: Array = []           # auto-loaded res://shared/sim/services/*.gd (see docs)
+var _incompatible_save := false     # a pre-leagues save was found and archived
 
 
 func _ready() -> void:
 	# Boot into a playable state: load save if present, else new career.
 	# (Deferred so DataStore's _ready has definitely run first.)
-	if not load_game():
-		new_career()
+	boot()
+
+
+## Load the save if compatible, else start a new career. If an old-format save
+## was found, it is replaced gracefully: fresh career + a clear inbox note.
+func boot() -> void:
+	if load_game():
+		return
+	var had_old := _incompatible_save
+	new_career()
+	if had_old:
+		add_inbox_message(current_date, "Save file from an earlier era",
+			"Your previous career predates the two-league world (Kanto League + "
+			+ "Johto League with the cross-league Indigo Cup) and could not be "
+			+ "carried over. A fresh career has been started at %s — good luck, boss."
+			% player_club()["name"])
+		save_game()
 
 
 # ------------------------------------------------------------------ lifecycle
 
-func new_career(seed_value: int = 20260801) -> void:
+## Start a fresh career. club_id (optional) picks any club from either league
+## (the shell's new-career club picker); default remains Pallet Pioneers.
+func new_career(seed_value: int = 20260801, club_id: String = "") -> void:
 	career_seed = seed_value
 	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
 	world = JSON.parse_string(f.get_as_text())
 	_index_clubs()
+	if club_id != "" and _clubs_by_id.has(club_id):
+		world["meta"]["player_club_id"] = club_id
 	_ensure_item_state()
 	_ensure_budget_state()
+	_ensure_league_state()
 	season_start = world["meta"]["season_start"]
 	current_date = season_start
-	fixtures = Season.make_league_fixtures(club_ids(), season_start)
+	fixtures = []
+	var prefixes := ["L", "J", "K", "M"]   # unique fixture-id prefixes per league
+	var lgs := leagues()
+	for i in lgs.size():
+		var lid: String = str(lgs[i]["id"])
+		fixtures += Season.make_league_fixtures(league_club_ids(lid), season_start,
+			prefixes[mini(i, prefixes.size() - 1)], lid)
 	cup_round = 1
-	fixtures += Season.make_cup_round(club_ids(), 1, Season.cup_round_date(season_start, 1), career_seed)
+	fixtures += Season.make_cup_round(all_club_ids(), 1, Season.cup_round_date(season_start, 1), career_seed)
 	inbox = []
 	add_inbox_message(current_date, "Welcome to %s" % player_club()["name"],
 		"The board expects a solid mid-table finish in the %s. Your first fixture is on %s." %
 		[world["meta"]["league_name"], Season.pretty_date(next_player_fixture().get("date", season_start))])
 	_table_dirty = true
+	_load_services()
 	career_started.emit()
 	date_changed.emit(current_date)
 	table_updated.emit()
 
 
 func save_game() -> bool:
+	_collect_service_state()
 	var data := {
-		"version": 1,
+		"version": 2,
 		"career_seed": career_seed,
 		"current_date": current_date,
 		"season_start": season_start,
@@ -86,8 +116,11 @@ func load_game() -> bool:
 		return false
 	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	var data: Variant = JSON.parse_string(f.get_as_text())
-	if data == null or typeof(data) != TYPE_DICTIONARY or int(data.get("version", 0)) != 1:
-		push_warning("GameState: ignoring incompatible save file")
+	if data == null or typeof(data) != TYPE_DICTIONARY or int(data.get("version", 0)) != 2:
+		# Pre-leagues (v1) or corrupt save: flag it so boot() can route to a
+		# graceful new career with a clear inbox note instead of crashing.
+		push_warning("GameState: incompatible save file (old version) — starting fresh")
+		_incompatible_save = true
 		return false
 	career_seed = int(data["career_seed"])
 	current_date = data["current_date"]
@@ -99,6 +132,7 @@ func load_game() -> bool:
 	_index_clubs()
 	_ensure_item_state()
 	_ensure_budget_state()
+	_ensure_league_state()
 	# Save migration: fixtures played before match details were persisted at
 	# play time get reconciled once (adopt a faithful replay, or a score-only
 	# stub when squads have drifted) so reports can never contradict scores.
@@ -106,6 +140,7 @@ func load_game() -> bool:
 	if int(rec["adopted"]) + int(rec["cleared"]) > 0:
 		save_game()
 	_table_dirty = true
+	_load_services()
 	career_started.emit()
 	date_changed.emit(current_date)
 	table_updated.emit()
@@ -119,8 +154,47 @@ func delete_save() -> void:
 
 # ------------------------------------------------------------------ queries
 
+## The PLAYER'S league's club ids (existing single-league callers — table
+## screens, position graphs, stats — keep working per-league unchanged).
 func club_ids() -> Array:
+	return league_club_ids(player_league_id())
+
+
+## Every club id across every league (cross-league cup, scouting, transfers).
+func all_club_ids() -> Array:
 	return world["clubs"].map(func(c): return c["id"])
+
+
+## The league structure: [{id, name}, ...] (kanto + johto).
+func leagues() -> Array:
+	return world["meta"].get("leagues", [{"id": "kanto", "name": world["meta"]["league_name"]}])
+
+
+func league_club_ids(league_id: String) -> Array:
+	return world["clubs"].filter(func(c): return str(c.get("league", "kanto")) == league_id) \
+		.map(func(c): return c["id"])
+
+
+## League a club plays in ("kanto"/"johto").
+func league_of(club_id: String) -> String:
+	return str(club(club_id).get("league", "kanto"))
+
+
+func player_league_id() -> String:
+	return league_of(world["meta"]["player_club_id"])
+
+
+func league_name(league_id: String = "") -> String:
+	if league_id == "":
+		league_id = player_league_id()
+	for lg in leagues():
+		if str(lg["id"]) == league_id:
+			return str(lg["name"])
+	return str(world["meta"]["league_name"])
+
+
+func cup_name() -> String:
+	return str(world["meta"].get("cup_name", "Indigo Cup"))
 
 
 func club(id: String) -> Dictionary:
@@ -135,11 +209,17 @@ func is_player_club(id: String) -> bool:
 	return id == world["meta"]["player_club_id"]
 
 
-func league_table() -> Array:
+## Standings. Default: the player's league (existing callers unchanged);
+## pass "kanto"/"johto" for either championship.
+func league_table(league_id: String = "") -> Array:
+	if league_id == "":
+		league_id = player_league_id()
 	if _table_dirty:
-		_table_cache = Season.compute_table(club_ids(), fixtures)
+		_table_cache.clear()
 		_table_dirty = false
-	return _table_cache
+	if not _table_cache.has(league_id):
+		_table_cache[league_id] = Season.compute_table(league_club_ids(league_id), fixtures)
+	return _table_cache[league_id]
 
 
 func player_table_position() -> int:
@@ -427,6 +507,7 @@ func advance_day() -> Array:
 	_maybe_generate_next_cup_round()
 	_ai_daily_items()
 	_settle_economy()
+	_tick_services()
 	date_changed.emit(current_date)
 	return day_events
 
@@ -503,8 +584,95 @@ func _maybe_generate_next_cup_round() -> void:
 	cup_round += 1
 	fixtures += Season.make_cup_round(winners, cup_round,
 		Season.cup_round_date(season_start, cup_round), career_seed + cup_round)
-	add_inbox_message(current_date, "Cup draw: %s" % Season.cup_round_name(cup_round),
-		"The %s draw has been made." % Season.cup_round_name(cup_round))
+	add_inbox_message(current_date, "%s draw: %s" % [cup_name(), Season.cup_round_name(cup_round)],
+		"The %s %s draw has been made — clubs from both leagues remain in the hat." %
+		[cup_name(), Season.cup_round_name(cup_round)])
+
+
+# ------------------------------------------------------------------ services
+# Auto-loaded simulation services (the drop-in convention for later builders).
+# Any script at res://shared/sim/services/*.gd is instantiated at career start
+# (new career AND load), ticked daily, and persisted inside the save. See
+# docs/ARCHITECTURE.md ("Simulation services") for the exact interface. All
+# hooks are optional (duck-typed via has_method) — GameState never needs edits.
+
+## Discover + instantiate every service, restore its saved state, then start it.
+func _load_services() -> void:
+	_services.clear()
+	var dir_path := "res://shared/sim/services"
+	var states: Dictionary = world["meta"].get("services", {})
+	var dir := DirAccess.open(dir_path)
+	if dir != null:
+		var files := Array(dir.get_files())
+		files.sort()
+		for fname in files:
+			if not str(fname).ends_with(".gd"):
+				continue
+			var script: Variant = load("%s/%s" % [dir_path, fname])
+			if not (script is GDScript):
+				continue
+			var svc: Variant = (script as GDScript).new()
+			_services.append(svc)
+	for svc in _services:
+		var sid := _service_id(svc)
+		if svc.has_method("load_state") and states.has(sid):
+			svc.load_state(states[sid])
+	for svc in _services:
+		if svc.has_method("on_career_started"):
+			svc.on_career_started(self)
+
+
+## Manual registration (tests / screens that want the same lifecycle).
+func register_service(svc: Object) -> void:
+	_services.append(svc)
+	var states: Dictionary = world["meta"].get("services", {})
+	var sid := _service_id(svc)
+	if svc.has_method("load_state") and states.has(sid):
+		svc.load_state(states[sid])
+	if svc.has_method("on_career_started"):
+		svc.on_career_started(self)
+
+
+func _service_id(svc: Object) -> String:
+	if svc.has_method("service_id"):
+		return str(svc.service_id())
+	var script: Script = svc.get_script()
+	if script != null:
+		return str(script.resource_path.get_file().get_basename())
+	return "service"
+
+
+func _tick_services() -> void:
+	for svc in _services:
+		if svc.has_method("on_day"):
+			svc.on_day(self, current_date)
+
+
+## Gather every service's state into world.meta.services (rides the world save).
+func _collect_service_state() -> void:
+	if world.is_empty():
+		return
+	var states: Dictionary = world["meta"].get("services", {})
+	for svc in _services:
+		if svc.has_method("save_state"):
+			states[_service_id(svc)] = svc.save_state()
+	if not states.is_empty():
+		world["meta"]["services"] = states
+
+
+## World-compat: clubs get a league id, meta gets the league structure + cup
+## name, and meta.league_name always names the PLAYER'S league (the string
+## every existing screen renders as its competition title).
+func _ensure_league_state() -> void:
+	for c in world["clubs"]:
+		if not c.has("league"):
+			c["league"] = "kanto"
+	if not world["meta"].has("leagues"):
+		world["meta"]["leagues"] = [
+			{"id": "kanto", "name": str(world["meta"].get("league_name", "Kanto League"))}]
+	if not world["meta"].has("cup_name"):
+		world["meta"]["cup_name"] = "Indigo Cup"
+	world["meta"]["league_name"] = league_name(player_league_id())
 
 
 # ------------------------------------------------------------------ inbox

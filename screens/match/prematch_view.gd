@@ -56,6 +56,10 @@ func _build_header() -> Control:
 		comp_txt, Season.pretty_date(str(f["date"])),
 		"home advantage: none — this is about the six you send out" if runner.player_side == 0 else "away day"],
 		12, UI.COL_DIM))
+	if f["comp"] == "cup":
+		mid.add_child(UI.label("CUP FORMAT — game 2 is played 2v2 DOUBLES: two actives per side, "
+			+ "spread moves, targeting calls. Order your six with a doubles pair in mind.",
+			12, UI.COL_WARN))
 	row.add_child(mid)
 	row.add_child(UI.spacer_h())
 	row.add_child(UI.monogram(runner.away_club.get("short", "A"), UI.club_color(runner.away_club), 40))

@@ -1,4 +1,5 @@
 extends Control
+const EvoSvc := preload("res://shared/sim/services/evolution.gd")
 ## Inbox screen — FM-style two-pane inbox + Board & Finances tab.
 ## Owned by the "inbox" piece. Reads/annotates GameState.inbox, renders rich
 ## bodies via report_gen.gd, generates deterministic news via news_gen.gd.
@@ -8,6 +9,7 @@ const ReportGen := preload("res://screens/inbox/report_gen.gd")
 const BoardRoom := preload("res://screens/inbox/board_room.gd")
 const Economy := preload("res://screens/inbox/economy.gd")
 const PeopleGen := preload("res://screens/inbox/people_gen.gd")
+const EvolutionGen := preload("res://screens/inbox/evolution_gen.gd")
 
 var news: RefCounted
 var reports: RefCounted
@@ -50,6 +52,7 @@ func _ready() -> void:
 	reports.board = board
 	reports.economy = economy
 	reports.people = people
+	reports.evolutions = EvolutionGen.new()
 	_bold = FontVariation.new()
 	_bold.base_font = ThemeDB.fallback_font
 	_bold.variation_embolden = 0.75
@@ -469,6 +472,8 @@ func _on_row_pressed(m: Dictionary) -> void:
 func _needs_decision(m: Dictionary) -> bool:
 	if m.has("offer_id"):
 		return true
+	if str(m.get("kind", "")) == "evo_ready":
+		return str(m.get("decided", "")) == ""
 	var uid := str(m.get("uid", ""))
 	return (uid.begins_with("mind:") or uid.begins_with("monlow:")) \
 		and str(m.get("replied", "")) == ""
@@ -640,6 +645,8 @@ func _decision_button(a: Dictionary) -> Button:
 	b.add_theme_stylebox_override("pressed", ThemeBuilder._flat(Color(col, 0.5), col, 4, 12, 6))
 	if str(a.get("kind", "")) == "reply":
 		b.pressed.connect(_on_people_reply.bind(a))
+	elif str(a.get("kind", "")).begins_with("evo_"):
+		b.pressed.connect(_on_evolution_decision.bind(a))
 	else:
 		b.pressed.connect(_on_offer_decision.bind(a))
 	return b
@@ -652,6 +659,45 @@ func _on_people_reply(a: Dictionary) -> void:
 	var res: Dictionary = people.apply_reply(_selected, a)
 	_action_note = str(res.get("note", ""))
 	_action_note_col = ThemeBuilder.COL_GOOD if res.get("good", true) else ThemeBuilder.COL_WARN
+	_refresh_data()
+	_rebuild_all()
+
+
+## Execute an evolution decision against the live evolution service.
+## Approving genuinely transforms the squad instance; stones are consumed.
+func _on_evolution_decision(a: Dictionary) -> void:
+	var svc: RefCounted = EvoSvc.instance
+	if svc == null:
+		return
+	var uid := str(a.get("evo_uid", ""))
+	var before: Dictionary = GameState.squad_member(uid)
+	var old_name: String = str(before.get("species", "?")) if not before.is_empty() else "?"
+	var err := ""
+	var ok_note := ""
+	match str(a.get("kind", "")):
+		"evo_approve":
+			err = svc.approve(uid)
+			if err == "":
+				ok_note = "Approved — %s has evolved into %s (+%d morale)." % \
+					[old_name, str(GameState.squad_member(uid).get("species", "?")),
+					EvoSvc.EVOLVE_MORALE_BOOST]
+		"evo_postpone":
+			err = svc.postpone(uid)
+			if err == "":
+				ok_note = "Postponed — the offer returns in %d days if still eligible (-%d morale)." % \
+					[EvoSvc.REOFFER_DAYS, EvoSvc.POSTPONE_MORALE_COST]
+		"evo_stone":
+			err = svc.use_stone(uid, str(a.get("item", "")))
+			if err == "":
+				ok_note = "%s consumed — %s has evolved into %s." % \
+					[DataStore.item_name(str(a.get("item", ""))), old_name,
+					str(GameState.squad_member(uid).get("species", "?"))]
+	if err != "":
+		_action_note = err
+		_action_note_col = ThemeBuilder.COL_BAD
+	else:
+		_action_note = ok_note
+		_action_note_col = ThemeBuilder.COL_GOOD
 	_refresh_data()
 	_rebuild_all()
 

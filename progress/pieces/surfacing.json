@@ -1,0 +1,17 @@
+{
+  "piece": "surfacing",
+  "fm_reference": "",
+  "status": "fixing",
+  "round": 1,
+  "verdict": "fm wins",
+  "biggest_gap": "Natures are applied by the match engine (+10%/-10%) but surfaced nowhere: none of squad/tactics/training/transfers/inbox/items ever shows a nature, and every stat those screens display is the pre-nature number — Calm Tauros shows Atk 130 on the squad profile and tactics slot but fights with Atk 117. Battle abilities are equally invisible (no ability shown for any first-team or scouted mon; scout reports never reveal ability/nature at interim or full knowledge; tactics type matrices call Levitate/Water Absorb holders weak to types the engine makes them immune to).",
+  "history": [
+    {
+      "round": 1,
+      "phase": "expansion",
+      "winner": "fm",
+      "gap": "Nature/battle-ability facts invisible and incoherent: UI stats are pre-nature while the engine fights with nature-modified stats; scouting never reveals ability/nature at any stage; tactics matrices ignore ability immunities. Evolution surfacing (inbox approve/postpone, profile eligibility panel, stone flow) verified working end-to-end."
+    }
+  ],
+  "updated": "2026-08-30 13:17"
+}

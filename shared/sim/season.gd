@@ -44,7 +44,11 @@ static func pretty_date(date_str: String) -> String:
 # ------------------------------------------------------------------ fixtures
 
 ## Double round-robin via the circle method. Returns Array of fixture dicts.
-static func make_league_fixtures(club_ids: Array, start_date: String) -> Array:
+## Optional (multi-league worlds): id_prefix keeps fixture ids unique across
+## leagues ("L" Kanto, "J" Johto) and league_id tags each fixture with the
+## league it belongs to (fixture["league"], "" for single-league worlds).
+static func make_league_fixtures(club_ids: Array, start_date: String,
+		id_prefix: String = "L", league_id: String = "") -> Array:
 	var ids := club_ids.duplicate()
 	var n := ids.size()
 	assert(n % 2 == 0)
@@ -79,7 +83,8 @@ static func make_league_fixtures(club_ids: Array, start_date: String) -> Array:
 		for p in rounds[r]:
 			idx += 1
 			fixtures.append({
-				"id": "L%03d" % idx, "comp": "league", "round": r + 1, "date": date,
+				"id": "%s%03d" % [id_prefix, idx], "comp": "league", "round": r + 1,
+				"date": date, "league": league_id,
 				"home": p[0], "away": p[1], "played": false,
 				"score_home": 0, "score_away": 0,
 			})
@@ -111,12 +116,14 @@ static func cup_round_date(start_date: String, round_no: int) -> String:
 	return date_add(start_date, CUP_FIRST_OFFSET + (round_no - 1) * CUP_ROUND_STEP)
 
 
+## Indigo Cup: 32-club cross-league knockout — 5 rounds.
 static func cup_round_name(round_no: int) -> String:
 	match round_no:
 		1: return "First Round"
-		2: return "Quarter-Final"
-		3: return "Semi-Final"
-		4: return "Final"
+		2: return "Second Round"
+		3: return "Quarter-Final"
+		4: return "Semi-Final"
+		5: return "Final"
 	return "Round %d" % round_no
 
 
@@ -131,15 +138,20 @@ static func compute_table(club_ids: Array, fixtures: Array) -> Array:
 	for f in fixtures:
 		if f["comp"] != "league" or not f["played"]:
 			continue
+		# Multi-league worlds: callers pass ONE league's club ids with the full
+		# fixture list — silently skip the other league's fixtures.
+		if not rows.has(f["home"]) or not rows.has(f["away"]):
+			continue
 		var h: Dictionary = rows[f["home"]]
 		var a: Dictionary = rows[f["away"]]
 		h["played"] += 1
 		a["played"] += 1
-		h["bf"] += f["score_home"]
-		h["ba"] += f["score_away"]
-		a["bf"] += f["score_away"]
-		a["ba"] += f["score_home"]
-		if f["score_home"] > f["score_away"]:
+		# int-cast: scores come back as floats after a JSON save round-trip
+		h["bf"] += int(f["score_home"])
+		h["ba"] += int(f["score_away"])
+		a["bf"] += int(f["score_away"])
+		a["ba"] += int(f["score_home"])
+		if int(f["score_home"]) > int(f["score_away"]):
 			h["won"] += 1
 			h["points"] += 3
 			a["lost"] += 1
@@ -700,10 +712,12 @@ static func club_battle_stats(club_ids: Array, fixtures: Array) -> Dictionary:
 	for f in fixtures:
 		if not f.get("played", false):
 			continue
-		if not out.has(f["home"]) or not out.has(f["away"]):
+		if not out.has(f["home"]) and not out.has(f["away"]):
 			continue
-		var h: Dictionary = out[f["home"]]
-		var a: Dictionary = out[f["away"]]
+		# Cross-league cup tie: credit the side(s) we track; the other league's
+		# club goes into a throwaway row.
+		var h: Dictionary = out.get(f["home"], _blank_battle_row())
+		var a: Dictionary = out.get(f["away"], _blank_battle_row())
 		h["matches"] += 1
 		a["matches"] += 1
 		h["bw"] += int(f["score_home"])
@@ -717,6 +731,22 @@ static func club_battle_stats(club_ids: Array, fixtures: Array) -> Dictionary:
 			a["mw"] += 1
 			h["ml"] += 1
 	return out
+
+
+static func _blank_battle_row() -> Dictionary:
+	return {"matches": 0, "mw": 0, "ml": 0, "bw": 0, "bl": 0}
+
+
+static func _blank_season_row() -> Dictionary:
+	return {
+		"matches": 0, "mw": 0, "ml": 0, "pts": 0,
+		"hm": 0, "hw": 0, "hl": 0, "am": 0, "aw": 0, "al": 0,
+		"bw": 0, "bl": 0, "hbw": 0, "hbl": 0, "abw": 0, "abl": 0,
+		"legs": 0, "kos": 0, "faints": 0, "dmg": 0, "taken": 0, "turns": 0,
+		"hits": 0, "misses": 0, "crits": 0, "se": 0,
+		"rating_sum": 0.0, "rating_apps": 0,
+		"results": [], "streak": 0, "best_w": 0, "worst_l": 0,
+	}
 
 
 # ------------------------------------------------------- club season stats
@@ -741,7 +771,7 @@ static func season_club_stats(club_ids: Array, fixtures: Array, comp: String = "
 	_check_career_cache()
 	var played: Array = fixtures.filter(func(f):
 		return f.get("played", false) and (comp == "all" or str(f["comp"]) == comp))
-	var key := "%s|%d" % [comp, played.size()]
+	var key := "%s|%d|%d" % [comp, club_ids.hash(), played.size()]
 	if _club_stats_cache.has(key):
 		return _club_stats_cache[key]
 	played.sort_custom(func(a, b):
@@ -751,21 +781,14 @@ static func season_club_stats(club_ids: Array, fixtures: Array, comp: String = "
 
 	var out := {}
 	for id in club_ids:
-		out[id] = {
-			"matches": 0, "mw": 0, "ml": 0, "pts": 0,
-			"hm": 0, "hw": 0, "hl": 0, "am": 0, "aw": 0, "al": 0,
-			"bw": 0, "bl": 0, "hbw": 0, "hbl": 0, "abw": 0, "abl": 0,
-			"legs": 0, "kos": 0, "faints": 0, "dmg": 0, "taken": 0, "turns": 0,
-			"hits": 0, "misses": 0, "crits": 0, "se": 0,
-			"rating_sum": 0.0, "rating_apps": 0,
-			"results": [], "streak": 0, "best_w": 0, "worst_l": 0,
-		}
+		out[id] = _blank_season_row()
 
 	for f in played:
-		if not out.has(f["home"]) or not out.has(f["away"]):
+		if not out.has(f["home"]) and not out.has(f["away"]):
 			continue
-		var h: Dictionary = out[f["home"]]
-		var a: Dictionary = out[f["away"]]
+		# Cross-league cup ties: track the known side(s), discard the other.
+		var h: Dictionary = out.get(f["home"], _blank_season_row())
+		var a: Dictionary = out.get(f["away"], _blank_season_row())
 		var sh := int(f["score_home"])
 		var sa := int(f["score_away"])
 		h["matches"] += 1
@@ -818,7 +841,7 @@ static func season_club_stats(club_ids: Array, fixtures: Array, comp: String = "
 
 	for id in out:
 		_compute_streaks(out[id])
-	if _club_stats_cache.size() > 6:
+	if _club_stats_cache.size() > 12:   # 3 comps x up to 4 club-set filters
 		_club_stats_cache.clear()
 	_club_stats_cache[key] = out
 	return out
@@ -843,19 +866,21 @@ static func _compute_streaks(row: Dictionary) -> void:
 
 # ------------------------------------------------------- position over time
 
-static var _pos_hist_cache: Dictionary = {}   # completed_rounds -> {club_id: [pos...]}
+static var _pos_hist_cache: Dictionary = {}   # "clubset|rounds" -> {club_id: [pos...]}
 
 
 ## League position after each completed matchday (drives the position graph).
 ## club_id -> Array of 1-based positions, index 0 = after Matchday 1.
-## {} until the first league round has fully completed. Cached per round count.
+## {} until the first league round has fully completed. Cached per club set +
+## round count (multi-league worlds interleave calls for either championship).
 static func position_history(club_ids: Array, fixtures: Array) -> Dictionary:
 	_check_career_cache()
 	var last := latest_completed_league_round(fixtures)
 	if last < 1:
 		return {}
-	if _pos_hist_cache.has(last):
-		return _pos_hist_cache[last]
+	var key := "%d|%d" % [club_ids.hash(), last]
+	if _pos_hist_cache.has(key):
+		return _pos_hist_cache[key]
 	var league: Array = fixtures.filter(func(f):
 		return f["comp"] == "league" and f["played"])
 	var out := {}
@@ -867,8 +892,9 @@ static func position_history(club_ids: Array, fixtures: Array) -> Dictionary:
 		var pos := table_positions(compute_table(club_ids, subset))
 		for id in club_ids:
 			out[id].append(int(pos.get(id, 0)))
-	_pos_hist_cache.clear()
-	_pos_hist_cache[last] = out
+	if _pos_hist_cache.size() > 4:
+		_pos_hist_cache.clear()
+	_pos_hist_cache[key] = out
 	return out
 
 
@@ -877,3 +903,22 @@ static func fixture_winner(f: Dictionary) -> String:
 	if not f.get("played", false):
 		return ""
 	return f["home"] if int(f["score_home"]) > int(f["score_away"]) else f["away"]
+
+
+# ------------------------------------------------------- multi-league helpers
+# Additive (competition piece): filter the mixed fixture list down to one
+# league's championship. A league fixture belongs to league_id iff its
+# "league" tag matches; fixtures without a tag (pre-two-league saves) are
+# treated as belonging to whichever league is asked for, preserving old
+# single-league behaviour.
+
+static func league_fixtures(fixtures: Array, league_id: String) -> Array:
+	return fixtures.filter(func(f):
+		if f["comp"] != "league":
+			return false
+		var tag := str(f.get("league", ""))
+		return tag == "" or tag == league_id)
+
+
+static func cup_fixtures(fixtures: Array) -> Array:
+	return fixtures.filter(func(f): return f["comp"] == "cup")

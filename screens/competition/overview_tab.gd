@@ -20,11 +20,12 @@ func _ready() -> void:
 func refresh() -> void:
 	for c in _grid.get_children():
 		c.queue_free()
+	# cross-league season desk: both championships' title races + the cup
 	_grid.add_child(_season_card())
 	_grid.add_child(_next_matchday_card())
-	_grid.add_child(_title_race_card())
 	_grid.add_child(_cup_card())
-	_grid.add_child(_form_card())
+	for lg in GameState.leagues():
+		_grid.add_child(_title_race_card(str(lg["id"]), str(lg["name"])))
 	_grid.add_child(_recent_card())
 
 
@@ -39,19 +40,22 @@ func _season_card() -> PanelContainer:
 	var card := _sized(UI.card("Season"))
 	var body := UI.card_body(card)
 	var fixtures: Array = GameState.fixtures
-	var total := Season.total_league_rounds(fixtures)
-	var completed := 0
 	var battles := 0
 	for f in fixtures:
 		if f["played"]:
 			battles += int(f["score_home"]) + int(f["score_away"])
-			if f["comp"] == "league":
-				completed = maxi(completed, int(f["round"]))
-	var league_fx := fixtures.filter(func(f): return f["comp"] == "league")
+	# matchday progress is YOUR championship's; battles count the whole world
+	var league_fx := Season.league_fixtures(fixtures, GameState.player_league_id())
+	var total := Season.total_league_rounds(league_fx)
+	var completed := 0
+	for f in league_fx:
+		if f["played"]:
+			completed = maxi(completed, int(f["round"]))
 	var played_fx: int = league_fx.filter(func(f): return f["played"]).size()
 
-	body.add_child(UI.label(str(GameState.world["meta"]["league_name"]), 15, Color.WHITE))
-	body.add_child(UI.dim("Season %s · double round-robin · 16 clubs" % GameState.season_start.split("-")[0], 12))
+	body.add_child(UI.label(str(GameState.league_name()), 15, Color.WHITE))
+	body.add_child(UI.dim("Season %s · %d leagues of 16 · double round-robin · %s" % [
+		GameState.season_start.split("-")[0], GameState.leagues().size(), GameState.cup_name()], 12))
 	body.add_child(UI.vspace(2))
 	var pb := ProgressBar.new()
 	pb.min_value = 0
@@ -62,7 +66,7 @@ func _season_card() -> PanelContainer:
 	body.add_child(pb)
 	body.add_child(UI.kv_row("Current matchday", "%d of %d" % [maxi(completed, 0), total]))
 	body.add_child(UI.kv_row("League matches played", "%d / %d" % [played_fx, league_fx.size()]))
-	body.add_child(UI.kv_row("Battles fought", str(battles)))
+	body.add_child(UI.kv_row("Battles fought (all regions)", str(battles)))
 	body.add_child(UI.kv_row("Today", "%s %s" % [UI.weekday(GameState.current_date),
 		Season.pretty_date(GameState.current_date)]))
 	body.add_child(UI.kv_row("First matchday", Season.pretty_date(
@@ -122,10 +126,11 @@ func _next_matchday_card() -> PanelContainer:
 	return card
 
 
-func _title_race_card() -> PanelContainer:
-	var card := _sized(UI.card("Title Race"))
+func _title_race_card(league_id: String, league_name: String) -> PanelContainer:
+	var is_ours := league_id == GameState.player_league_id()
+	var card := _sized(UI.card("%s · Title Race" % league_name))
 	var body := UI.card_body(card)
-	var table: Array = GameState.league_table()
+	var table: Array = GameState.league_table(league_id)
 	if table.is_empty():
 		return card
 	var leader_pts := int(table[0]["points"])
@@ -148,24 +153,35 @@ func _title_race_card() -> PanelContainer:
 		h.add_child(UI.label("%d pts" % int(row["points"]), 13, Color.WHITE))
 		body.add_child(h)
 	body.add_child(UI.vspace(2))
-	var ppos := GameState.player_table_position()
-	var prow: Dictionary = {}
-	for r in table:
-		if GameState.is_player_club(r["club_id"]):
-			prow = r
-			break
-	if not prow.is_empty():
-		var gap_p := leader_pts - int(prow["points"])
+	if is_ours:
+		var ppos := GameState.player_table_position()
+		var prow: Dictionary = {}
+		for r in table:
+			if GameState.is_player_club(r["club_id"]):
+				prow = r
+				break
+		if not prow.is_empty():
+			var gap_p := leader_pts - int(prow["points"])
+			body.add_child(HSeparator.new())
+			body.add_child(UI.kv_row("Your position",
+				"—" if int(prow.get("played", 0)) == 0 else _ord(ppos), TB.COL_ACCENT.lightened(0.35)))
+			body.add_child(UI.kv_row("Gap to top", "%d pt%s" % [gap_p, "" if gap_p == 1 else "s"],
+				UI.COL_WIN if gap_p == 0 else TB.COL_TEXT))
+	else:
+		# the other region's race: how tight is it at the top?
 		body.add_child(HSeparator.new())
-		body.add_child(UI.kv_row("Your position",
-			"—" if int(prow.get("played", 0)) == 0 else _ord(ppos), TB.COL_ACCENT.lightened(0.35)))
-		body.add_child(UI.kv_row("Gap to top", "%d pt%s" % [gap_p, "" if gap_p == 1 else "s"],
-			UI.COL_WIN if gap_p == 0 else TB.COL_TEXT))
+		if table.size() >= 2 and int(table[0]["played"]) > 0:
+			var margin := int(table[0]["points"]) - int(table[1]["points"])
+			body.add_child(UI.kv_row("Lead at the top", "%d pt%s" % [margin, "" if margin == 1 else "s"],
+				UI.COL_WIN if margin >= 6 else TB.COL_TEXT))
+		var lb := UI.link("Open the %s table ›" % league_name, 12, TB.COL_TEXT_DIM,
+			{"kind": "league", "id": league_id}, "Browse the %s" % league_name)
+		body.add_child(lb)
 	return card
 
 
 func _cup_card() -> PanelContainer:
-	var card := _sized(UI.card("Indigo Cup"))
+	var card := _sized(UI.card("%s · Cross-League Knockout" % GameState.cup_name()))
 	var body := UI.card_body(card)
 	var cup: Array = GameState.fixtures.filter(func(f): return f["comp"] == "cup")
 	if cup.is_empty():
@@ -174,14 +190,22 @@ func _cup_card() -> PanelContainer:
 	var max_round := 0
 	for f in cup:
 		max_round = maxi(max_round, int(f["round"]))
+	var first_count: int = cup.filter(func(f): return int(f["round"]) == 1).size()
+	var total_rounds := 1
+	var nties := first_count
+	while nties > 1:
+		nties = nties / 2
+		total_rounds += 1
 	var current := cup.filter(func(f): return int(f["round"]) == max_round)
-	body.add_child(UI.kv_row("Current round", Season.cup_round_name(max_round)))
+	body.add_child(UI.kv_row("Clubs in the draw", "%d · both leagues" % (first_count * 2)))
+	body.add_child(UI.kv_row("Current round", "%s (%d of %d)" % [
+		Season.cup_round_name(max_round), max_round, total_rounds]))
 	body.add_child(UI.kv_row("Round date", Season.pretty_date(current[0]["date"])))
 
 	var pid: String = GameState.world["meta"]["player_club_id"]
 	var status := ""
 	var status_col := TB.COL_TEXT
-	var final_played: bool = max_round >= 4 and not current.any(func(f): return not f["played"])
+	var final_played: bool = max_round >= total_rounds and not current.any(func(f): return not f["played"])
 	var our_ties := cup.filter(func(f): return f["home"] == pid or f["away"] == pid)
 	var eliminated := false
 	var elim_round := 0
@@ -206,8 +230,10 @@ func _cup_card() -> PanelContainer:
 	if not our_next.is_empty():
 		var nf: Dictionary = our_next[0]
 		var we_home: bool = nf["home"] == pid
-		var opp := GameState.club(nf["away"] if we_home else nf["home"])
-		body.add_child(UI.kv_link_row("Your tie", "%s (%s) · %s" % [opp.get("short", "?"),
+		var opp_id: String = str(nf["away"] if we_home else nf["home"])
+		var opp := GameState.club(opp_id)
+		body.add_child(UI.kv_link_row("Your tie", "%s [%s] (%s) · %s" % [opp.get("short", "?"),
+			UI.league_tag(GameState.league_of(opp_id)),
 			"H" if we_home else "A", UI.short_date(nf["date"])],
 			{"kind": "fixture", "id": str(nf["id"])}))
 	var alive: int = 0
@@ -218,42 +244,8 @@ func _cup_card() -> PanelContainer:
 				winners[Season.fixture_winner(f)] = true
 		alive = winners.size() if not current.any(func(f): return not f["played"]) else current.size() * 2
 	body.add_child(UI.kv_row("Clubs remaining", str(alive)))
-	return card
-
-
-func _form_card() -> PanelContainer:
-	var card := _sized(UI.card("Form Guide · Last 5"))
-	var body := UI.card_body(card)
-	var entries: Array = []
-	for cid in GameState.club_ids():
-		var form := Season.club_form(cid, GameState.fixtures, 5)
-		if form.is_empty():
-			continue
-		var pts := 0
-		for r in form:
-			pts += 3 if r == "W" else 0
-		entries.append({"cid": cid, "form": form, "pts": pts})
-	if entries.is_empty():
-		body.add_child(UI.dim("Form appears after the first matchday.", 13))
-		return card
-	entries.sort_custom(func(a, b): return a["pts"] > b["pts"])
-	for e in entries.slice(0, 6):
-		var club := GameState.club(e["cid"])
-		var h := HBoxContainer.new()
-		h.add_theme_constant_override("separation", 8)
-		h.add_child(UI.monogram(club, 20, 9))
-		var name := UI.link(str(club["short"]), 13,
-			TB.COL_ACCENT.lightened(0.35) if GameState.is_player_club(e["cid"]) else TB.COL_TEXT,
-			{"kind": "club", "id": str(e["cid"])},
-			"%s — view club profile" % club["name"])
-		name.custom_minimum_size.x = 52
-		h.add_child(name)
-		h.add_child(UI.form_pips(e["form"], 15))
-		var spacer := Control.new()
-		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		h.add_child(spacer)
-		h.add_child(UI.dim("%d pts" % e["pts"], 12))
-		body.add_child(h)
+	body.add_child(UI.link("Open the bracket ›", 12, TB.COL_TEXT_DIM,
+		{"kind": "tab", "id": "cup"}, "Go to the cup bracket"))
 	return card
 
 

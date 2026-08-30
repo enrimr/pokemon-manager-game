@@ -44,3 +44,17 @@ Capture everything:
 - To test from a fresh career, delete the save first:
   `rm -f "$HOME/Library/Application Support/Godot/app_userdata/Trainer Manager/save.json"`
 - Regenerating data (foundation owner only): `python3 tools/gen_data.py`, then rerun smoke.
+
+## 3. New-career club picker shots (shell-owned, windowed)
+
+```sh
+/Applications/Godot.app/Contents/MacOS/Godot --path /Users/enrique/development/projects/pokemon-manager-game res://shell/picker_shots.tscn
+```
+
+Boots the real shell, opens the New Career club selector, captures both league
+tabs and a career actually started at a Johto club to `artifacts/leagues/`,
+then deletes the test save. Prints `PICKER SHOTS OK`.
+
+Note: sim_check now also covers the two-league season (both championships,
+cross-league Indigo Cup, per-league tables), the gen-2 type chart, the
+`shared/sim/services/` auto-load convention and v1-save recovery.

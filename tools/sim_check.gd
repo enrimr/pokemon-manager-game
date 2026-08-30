@@ -22,10 +22,30 @@ func _check(cond: bool, what: String) -> void:
 		_fail = true
 
 
+const TMP_SERVICE_PATH := "res://shared/sim/services/_tmp_simcheck_service.gd"
+const TMP_SERVICE_SRC := """extends RefCounted
+var days := 0
+var last_date := ""
+func on_day(_gs, date: String) -> void:
+	days += 1
+	last_date = date
+func save_state() -> Dictionary:
+	return {"days": days, "last_date": last_date}
+func load_state(s: Dictionary) -> void:
+	days = int(s.get("days", 0))
+	last_date = str(s.get("last_date", ""))
+"""
+
+
 func _run() -> void:
 	print("=== sim_check: battle engine determinism ===")
 	SaveGuard.backup()   # never clobber the player's real career
 	GameState.delete_save()
+	# drop a probe service in BEFORE career start to exercise the auto-load
+	# services convention (discovery, daily tick, save/load state)
+	var sf := FileAccess.open(TMP_SERVICE_PATH, FileAccess.WRITE)
+	sf.store_string(TMP_SERVICE_SRC)
+	sf.close()
 	GameState.new_career(424242)
 
 	var clubs: Array = GameState.world["clubs"]
@@ -120,6 +140,158 @@ func _run() -> void:
 	_check(d_events[0] == d_events[1] and d_winner[0] == d_winner[1] and d_used[0] == d_used[1],
 		"same seed + same bags => identical battle with items (%d events, %d items used)" % [d_events[0], d_used[0]])
 
+	print("=== sim_check: natures ===")
+	var n_ad := BattleEngine.new([_mkx(66, 50, ["Karate Chop"], "Adamant", null)],
+		[_mkx(66, 50, ["Karate Chop"], "Modest", null)], 1)
+	var n_ha := BattleEngine.new([_mkx(66, 50, ["Karate Chop"], "Hardy", null)],
+		[_mkx(66, 50, ["Karate Chop"], "Hardy", null)], 1)
+	var sa: Dictionary = n_ad.active_battler(0)["stats"]   # Adamant: +atk -spa
+	var sm: Dictionary = n_ad.active_battler(1)["stats"]   # Modest:  +spa -atk
+	var sh: Dictionary = n_ha.active_battler(0)["stats"]   # Hardy: neutral
+	_check(int(sa["atk"]) == int(floor(float(sh["atk"]) * 1.1))
+		and int(sa["spa"]) == int(floor(float(sh["spa"]) * 0.9)),
+		"Adamant = +10%% atk / -10%% spa (atk %d->%d, spa %d->%d)" % [sh["atk"], sa["atk"], sh["spa"], sa["spa"]])
+	_check(int(sm["spa"]) > int(sh["spa"]) and int(sm["atk"]) < int(sh["atk"]),
+		"Modest mirrors it on the special side")
+	_check(int(sa["hp"]) == int(sh["hp"]), "natures never touch HP")
+
+	print("=== sim_check: abilities ===")
+	# Intimidate: entry drop on the foe's Attack
+	var ab1 := BattleEngine.new([_mkx(130, 50, ["Surf"], "Hardy", null)],
+		[_mkx(66, 50, ["Karate Chop"], "Hardy", null)], 11)
+	_check(int(ab1.active_battler(1)["stages"]["atk"]) == -1
+		and ab1.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "intimidate"),
+		"Intimidate drops the foe's Attack on entry")
+	# Levitate: full immunity to Ground moves
+	var ab2 := BattleEngine.new([_mkx(66, 50, ["Earthquake"], "Hardy", null)],
+		[_mkx(94, 50, ["Splash"], "Hardy", null)], 12)
+	ab2.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(int(ab2.active_battler(1)["hp"]) == int(ab2.active_battler(1)["max_hp"])
+		and ab2.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "levitate" and ev["effect"] == "immune"),
+		"Levitate no-sells Earthquake")
+	# Flash Fire: absorbs fire, boosts own fire moves
+	var ab3 := BattleEngine.new([_mkx(66, 50, ["Ember"], "Hardy", null)],
+		[_mkx(38, 50, ["Splash"], "Hardy", null)], 13)
+	ab3.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	var nine: Dictionary = ab3.active_battler(1)
+	_check(int(nine["hp"]) == int(nine["max_hp"]) and bool(nine["flash_fire"])
+		and ab3.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "flash_fire"),
+		"Flash Fire absorbs Ember and charges up")
+	_check(absf(ab3._offense_mult(1, nine, DataStore.move("Ember"), false) - 1.5) < 0.001,
+		"charged Flash Fire boosts its own Fire moves x1.5")
+	# Water Absorb: heals instead of taking water damage
+	var ab4 := BattleEngine.new([_mkx(66, 50, ["Water Gun"], "Hardy", null)],
+		[_mkx(60, 50, ["Splash"], "Hardy", null)], 14)
+	ab4.active_battler(1)["hp"] = int(ab4.active_battler(1)["max_hp"] / 2.0)
+	var wa_hp: int = int(ab4.active_battler(1)["hp"])
+	ab4.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(int(ab4.active_battler(1)["hp"]) > wa_hp
+		and ab4.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "water_absorb"),
+		"Water Absorb turns Water Gun into healing")
+	# Static: contact paralysis
+	var ab5 := BattleEngine.new([_mkx(66, 5, ["Karate Chop"], "Hardy", null)],
+		[_mkx(25, 50, ["Splash"], "Hardy", null)], 15)
+	for i in 30:
+		if ab5.is_over() or str(ab5.active_battler(0)["status"]) == "para":
+			break
+		ab5.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(str(ab5.active_battler(0)["status"]) == "para"
+		and ab5.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "static"),
+		"Static paralyzes the attacker on contact")
+	# Sturdy: survives a one-hit KO from full HP
+	var ab6 := BattleEngine.new([_mkx(6, 100, ["Flamethrower"], "Hardy", null)],
+		[_mkx(74, 5, ["Tackle"], "Hardy", null)], 16)
+	ab6.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(ab6.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "sturdy"),
+		"Sturdy triggers against a would-be OHKO (hp_left=%d)" % int(ab6.team_state(1)[0]["hp"]))
+	# Speed Boost: end-of-turn stage gain
+	var ab7 := BattleEngine.new([_mkx(193, 50, ["Tackle"], "Hardy", null)],
+		[_mkx(66, 50, ["Splash"], "Hardy", null)], 17)
+	ab7.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(int(ab7.active_battler(0)["stages"]["spe"]) >= 1
+		and ab7.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "speed_boost"),
+		"Speed Boost raises Speed at end of turn")
+	# Guts: burned attacker hits harder, not softer
+	var ab8 := BattleEngine.new([_mkx(66, 50, ["Karate Chop"], "Hardy", null)],
+		[_mkx(66, 50, ["Splash"], "Hardy", null)], 18)
+	var guts_b: Dictionary = ab8.active_battler(0)
+	var atk_clean: float = ab8._eff_stat(guts_b, "atk")
+	guts_b["status"] = "burn"
+	_check(absf(ab8._eff_stat(guts_b, "atk") - atk_clean * 1.5) < 0.01,
+		"Guts: burn means Attack x1.5, burn halving ignored")
+	# Thick Fat: halves fire/ice damage taken
+	var ab9 := BattleEngine.new([_mkx(143, 50, ["Tackle"], "Hardy", null)],
+		[_mkx(66, 50, ["Splash"], "Hardy", null)], 19)
+	_check(absf(ab9._defense_mult(0, ab9.active_battler(0), DataStore.move("Ember"), false) - 0.5) < 0.001,
+		"Thick Fat halves incoming Fire damage")
+
+	print("=== sim_check: weather ===")
+	# Rain Dance: sets rain for 5 turns, then it expires
+	var w1 := BattleEngine.new([_mkx(60, 50, ["Rain Dance", "Splash"], "Hardy", null)],
+		[_mkx(66, 50, ["Splash"], "Hardy", null)], 21)
+	w1.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(w1.weather() == "rain"
+		and w1.events.any(func(ev): return ev["t"] == "weather_start" and ev["kind"] == "rain" and ev["source"] == "move"),
+		"Rain Dance starts the rain (turns left %d)" % w1.weather_turns_left())
+	_check(absf(w1._weather_move_mult("water") - 1.5) < 0.001
+		and absf(w1._weather_move_mult("fire") - 0.5) < 0.001,
+		"rain: water x1.5, fire x0.5")
+	for i in 4:
+		w1.step_turn({"type": "move", "index": 1}, {"type": "move", "index": 0})
+	_check(w1.weather() == ""
+		and w1.events.any(func(ev): return ev["t"] == "weather_end" and ev["kind"] == "rain"),
+		"rain expires after 5 turns")
+	# Chlorophyll / Swift Swim style weather speed
+	var w2 := BattleEngine.new([_mkx(45, 50, ["Splash"], "Hardy", null)],
+		[_mkx(66, 50, ["Splash"], "Hardy", null)], 22)
+	var leaf: Dictionary = w2.active_battler(0)
+	var spe_clear: float = w2._eff_stat(leaf, "spe")
+	w2._set_weather("sun", 5, "move", 0, "test")
+	_check(absf(w2._eff_stat(leaf, "spe") - spe_clear * 2.0) < 0.01,
+		"Chlorophyll doubles Speed in the sun")
+	# Sand Stream: auto-weather on entry + residual chip on the non-immune side
+	var w3 := BattleEngine.new([_mkx(248, 50, ["Tackle"], "Hardy", null)],
+		[_mkx(66, 50, ["Splash"], "Hardy", null)], 23)
+	_check(w3.weather() == "sand"
+		and w3.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "sand_stream")
+		and w3.events.any(func(ev): return ev["t"] == "weather_start" and ev["source"] == "ability"),
+		"Sand Stream whips up a sandstorm on entry")
+	w3.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(w3.events.any(func(ev): return ev["t"] == "weather_chip" and int(ev["side"]) == 1),
+		"sandstorm chips the non-immune side")
+	_check(not w3.events.any(func(ev): return ev["t"] == "weather_chip" and int(ev["side"]) == 0),
+		"Rock types shrug the sandstorm off")
+	# AI weather awareness: boosted moves score higher
+	var w4 := BattleEngine.new([_mkx(60, 50, ["Surf", "Tackle"], "Hardy", null)],
+		[_mkx(66, 50, ["Splash"], "Hardy", null)], 24)
+	var surf_clear: float = w4._move_score(w4.active_battler(0), w4.active_battler(1), "Surf")
+	w4._set_weather("rain", 5, "move", 0, "test")
+	_check(w4._move_score(w4.active_battler(0), w4.active_battler(1), "Surf") > surf_clear,
+		"AI scores rain-boosted Water moves higher")
+
+	print("=== sim_check: determinism with natures + abilities + weather ===")
+	var da_events := []
+	var da_winner := []
+	for rep in 2:
+		var dta: Array = [_mkx(248, 50, ["Tackle", "Sandstorm"], "Adamant", null),
+			_mkx(130, 50, ["Surf", "Rain Dance"], "Jolly", null),
+			_mkx(38, 50, ["Ember", "Sunny Day"], "Timid", null)]
+		var dtb: Array = [_mkx(186, 50, ["Surf", "Splash"], "Modest", null),
+			_mkx(45, 50, ["Vine Whip", "Sunny Day"], "Bold", null),
+			_mkx(66, 50, ["Karate Chop"], "Adamant", null)]
+		var dd := BattleEngine.new(dta, dtb, 20260830)
+		dd.run_to_end()
+		da_events.append(dd.events.size())
+		da_winner.append(dd.winner())
+		if rep == 0:
+			var dk := {}
+			for ev in dd.events:
+				dk[ev["t"]] = dk.get(ev["t"], 0) + 1
+			_check(dk.has("ability_triggered") and dk.has("weather_start"),
+				"depth events present in an AI battle: %s" % str(dk))
+	_check(da_events[0] == da_events[1] and da_winner[0] == da_winner[1],
+		"same seed => identical battle with natures/abilities/weather (%d events)" % da_events[0])
+
 	print("=== sim_check: 50-day season fast-forward ===")
 	var start_date: String = GameState.current_date
 	for i in 50:
@@ -130,26 +302,75 @@ func _run() -> void:
 	var played := GameState.fixtures.filter(func(f): return f["played"])
 	var league_played := played.filter(func(f): return f["comp"] == "league")
 	var cup_played := played.filter(func(f): return f["comp"] == "cup")
-	_check(league_played.size() >= 40, "league fixtures simulated (%d played)" % league_played.size())
-	_check(cup_played.size() >= 8, "cup round 1 simulated (%d cup ties played)" % cup_played.size())
+	_check(league_played.size() >= 80, "league fixtures simulated across both leagues (%d played)" % league_played.size())
+	_check(cup_played.size() >= 16, "cup round 1 simulated (%d cup ties played)" % cup_played.size())
 	_check(GameState.cup_round >= 2, "next cup round drawn (cup_round=%d)" % GameState.cup_round)
 	for f in played:
 		if f["score_home"] == f["score_away"]:
 			_check(false, "no draws allowed, got %s" % str(f))
 			break
 
+	print("=== sim_check: two-league structure ===")
+	_check(GameState.leagues().size() == 2, "two leagues (%s)" % str(GameState.leagues()))
+	_check(GameState.league_club_ids("kanto").size() == 16 and GameState.league_club_ids("johto").size() == 16,
+		"16 clubs per league")
+	_check(GameState.all_club_ids().size() == 32, "32 clubs world-wide")
+	_check(GameState.league_of("club00") == "kanto" and GameState.league_of("club16") == "johto",
+		"league_of maps both regions")
+	var cross_league := 0
+	for f in GameState.fixtures:
+		if f["comp"] == "league" and GameState.league_of(f["home"]) != GameState.league_of(f["away"]):
+			cross_league += 1
+	_check(cross_league == 0, "league fixtures never cross leagues")
+	var kanto_played := league_played.filter(func(f): return str(f.get("league", "")) == "kanto")
+	var johto_played := league_played.filter(func(f): return str(f.get("league", "")) == "johto")
+	_check(kanto_played.size() >= 40 and johto_played.size() >= 40,
+		"both championships sim in parallel (%d kanto / %d johto)" % [kanto_played.size(), johto_played.size()])
+	var cup1 := GameState.fixtures.filter(func(f): return f["comp"] == "cup" and int(f["round"]) == 1)
+	_check(cup1.size() == 16, "Indigo Cup round 1 has 16 ties (32 clubs)")
+	var cup_cross := cup1.filter(func(f): return GameState.league_of(f["home"]) != GameState.league_of(f["away"]))
+	_check(cup_cross.size() > 0, "Indigo Cup draws across leagues (%d cross-league ties in R1)" % cup_cross.size())
+	_check(Season.cup_round_name(5) == "Final" and Season.cup_round_name(3) == "Quarter-Final",
+		"32-club cup round names")
+
 	var table: Array = GameState.league_table()
-	_check(table.size() == 16, "table has 16 rows")
+	_check(table.size() == 16, "player-league table has 16 rows")
 	var total_played := 0
 	for row in table:
 		total_played += int(row["played"])
 		_check_quiet(int(row["points"]) == int(row["won"]) * 3, "points = 3*wins for %s" % row["club_id"])
-	_check(total_played == league_played.size() * 2, "table played counts match fixtures")
+	_check(total_played == kanto_played.size() * 2, "kanto table played counts match kanto fixtures")
+	var jtable: Array = GameState.league_table("johto")
+	_check(jtable.size() == 16, "johto table has 16 rows")
+	var jtotal := 0
+	for row in jtable:
+		jtotal += int(row["played"])
+	_check(jtotal == johto_played.size() * 2, "johto table played counts match johto fixtures")
 	var top: Dictionary = table[0]
-	print("  info: leader after 50 days: %s with %d pts (%d played)" %
+	print("  info: kanto leader after 50 days: %s with %d pts (%d played)" %
 		[GameState.club(top["club_id"])["name"], top["points"], top["played"]])
+	print("  info: johto leader after 50 days: %s with %d pts (%d played)" %
+		[GameState.club(jtable[0]["club_id"])["name"], jtable[0]["points"], jtable[0]["played"]])
 	_check(GameState.player_table_position() > 0, "player club in table (pos %d)" % GameState.player_table_position())
 	_check(GameState.inbox.size() > 1, "inbox has match reports (%d messages)" % GameState.inbox.size())
+
+	print("=== sim_check: gen-2 type chart sanity ===")
+	_check(DataStore.effectiveness("dark", ["psychic"]) == 2.0, "Dark hits Psychic super-effectively")
+	_check(DataStore.effectiveness("ghost", ["psychic"]) == 2.0, "Ghost hits Psychic super-effectively (gen-2 fix)")
+	_check(DataStore.effectiveness("psychic", ["dark"]) == 0.0, "Psychic can't touch Dark")
+	_check(DataStore.effectiveness("poison", ["steel"]) == 0.0, "Poison can't touch Steel")
+	_check(DataStore.effectiveness("fighting", ["dark"]) == 2.0, "Fighting hits Dark super-effectively")
+	_check(DataStore.effectiveness("steel", ["ice"]) == 2.0, "Steel hits Ice super-effectively")
+
+	print("=== sim_check: services convention (auto-load, tick, persistence) ===")
+	var probe: Variant = null
+	for svc in GameState._services:
+		if _svc_id(svc) == "_tmp_simcheck_service":
+			probe = svc
+	_check(probe != null, "res://shared/sim/services/*.gd auto-loaded at career start")
+	if probe != null:
+		_check(int(probe.days) >= 50, "service ticked daily (%d days)" % int(probe.days))
+		_check(str(probe.last_date) == GameState.current_date, "service sees the current date")
 
 	print("=== sim_check: Continue behaviour ===")
 	var before_next := GameState.next_player_fixture()
@@ -181,6 +402,10 @@ func _run() -> void:
 	print("=== sim_check: save/load roundtrip ===")
 	var date_before_save: String = GameState.current_date
 	var fixtures_count := GameState.fixtures.size()
+	var svc_days_before := 0
+	for svc in GameState._services:
+		if _svc_id(svc) == "_tmp_simcheck_service":
+			svc_days_before = int(svc.days)
 	_check(GameState.save_game(), "save_game succeeds")
 	GameState.new_career(1)  # wipe in-memory state
 	_check(GameState.load_game(), "load_game succeeds")
@@ -188,7 +413,39 @@ func _run() -> void:
 	_check(GameState.fixtures.size() == fixtures_count, "loaded fixture count matches (%d)" % fixtures_count)
 	_check(_inv_norm(GameState.player_inventory()) == inv_before_save,
 		"loaded item inventory matches")
+	var svc_days_after := -1
+	for svc in GameState._services:
+		if _svc_id(svc) == "_tmp_simcheck_service":
+			svc_days_after = int(svc.days)
+	_check(svc_days_before > 0 and svc_days_after == svc_days_before,
+		"service state survives save/load (%d days)" % svc_days_after)
+
+	print("=== sim_check: new career at a Johto club ===")
 	GameState.delete_save()
+	GameState.new_career(777, "club20")
+	_check(GameState.player_club().get("league", "") == "johto",
+		"player club is in Johto (%s)" % GameState.player_club().get("name", "?"))
+	_check(str(GameState.world["meta"]["league_name"]) == "Johto League",
+		"meta.league_name follows the chosen club (screens' title source)")
+	_check(GameState.league_table().size() == 16 and GameState.player_table_position() > 0,
+		"johto standings host the player club")
+	_check(not GameState.next_player_fixture().is_empty(), "johto career has a first fixture")
+
+	print("=== sim_check: pre-leagues saves recover gracefully ===")
+	var old_save := FileAccess.open(GameState.SAVE_PATH, FileAccess.WRITE)
+	old_save.store_string(JSON.stringify({"version": 1, "career_seed": 5, "world": {}}))
+	old_save.close()
+	_check(not GameState.load_game(), "v1 save rejected without crashing")
+	GameState.boot()
+	_check(GameState.current_date == GameState.season_start, "boot routed to a fresh career")
+	_check(GameState.inbox.any(func(m): return str(m["title"]).contains("earlier era")),
+		"inbox explains the incompatible save")
+	var resaved: Variant = JSON.parse_string(FileAccess.open(GameState.SAVE_PATH, FileAccess.READ).get_as_text())
+	_check(typeof(resaved) == TYPE_DICTIONARY and int(resaved.get("version", 0)) == 2,
+		"old save replaced by a v2 save")
+
+	GameState.delete_save()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TMP_SERVICE_PATH))
 	SaveGuard.restore()   # hand the player's real save back
 
 	if _fail:
@@ -197,6 +454,16 @@ func _run() -> void:
 	else:
 		print("SIM CHECK OK")
 		get_tree().quit(0)
+
+
+## Service id, mirroring GameState._service_id (file basename fallback).
+func _svc_id(svc: Object) -> String:
+	if svc.has_method("service_id"):
+		return str(svc.service_id())
+	var script: Script = svc.get_script()
+	if script != null:
+		return str(script.resource_path.get_file().get_basename())
+	return "service"
 
 
 func _check_quiet(cond: bool, what: String) -> void:
@@ -213,6 +480,13 @@ func _inv_norm(inv: Dictionary) -> String:
 	for k in keys:
 		parts.append("%s=%d" % [str(k), int(inv[k])])
 	return ",".join(parts)
+
+
+## Battler factory with explicit moves + nature (ability = species ability).
+func _mkx(species_id: int, level: int, mvs: Array, nat: String, held: Variant) -> Dictionary:
+	return DataStore.make_battler({"uid": "x%d_%d" % [species_id, level],
+		"species_id": species_id, "nickname": null, "level": level,
+		"ivs": {}, "moves": mvs, "held_item": held, "nature": nat})
 
 
 ## Quick battler factory for item tests (moves default to the learnset).

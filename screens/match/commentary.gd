@@ -37,6 +37,10 @@ static func is_key_event(e: Dictionary) -> bool:
 			return true
 		"held_item":
 			return str(e.get("effect", "")) == "sash"
+		"weather_start":
+			return true
+		"ability_triggered":
+			return str(e.get("effect", "")) in ["sturdy", "immune", "absorb"]
 	return false
 
 
@@ -49,12 +53,27 @@ static func lines_for(e: Dictionary, ctx: Dictionary, rng: RandomNumberGenerator
 	var shorts: Array = ctx.get("short", ["HOM", "AWY"])
 	match str(e.get("t", "")):
 		"battle_start":
-			out.append(_line("[b]Battle %d of 3 is underway.[/b]" % int(ctx.get("battle_no", 1)), C_ACCENT, true))
+			if str(e.get("mode", "")) == "doubles":
+				out.append(_line("[b]Battle %d of 3 is underway — 2v2 DOUBLES! Two on the floor for each side; targeting wins these.[/b]"
+					% int(ctx.get("battle_no", 1)), C_ACCENT, true))
+			else:
+				out.append(_line("[b]Battle %d of 3 is underway.[/b]" % int(ctx.get("battle_no", 1)), C_ACCENT, true))
 		"turn_start":
 			pass  # the view renders its own divider
+		"no_target":
+			out.append(_line("%s's %s finds nothing left to hit!" %
+				[e.get("pokemon", "?"), e.get("move", "?")], C_DIM, false))
 		"move_used":
 			var mv: Dictionary = DataStore.move(str(e.get("move", "")))
-			if not mv.is_empty() and str(mv.get("category", "")) == "status":
+			if bool(e.get("spread", false)):
+				out.append(_line(_pick(rng, [
+					"%s unleashes %s across the whole field!" % [e["pokemon"], e["move"]],
+					"%s goes wide with %s — everyone braces!" % [e["pokemon"], e["move"]],
+				]), C_TEXT, false))
+			elif e.has("target") and not mv.is_empty() and str(mv.get("category", "")) != "status":
+				out.append(_line("%s singles out %s — %s!" %
+					[e["pokemon"], e["target"], e["move"]], C_TEXT, false))
+			elif not mv.is_empty() and str(mv.get("category", "")) == "status":
 				out.append(_line(_pick(rng, [
 					"%s calls for %s." % [e["pokemon"], e["move"]],
 					"%s takes a breather and uses %s." % [e["pokemon"], e["move"]],
@@ -129,6 +148,32 @@ static func lines_for(e: Dictionary, ctx: Dictionary, rng: RandomNumberGenerator
 			]) + "[/b]", C_ACCENT, true))
 		"held_item":
 			_held_item_lines(e, rng, out)
+		"ability_triggered":
+			_ability_lines(e, rng, out)
+		"weather_start":
+			var wk := str(e.get("kind", ""))
+			var opener: String = {
+				"sun": "The sunlight turns HARSH — fire moves will scorch, water fizzles!",
+				"rain": "Rain hammers the arena — water moves surge, fire sputters!",
+				"sand": "A sandstorm rips across the pitch — it will rake everything unshielded!",
+				"hail": "Hail pelts down — anything that isn't ice will feel it!",
+			}.get(wk, "The weather turns!")
+			var src := ""
+			if str(e.get("source", "")) == "ability":
+				src = " %s's presence did that." % str(e.get("pokemon", "?"))
+			elif e.get("pokemon", null) != null and str(e.get("pokemon", "")) != "":
+				src = " %s made it happen." % str(e.get("pokemon", ""))
+			out.append(_line("[b]%s[/b]%s" % [opener, src], C_GOLD, true))
+		"weather_end":
+			out.append(_line(str({
+				"sun": "The harsh sunlight fades — conditions level out.",
+				"rain": "The rain lets up — conditions level out.",
+				"sand": "The sandstorm subsides — you can see the pitch again.",
+				"hail": "The hail stops — a mercy for the outfield.",
+			}.get(str(e.get("kind", "")), "The skies clear.")), C_DIM, false))
+		"weather_chip":
+			out.append(_line("%s is battered by the %s (-%d%%)." % [e.get("pokemon", "?"),
+				"sandstorm" if str(e.get("kind", "")) == "sand" else "hail", _pct(e)], C_DIM, false))
 		"commentary_hook":
 			if _hook_worth(str(e.get("text", ""))):
 				out.append(_line(str(e["text"]), C_GOLD, false))
@@ -187,10 +232,59 @@ static func _held_item_lines(e: Dictionary, _rng: RandomNumberGenerator, out: Ar
 		_:
 			pass
 
+static func _ability_lines(e: Dictionary, rng: RandomNumberGenerator, out: Array) -> void:
+	var n := str(e.get("pokemon", "?"))
+	var ab := str(e.get("ability_name", e.get("ability", "ability")))
+	match str(e.get("effect", "")):
+		"entry_stat":
+			out.append(_line("%s's [b]%s[/b] makes itself felt the moment it steps on!" % [n, ab], C_ACCENT, false))
+		"weather":
+			pass  # the weather_start line right after credits the Pokémon
+		"immune":
+			out.append(_line("[b]No effect — %s's %s shrugs the attack off completely![/b]" % [n, ab], C_GOLD, true))
+		"absorb":
+			out.append(_line("[b]%s's %s drinks the attack right up![/b]" % [n, ab], C_GOLD, true))
+		"sturdy":
+			out.append(_line("[b]%s refuses to go down — %s keeps it standing on 1 HP![/b]" % [n, ab], C_GOLD, true))
+		"contact_status", "contact_damage":
+			out.append(_line("%s's [b]%s[/b] punishes the contact!" % [n, ab], C_ACCENT, false))
+		"pinch_boost":
+			out.append(_line("%s is in trouble — and its [b]%s[/b] roars to life!" % [n, ab], C_ACCENT, false))
+		"resist":
+			out.append(_line("%s's [b]%s[/b] blunts the blow." % [n, ab], C_ACCENT, false))
+		"reflect_status":
+			out.append(_line("%s's [b]%s[/b] throws the condition right back!" % [n, ab], C_ACCENT, false))
+		"heal_status_on_switch":
+			out.append(_line("%s's [b]%s[/b] cures it on the way to the bench." % [n, ab], C_ACCENT, false))
+		"end_turn_stat", "end_turn_cure", "weather_heal":
+			out.append(_line(_pick(rng, [
+				"%s's [b]%s[/b] ticks over at the end of the turn." % [n, ab],
+				"End of the turn — %s's [b]%s[/b] does its quiet work." % [n, ab],
+			]), C_ACCENT, false))
+		"sleep_half":
+			out.append(_line("%s's [b]%s[/b] shakes off the drowsiness early." % [n, ab], C_ACCENT, false))
+		"no_stat_drop", "no_atk_drop", "no_acc_drop":
+			out.append(_line("%s's [b]%s[/b] blocks the stat drop." % [n, ab], C_ACCENT, false))
+		"immune_status", "immune_flinch", "immune_confuse", "no_secondary_effects":
+			out.append(_line("%s's [b]%s[/b] protects it — no dice." % [n, ab], C_ACCENT, false))
+		"no_recoil":
+			pass  # silent quality-of-life ability; a line every hit would spam
+		_:
+			out.append(_line("%s's [b]%s[/b] comes into play." % [n, ab], C_ACCENT, false))
+
+
 static func _damage_lines(e: Dictionary, ctx: Dictionary, rng: RandomNumberGenerator, out: Array) -> void:
 	var pside := int(ctx.get("player_side", 0))
 	if e.get("recoil", false):
 		out.append(_line("%s is hurt by recoil (-%d%%)." % [e["pokemon"], _pct(e)], C_DIM, false))
+		return
+	if e.get("ally_hit", false):
+		if float(e.get("effectiveness", 1.0)) == 0.0:
+			out.append(_line("%s's own %s washes over %s — no harm done." %
+				[e.get("by", "?"), e.get("move", "?"), e["pokemon"]], C_DIM, false))
+		else:
+			out.append(_line("FRIENDLY FIRE — %s's %s clips its own partner %s (-%d%%)!" %
+				[e.get("by", "?"), e.get("move", "?"), e["pokemon"], _pct(e)], C_GOLD, false))
 		return
 	var eff := float(e.get("effectiveness", 1.0))
 	var atk := str(e.get("by", "?"))

@@ -82,10 +82,17 @@ static func analyze(inst: Dictionary) -> Dictionary:
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 	var base: Dictionary = sp.get("base", {"hp": 50, "atk": 50, "def": 50, "spa": 50, "spd": 50, "spe": 50})
 	var battler: Dictionary = DataStore.make_battler(inst)
+	# Nature-adjust the stats HERE, exactly like BattleEngine._init_battler,
+	# so every number the tactics board shows is the one that fights.
+	battler["stats"] = apply_nature(battler.get("stats", {}), str(battler.get("nature", "Hardy")))
+	var ability := str(battler.get("ability", ""))
 	var a := {
 		"uid": inst.get("uid", ""),
 		"inst": inst,
 		"battler": battler,
+		"ability": ability,
+		"ability_name": DataStore.ability_name(ability) if ability != "" else "—",
+		"nature": str(battler.get("nature", "Hardy")),
 		"types": sp.get("types", ["normal"]),
 		"base": base,
 		"n_spe": _nb(base["spe"]), "n_atk": _nb(base["atk"]), "n_spa": _nb(base["spa"]),
@@ -137,16 +144,56 @@ static func analyze(inst: Dictionary) -> Dictionary:
 							a["has_screen"] = true
 					elif not self_buff and stages < 0 and cat == "status":
 						a["has_drop"] = true
-	# defensive typing quality
+	# defensive typing quality — ability-aware (Levitate holders are NOT weak
+	# to ground; Water/Volt Absorb & Flash Fire zero out their types; Thick
+	# Fat halves fire/ice), matching what the engine actually applies.
 	var resists := 0
 	var weaks := 0
 	for t in DataStore.types:
-		var eff := DataStore.effectiveness(t, a["types"])
+		var eff := def_mult(a, t)
 		if eff < 1.0: resists += 1
 		elif eff > 1.0: weaks += 1
 	a["resists"] = resists
 	a["weaks"] = weaks
 	return a
+
+
+## Engine-identical nature math: +10% floored / -10% floored (min 1), never HP.
+static func apply_nature(stats: Dictionary, nature_name: String) -> Dictionary:
+	var out := stats.duplicate()
+	var nat: Dictionary = DataStore.nature(nature_name)
+	if nat.is_empty():
+		return out
+	var plus: Variant = nat.get("plus")
+	var minus: Variant = nat.get("minus")
+	if plus != null and str(plus) != "hp" and out.has(str(plus)):
+		out[str(plus)] = int(floor(float(out[str(plus)]) * 1.1))
+	if minus != null and str(minus) != "hp" and out.has(str(minus)):
+		out[str(minus)] = maxi(1, int(floor(float(out[str(minus)]) * 0.9)))
+	return out
+
+
+## Ability-aware defensive multiplier for an analysis dict: type chart x
+## ability immunity (immune:t / absorb:t -> 0) x ability resist (resist:t:f).
+static func def_mult(a: Dictionary, atk_type: String) -> float:
+	var m := DataStore.effectiveness(atk_type, a["types"])
+	for e in DataStore.ability(str(a.get("ability", ""))).get("effects", []):
+		var parts: Array = str(e).split(":")
+		if parts[0] in ["immune", "absorb"] and parts.size() >= 2 and str(parts[1]) == atk_type:
+			return 0.0
+		if parts[0] == "resist" and parts.size() >= 3 and str(parts[1]) == atk_type:
+			m *= float(parts[2])
+	return m
+
+
+## Attack types this analysis' ability makes it fully immune to.
+static func ability_immunities(a: Dictionary) -> Array:
+	var out: Array = []
+	for e in DataStore.ability(str(a.get("ability", ""))).get("effects", []):
+		var parts: Array = str(e).split(":")
+		if parts[0] in ["immune", "absorb"] and parts.size() >= 2:
+			out.append(str(parts[1]))
+	return out
 
 
 static func _nb(base_stat) -> float:

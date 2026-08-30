@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c2lgchkcomp01"]
+
+[ext_resource type="Script" path="res://screens/competition/league_check.gd" id="1"]
+
+[node name="LeagueCheck" type="Node"]
+script = ExtResource("1")
