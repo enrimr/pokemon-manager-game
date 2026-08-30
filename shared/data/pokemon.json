@@ -15,6 +15,7 @@
    "spe": 45
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Petal Dance",
    "Sleep Powder",
@@ -42,6 +43,7 @@
    "spe": 60
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Mega Drain",
    "Razor Leaf",
@@ -69,6 +71,7 @@
    "spe": 80
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Razor Leaf",
    "Petal Dance",
@@ -95,6 +98,7 @@
    "spe": 65
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Flame Wheel",
    "Ember",
@@ -119,6 +123,7 @@
    "spe": 80
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Fire Spin",
    "Ember",
@@ -144,6 +149,7 @@
    "spe": 100
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Ember",
    "Flame Wheel",
@@ -170,6 +176,7 @@
    "spe": 43
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Hydro Pump",
    "Waterfall",
@@ -194,6 +201,7 @@
    "spe": 58
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Hydro Pump",
    "Water Gun",
@@ -218,6 +226,7 @@
    "spe": 78
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Waterfall",
    "Water Gun",
@@ -242,6 +251,7 @@
    "spe": 45
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Pin Missile",
    "Leech Life",
@@ -266,6 +276,7 @@
    "spe": 30
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Pin Missile",
    "Leech Life",
@@ -291,6 +302,7 @@
    "spe": 70
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "String Shot",
    "Leech Life",
@@ -318,6 +330,7 @@
    "spe": 50
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "String Shot",
    "Twineedle",
@@ -345,6 +358,7 @@
    "spe": 35
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Twineedle",
    "Pin Missile",
@@ -372,6 +386,7 @@
    "spe": 75
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "String Shot",
    "Twineedle",
@@ -399,6 +414,7 @@
    "spe": 56
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Slash",
    "Headbutt",
@@ -425,6 +441,7 @@
    "spe": 71
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Hyper Beam",
    "Headbutt",
@@ -451,6 +468,7 @@
    "spe": 101
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Headbutt",
    "Swift",
@@ -476,6 +494,7 @@
    "spe": 72
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Swift",
    "Slash",
@@ -499,6 +518,7 @@
    "spe": 97
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Tackle",
    "Quick Attack",
@@ -523,6 +543,7 @@
    "spe": 70
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Double-Edge",
    "Body Slam",
@@ -549,6 +570,7 @@
    "spe": 100
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Swift",
    "Double-Edge",
@@ -574,6 +596,7 @@
    "spe": 55
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Sludge",
    "Toxic",
@@ -598,6 +621,7 @@
    "spe": 80
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Acid",
    "Sludge",
@@ -622,6 +646,7 @@
    "spe": 90
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Thunderbolt",
    "Quick Attack",
@@ -645,6 +670,7 @@
    "spe": 110
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Thunder Punch",
    "Thunderbolt",
@@ -669,6 +695,7 @@
    "spe": 40
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Earthquake",
    "Sand Attack",
@@ -693,6 +720,7 @@
    "spe": 65
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Dig",
    "Earthquake",
@@ -717,6 +745,7 @@
    "spe": 41
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Sludge",
    "Toxic",
@@ -741,6 +770,7 @@
    "spe": 56
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Smog",
    "Acid",
@@ -766,6 +796,7 @@
    "spe": 76
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Toxic",
    "Sludge",
@@ -792,6 +823,7 @@
    "spe": 50
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Sludge",
    "Acid",
@@ -816,6 +848,7 @@
    "spe": 65
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Acid",
    "Poison Sting",
@@ -841,6 +874,7 @@
    "spe": 85
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Poison Sting",
    "Smog",
@@ -867,6 +901,7 @@
    "spe": 35
   },
   "growth": "fast",
+  "evolves": true,
   "learnset": [
    "Quick Attack",
    "Body Slam",
@@ -890,6 +925,7 @@
    "spe": 60
   },
   "growth": "fast",
+  "evolves": false,
   "learnset": [
    "Headbutt",
    "Body Slam",
@@ -913,6 +949,7 @@
    "spe": 65
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Fire Spin",
    "Flamethrower",
@@ -937,6 +974,7 @@
    "spe": 100
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Fire Punch",
    "Ember",
@@ -961,6 +999,7 @@
    "spe": 20
   },
   "growth": "fast",
+  "evolves": true,
   "learnset": [
    "Hyper Beam",
    "Headbutt",
@@ -984,6 +1023,7 @@
    "spe": 45
   },
   "growth": "fast",
+  "evolves": false,
   "learnset": [
    "Quick Attack",
    "Slash",
@@ -1008,6 +1048,7 @@
    "spe": 55
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Poison Sting",
    "Sludge",
@@ -1035,6 +1076,7 @@
    "spe": 90
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Sludge",
    "Poison Sting",
@@ -1062,6 +1104,7 @@
    "spe": 30
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Vine Whip",
    "Mega Drain",
@@ -1089,6 +1132,7 @@
    "spe": 40
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Mega Drain",
    "Solar Beam",
@@ -1116,6 +1160,7 @@
    "spe": 50
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Solar Beam",
    "Petal Dance",
@@ -1143,6 +1188,7 @@
    "spe": 25
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Pin Missile",
    "String Shot",
@@ -1170,6 +1216,7 @@
    "spe": 30
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Twineedle",
    "String Shot",
@@ -1197,6 +1244,7 @@
    "spe": 45
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Leech Life",
    "Twineedle",
@@ -1224,6 +1272,7 @@
    "spe": 90
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Twineedle",
    "Pin Missile",
@@ -1250,6 +1299,7 @@
    "spe": 95
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Bone Club",
    "Earthquake",
@@ -1274,6 +1324,7 @@
    "spe": 120
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Dig",
    "Bone Club",
@@ -1298,6 +1349,7 @@
    "spe": 90
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Slash",
    "Double-Edge",
@@ -1321,6 +1373,7 @@
    "spe": 115
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Double-Edge",
    "Hyper Beam",
@@ -1344,6 +1397,7 @@
    "spe": 55
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Hydro Pump",
    "Bubble Beam",
@@ -1368,6 +1422,7 @@
    "spe": 85
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Surf",
    "Water Gun",
@@ -1392,6 +1447,7 @@
    "spe": 70
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Double Kick",
    "High Jump Kick",
@@ -1416,6 +1472,7 @@
    "spe": 95
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Submission",
    "Seismic Toss",
@@ -1440,6 +1497,7 @@
    "spe": 60
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Flame Wheel",
    "Flamethrower",
@@ -1464,6 +1522,7 @@
    "spe": 95
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Flame Wheel",
    "Fire Punch",
@@ -1488,6 +1547,7 @@
    "spe": 90
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Bubble Beam",
    "Water Gun",
@@ -1512,6 +1572,7 @@
    "spe": 90
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Bubble Beam",
    "Hydro Pump",
@@ -1537,6 +1598,7 @@
    "spe": 70
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Water Gun",
    "Hydro Pump",
@@ -1563,6 +1625,7 @@
    "spe": 90
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Confusion",
    "Agility",
@@ -1587,6 +1650,7 @@
    "spe": 105
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Hypnosis",
    "Psychic",
@@ -1611,6 +1675,7 @@
    "spe": 120
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Psychic",
    "Recover",
@@ -1634,6 +1699,7 @@
    "spe": 35
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Double Kick",
    "Low Kick",
@@ -1658,6 +1724,7 @@
    "spe": 45
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Submission",
    "Low Kick",
@@ -1682,6 +1749,7 @@
    "spe": 55
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Karate Chop",
    "Submission",
@@ -1706,6 +1774,7 @@
    "spe": 40
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Vine Whip",
    "Petal Dance",
@@ -1733,6 +1802,7 @@
    "spe": 55
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Vine Whip",
    "Petal Dance",
@@ -1760,6 +1830,7 @@
    "spe": 70
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Mega Drain",
    "Stun Spore",
@@ -1787,6 +1858,7 @@
    "spe": 70
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Waterfall",
    "Hydro Pump",
@@ -1814,6 +1886,7 @@
    "spe": 100
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Waterfall",
    "Surf",
@@ -1841,6 +1914,7 @@
    "spe": 20
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Rock Slide",
    "Rock Throw",
@@ -1867,6 +1941,7 @@
    "spe": 35
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Rock Slide",
    "Rock Throw",
@@ -1893,6 +1968,7 @@
    "spe": 45
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Rock Throw",
    "Rock Slide",
@@ -1918,6 +1994,7 @@
    "spe": 90
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Fire Spin",
    "Fire Blast",
@@ -1942,6 +2019,7 @@
    "spe": 105
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Fire Blast",
    "Fire Spin",
@@ -1967,6 +2045,7 @@
    "spe": 15
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Bubble Beam",
    "Surf",
@@ -1994,6 +2073,7 @@
    "spe": 30
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Waterfall",
    "Hydro Pump",
@@ -2020,6 +2100,7 @@
    "spe": 45
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Thunder Shock",
    "Thunder",
@@ -2044,6 +2125,7 @@
    "spe": 70
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Thunder Wave",
    "Thunder",
@@ -2069,6 +2151,7 @@
    "spe": 60
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Double-Edge",
    "Headbutt",
@@ -2095,6 +2178,7 @@
    "spe": 75
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Headbutt",
    "Body Slam",
@@ -2121,6 +2205,7 @@
    "spe": 110
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Body Slam",
    "Slash",
@@ -2146,6 +2231,7 @@
    "spe": 45
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Bubble Beam",
    "Waterfall",
@@ -2171,6 +2257,7 @@
    "spe": 70
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Surf",
    "Water Gun",
@@ -2197,6 +2284,7 @@
    "spe": 25
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Sludge",
    "Smog",
@@ -2221,6 +2309,7 @@
    "spe": 50
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Acid",
    "Toxic",
@@ -2245,6 +2334,7 @@
    "spe": 40
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Water Gun",
    "Waterfall",
@@ -2270,6 +2360,7 @@
    "spe": 70
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Bubble Beam",
    "Waterfall",
@@ -2297,6 +2388,7 @@
    "spe": 80
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Lick",
    "Confuse Ray",
@@ -2324,6 +2416,7 @@
    "spe": 95
   },
   "growth": "medium_slow",
+  "evolves": true,
   "learnset": [
    "Confuse Ray",
    "Lick",
@@ -2351,6 +2444,7 @@
    "spe": 110
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Night Shade",
    "Confuse Ray",
@@ -2376,6 +2470,7 @@
    "spe": 70
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Rock Throw",
    "Rock Slide",
@@ -2401,6 +2496,7 @@
    "spe": 42
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Confusion",
    "Hypnosis",
@@ -2425,6 +2521,7 @@
    "spe": 67
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Recover",
    "Confusion",
@@ -2449,6 +2546,7 @@
    "spe": 50
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Waterfall",
    "Surf",
@@ -2473,6 +2571,7 @@
    "spe": 75
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Hydro Pump",
    "Waterfall",
@@ -2497,6 +2596,7 @@
    "spe": 100
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Thunder",
    "Thunder Punch",
@@ -2521,6 +2621,7 @@
    "spe": 150
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Thunder Wave",
    "Thunder Shock",
@@ -2546,6 +2647,7 @@
    "spe": 40
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Sleep Powder",
    "Stun Spore",
@@ -2573,6 +2675,7 @@
    "spe": 55
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Razor Leaf",
    "Solar Beam",
@@ -2598,6 +2701,7 @@
    "spe": 35
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Earthquake",
    "Bone Club",
@@ -2622,6 +2726,7 @@
    "spe": 45
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Sand Attack",
    "Bone Club",
@@ -2646,6 +2751,7 @@
    "spe": 87
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Double Kick",
    "Karate Chop",
@@ -2670,6 +2776,7 @@
    "spe": 76
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Double Kick",
    "Low Kick",
@@ -2694,6 +2801,7 @@
    "spe": 30
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Hyper Beam",
    "Quick Attack",
@@ -2717,6 +2825,7 @@
    "spe": 35
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Poison Sting",
    "Smog",
@@ -2741,6 +2850,7 @@
    "spe": 60
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Toxic",
    "Smog",
@@ -2766,6 +2876,7 @@
    "spe": 25
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Bone Club",
    "Dig",
@@ -2792,6 +2903,7 @@
    "spe": 40
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Bone Club",
    "Earthquake",
@@ -2817,6 +2929,7 @@
    "spe": 50
   },
   "growth": "fast",
+  "evolves": false,
   "learnset": [
    "Soft-Boiled",
    "Body Slam",
@@ -2840,6 +2953,7 @@
    "spe": 60
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Solar Beam",
    "Sleep Powder",
@@ -2864,6 +2978,7 @@
    "spe": 90
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Hyper Beam",
    "Quick Attack",
@@ -2887,6 +3002,7 @@
    "spe": 60
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Surf",
    "Water Gun",
@@ -2911,6 +3027,7 @@
    "spe": 85
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Hydro Pump",
    "Waterfall",
@@ -2935,6 +3052,7 @@
    "spe": 63
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Bubble Beam",
    "Waterfall",
@@ -2959,6 +3077,7 @@
    "spe": 68
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Waterfall",
    "Water Gun",
@@ -2983,6 +3102,7 @@
    "spe": 85
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Surf",
    "Water Gun",
@@ -3008,6 +3128,7 @@
    "spe": 115
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Water Gun",
    "Waterfall",
@@ -3034,6 +3155,7 @@
    "spe": 90
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Psychic",
    "Hypnosis",
@@ -3059,6 +3181,7 @@
    "spe": 105
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "String Shot",
    "Twineedle",
@@ -3086,6 +3209,7 @@
    "spe": 95
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Icy Wind",
    "Blizzard",
@@ -3112,6 +3236,7 @@
    "spe": 105
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Thunder Shock",
    "Thunder Wave",
@@ -3136,6 +3261,7 @@
    "spe": 93
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Flamethrower",
    "Fire Punch",
@@ -3160,6 +3286,7 @@
    "spe": 85
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "String Shot",
    "Leech Life",
@@ -3184,6 +3311,7 @@
    "spe": 110
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Tackle",
    "Headbutt",
@@ -3207,6 +3335,7 @@
    "spe": 80
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Splash",
    "Tackle",
@@ -3230,6 +3359,7 @@
    "spe": 81
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Water Gun",
    "Waterfall",
@@ -3257,6 +3387,7 @@
    "spe": 60
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Bubble Beam",
    "Surf",
@@ -3283,6 +3414,7 @@
    "spe": 48
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Quick Attack",
    "Tackle",
@@ -3306,6 +3438,7 @@
    "spe": 55
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Body Slam",
    "Double-Edge",
@@ -3329,6 +3462,7 @@
    "spe": 65
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Surf",
    "Hydro Pump",
@@ -3353,6 +3487,7 @@
    "spe": 130
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Thunder Punch",
    "Thunderbolt",
@@ -3377,6 +3512,7 @@
    "spe": 65
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Fire Punch",
    "Flame Wheel",
@@ -3401,6 +3537,7 @@
    "spe": 40
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Quick Attack",
    "Headbutt",
@@ -3425,6 +3562,7 @@
    "spe": 35
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Rock Slide",
    "Rock Throw",
@@ -3451,6 +3589,7 @@
    "spe": 55
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Rock Slide",
    "Rock Throw",
@@ -3477,6 +3616,7 @@
    "spe": 55
   },
   "growth": "medium_fast",
+  "evolves": true,
   "learnset": [
    "Rock Throw",
    "Rock Slide",
@@ -3503,6 +3643,7 @@
    "spe": 80
   },
   "growth": "medium_fast",
+  "evolves": false,
   "learnset": [
    "Rock Throw",
    "Rock Slide",
@@ -3529,6 +3670,7 @@
    "spe": 130
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Rock Throw",
    "Rock Slide",
@@ -3554,6 +3696,7 @@
    "spe": 30
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Body Slam",
    "Rest",
@@ -3578,6 +3721,7 @@
    "spe": 85
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Aurora Beam",
    "Blizzard",
@@ -3605,6 +3749,7 @@
    "spe": 100
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Thunderbolt",
    "Thunder Wave",
@@ -3632,6 +3777,7 @@
    "spe": 90
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Fire Spin",
    "Ember",
@@ -3658,6 +3804,7 @@
    "spe": 50
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Dragon Breath",
    "Outrage",
@@ -3681,6 +3828,7 @@
    "spe": 70
   },
   "growth": "slow",
+  "evolves": true,
   "learnset": [
    "Dragon Rage",
    "Outrage",
@@ -3705,6 +3853,7 @@
    "spe": 80
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Outrage",
    "Wing Attack",
@@ -3729,6 +3878,7 @@
    "spe": 130
   },
   "growth": "slow",
+  "evolves": false,
   "learnset": [
    "Psychic",
    "Recover",
@@ -3753,6 +3903,7 @@
    "spe": 100
   },
   "growth": "medium_slow",
+  "evolves": false,
   "learnset": [
    "Psychic",
    "Surf",

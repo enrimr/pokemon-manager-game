@@ -66,17 +66,26 @@ func _draw() -> void:
 	for i in range(n - 1):
 		var p0 := line_pts[i]
 		var p1 := line_pts[i + 1]
-		var avg := (float(points[i]["v"]) + float(points[i + 1]["v"])) * 0.5
-		var col := (COL_US if avg >= 0.0 else COL_THEM)
-		col.a = 0.22
-		var poly := PackedVector2Array([p0, p1, Vector2(p1.x, mid), Vector2(p0.x, mid)])
-		draw_colored_polygon(poly, col)
+		if (p0.y - mid) * (p1.y - mid) < 0.0:
+			# crosses the axis — split into two triangles (a single quad self-intersects)
+			var tf := (mid - p0.y) / (p1.y - p0.y)
+			var xc := p0.x + (p1.x - p0.x) * tf
+			_fill_tri(p0, Vector2(xc, mid), Vector2(p0.x, mid), p0.y < mid)
+			_fill_tri(Vector2(xc, mid), p1, Vector2(p1.x, mid), p1.y < mid)
+		else:
+			if absf(p0.y - mid) < 0.5 and absf(p1.y - mid) < 0.5:
+				continue  # zero-area — triangulation would fail
+			var above := (p0.y + p1.y) * 0.5 < mid
+			var col := (COL_US if above else COL_THEM)
+			col.a = 0.22
+			draw_colored_polygon(PackedVector2Array(
+				[p0, p1, Vector2(p1.x, mid), Vector2(p0.x, mid)]), col)
 	# color line per-segment
 	for i in range(n - 1):
 		var avg2 := (float(points[i]["v"]) + float(points[i + 1]["v"])) * 0.5
 		draw_line(line_pts[i], line_pts[i + 1], COL_US if avg2 >= 0.0 else COL_THEM, 2.0, true)
 
-	# faint marks
+	# faint marks (helper above draws the area fills)
 	for m in faint_marks:
 		var idx := int(m["idx"])
 		if idx < 0 or idx >= n:
@@ -87,3 +96,13 @@ func _draw() -> void:
 
 	# live head
 	draw_circle(line_pts[n - 1], 3.0, Color("f2f4fa"))
+
+
+func _fill_tri(a: Vector2, b: Vector2, c: Vector2, above: bool) -> void:
+	## Area-fill triangle; skipped when degenerate.
+	var area := absf((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y))
+	if area < 0.75:
+		return
+	var col := COL_US if above else COL_THEM
+	col.a = 0.22
+	draw_colored_polygon(PackedVector2Array([a, b, c]), col)

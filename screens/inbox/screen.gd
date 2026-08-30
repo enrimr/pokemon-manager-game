@@ -7,11 +7,13 @@ const NewsGen := preload("res://screens/inbox/news_gen.gd")
 const ReportGen := preload("res://screens/inbox/report_gen.gd")
 const BoardRoom := preload("res://screens/inbox/board_room.gd")
 const Economy := preload("res://screens/inbox/economy.gd")
+const PeopleGen := preload("res://screens/inbox/people_gen.gd")
 
 var news: RefCounted
 var reports: RefCounted
 var board: RefCounted            # board_room.gd — live board request system
 var economy: RefCounted          # economy.gd — real operating cash flow
+var people: RefCounted           # people_gen.gd — people & media layer
 var _bold: FontVariation
 
 var _tab := 0                    # 0 = inbox, 1 = board & finances
@@ -43,9 +45,11 @@ func _ready() -> void:
 	economy = Economy.new(news)
 	board = BoardRoom.new(news)
 	board.economy = economy
+	people = PeopleGen.new(news)
 	reports = ReportGen.new(news)
 	reports.board = board
 	reports.economy = economy
+	reports.people = people
 	_bold = FontVariation.new()
 	_bold.base_font = ThemeDB.fallback_font
 	_bold.variation_embolden = 0.75
@@ -91,6 +95,7 @@ func _refresh_data() -> void:
 	_suspend = true
 	news.enrich_existing()
 	news.generate()
+	people.generate() # rival mind-games, press pieces, coach notes, awards
 	economy.tick() # settle wages / gates / prize money before the board looks
 	board.tick()   # answer any board requests whose deliberation is due
 	_suspend = false
@@ -169,7 +174,7 @@ func _build_inbox_pane() -> Control:
 	var frow := HBoxContainer.new()
 	frow.add_theme_constant_override("separation", 4)
 	left.add_child(frow)
-	for cat in ["all", "match", "cup", "scout", "transfer", "board"]:
+	for cat in ["all", "match", "cup", "media", "staff", "scout", "transfer", "board"]:
 		var b := Button.new()
 		b.toggle_mode = true
 		b.custom_minimum_size = Vector2(0, 26)
@@ -248,7 +253,7 @@ func _update_summary() -> void:
 	var unread := GameState.unread_inbox_count()
 	var urgent := 0
 	for m in GameState.inbox:
-		if m.get("urgent", false) and (not m.get("read", false) or m.has("offer_id")):
+		if m.get("urgent", false) and (not m.get("read", false) or _needs_decision(m)):
 			urgent += 1
 	_summary_lbl.text = "%d messages · %d unread%s" % [total, unread,
 		(" · %d URGENT" % urgent) if urgent > 0 else ""]
@@ -288,8 +293,8 @@ func _rebuild_list() -> void:
 	for m in GameState.inbox:
 		var c: String = m.get("cat", "board")
 		counts[c] = int(counts.get(c, 0)) + 1
-	var caps := {"all": "All", "match": "Match", "cup": "Cup", "scout": "Scout",
-		"transfer": "Transfer", "board": "Board"}
+	var caps := {"all": "All", "match": "Match", "cup": "Cup", "media": "Press",
+		"staff": "Coach", "scout": "Scout", "transfer": "Transfer", "board": "Board"}
 	for cat in _filter_btns:
 		var btn: Button = _filter_btns[cat]
 		btn.text = "%s %d" % [caps[cat], int(counts.get(cat, 0))]
@@ -309,7 +314,7 @@ func _rebuild_list() -> void:
 		# FM-style: open on the item that still needs a decision, else newest
 		_selected = msgs[0]
 		for m in msgs:
-			if m.get("urgent", false) and m.has("offer_id"):
+			if m.get("urgent", false) and _needs_decision(m):
 				_selected = m
 				break
 		_mark_read(_selected)
@@ -323,8 +328,8 @@ func _make_row(m: Dictionary) -> Button:
 	var cat: String = m.get("cat", "board")
 	var meta: Dictionary = NewsGen.CATS.get(cat, NewsGen.CATS["board"])
 	var unread: bool = not m.get("read", false)
-	# live-market offers demand a decision until resolved, read or not
-	var decision: bool = m.get("urgent", false) and m.has("offer_id")
+	# live offers and unanswered people-mail demand a decision, read or not
+	var decision: bool = m.get("urgent", false) and _needs_decision(m)
 	var urgent: bool = decision or (m.get("urgent", false) and unread)
 	var selected: bool = m == _selected
 
@@ -459,6 +464,16 @@ func _on_row_pressed(m: Dictionary) -> void:
 	_update_summary()
 
 
+## Items whose urgency means "the manager still owes an answer": live market
+## offers, unanswered mind-games, and open squad-welfare complaints.
+func _needs_decision(m: Dictionary) -> bool:
+	if m.has("offer_id"):
+		return true
+	var uid := str(m.get("uid", ""))
+	return (uid.begins_with("mind:") or uid.begins_with("monlow:")) \
+		and str(m.get("replied", "")) == ""
+
+
 func _mark_read(m: Dictionary) -> void:
 	# NOTE: reading a live offer does NOT clear its urgency — the flag means
 	# "a decision is still required" and only resolving the offer clears it.
@@ -479,7 +494,7 @@ func _delete_read() -> void:
 	# never sweep away an unresolved decision item
 	var keep: Array = GameState.inbox.filter(func(m):
 		return not m.get("read", false) or m == _selected \
-			or (m.get("urgent", false) and m.has("offer_id")))
+			or (m.get("urgent", false) and _needs_decision(m)))
 	GameState.inbox.assign(keep)
 	if not GameState.inbox.has(_selected):
 		_selected = {}
@@ -536,7 +551,7 @@ func _render_reading_pane() -> void:
 	hv.add_child(fromline)
 	if m.get("urgent", false):
 		var u := Label.new()
-		u.text = "DECISION REQUIRED" if m.has("offer_id") else "URGENT"
+		u.text = "DECISION REQUIRED" if _needs_decision(m) else "URGENT"
 		u.add_theme_font_override("font", _bold)
 		u.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		head.add_child(u)
@@ -623,8 +638,22 @@ func _decision_button(a: Dictionary) -> Button:
 	b.add_theme_stylebox_override("normal", ThemeBuilder._flat(Color(col, 0.20), col, 4, 12, 6))
 	b.add_theme_stylebox_override("hover", ThemeBuilder._flat(Color(col, 0.38), col, 4, 12, 6))
 	b.add_theme_stylebox_override("pressed", ThemeBuilder._flat(Color(col, 0.5), col, 4, 12, 6))
-	b.pressed.connect(_on_offer_decision.bind(a))
+	if str(a.get("kind", "")) == "reply":
+		b.pressed.connect(_on_people_reply.bind(a))
+	else:
+		b.pressed.connect(_on_offer_decision.bind(a))
 	return b
+
+
+## A reply to a person (rival manager, coach note) — moves real morale values.
+func _on_people_reply(a: Dictionary) -> void:
+	if _selected.is_empty():
+		return
+	var res: Dictionary = people.apply_reply(_selected, a)
+	_action_note = str(res.get("note", ""))
+	_action_note_col = ThemeBuilder.COL_GOOD if res.get("good", true) else ThemeBuilder.COL_WARN
+	_refresh_data()
+	_rebuild_all()
 
 
 ## Execute an offer decision against the transfers market's live ledger.

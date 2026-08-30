@@ -62,6 +62,57 @@ static func dot_icon(col: Color, d: int = 11) -> ImageTexture:
 	return tex
 
 
+## Row of small colored circles (availability flags). Cached by color list.
+static func dots_icon(cols: Array, d: int = 10, gap: int = 3) -> ImageTexture:
+	var key := "dots:%s:%d" % [",".join(cols.map(func(c): return (c as Color).to_html())), d]
+	if _icon_cache.has(key):
+		return _icon_cache[key]
+	var w := cols.size() * d + maxi(cols.size() - 1, 0) * gap
+	var img := Image.create(maxi(w, 1), d, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var r := d / 2.0 - 0.5
+	for i in cols.size():
+		var col: Color = cols[i]
+		var ox := i * (d + gap)
+		var c := (d - 1) / 2.0
+		for x in d:
+			for y in d:
+				var dist := Vector2(x - c, y - c).length()
+				if dist <= r:
+					img.set_pixel(ox + x, y, col if dist <= r - 1.0 else col.darkened(0.3))
+	var tex := ImageTexture.create_from_image(img)
+	_icon_cache[key] = tex
+	return tex
+
+
+static func rarity_color(rarity: String) -> Color:
+	match rarity:
+		"rare": return COL_ACCENT.lightened(0.15)
+		"uncommon": return COL_GOOD
+	return Color("9aa0b5")
+
+
+## Item letter badge: small rounded square, rarity-colored border, item initial.
+static func item_badge(item: Dictionary, size: int = 20, font_size: int = 11) -> Control:
+	var p := PanelContainer.new()
+	p.custom_minimum_size = Vector2(size, size)
+	var c := rarity_color(str(item.get("rarity", "common")))
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = c.darkened(0.72)
+	sb.border_color = c
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	p.add_theme_stylebox_override("panel", sb)
+	var l := Label.new()
+	l.text = str(item.get("name", "?")).substr(0, 1).to_upper()
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	l.add_theme_font_size_override("font_size", font_size)
+	l.add_theme_color_override("font_color", c.lightened(0.25))
+	p.add_child(l)
+	return p
+
+
 ## Type badge control: colored pill with uppercase type name.
 static func type_badge(t: String, font_size: int = 11) -> Control:
 	var p := PanelContainer.new()

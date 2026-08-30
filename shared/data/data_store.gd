@@ -7,6 +7,7 @@ var pokemon: Array = []            # Array[Dictionary], indexed list of species
 var pokemon_by_id: Dictionary = {} # int id -> species dict
 var pokemon_by_name: Dictionary = {}
 var moves: Dictionary = {}         # move name -> move dict
+var items: Dictionary = {}         # item id -> item dict (see items.json)
 var types: Array = []
 var type_chart: Dictionary = {}    # attacker -> {defender: mult}
 
@@ -29,10 +30,11 @@ func _load_all() -> void:
 		pokemon_by_id[int(p["id"])] = p
 		pokemon_by_name[p["name"]] = p
 	moves = _load_json("res://shared/data/moves.json")
+	items = _load_json("res://shared/data/items.json")
 	var tc: Dictionary = _load_json("res://shared/data/typechart.json")
 	types = tc["types"]
 	type_chart = tc["chart"]
-	print("DataStore: %d species, %d moves, %d types" % [pokemon.size(), moves.size(), types.size()])
+	print("DataStore: %d species, %d moves, %d items, %d types" % [pokemon.size(), moves.size(), items.size(), types.size()])
 
 
 func _load_json(path: String) -> Variant:
@@ -53,6 +55,31 @@ func species(id: int) -> Dictionary:
 
 func move(name: String) -> Dictionary:
 	return moves.get(name, {})
+
+
+## Item by id ({} if unknown). Item dict:
+## {id, name, class: "held"|"usable", price, rarity, effects:[tags], desc}
+func item(id: String) -> Dictionary:
+	return items.get(id, {})
+
+
+func item_name(id: String) -> String:
+	return str(items.get(id, {}).get("name", id))
+
+
+## All items as an Array, held first, then by price descending.
+func items_list(cls: String = "") -> Array:
+	var out: Array = []
+	for it in items.values():
+		if cls == "" or str(it["class"]) == cls:
+			out.append(it)
+	out.sort_custom(func(a, b):
+		if a["class"] != b["class"]:
+			return str(a["class"]) < str(b["class"])   # "held" < "usable"
+		if int(a["price"]) != int(b["price"]):
+			return int(a["price"]) > int(b["price"])
+		return str(a["name"]) < str(b["name"]))
+	return out
 
 
 ## Effectiveness multiplier of an attack type against a list of defender types.
@@ -90,6 +117,7 @@ func make_battler(inst: Dictionary) -> Dictionary:
 	var mv: Array = inst.get("moves", [])
 	if mv.is_empty():
 		mv = (sp["learnset"] as Array).slice(0, 4)
+	var held: Variant = inst.get("held_item")
 	return {
 		"uid": inst.get("uid", ""),
 		"name": inst.get("nickname") if inst.get("nickname") else sp["name"],
@@ -98,4 +126,6 @@ func make_battler(inst: Dictionary) -> Dictionary:
 		"level": lvl,
 		"stats": stats,
 		"moves": mv,
+		"held_item": str(held) if held != null and str(held) != "" else "",
+		"nfe": bool(sp.get("evolves", false)),
 	}

@@ -14,6 +14,7 @@ const C_WHITE := "e8ebf5"
 var news: RefCounted           # news_gen.gd instance (shared helpers)
 var board: RefCounted          # board_room.gd instance (set by screen.gd)
 var economy: RefCounted        # economy.gd instance (set by screen.gd)
+var people: RefCounted         # people_gen.gd instance (set by screen.gd)
 var _resim_cache: Dictionary = {}
 
 
@@ -35,6 +36,10 @@ func render(msg: Dictionary) -> Dictionary:
 			return _scout_report(msg)
 		"transfer":
 			return _transfer_offer(msg)
+		"media", "staff":
+			if people != null:
+				return people.render(msg)
+			return _plain(msg)
 		"board":
 			if uid == "board:preseason" or uid == "board:welcome":
 				return _board_preseason(msg)

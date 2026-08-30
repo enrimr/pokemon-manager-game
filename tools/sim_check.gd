@@ -56,6 +56,66 @@ func _run() -> void:
 		steps += 1
 	_check(e4.is_over(), "step-mode battle finishes (turns=%d)" % e4.turn)
 
+	print("=== sim_check: items — held effects, use_item, determinism ===")
+	_check(DataStore.items.size() >= 40, "item catalog loaded (%d items)" % DataStore.items.size())
+	var held_n: int = DataStore.items_list("held").size()
+	var usable_n: int = DataStore.items_list("usable").size()
+	_check(held_n >= 20 and usable_n >= 15, "both classes present (%d held / %d usable)" % [held_n, usable_n])
+
+	# held effect fires: damaged Leftovers holder regains HP at end of turn
+	var e5 := BattleEngine.new([_mk(113, 60, "leftovers")], [_mk(129, 10, null), _mk(129, 10, null)], 4242)
+	e5.active_battler(0)["hp"] = int(e5.active_battler(0)["max_hp"] / 2.0)
+	var hp_before: int = int(e5.active_battler(0)["hp"])
+	var evs5 := e5.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
+	_check(evs5.any(func(ev): return ev["t"] == "held_item" and ev["effect"] == "end_turn_heal"),
+		"Leftovers emits held_item at end of turn")
+	_check(int(e5.active_battler(0)["hp"]) > hp_before, "Leftovers holder regained HP")
+
+	# use_item: legal action, costs the turn, consumes from the battle bag
+	var e6 := BattleEngine.new([_mk(113, 50, null)], [_mk(129, 10, null), _mk(129, 10, null)], 555)
+	e6.set_inventory(0, {"super_potion": 2})
+	e6.active_battler(0)["hp"] = 100
+	var la6 := e6.legal_actions(0)
+	_check(la6.any(func(a): return a["type"] == "use_item" and a["item"] == "super_potion"),
+		"legal_actions offers use_item when stocked")
+	var evs6 := e6.step_turn({"type": "use_item", "item": "super_potion", "target": 0}, {"type": "move", "index": 0})
+	_check(evs6.any(func(ev): return ev["t"] == "item_used" and ev["item"] == "super_potion"),
+		"use_item emits item_used")
+	_check(not evs6.any(func(ev): return ev["t"] == "move_used" and int(ev["side"]) == 0),
+		"use_item costs the side's turn (no move used)")
+	_check(int(e6.active_battler(0)["hp"]) > 100, "potion healed the target")
+	_check(int(e6.inventory(0).get("super_potion", 0)) == 1, "battle bag decremented")
+	_check(e6.items_used(0) == 1, "items_used counter tracks usage")
+
+	# Choice item locks the first move used
+	var e7 := BattleEngine.new([_mk(6, 50, "choice_band")], [_mk(113, 50, null)], 777)
+	e7.step_turn({"type": "move", "index": 1}, {"type": "move", "index": 0})
+	var move_acts7: Array = e7.legal_actions(0).filter(func(a): return a["type"] == "move")
+	_check(move_acts7.size() == 1 and int(move_acts7[0]["index"]) == 1,
+		"Choice Band locks legal moves to the first used")
+
+	# determinism with held items + AI trainer-item usage
+	var bag := {"super_potion": 2, "full_heal": 1}
+	var d_events := []
+	var d_winner := []
+	var d_used := []
+	for rep in 2:
+		var ti1: Array = [_mk(6, 50, "life_orb"), _mk(9, 50, "leftovers"), _mk(65, 50, "focus_sash")]
+		var ti2: Array = [_mk(59, 50, "choice_band"), _mk(103, 50, "sitrus_berry"), _mk(131, 50, "assault_vest")]
+		var d := BattleEngine.new(ti1, ti2, 31337)
+		d.set_inventory(0, bag)
+		d.set_inventory(1, bag)
+		d.run_to_end()
+		d_events.append(d.events.size())
+		d_winner.append(d.winner())
+		d_used.append(d.items_used(0) + d.items_used(1))
+		if rep == 0:
+			_check(d.events.any(func(ev): return ev["t"] == "held_item"),
+				"held-item effects fire in an AI battle")
+			_check(d.items_used(0) <= 2 and d.items_used(1) <= 2, "AI respects item budget (max 2)")
+	_check(d_events[0] == d_events[1] and d_winner[0] == d_winner[1] and d_used[0] == d_used[1],
+		"same seed + same bags => identical battle with items (%d events, %d items used)" % [d_events[0], d_used[0]])
+
 	print("=== sim_check: 50-day season fast-forward ===")
 	var start_date: String = GameState.current_date
 	for i in 50:
@@ -93,6 +153,27 @@ func _run() -> void:
 	_check(before_next.get("id") != GameState.next_player_fixture().get("id"),
 		"advance_to_next_event processed the next player fixture")
 
+	print("=== sim_check: items — club economy ===")
+	var pc: Dictionary = GameState.player_club()
+	var bal0 := int(pc["finances"]["balance"])
+	_check(GameState.buy_item("leftovers", 1) == "", "buy_item succeeds")
+	_check(int(pc["finances"]["balance"]) == bal0 - int(DataStore.item("leftovers")["price"]),
+		"purchase deducted from club balance")
+	_check(int(GameState.player_inventory().get("leftovers", 0)) >= 1, "storeroom stocked")
+	_check(GameState.buy_item("max_revive", 999999) != "", "over-budget purchase rejected")
+	var uid0: String = str(pc["squad"][0]["uid"])
+	_check(GameState.assign_held_item(uid0, "leftovers") == "", "assign_held_item equips")
+	_check(str(pc["squad"][0]["held_item"]) == "leftovers", "held slot set on instance")
+	_check(GameState.unassign_held_item(uid0) == "", "unassign_held_item")
+	_check(int(GameState.player_inventory().get("leftovers", 0)) >= 1, "item returned to storeroom")
+	var equipped := 0
+	for c in GameState.world["clubs"]:
+		for m in c["squad"]:
+			if m.get("held_item") != null and str(m.get("held_item", "")) != "":
+				equipped += 1
+	_check(equipped >= 10, "AI squads carry starting held items (%d equipped league-wide)" % equipped)
+	var inv_before_save: String = _inv_norm(GameState.player_inventory())
+
 	print("=== sim_check: save/load roundtrip ===")
 	var date_before_save: String = GameState.current_date
 	var fixtures_count := GameState.fixtures.size()
@@ -101,6 +182,8 @@ func _run() -> void:
 	_check(GameState.load_game(), "load_game succeeds")
 	_check(GameState.current_date == date_before_save, "loaded date matches (%s)" % GameState.current_date)
 	_check(GameState.fixtures.size() == fixtures_count, "loaded fixture count matches (%d)" % fixtures_count)
+	_check(_inv_norm(GameState.player_inventory()) == inv_before_save,
+		"loaded item inventory matches")
 	GameState.delete_save()
 
 	if _fail:
@@ -115,3 +198,20 @@ func _check_quiet(cond: bool, what: String) -> void:
 	if not cond:
 		printerr("  FAIL: %s" % what)
 		_fail = true
+
+
+## Sorted, int-normalized inventory fingerprint (JSON floats vs ints).
+func _inv_norm(inv: Dictionary) -> String:
+	var keys := inv.keys()
+	keys.sort()
+	var parts: Array = []
+	for k in keys:
+		parts.append("%s=%d" % [str(k), int(inv[k])])
+	return ",".join(parts)
+
+
+## Quick battler factory for item tests (moves default to the learnset).
+func _mk(species_id: int, level: int, held: Variant) -> Dictionary:
+	return DataStore.make_battler({"uid": "t%d_%s" % [species_id, str(held)],
+		"species_id": species_id, "nickname": null, "level": level,
+		"ivs": {}, "moves": [], "held_item": held})

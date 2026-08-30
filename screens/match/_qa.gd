@@ -29,8 +29,13 @@ func _run() -> void:
 	GameState.current_date = str(f["date"])
 	_check(not MatchRunner.pending_fixture().is_empty(), "pending_fixture sees due fixture")
 
+	# guarantee an always-legal usable item (xstat targets the active slot)
+	var buy_err: String = GameState.buy_item("x_attack", 1)
+	_check(buy_err == "", "bought X Attack for the match bag (%s)" % ("ok" if buy_err == "" else buy_err))
+
 	var r = MatchRunner.begin(f)
 	_check(r.phase == MatchRunner.Phase.PRE, "runner starts in PRE")
+	_check(bool(r.policy["full_control"]), "manual combat is the default policy")
 	_check(r.starting_six.size() == 6, "default starting six picked")
 	_check(r.opp_six.size() == 6, "opponent six scouted")
 
@@ -43,7 +48,12 @@ func _run() -> void:
 	_check(r.vm["teams"][r.player_side][0]["name"] == DataStore.make_battler(r.starting_six[0])["name"],
 		"lead honours adjusted order")
 
-	# touchline policies while consuming
+	# bags wired into the engine
+	_check(not r.series_bag[r.player_side].is_empty(), "player match bag loaded (%s)" % str(r.series_bag[r.player_side]))
+	_check(int(r.engine.inventory(r.player_side).get("x_attack", 0)) >= 1, "engine sees the bag")
+
+	# touchline policies while consuming (watch mode)
+	r.set_policy("full_control", false)
 	r.set_policy("aggression", "attacking")
 	var consumed := 0
 	while consumed < 25:
@@ -83,16 +93,39 @@ func _run() -> void:
 		var acts: Array = r.available_actions()
 		_check(acts.size() > 0, "available_actions non-empty (%d)" % acts.size())
 		var has_preview := false
+		var item_act := {}
 		for a in acts:
 			if a["type"] == "move" and not a.get("preview", {}).is_empty():
 				has_preview = true
+			if a["type"] == "use_item" and item_act.is_empty():
+				item_act = a
 		_check(has_preview, "move previews present")
-		r.submit_action(acts[0])
+		_check(not item_act.is_empty(), "use_item action offered (%s)" % str(item_act.get("item", "")))
+		if not item_act.is_empty():
+			var bag_before: int = int(r.series_bag[r.player_side].get(str(item_act["item"]), 0))
+			r.submit_action({"type": "use_item", "item": str(item_act["item"]),
+				"target": int(item_act["target"])})
+			var saw_item_used := false
+			for i in 60:
+				var e3: Dictionary = r.consume_next()
+				if e3.is_empty():
+					break
+				if str(e3.get("t")) == "item_used" and int(e3.get("side", -1)) == r.player_side:
+					saw_item_used = true
+					break
+			_check(saw_item_used, "item_used event replayed for our side")
+			_check(int(r.series_bag[r.player_side].get(str(item_act["item"]), 0)) == bag_before - 1,
+				"series bag decremented")
+			_check(int(r.used_items[r.player_side].get(str(item_act["item"]), 0)) >= 1,
+				"used_items records the spend")
+		else:
+			r.submit_action(acts[0])
 		_check(r.live_state == MatchRunner.LiveState.REPLAYING, "submit resumes replay")
 	r.set_policy("full_control", false)
 
 	# run out the series
 	var inbox_before: int = GameState.inbox.size()
+	var store_before: Dictionary = GameState.player_inventory().duplicate(true)
 	r.skip_series()
 	_check(r.phase == MatchRunner.Phase.POST, "series ends in POST")
 	_check(r.series_decided(), "series decided %d-%d" % [r.wins[0], r.wins[1]])
@@ -100,6 +133,12 @@ func _run() -> void:
 	_check(int(f["score_home"]) == r.wins[0] and int(f["score_away"]) == r.wins[1],
 		"fixture score matches watched result")
 	_check(GameState.inbox.size() == inbox_before + 1, "match report added to inbox")
+	var consumed_ok := true
+	for iid in r.used_items[r.player_side]:
+		var expect: int = int(store_before.get(str(iid), 0)) - int(r.used_items[r.player_side][iid])
+		if int(GameState.player_inventory().get(str(iid), 0)) != maxi(0, expect):
+			consumed_ok = false
+	_check(consumed_ok, "club store debited for items used (%s)" % str(r.used_items[r.player_side]))
 	_check(str(GameState.inbox[0]["title"]).begins_with("Match report"), "report title correct")
 	var in_table := false
 	for row in GameState.league_table():

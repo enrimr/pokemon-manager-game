@@ -33,6 +33,10 @@ static func is_key_event(e: Dictionary) -> bool:
 			return str(e.get("status", "")) in ["sleep", "freeze"]
 		"switch":
 			return bool(e.get("forced", false))
+		"item_used":
+			return true
+		"held_item":
+			return str(e.get("effect", "")) == "sash"
 	return false
 
 
@@ -114,6 +118,20 @@ static func lines_for(e: Dictionary, ctx: Dictionary, rng: RandomNumberGenerator
 				out.append(_line("%s is fast asleep." % e["pokemon"], C_DIM, false))
 		"paralyzed":
 			out.append(_line("%s is fully paralysed!" % e["pokemon"], C_GOLD, false))
+		"item_used":
+			var mine := int(e.get("side", 0)) == pside
+			var who: String = "You" if mine else str(shorts[int(e.get("side", 0))])
+			var cost: String = "us" if mine else "them"
+			out.append(_line("[b]" + _pick(rng, [
+				"%s reach into the bag — %s used on %s!" % [who, e.get("item_name", "an item"), e.get("pokemon", "?")],
+				"%s make the call from the dugout: %s for %s!" % [who, e.get("item_name", "an item"), e.get("pokemon", "?")],
+				"Item play by %s — %s goes to %s. That costs %s the turn." % [who, e.get("item_name", "an item"), e.get("pokemon", "?"), cost],
+			]) + "[/b]", C_ACCENT, true))
+		"held_item":
+			_held_item_lines(e, rng, out)
+		"commentary_hook":
+			if _hook_worth(str(e.get("text", ""))):
+				out.append(_line(str(e["text"]), C_GOLD, false))
 		"battle_end":
 			var w := int(e.get("winner", 0))
 			var wins: Array = ctx.get("wins", [0, 0])
@@ -135,6 +153,39 @@ static func swing_line(toward_short: String, toward_player: bool, rng: RandomNum
 
 
 # ------------------------------------------------------------------ internals
+
+## Engine commentary_hook lines worth printing (item flavour the event stream
+## can't otherwise reconstruct). Everything else duplicates our own lines.
+static func _hook_worth(text: String) -> bool:
+	for k in ["Quick Claw", "Focus Sash", "Rocky Helmet", "Guard Spec", "crunches its",
+			"eats its", "back on its feet", "pumped up", "protective veil", "shielded by"]:
+		if text.contains(k):
+			return true
+	return false
+
+
+static func _held_item_lines(e: Dictionary, _rng: RandomNumberGenerator, out: Array) -> void:
+	var n := str(e.get("pokemon", "?"))
+	var item := str(e.get("item_name", "held item"))
+	match str(e.get("effect", "")):
+		"end_turn_heal":
+			out.append(_line("%s nibbles at its %s and recovers." % [n, item], C_DIM, false))
+		"sitrus":
+			out.append(_line("%s bites into its %s at just the right moment!" % [n, item], C_GOLD, false))
+		"choice_lock":
+			out.append(_line("%s's %s locks it into that move." % [n, item], C_DIM, false))
+		"sash":
+			out.append(_line("[b]%s's %s is spent — it survives on 1 HP![/b]" % [n, item], C_GOLD, true))
+		"shell_bell":
+			out.append(_line("%s's %s chimes — a sliver of HP back." % [n, item], C_DIM, false))
+		"kings_rock":
+			out.append(_line("%s's %s rattles its target!" % [n, item], C_DIM, false))
+		"bright_powder":
+			out.append(_line("%s's %s clouds the attacker's aim!" % [n, item], C_DIM, false))
+		"life_orb", "quick_claw", "cure_berry", "rocky_helmet":
+			pass  # covered by hooks / recoil / damage lines
+		_:
+			pass
 
 static func _damage_lines(e: Dictionary, ctx: Dictionary, rng: RandomNumberGenerator, out: Array) -> void:
 	var pside := int(ctx.get("player_side", 0))

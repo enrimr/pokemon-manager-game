@@ -1,13 +1,15 @@
 extends Control
-## Live battle viewer: replays MatchRunner events with pacing, animated HP
-## bars, commentary ticker, momentum graph, speed controls and touchline
-## instructions (including full manual control via the engine step API).
+## Live battle viewer: animated arena stage, replayed MatchRunner events with
+## pacing, HP bars, commentary ticker, momentum graph, speed controls and
+## touchline instructions. Manual combat (you pick every move / switch / item
+## via the engine step API) is the default; auto-pilot delegates to the coach.
 
 signal request_post
 
 const UI := preload("res://screens/match/ui_bits.gd")
 const Commentary := preload("res://screens/match/commentary.gd")
 const MomentumGraph := preload("res://screens/match/momentum_graph.gd")
+const BattleStage := preload("res://screens/match/battle_stage.gd")
 
 var runner  # MatchRunner
 
@@ -19,8 +21,8 @@ var _ticker_idx := 0
 # node refs
 var _score_label: Label
 var _battle_label: Label
-var _flash: Label
 var _cards := [{}, {}]       # per displayed column: refs dict
+var _stage: Control
 var _graph: Control
 var _ticker: RichTextLabel
 var _action_bar: Control
@@ -33,13 +35,15 @@ var _swi_opt: OptionButton
 var _force_btn: MenuButton
 var _ctl_toggle: CheckButton
 var _key_toggle: CheckButton
+var _bag_label: Label
+var _tl_row2: Control   # policy row — hidden while the action bar is up (manual mode)
 
 const DELAYS := {
-	"battle_start": 0.9, "turn_start": 0.3, "move_used": 0.55, "damage": 0.7,
-	"miss": 0.55, "faint": 1.35, "switch": 0.7, "status_applied": 0.7,
-	"status_tick": 0.4, "stat_change": 0.45, "heal": 0.5, "flinch": 0.5,
+	"battle_start": 0.9, "turn_start": 0.3, "move_used": 0.6, "damage": 0.75,
+	"miss": 0.55, "faint": 1.35, "switch": 0.75, "status_applied": 0.7,
+	"status_tick": 0.4, "stat_change": 0.45, "heal": 0.55, "flinch": 0.5,
 	"confused_hit": 0.55, "asleep": 0.45, "paralyzed": 0.5,
-	"commentary_hook": 0.0, "battle_end": 1.4,
+	"commentary_hook": 0.0, "battle_end": 1.4, "item_used": 1.0, "held_item": 0.5,
 }
 
 
@@ -50,6 +54,9 @@ func setup(p_runner) -> void:
 func _ready() -> void:
 	_build()
 	_refresh_all()
+	if runner != null and runner.has_meta("demo_pause"):
+		runner.remove_meta("demo_pause")
+		_set_speed(0.0)
 
 
 func _process(delta: float) -> void:
@@ -90,7 +97,7 @@ func _build() -> void:
 
 	var left := UI.vbox(8)
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 1.7
+	left.size_flags_stretch_ratio = 1.9
 	root.add_child(left)
 
 	left.add_child(_build_scoreboard())
@@ -99,12 +106,12 @@ func _build() -> void:
 	arena.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left.add_child(arena)
 	arena.add_child(_build_card(0))
-	arena.add_child(_build_center())
+	arena.add_child(_build_stage())
 	arena.add_child(_build_card(1))
 
 	var gpair: Array = UI.panel("Momentum")
 	_graph = MomentumGraph.new()
-	_graph.custom_minimum_size = Vector2(0, 120)
+	_graph.custom_minimum_size = Vector2(0, 70)
 	gpair[1].add_child(_graph)
 	left.add_child(gpair[0])
 
@@ -117,7 +124,7 @@ func _build() -> void:
 	var right := UI.vbox(8)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right.size_flags_stretch_ratio = 1.0
-	right.custom_minimum_size.x = 330
+	right.custom_minimum_size.x = 320
 	root.add_child(right)
 	var cpair: Array = UI.panel("Commentary")
 	cpair[0].size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -129,6 +136,24 @@ func _build() -> void:
 	_ticker.add_theme_constant_override("line_separation", 4)
 	cpair[1].add_child(_ticker)
 	right.add_child(cpair[0])
+
+
+func _build_stage() -> Control:
+	var frame := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color("141827")
+	sb.border_color = UI.COL_BORDER
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	sb.set_content_margin_all(0)
+	frame.add_theme_stylebox_override("panel", sb)
+	frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	frame.size_flags_stretch_ratio = 2.0
+	_stage = BattleStage.new()
+	_stage.setup(runner)
+	frame.add_child(_stage)
+	return frame
 
 
 func _build_scoreboard() -> Control:
@@ -153,37 +178,20 @@ func _build_scoreboard() -> Control:
 	return pair[0]
 
 
-func _build_center() -> Control:
-	var box := UI.vbox(8)
-	box.custom_minimum_size.x = 120
-	box.add_child(UI.spacer_v())
-	var vs := UI.label("VS", 22, UI.COL_DIM)
-	vs.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	box.add_child(vs)
-	_flash = UI.label("", 14, UI.COL_WARN)
-	_flash.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_flash.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_flash.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	box.add_child(_flash)
-	box.add_child(UI.spacer_v())
-	return box
-
-
 func _build_card(col: int) -> Control:
 	## col 0 = home side, col 1 = away side.
 	var pair: Array = UI.panel(str(runner.club_for_side(col).get("name", "")).to_upper()
 		+ ("  ·  YOU" if col == runner.player_side else ""))
 	var p: PanelContainer = pair[0]
 	var box: VBoxContainer = pair[1]
-	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	p.custom_minimum_size.x = 252
 	p.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var refs := {}
 
 	var name_row := UI.hbox(8)
-	refs["name"] = UI.label("—", 19, Color.WHITE)
+	refs["name"] = UI.label("—", 18, Color.WHITE)
 	name_row.add_child(refs["name"])
-	refs["level"] = UI.label("", 13, UI.COL_DIM)
+	refs["level"] = UI.label("", 12, UI.COL_DIM)
 	name_row.add_child(refs["level"])
 	name_row.add_child(UI.spacer_h())
 	box.add_child(name_row)
@@ -212,8 +220,20 @@ func _build_card(col: int) -> Control:
 	hp_row.add_child(refs["status"])
 	box.add_child(hp_row)
 
-	refs["stages"] = UI.label("", 13, UI.COL_WARN)
+	refs["stages"] = UI.label("", 12, UI.COL_WARN)
 	box.add_child(refs["stages"])
+
+	# held item chip (hover for the effect popup)
+	var item_row := UI.hbox(6)
+	item_row.add_child(UI.label("HELD", 10, UI.COL_DIM))
+	refs["item"] = UI.label("—", 12, UI.COL_TEXT)
+	refs["item"].mouse_filter = Control.MOUSE_FILTER_STOP
+	item_row.add_child(refs["item"])
+	box.add_child(item_row)
+
+	box.add_child(UI.label("MOVES", 10, UI.COL_DIM))
+	refs["moves"] = UI.vbox(3)
+	box.add_child(refs["moves"])
 
 	box.add_child(UI.spacer_v())
 	box.add_child(UI.label("BENCH", 10, UI.COL_DIM))
@@ -239,11 +259,11 @@ func _build_touchline() -> Control:
 		row1.add_child(b)
 		_speed_btns[float(spec[1])] = b
 	var skip_b := Button.new()
-	skip_b.text = "Skip battle ⏭"
+	skip_b.text = "Sim rest of battle ⏭"
 	skip_b.pressed.connect(_on_skip_battle)
 	row1.add_child(skip_b)
 	var skip_s := Button.new()
-	skip_s.text = "Skip to result ⏭⏭"
+	skip_s.text = "Sim to result ⏭⏭"
 	skip_s.pressed.connect(_on_skip_series)
 	row1.add_child(skip_s)
 	row1.add_child(UI.spacer_h())
@@ -252,9 +272,23 @@ func _build_touchline() -> Control:
 	_key_toggle.add_theme_font_size_override("font_size", 13)
 	_key_toggle.toggled.connect(func(v): _key_only = v)
 	row1.add_child(_key_toggle)
+	_ctl_toggle = CheckButton.new()
+	_ctl_toggle.text = "Auto-pilot (coach decides)"
+	_ctl_toggle.tooltip_text = "On: the AI coach follows your touchline instructions and may use the bag.\nOff: you call every move, switch and item yourself."
+	_ctl_toggle.add_theme_font_size_override("font_size", 13)
+	_ctl_toggle.button_pressed = not bool(runner.policy["full_control"])
+	_ctl_toggle.toggled.connect(func(v):
+		runner.set_policy("full_control", not v)
+		runner.add_note("you %s." % ("delegate to the coach" if v else "take charge of every call"))
+		_tl_row2.visible = v or not _action_bar.visible
+		if v:
+			_action_bar.visible = false
+			_tl_row2.visible = true)
+	row1.add_child(_ctl_toggle)
 
 	var row2 := UI.hbox(10)
 	box.add_child(row2)
+	_tl_row2 = row2
 	row2.add_child(UI.label("Aggression", 12, UI.COL_DIM))
 	_agg_opt = OptionButton.new()
 	for o in ["Balanced", "Attacking", "Cautious"]:
@@ -280,30 +314,29 @@ func _build_touchline() -> Control:
 	_force_btn.get_popup().id_pressed.connect(_on_force_switch)
 	row2.add_child(_force_btn)
 	row2.add_child(UI.spacer_h())
-	_ctl_toggle = CheckButton.new()
-	_ctl_toggle.text = "Take full control"
-	_ctl_toggle.add_theme_font_size_override("font_size", 13)
-	_ctl_toggle.button_pressed = bool(runner.policy["full_control"])
-	_ctl_toggle.toggled.connect(func(v):
-		runner.set_policy("full_control", v)
-		runner.add_note("you %s control of every move." % ("take" if v else "hand back"))
-		if not v:
-			_action_bar.visible = false)
-	row2.add_child(_ctl_toggle)
+	_bag_label = UI.label("", 12, UI.COL_DIM)
+	row2.add_child(_bag_label)
 	return pair[0]
 
 
 func _build_action_bar() -> Control:
-	var pair: Array = UI.panel("Your call — pick a move or switch", true)
+	var pair: Array = UI.panel("YOUR CALL — attack, switch or use an item (items cost the turn)", true)
 	pair[0].visible = false
 	var rows := UI.vbox(6)
 	pair[1].add_child(rows)
 	var moves_row := UI.hbox(6)
 	rows.add_child(moves_row)
+	var lower := UI.hbox(6)
+	rows.add_child(lower)
 	var switch_row := UI.hbox(6)
-	rows.add_child(switch_row)
+	switch_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lower.add_child(switch_row)
+	var items_row := UI.hbox(6)
+	items_row.alignment = BoxContainer.ALIGNMENT_END
+	lower.add_child(items_row)
 	pair[0].set_meta("moves_row", moves_row)
 	pair[0].set_meta("switch_row", switch_row)
+	pair[0].set_meta("items_row", items_row)
 	return pair[0]
 
 
@@ -329,8 +362,11 @@ func _refresh_all() -> void:
 	for side in 2:
 		_refresh_card(side, false)
 	_refresh_graph()
+	_refresh_bag()
 	_render_ticker_catchup()
 	_set_speed(_speed)
+	if _stage != null:
+		_stage.sync_actives()
 	if runner.live_state == runner.LiveState.BATTLE_OVER and runner.buffered() == 0:
 		_show_over_bar()
 
@@ -341,6 +377,18 @@ func _refresh_scoreboard() -> void:
 		runner.battle_no, runner.turn_now,
 		("LEAGUE ROUND %d" % int(runner.fixture["round"])) if runner.fixture["comp"] == "league"
 		else Season.cup_round_name(int(runner.fixture["round"])).to_upper() + " (CUP)"]
+
+
+func _refresh_bag() -> void:
+	if _bag_label == null:
+		return
+	var parts: Array = []
+	var bag: Dictionary = runner.our_bag()
+	for iid in bag:
+		parts.append("%s ×%d" % [DataStore.item_name(str(iid)), int(bag[iid])])
+	var mine := "empty" if parts.is_empty() else " · ".join(parts)
+	_bag_label.text = "MATCH BAG:  %s      |   items used — you %d, them %d" % [
+		mine, runner.items_spent(runner.player_side), runner.items_spent(1 - runner.player_side)]
 
 
 func _refresh_card(side: int, animate: bool) -> void:
@@ -372,6 +420,35 @@ func _refresh_card(side: int, animate: bool) -> void:
 	if b["confused"]:
 		refs["status"].add_child(UI.status_chip("confused"))
 	refs["stages"].text = UI.stage_text(b["stages"])
+	# held item chip
+	var iid := str(b.get("item", ""))
+	if iid == "":
+		refs["item"].text = "nothing"
+		refs["item"].add_theme_color_override("font_color", UI.COL_DIM)
+		refs["item"].tooltip_text = "No held item."
+	else:
+		var it: Dictionary = DataStore.item(iid)
+		var consumed := bool(b.get("item_consumed", false))
+		refs["item"].text = "◆ %s%s" % [str(it.get("name", iid)), "  (spent)" if consumed else ""]
+		refs["item"].add_theme_color_override("font_color", UI.COL_DIM if consumed else UI.COL_WARN)
+		refs["item"].tooltip_text = "%s\n%s" % [str(it.get("name", iid)), str(it.get("desc", ""))]
+	# live move list with PP
+	for c in refs["moves"].get_children():
+		c.queue_free()
+	for mname in b["moves"]:
+		var mv: Dictionary = DataStore.move(str(mname))
+		var mrow := UI.hbox(6)
+		mrow.add_child(UI.type_badge(str(mv.get("type", "?")), 9))
+		var pp_left := int(b.get("pp", {}).get(str(mname), -1))
+		var out_of_pp := pp_left == 0
+		var ml := UI.label(str(mname), 12, UI.COL_DIM if out_of_pp else UI.COL_TEXT)
+		mrow.add_child(ml)
+		mrow.add_child(UI.spacer_h())
+		var pw := int(mv.get("power", 0))
+		var meta_txt := ("pw %d" % pw) if pw > 0 else str(mv.get("category", ""))
+		mrow.add_child(UI.label("%s · %s PP" % [meta_txt, str(pp_left) if pp_left >= 0 else "?"],
+			11, UI.COL_BAD if out_of_pp else UI.COL_DIM))
+		refs["moves"].add_child(mrow)
 	# bench pips
 	for c in refs["bench"].get_children():
 		c.queue_free()
@@ -379,8 +456,10 @@ func _refresh_card(side: int, animate: bool) -> void:
 		var m: Dictionary = team[i]
 		var pip := Panel.new()
 		pip.custom_minimum_size = Vector2(30, 12)
-		pip.tooltip_text = "%s  Lv%d  %d/%d HP%s" % [m["name"], int(m["level"]), int(m["hp"]),
-			int(m["max_hp"]), ("  " + str(m["status"]).to_upper()) if str(m["status"]) != "" else ""]
+		var held := str(m.get("item", ""))
+		pip.tooltip_text = "%s  Lv%d  %d/%d HP%s%s" % [m["name"], int(m["level"]), int(m["hp"]),
+			int(m["max_hp"]), ("  " + str(m["status"]).to_upper()) if str(m["status"]) != "" else "",
+			("\nHolds: " + DataStore.item_name(held)) if held != "" else ""]
 		var sb := StyleBoxFlat.new()
 		var mf := float(m["hp"]) / maxf(float(m["max_hp"]), 1.0)
 		sb.bg_color = Color("242a3d") if m["fainted"] else UI.hp_color(mf) * Color(1, 1, 1, 0.55 + 0.45 * mf)
@@ -414,40 +493,31 @@ func _append_new_ticker_lines() -> void:
 
 func _after_event(e: Dictionary) -> void:
 	var t := str(e.get("t", ""))
+	if _stage != null:
+		_stage.play_event(e)
 	match t:
 		"turn_start":
 			_refresh_scoreboard()
 			_refresh_graph()
 		"damage", "heal", "status_tick", "confused_hit":
 			_refresh_card(int(e["side"]), true)
-			if t == "damage" and not e.get("recoil", false):
-				var frac := float(e.get("amount", 0)) / maxf(float(e.get("max_hp", 1)), 1.0)
-				if bool(e.get("crit", false)):
-					_flash_text("CRIT! %s" % str(e.get("move", "")), UI.COL_WARN)
-				elif frac >= 0.4:
-					_flash_text("%s!" % str(e.get("move", "")), UI.COL_BAD)
-		"switch", "faint", "status_applied", "stat_change", "flinch":
+		"switch", "faint", "status_applied", "stat_change", "flinch", "held_item", "move_used":
 			_refresh_card(int(e.get("side", 0)), t != "switch")
 			if t == "faint":
-				_flash_text("%s FAINTED" % str(e["pokemon"]).to_upper(),
-					UI.COL_BAD if int(e["side"]) == runner.player_side else UI.COL_GOOD)
 				_refresh_graph()
-		"move_used":
-			_flash_text("%s → %s" % [str(e["pokemon"]), str(e["move"])], UI.COL_TEXT)
+		"item_used":
+			_refresh_card(int(e["side"]), true)
+			_refresh_bag()
 		"battle_start":
 			for side in 2:
 				_refresh_card(side, false)
 			_refresh_scoreboard()
+			_refresh_bag()
 		"battle_end":
 			_refresh_scoreboard()
 			_refresh_graph()
 			_show_over_bar()
 	_append_new_ticker_lines()
-
-
-func _flash_text(text: String, col: Color) -> void:
-	_flash.text = text
-	_flash.add_theme_color_override("font_color", col)
 
 
 # ------------------------------------------------------------------ controls
@@ -479,6 +549,7 @@ func _finish_skip_refresh() -> void:
 
 func _show_over_bar() -> void:
 	_action_bar.visible = false
+	_tl_row2.visible = true
 	_over_bar.visible = true
 	var s: Array = runner.shorts()
 	if runner.series_decided():
@@ -498,7 +569,6 @@ func _on_over_pressed() -> void:
 	_over_bar.visible = false
 	runner.next_battle()
 	_refresh_all()
-	_flash_text("", UI.COL_TEXT)
 	if _speed <= 0.0:
 		_set_speed(1.0)
 
@@ -522,55 +592,111 @@ func _on_force_switch(id: int) -> void:
 	_append_new_ticker_lines()
 
 
+# ------------------------------------------------------------------ action bar (manual combat)
+
 func _show_action_bar() -> void:
 	if _action_bar.visible:
 		return
 	_over_bar.visible = false
 	_action_bar.visible = true
+	_tl_row2.visible = false  # policies are moot while you call every turn
 	var moves_row: HBoxContainer = _action_bar.get_meta("moves_row")
 	var switch_row: HBoxContainer = _action_bar.get_meta("switch_row")
+	var items_row: HBoxContainer = _action_bar.get_meta("items_row")
 	for c in moves_row.get_children():
 		c.queue_free()
 	for c in switch_row.get_children():
 		c.queue_free()
+	for c in items_row.get_children():
+		c.queue_free()
+	var item_groups := {}   # item_id -> [action dicts]
 	for a in runner.available_actions():
-		var btn := Button.new()
 		if a["type"] == "move":
-			var mv: Dictionary = DataStore.move(str(a["move"]))
-			var pv: Dictionary = a.get("preview", {})
-			var eff := float(pv.get("eff", 1.0))
-			var est := int(round(float(pv.get("est_frac", 0.0)) * 100))
-			var eff_txt := ""
-			if str(mv.get("category", "")) == "status":
-				eff_txt = "status"
-			else:
-				eff_txt = "~%d%% dmg" % est
-				if eff >= 2.0:
-					eff_txt += " ▲▲"
-				elif eff == 0.0:
-					eff_txt = "immune ✕"
-				elif eff < 1.0:
-					eff_txt += " ▼"
-			btn.text = "%s\n%s · %d PP · %s" % [str(a["move"]), str(mv.get("type", "?")).to_upper(),
-				int(a["pp"]), eff_txt]
-			btn.add_theme_color_override("font_color",
-				UI.COL_GOOD if eff >= 2.0 else (UI.COL_BAD if eff == 0.0 else UI.COL_TEXT))
-			btn.pressed.connect(_on_player_action.bind({"type": "move", "index": int(a["index"])}))
-			btn.custom_minimum_size = Vector2(120, 46)
-			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			moves_row.add_child(btn)
+			moves_row.add_child(_move_button(a))
+		elif a["type"] == "switch":
+			switch_row.add_child(_switch_button(a))
+		elif a["type"] == "use_item":
+			var iid := str(a["item"])
+			if not item_groups.has(iid):
+				item_groups[iid] = []
+			item_groups[iid].append(a)
+	for iid in item_groups:
+		items_row.add_child(_item_menu(str(iid), item_groups[iid]))
+
+
+func _move_button(a: Dictionary) -> Button:
+	var btn := Button.new()
+	var mv: Dictionary = DataStore.move(str(a["move"]))
+	var pv: Dictionary = a.get("preview", {})
+	var eff := float(pv.get("eff", 1.0))
+	var est := int(round(float(pv.get("est_frac", 0.0)) * 100))
+	var eff_txt := ""
+	if str(mv.get("category", "")) == "status":
+		eff_txt = "status"
+	else:
+		eff_txt = "~%d%% dmg" % est
+		if eff >= 2.0:
+			eff_txt += " ▲▲"
+		elif eff == 0.0:
+			eff_txt = "immune ✕"
+		elif eff < 1.0:
+			eff_txt += " ▼"
+	var pow_txt := "—" if int(mv.get("power", 0)) <= 0 else str(int(mv["power"]))
+	var acc_v := int(mv.get("accuracy", 100))
+	var acc_txt := "—" if acc_v <= 0 else "%d%%" % acc_v
+	btn.text = "%s\n%s · pw %s · acc %s · %d PP\n%s" % [str(a["move"]),
+		str(mv.get("type", "?")).to_upper(), pow_txt, acc_txt, int(a["pp"]), eff_txt]
+	btn.tooltip_text = "Type %s · %s · power %s · accuracy %s · %d PP left" % [
+		str(mv.get("type", "?")), str(mv.get("category", "?")), pow_txt, acc_txt, int(a["pp"])]
+	btn.add_theme_color_override("font_color",
+		UI.COL_GOOD if eff >= 2.0 else (UI.COL_BAD if eff == 0.0 else UI.COL_TEXT))
+	btn.pressed.connect(_on_player_action.bind({"type": "move", "index": int(a["index"])}))
+	btn.custom_minimum_size = Vector2(130, 50)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return btn
+
+
+func _switch_button(a: Dictionary) -> Button:
+	var btn := Button.new()
+	btn.text = "⇄ %s · %d%% HP" % [str(a["pokemon"]),
+		int(round(100.0 * float(a["hp"]) / maxf(float(a["max_hp"]), 1.0)))]
+	btn.add_theme_color_override("font_color", UI.COL_ACCENT)
+	btn.pressed.connect(_on_player_action.bind({"type": "switch", "index": int(a["index"])}))
+	btn.custom_minimum_size = Vector2(90, 30)
+	return btn
+
+
+func _item_menu(iid: String, actions: Array) -> MenuButton:
+	## One button per distinct item in the bag; the popup picks the target.
+	var mb := MenuButton.new()
+	var first: Dictionary = actions[0]
+	mb.text = "🧰 %s ×%d ▾" % [str(first.get("name", iid)), int(first.get("count", 1))]
+	mb.flat = false
+	mb.add_theme_color_override("font_color", UI.COL_WARN)
+	mb.tooltip_text = "%s — using an item costs this turn." % str(first.get("desc", ""))
+	mb.custom_minimum_size = Vector2(120, 30)
+	var pop := mb.get_popup()
+	for i in actions.size():
+		var a: Dictionary = actions[i]
+		var status := str(a.get("target_status", ""))
+		var hp := int(a.get("target_hp", 0))
+		var desc: String
+		if hp <= 0:
+			desc = "fainted"
 		else:
-			btn.text = "⇄ %s · %d%% HP" % [str(a["pokemon"]),
-				int(round(100.0 * float(a["hp"]) / maxf(float(a["max_hp"]), 1.0)))]
-			btn.add_theme_color_override("font_color", UI.COL_ACCENT)
-			btn.pressed.connect(_on_player_action.bind({"type": "switch", "index": int(a["index"])}))
-			btn.custom_minimum_size = Vector2(90, 30)
-			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			switch_row.add_child(btn)
+			desc = "%d/%d HP" % [hp, int(a.get("target_max", 1))]
+			if status != "":
+				desc += " · " + status.to_upper()
+		pop.add_item("→ %s   (%s)" % [str(a.get("target_name", "?")), desc], i)
+	pop.id_pressed.connect(func(id: int):
+		var a: Dictionary = actions[id]
+		_on_player_action({"type": "use_item", "item": str(a["item"]), "target": int(a["target"])}))
+	return mb
 
 
 func _on_player_action(action: Dictionary) -> void:
 	_action_bar.visible = false
+	_tl_row2.visible = true
 	runner.submit_action(action)
 	if _speed <= 0.0:
 		_set_speed(1.0)

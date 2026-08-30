@@ -15,6 +15,7 @@ shared/
     pokemon.json         # 151 species: types, base stats, learnsets, growth
     moves.json           # 136 moves: type/power/acc/pp/category/effect tags
     typechart.json       # gen-1 style 15-type effectiveness chart
+    items.json           # ~57 items: held (passive) + usable (battle consumables)
     world.json           # Indigo League: 16 clubs, squads, staff, free agents, prospects
   sim/
     battle_engine.gd     # deterministic 6v6 battle engine (class_name BattleEngine)
@@ -70,8 +71,8 @@ Effect tags (colon-separated): `burn:0.1`, `para:0.3`, `sleep:1.0`, `poison:0.3`
 `never_miss`, `confuse_self`. `power 0` + non-status = fixed damage; `accuracy 0` = can't miss.
 
 **world.json** — `{meta:{league_name, season_start, player_club_id, currency}, clubs:[..], free_agents:[..], prospects:[..]}`
-Club: `{id, name, short, manager, reputation(1-20), finances:{balance, wage_budget}, squad:[instance], staff:[..]}`
-Instance: `{uid, species_id, species, nickname, level, ivs:{..0-15}, moves:[4], condition, fitness, morale, age_months, contract:{salary, expiry}}`
+Club: `{id, name, short, manager, reputation(1-20), finances:{balance, wage_budget}, squad:[instance], staff:[..], items:{item_id: count}}`
+Instance: `{uid, species_id, species, nickname, level, ivs:{..0-15}, moves:[4], held_item(item_id|null), condition, fitness, morale, age_months, contract:{salary, expiry}}`
 Staff: `{name, role: coach|scout|physio, ratings:{attacking, defending, fitness, judging_ability, judging_potential, youth} (1-20)}`
 Prospects additionally have `potential (1-20)` and `scouted_pct`.
 
@@ -98,7 +99,8 @@ out of hard counters). Turn cap 300 (winner = higher remaining HP fraction).
 
 Event log entries all have `"t"`: `battle_start, turn_start, move_used, damage, miss, faint,
 switch, status_applied, status_tick, stat_change, heal, flinch, confused_hit, asleep, paralyzed,
-commentary_hook, battle_end`. Damage events carry `amount, hp_left, max_hp, effectiveness, crit`.
+commentary_hook, battle_end, item_used, held_item`. Damage events carry
+`amount, hp_left, max_hp, effectiveness, crit`.
 The match screen replays this log live and/or drives `step_turn` interactively.
 
 ## Season / calendar
@@ -108,6 +110,81 @@ season_start+7), `make_cup_round` (knockout, midweek every 4 weeks, generated ro
 GameState when the previous round completes), `compute_table`, `simulate_fixture`
 (best-of-3 6v6 battles between each club's top-6 by level/condition; battles won = match score;
 no draws; 3 pts a win). `GameState.advance_day()` sims all fixtures due that day.
+
+## Items system
+
+Two item classes (see `items.json`, loaded by DataStore):
+
+- **held** — passive while a Pokémon carries it. Lives on the squad instance's
+  `held_item` slot; `DataStore.make_battler` copies it onto the battler
+  (`held_item`, plus `nfe` for Eviolite) and the engine applies it automatically.
+- **usable** — a trainer consumable spent as a battle action (potions, status
+  heals, revives, X-boosts). Stored per club in `club["items"]`.
+
+**items.json** — `{ "<id>": {id, name, class:"held"|"usable", price, rarity:
+"common"|"uncommon"|"rare", effects:[tags], desc} }`
+`DataStore.item(id)`, `item_name(id)`, `items_list(cls="")`.
+
+Item effect tags (engine hooks):
+held — `end_turn_heal:f` (Leftovers), `choice:<atk|spa|spe>:mult` (+move-lock),
+`sash` (survive KO from full HP, single use), `life_orb` (1.3x dmg, 10% recoil),
+`type_boost:<type>:mult`, `cure_berry:<status|confuse|all>` (fires on infliction,
+single use), `sitrus:f` (heal at <=50% HP, single use), `quick_claw:p`,
+`rocky_helmet:f`, `assault_vest` (SpD x1.5, no status moves), `eviolite`
+(Def/SpD x1.5 if `nfe`), `shell_bell:f`, `kings_rock:p`, `bright_powder:f`,
+`scope_lens`.
+usable — `heal:<n|full>`, `cure:<status|confuse|all>`, `full_restore`,
+`revive:f`, `xstat:<stat>:stages`, `dire_hit`, `guard_spec` (5 turns of
+stat-drop immunity).
+
+### Engine item API (the contract the match builder consumes)
+
+```gdscript
+eng.set_inventory(side, {item_id: count})  # give a side its matchday bag (engine copies it)
+eng.inventory(side) -> Dictionary          # what's left (engine's live copy)
+eng.items_used(side) -> int                # trainer items spent this battle
+eng.set_ai_item_budget(side, n)            # cap AI-initiated item use (default 2)
+```
+
+Action format (third legal action type, alongside move/switch):
+
+```gdscript
+{"type": "use_item", "item": "<item_id>", "target": party_index}
+```
+
+- `legal_actions(side)` returns one `use_item` entry per valid item+target pair
+  (heals target damaged mons — active or benched; cures target the matching
+  status; revives target fainted mons; `xstat`/`dire_hit`/`guard_spec` target
+  the active slot only). It also enforces Choice locks and Assault Vest.
+- Using an item **costs that side's turn** (no move that turn), resolves after
+  switches and before moves, and decrements the engine's bag copy. After the
+  match, report consumption back with `GameState.consume_club_items(club_id,
+  used)` — the engine never touches club inventories itself.
+- With `null` actions (engine AI), the AI heals/cures from its bag when its
+  active mon is hurting, at most `ai_item_budget` times per battle.
+- Events: `item_used {side, item, item_name, pokemon, target_index}` when a
+  trainer item is spent; `held_item {side, pokemon, item, item_name, effect,
+  consumed}` whenever a passive item fires (leftovers tick, sash save, berry,
+  quick claw, choice lock...). Both come with commentary_hook lines.
+- Determinism holds: same teams + same bags + same seed = identical battle.
+
+### Economy (GameState)
+
+- `club_inventory(club_id)` / `player_inventory()` -> `{item_id: count}`.
+- `buy_item(id, qty)` / `sell_item(id, qty)` — player shop, budget-enforced
+  against `finances.balance` (sell-back at 50%). Returns "" or an error string.
+- `assign_held_item(uid, item_id)` / `unassign_held_item(uid)` — equip squad
+  Pokémon from the storeroom (swaps return the old item to stock).
+- `consume_club_items(club_id, used)` — post-match consumption.
+- Signal `inventory_changed` fires on any of the above.
+- AI clubs get sensible starting held items on key mons (world gen) and shop
+  occasionally on the daily tick (deterministic per seed+date+club).
+- Everything lives inside `world`, so save/load persists it; `_ensure_item_state()`
+  migrates pre-items saves (adds `items` stores and `held_item` slots).
+
+The **Items screen** (`res://screens/items/`) is the shop + equip UI: catalog
+with filters/prices/stock, buy/sell, and the squad equipment board
+(pick item -> pick mon -> Equip).
 
 ## FILE OWNERSHIP (the collision rules)
 
@@ -120,6 +197,7 @@ no draws; 3 pts a win). `GameState.advance_day()` sims all fixtures due that day
 | transfers    | `res://screens/transfers/`                                               |
 | training     | `res://screens/training/`                                                |
 | inbox        | `res://screens/inbox/`                                                   |
+| items        | `res://screens/items/` (items data/engine/economy built with the match piece grant) |
 | shell        | `res://shell/`                                                           |
 
 **NOBODY else** edits `shared/`, `project.godot`, `tools/`, or another piece's folder.

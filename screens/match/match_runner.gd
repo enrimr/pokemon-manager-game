@@ -57,8 +57,15 @@ var opp_six: Array = []           # opponent battler dicts (display + team sourc
 
 var engine: BattleEngine = null
 var pending: Array = []           # produced engine events not yet consumed by the view
-var policy := {"aggression": "balanced", "switching": "normal", "full_control": false}
+# Manual combat is the headline flow: full_control defaults ON. The pre-match
+# footer (or the Auto-pilot toggle in-game) delegates to the AI coach instead.
+var policy := {"aggression": "balanced", "switching": "normal", "full_control": true}
 var forced_action = null          # one-shot action override for our side
+
+# Match-day bags (usable items). series_bag = what's left, per side, across the
+# whole best-of-3; used_items = what was spent (reported to GameState after).
+var series_bag: Array = [{}, {}]
+var used_items: Array = [{}, {}]
 
 # View model (what's on screen — trails the engine by `pending`)
 var vm := {"teams": [[], []], "active": [0, 0]}
@@ -131,7 +138,19 @@ func confirm_lineup() -> void:
 	wins = [0, 0]
 	battles = []
 	battle_no = 1
+	used_items = [{}, {}]
+	for side in 2:
+		series_bag[side] = usable_only(GameState.club_inventory(str(club_for_side(side)["id"])))
 	_start_battle()
+
+
+static func usable_only(inv: Dictionary) -> Dictionary:
+	## Filter a club store down to battle-usable consumables.
+	var out := {}
+	for iid in inv:
+		if int(inv[iid]) > 0 and str(DataStore.item(str(iid)).get("class", "")) == "usable":
+			out[str(iid)] = int(inv[iid])
+	return out
 
 
 func next_battle() -> void:
@@ -187,6 +206,8 @@ func _start_battle() -> void:
 	var team_a := theirs if player_side == 0 else mine
 	var seed_v: int = GameState.career_seed + absi(str(fixture["id"]).hash()) % 1000000 + battle_no * 7919
 	engine = BattleEngine.new(team_h, team_a, seed_v)
+	engine.set_inventory(0, series_bag[0])
+	engine.set_inventory(1, series_bag[1])
 	pending = engine.events.duplicate()
 	live_state = LiveState.REPLAYING
 	forced_action = null
@@ -204,6 +225,8 @@ func _start_battle() -> void:
 				"status": "", "confused": false, "fainted": false,
 				"stages": {"atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0, "acc": 0, "eva": 0},
 				"moves": b["moves"],
+				"pp": (b["pp"].duplicate() if b.has("pp") else {}),
+				"item": str(b.get("item", "")), "item_consumed": false,
 			})
 		vm["teams"][side] = arr
 		vm["active"][side] = 0
@@ -255,6 +278,16 @@ func available_actions() -> Array:
 			d["move"] = mname
 			d["pp"] = int(me["pp"].get(mname, 0))
 			d["preview"] = engine.preview_move(player_side, int(a["index"]))
+		elif a["type"] == "use_item":
+			var it: Dictionary = DataStore.item(str(a["item"]))
+			d["name"] = str(it.get("name", a["item"]))
+			d["desc"] = str(it.get("desc", ""))
+			d["count"] = int(engine.inventory(player_side).get(str(a["item"]), 0))
+			var tb: Dictionary = engine.team_state(player_side)[int(a["target"])]
+			d["target_name"] = str(tb["name"])
+			d["target_hp"] = int(tb["hp"])
+			d["target_max"] = int(tb["max_hp"])
+			d["target_status"] = str(tb["status"])
 		else:
 			var b: Dictionary = engine.team_state(player_side)[int(a["index"])]
 			d["pokemon"] = b["name"]
@@ -263,6 +296,18 @@ func available_actions() -> Array:
 			d["types"] = b["types"]
 		out.append(d)
 	return out
+
+
+## Remaining match-day bag for our side (live view of the series bag).
+func our_bag() -> Dictionary:
+	return series_bag[player_side]
+
+
+func items_spent(side: int) -> int:
+	var n := 0
+	for iid in used_items[side]:
+		n += int(used_items[side][iid])
+	return n
 
 
 func submit_action(action: Dictionary) -> void:
@@ -359,6 +404,11 @@ func _push_lines(lines: Array) -> void:
 func _apply(e: Dictionary) -> void:
 	var t := str(e.get("t", ""))
 	match t:
+		"move_used":
+			var bm := _find_vm(int(e.get("side", 0)), str(e.get("pokemon", "")))
+			var mv := str(e.get("move", ""))
+			if not bm.is_empty() and bm["pp"].has(mv):
+				bm["pp"][mv] = maxi(0, int(bm["pp"][mv]) - 1)
 		"turn_start":
 			turn_now = int(e["turn"])
 			var hp_p := float(e.get("hp_a", 0.0)) if player_side == 0 else float(e.get("hp_b", 0.0))
@@ -415,6 +465,22 @@ func _apply(e: Dictionary) -> void:
 			var b4 := _find_vm(int(e["side"]), str(e["pokemon"]))
 			if not b4.is_empty():
 				b4["hp"] = int(e.get("hp_left", b4["hp"]))
+				if b4["hp"] > 0 and b4["fainted"]:
+					b4["fainted"] = false  # revive
+					b4["status"] = ""
+					b4["confused"] = false
+		"item_used":
+			var side_i := int(e["side"])
+			var iid := str(e["item"])
+			series_bag[side_i][iid] = maxi(0, int(series_bag[side_i].get(iid, 0)) - 1)
+			if int(series_bag[side_i][iid]) <= 0:
+				series_bag[side_i].erase(iid)
+			used_items[side_i][iid] = int(used_items[side_i].get(iid, 0)) + 1
+		"held_item":
+			if bool(e.get("consumed", false)):
+				var bh := _find_vm(int(e["side"]), str(e["pokemon"]))
+				if not bh.is_empty():
+					bh["item_consumed"] = true
 		"faint":
 			var side5 := int(e["side"])
 			var b5 := _find_vm(side5, str(e["pokemon"]))
@@ -438,6 +504,9 @@ func _apply(e: Dictionary) -> void:
 						b6["confused"] = true
 					"woke", "thawed":
 						b6["status"] = ""
+					"cured":
+						b6["status"] = ""
+						b6["confused"] = false
 			if st in ["burn", "para", "sleep", "poison", "freeze", "confused"]:
 				var inflictor := _key(1 - side6, _cur_active_names[1 - side6])
 				_bump(inflictor, "status", 1)
@@ -511,6 +580,8 @@ func _finalize_result() -> void:
 	fixture["played"] = true
 	fixture["score_home"] = wins[0]
 	fixture["score_away"] = wins[1]
+	for side in 2:
+		GameState.consume_club_items(str(club_for_side(side)["id"]), used_items[side])
 	GameState._table_dirty = true
 	GameState.fixture_played.emit(fixture)
 	GameState.table_updated.emit()
@@ -522,8 +593,14 @@ func _finalize_result() -> void:
 	var motm_txt := ""
 	if not motm.is_empty():
 		motm_txt = " %s was the standout performer (%.1f)." % [motm["name"], motm["rating"]]
+	var item_txt := ""
+	if items_spent(player_side) > 0:
+		var parts: Array = []
+		for iid in used_items[player_side]:
+			parts.append("%dx %s" % [int(used_items[player_side][iid]), DataStore.item_name(str(iid))])
+		item_txt = " Bag used: %s." % ", ".join(parts)
 	GameState.add_inbox_message(GameState.current_date,
 		"Match report: %d-%d vs %s" % [us, them, opp],
-		"We %s the %s tie against %s, %d-%d in battles.%s" %
-		[verdict, fixture["comp"], opp, us, them, motm_txt])
+		"We %s the %s tie against %s, %d-%d in battles.%s%s" %
+		[verdict, fixture["comp"], opp, us, them, motm_txt, item_txt])
 	GameState.save_game()

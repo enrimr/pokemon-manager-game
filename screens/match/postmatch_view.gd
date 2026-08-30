@@ -70,6 +70,19 @@ func _build_header() -> Control:
 		chips.add_child(UI.label("    ★ Player of the match: %s (%.1f)" % [motm["name"], motm["rating"]],
 			12, UI.COL_WARN))
 	mid.add_child(chips)
+	# items spent across the series (deducted from each club's store)
+	var us_items: int = runner.items_spent(runner.player_side)
+	var them_items: int = runner.items_spent(1 - runner.player_side)
+	if us_items > 0 or them_items > 0:
+		var parts: Array = []
+		for iid in runner.used_items[runner.player_side]:
+			parts.append("%dx %s" % [int(runner.used_items[runner.player_side][iid]),
+				DataStore.item_name(str(iid))])
+		var mine := ("none" if parts.is_empty() else ", ".join(parts))
+		var il := UI.label("Bag: you used %s  ·  they used %d item%s  ·  stock updated" %
+			[mine, them_items, "" if them_items == 1 else "s"], 12, UI.COL_DIM)
+		il.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		mid.add_child(il)
 	row.add_child(mid)
 	row.add_child(UI.monogram(runner.away_club.get("short", "A"), UI.club_color(runner.away_club), 44))
 	return pair[0]

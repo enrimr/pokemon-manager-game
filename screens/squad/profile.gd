@@ -15,6 +15,7 @@ const Actions := preload("res://screens/squad/actions_ui.gd")
 const Service := preload("res://screens/squad/squad_service.gd")
 const History := preload("res://screens/squad/career_history.gd")
 const Ability := preload("res://screens/squad/ability.gd")
+const Selection := preload("res://screens/squad/selection.gd")
 
 const STAT_KEYS := ["hp", "atk", "def", "spa", "spd", "spe"]
 const STAT_NAMES := {"hp": "HP", "atk": "Attack", "def": "Defence",
@@ -129,6 +130,7 @@ func _build(squad: Array, idx: int) -> void:
 	right.custom_minimum_size = Vector2(330, 0)
 	body.add_child(right)
 	right.add_child(_coach_report_panel(inst))
+	right.add_child(_item_panel(inst))
 	right.add_child(_season_panel(inst))
 	right.add_child(_condition_panel(inst))
 	right.add_child(_contract_panel(inst))
@@ -167,7 +169,7 @@ func _tab_bar(inst: Dictionary) -> Control:
 func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 16)
+	hb.add_theme_constant_override("separation", 12)
 	panel.add_child(hb)
 
 	hb.add_child(UI.monogram(UI.display_name(inst), sp["types"], 72, 30))
@@ -188,6 +190,28 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 		var b := UI.type_badge(t, 12)
 		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		name_row.add_child(b)
+	var sel: Dictionary = Selection.selection()
+	var pick: Dictionary = Selection.pick_info(str(inst["uid"]), sel)
+	var pick_tag := Label.new()
+	pick_tag.text = ("PICKED  %s" % pick["text"]) if pick["kind"] == "starter" \
+		else "BENCH  %s" % pick["text"]
+	pick_tag.add_theme_font_size_override("font_size", 11)
+	pick_tag.add_theme_color_override("font_color",
+		UI.COL_ACCENT.lightened(0.3) if pick["kind"] == "starter" else UI.COL_TEXT_DIM)
+	pick_tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	pick_tag.mouse_filter = Control.MOUSE_FILTER_STOP
+	pick_tag.tooltip_text = str(pick["tip"])
+	name_row.add_child(pick_tag)
+	var flags: Array = Selection.flags(inst)
+	if not flags.is_empty():
+		var av_tag := Label.new()
+		av_tag.text = Selection.flags_text(flags)
+		av_tag.add_theme_font_size_override("font_size", 11)
+		av_tag.add_theme_color_override("font_color", Selection.worst_color(flags))
+		av_tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		av_tag.mouse_filter = Control.MOUSE_FILTER_STOP
+		av_tag.tooltip_text = Selection.flags_tip(flags)
+		name_row.add_child(av_tag)
 	if Service.ensure().is_listed(inst):
 		var tag := Label.new()
 		tag.text = "TRANSFER LISTED · %s" % UI.money(int(inst.get("asking_price", 0)))
@@ -334,7 +358,7 @@ func _big_stat(label: String, value: String, col: Color) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 0)
 	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	v.custom_minimum_size = Vector2(96, 0)
+	v.custom_minimum_size = Vector2(86, 0)
 	var l1 := Label.new()
 	l1.text = label
 	l1.add_theme_font_size_override("font_size", 10)
@@ -354,7 +378,7 @@ func _big_stars(label: String, tex: ImageTexture, sub: String) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 2)
 	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	v.custom_minimum_size = Vector2(110, 0)
+	v.custom_minimum_size = Vector2(104, 0)
 	var l1 := Label.new()
 	l1.text = label
 	l1.add_theme_font_size_override("font_size", 10)
@@ -922,6 +946,80 @@ func _condition_panel(inst: Dictionary) -> Control:
 		row.add_child(n)
 		v.add_child(row)
 	return panel
+
+
+func _item_panel(inst: Dictionary) -> Control:
+	var pk := _panel("Held Item")
+	var panel: PanelContainer = pk[0]
+	var v: VBoxContainer = pk[1]
+	var item_id := str(inst.get("held_item")) if inst.get("held_item") else ""
+	var item: Dictionary = DataStore.item(item_id) if item_id != "" else {}
+	if item.is_empty():
+		var none := Label.new()
+		none.text = "Not holding anything. A held item works passively in every battle — Leftovers, a Choice item, a pinch berry..."
+		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		none.add_theme_font_size_override("font_size", 12)
+		none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+		v.add_child(none)
+	else:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		v.add_child(row)
+		var badge := UI.item_badge(item, 26, 14)
+		badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(badge)
+		var name_l := Label.new()
+		name_l.text = str(item["name"])
+		name_l.add_theme_font_size_override("font_size", 15)
+		name_l.add_theme_color_override("font_color", Color.WHITE)
+		name_l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(name_l)
+		var rar := Label.new()
+		rar.text = str(item.get("rarity", "")).to_upper()
+		rar.add_theme_font_size_override("font_size", 10)
+		rar.add_theme_color_override("font_color", UI.rarity_color(str(item.get("rarity", ""))))
+		rar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(rar)
+		var rsp := Control.new()
+		rsp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(rsp)
+		var val := Label.new()
+		val.text = UI.money(int(item.get("price", 0)))
+		val.add_theme_font_size_override("font_size", 12)
+		val.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+		val.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(val)
+		var desc := Label.new()
+		desc.text = str(item.get("desc", ""))
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.add_theme_font_size_override("font_size", 12)
+		desc.add_theme_color_override("font_color", UI.COL_TEXT)
+		v.add_child(desc)
+	var foot := HBoxContainer.new()
+	foot.add_theme_constant_override("separation", 8)
+	v.add_child(foot)
+	var hint := Label.new()
+	hint.text = "Buy, equip and swap held items in the club storeroom."
+	hint.add_theme_font_size_override("font_size", 11)
+	hint.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	foot.add_child(hint)
+	var go := Button.new()
+	go.text = "Items Screen >"
+	go.tooltip_text = "Open the Items screen: shop catalog + squad equipment board"
+	go.pressed.connect(_goto_items)
+	foot.add_child(go)
+	return panel
+
+
+func _goto_items() -> void:
+	var n: Node = get_parent()
+	while n != null and not n.has_method("navigate_to"):
+		n = n.get_parent()
+	if n != null:
+		n.call("navigate_to", "items")
 
 
 func _development_panel(inst: Dictionary, sp: Dictionary) -> Control:

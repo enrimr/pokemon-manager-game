@@ -90,6 +90,7 @@ static func status_chip(status: String, size := 11) -> Label:
 static func monogram(short_name: String, color: Color, diameter := 34) -> Control:
 	var p := Panel.new()
 	p.custom_minimum_size = Vector2(diameter, diameter)
+	p.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = color
 	sb.set_corner_radius_all(int(diameter / 2.0))

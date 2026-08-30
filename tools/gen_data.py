@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates shared/data/{pokemon,moves,typechart,world}.json for Trainer Manager.
+"""Generates shared/data/{pokemon,moves,typechart,world,items}.json for Trainer Manager.
 Deterministic (seeded). Run from repo root: python3 tools/gen_data.py
 """
 import json, os, random
@@ -171,6 +171,145 @@ MOVES = {
 
 TYPES = ["normal", "fire", "water", "grass", "electric", "ice", "fighting", "poison",
          "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon"]
+
+# ---------------------------------------------------------------- items
+# Two classes:
+#   "held"   — passive while held in battle (assigned to a Pokémon's held_item slot)
+#   "usable" — consumed as a trainer action during battle ({"type":"use_item",...})
+# Effect tag grammar (colon-separated, consumed by BattleEngine — see ARCHITECTURE.md):
+#   held:  end_turn_heal:f  choice:<atk|spa|spe>:mult  sash  life_orb  quick_claw:p
+#          rocky_helmet:f  assault_vest  eviolite  shell_bell:f  kings_rock:p
+#          bright_powder:f  scope_lens  type_boost:<type>:mult
+#          cure_berry:<status|confuse|all>  sitrus:f (heal f*max_hp when <=50%, once)
+#   usable: heal:<n|full>  cure:<status|confuse|all>  full_restore  revive:f
+#           xstat:<stat>:stages  dire_hit  guard_spec
+# name: (class, price, rarity, [effects], description)
+ITEMS = {
+    # --- held: battle staples
+    "leftovers":     ("Leftovers", "held", 4000, "rare", ["end_turn_heal:0.0625"],
+                      "The holder restores 1/16 of its max HP at the end of every turn."),
+    "choice_band":   ("Choice Band", "held", 5000, "rare", ["choice:atk:1.5"],
+                      "Boosts Attack by 50%, but locks the holder into the first move it uses."),
+    "choice_specs":  ("Choice Specs", "held", 5000, "rare", ["choice:spa:1.5"],
+                      "Boosts Sp. Atk by 50%, but locks the holder into the first move it uses."),
+    "choice_scarf":  ("Choice Scarf", "held", 5000, "rare", ["choice:spe:1.5"],
+                      "Boosts Speed by 50%, but locks the holder into the first move it uses."),
+    "focus_sash":    ("Focus Sash", "held", 3000, "rare", ["sash"],
+                      "If the holder is at full HP, it survives a knockout blow with 1 HP. Single use."),
+    "life_orb":      ("Life Orb", "held", 5000, "rare", ["life_orb"],
+                      "Boosts move damage by 30%, but the holder loses 10% max HP after each attack."),
+    "quick_claw":    ("Quick Claw", "held", 2500, "uncommon", ["quick_claw:0.2"],
+                      "20% chance each turn for the holder to move first within its priority bracket."),
+    "rocky_helmet":  ("Rocky Helmet", "held", 3000, "uncommon", ["rocky_helmet:0.166"],
+                      "Attackers striking the holder with physical moves lose 1/6 of their max HP."),
+    "assault_vest":  ("Assault Vest", "held", 4500, "rare", ["assault_vest"],
+                      "Raises Sp. Def by 50%, but the holder cannot select status moves."),
+    "eviolite":      ("Eviolite", "held", 4500, "rare", ["eviolite"],
+                      "Raises Defense and Sp. Def by 50% if the holder can still evolve."),
+    "shell_bell":    ("Shell Bell", "held", 2500, "uncommon", ["shell_bell:0.125"],
+                      "The holder restores HP equal to 1/8 of the damage it deals."),
+    "kings_rock":    ("King's Rock", "held", 2500, "uncommon", ["kings_rock:0.1"],
+                      "The holder's damaging moves gain a 10% chance to make the target flinch."),
+    "bright_powder": ("Bright Powder", "held", 2500, "uncommon", ["bright_powder:0.9"],
+                      "Moves aimed at the holder are 10% less accurate."),
+    "scope_lens":    ("Scope Lens", "held", 2000, "uncommon", ["scope_lens"],
+                      "Doubles the holder's critical-hit chance."),
+    # --- held: type boosters (1.2x damage of matching-type moves)
+    "silk_scarf":    ("Silk Scarf", "held", 1500, "common", ["type_boost:normal:1.2"],
+                      "Boosts the power of the holder's Normal-type moves by 20%."),
+    "charcoal":      ("Charcoal", "held", 1500, "common", ["type_boost:fire:1.2"],
+                      "Boosts the power of the holder's Fire-type moves by 20%."),
+    "mystic_water":  ("Mystic Water", "held", 1500, "common", ["type_boost:water:1.2"],
+                      "Boosts the power of the holder's Water-type moves by 20%."),
+    "miracle_seed":  ("Miracle Seed", "held", 1500, "common", ["type_boost:grass:1.2"],
+                      "Boosts the power of the holder's Grass-type moves by 20%."),
+    "magnet":        ("Magnet", "held", 1500, "common", ["type_boost:electric:1.2"],
+                      "Boosts the power of the holder's Electric-type moves by 20%."),
+    "never_melt_ice":("Never-Melt Ice", "held", 1500, "common", ["type_boost:ice:1.2"],
+                      "Boosts the power of the holder's Ice-type moves by 20%."),
+    "black_belt":    ("Black Belt", "held", 1500, "common", ["type_boost:fighting:1.2"],
+                      "Boosts the power of the holder's Fighting-type moves by 20%."),
+    "poison_barb":   ("Poison Barb", "held", 1500, "common", ["type_boost:poison:1.2"],
+                      "Boosts the power of the holder's Poison-type moves by 20%."),
+    "soft_sand":     ("Soft Sand", "held", 1500, "common", ["type_boost:ground:1.2"],
+                      "Boosts the power of the holder's Ground-type moves by 20%."),
+    "sharp_beak":    ("Sharp Beak", "held", 1500, "common", ["type_boost:flying:1.2"],
+                      "Boosts the power of the holder's Flying-type moves by 20%."),
+    "twisted_spoon": ("Twisted Spoon", "held", 1500, "common", ["type_boost:psychic:1.2"],
+                      "Boosts the power of the holder's Psychic-type moves by 20%."),
+    "silver_powder": ("Silver Powder", "held", 1500, "common", ["type_boost:bug:1.2"],
+                      "Boosts the power of the holder's Bug-type moves by 20%."),
+    "hard_stone":    ("Hard Stone", "held", 1500, "common", ["type_boost:rock:1.2"],
+                      "Boosts the power of the holder's Rock-type moves by 20%."),
+    "spell_tag":     ("Spell Tag", "held", 1500, "common", ["type_boost:ghost:1.2"],
+                      "Boosts the power of the holder's Ghost-type moves by 20%."),
+    "dragon_fang":   ("Dragon Fang", "held", 1500, "common", ["type_boost:dragon:1.2"],
+                      "Boosts the power of the holder's Dragon-type moves by 20%."),
+    # --- held: berries (consumed when they trigger)
+    "lum_berry":     ("Lum Berry", "held", 1200, "uncommon", ["cure_berry:all"],
+                      "Cures the holder of any status condition or confusion the moment it strikes. Single use."),
+    "sitrus_berry":  ("Sitrus Berry", "held", 800, "uncommon", ["sitrus:0.25"],
+                      "Restores 25% max HP when the holder drops to half health or below. Single use."),
+    "chesto_berry":  ("Chesto Berry", "held", 500, "common", ["cure_berry:sleep"],
+                      "Wakes the holder the moment it falls asleep. Single use."),
+    "cheri_berry":   ("Cheri Berry", "held", 500, "common", ["cure_berry:para"],
+                      "Cures the holder of paralysis the moment it is inflicted. Single use."),
+    "rawst_berry":   ("Rawst Berry", "held", 500, "common", ["cure_berry:burn"],
+                      "Heals the holder's burn the moment it is inflicted. Single use."),
+    "pecha_berry":   ("Pecha Berry", "held", 500, "common", ["cure_berry:poison"],
+                      "Cures the holder of poison the moment it is inflicted. Single use."),
+    "aspear_berry":  ("Aspear Berry", "held", 500, "common", ["cure_berry:freeze"],
+                      "Thaws the holder the moment it is frozen. Single use."),
+    "persim_berry":  ("Persim Berry", "held", 500, "common", ["cure_berry:confuse"],
+                      "Snaps the holder out of confusion the moment it sets in. Single use."),
+    # --- usable: healing (a trainer action; costs the Pokémon's turn)
+    "potion":        ("Potion", "usable", 200, "common", ["heal:20"],
+                      "Restores 20 HP to one of your Pokémon."),
+    "super_potion":  ("Super Potion", "usable", 700, "common", ["heal:60"],
+                      "Restores 60 HP to one of your Pokémon."),
+    "hyper_potion":  ("Hyper Potion", "usable", 1500, "uncommon", ["heal:120"],
+                      "Restores 120 HP to one of your Pokémon."),
+    "max_potion":    ("Max Potion", "usable", 2500, "rare", ["heal:full"],
+                      "Fully restores one of your Pokémon's HP."),
+    "full_restore":  ("Full Restore", "usable", 3000, "rare", ["full_restore"],
+                      "Fully restores HP and cures all status conditions and confusion."),
+    "antidote":      ("Antidote", "usable", 100, "common", ["cure:poison"],
+                      "Cures a poisoned Pokémon."),
+    "awakening":     ("Awakening", "usable", 150, "common", ["cure:sleep"],
+                      "Wakes a sleeping Pokémon."),
+    "burn_heal":     ("Burn Heal", "usable", 150, "common", ["cure:burn"],
+                      "Heals a burned Pokémon."),
+    "ice_heal":      ("Ice Heal", "usable", 150, "common", ["cure:freeze"],
+                      "Thaws a frozen Pokémon."),
+    "paralyze_heal": ("Paralyze Heal", "usable", 150, "common", ["cure:para"],
+                      "Cures a paralyzed Pokémon."),
+    "full_heal":     ("Full Heal", "usable", 400, "uncommon", ["cure:all"],
+                      "Cures all status conditions and confusion on one Pokémon."),
+    "revive":        ("Revive", "usable", 2000, "rare", ["revive:0.5"],
+                      "Revives a fainted Pokémon with half its max HP."),
+    "max_revive":    ("Max Revive", "usable", 4000, "rare", ["revive:1.0"],
+                      "Revives a fainted Pokémon with full HP."),
+    "x_attack":      ("X Attack", "usable", 500, "common", ["xstat:atk:1"],
+                      "Sharply focuses your active Pokémon: raises Attack by one stage."),
+    "x_defense":     ("X Defense", "usable", 500, "common", ["xstat:def:1"],
+                      "Raises your active Pokémon's Defense by one stage."),
+    "x_sp_atk":      ("X Sp. Atk", "usable", 500, "common", ["xstat:spa:1"],
+                      "Raises your active Pokémon's Sp. Atk by one stage."),
+    "x_sp_def":      ("X Sp. Def", "usable", 500, "common", ["xstat:spd:1"],
+                      "Raises your active Pokémon's Sp. Def by one stage."),
+    "x_speed":       ("X Speed", "usable", 500, "common", ["xstat:spe:1"],
+                      "Raises your active Pokémon's Speed by one stage."),
+    "dire_hit":      ("Dire Hit", "usable", 600, "uncommon", ["dire_hit"],
+                      "Doubles your active Pokémon's critical-hit chance for the rest of the battle."),
+    "guard_spec":    ("Guard Spec.", "usable", 700, "uncommon", ["guard_spec"],
+                      "Prevents the opponent from lowering your active Pokémon's stats for 5 turns."),
+}
+
+TYPE_BOOST_BY_TYPE = {}
+for _iid, _it in ITEMS.items():
+    for _fx in _it[4]:
+        if _fx.startswith("type_boost:"):
+            TYPE_BOOST_BY_TYPE[_fx.split(":")[1]] = _iid
 
 # Gen-1 style effectiveness chart. chart[attacker][defender] = multiplier (missing = 1.0)
 CHART = {
@@ -384,6 +523,14 @@ SIGNATURE = {
     151: ["Psychic", "Surf", "Thunderbolt", "Soft-Boiled", "Swords Dance", "Body Slam"],
 }
 
+# Species ids that can still evolve (gen-1 lines) — drives Eviolite ("nfe").
+EVOLVES = {
+    1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 21, 23, 25, 27, 29, 30, 32, 33,
+    35, 37, 39, 41, 43, 44, 46, 48, 50, 52, 54, 56, 58, 60, 61, 63, 64, 66, 67,
+    69, 70, 72, 74, 75, 77, 79, 81, 84, 86, 88, 90, 92, 93, 96, 98, 100, 102,
+    104, 109, 111, 116, 118, 120, 129, 133, 138, 140, 147, 148,
+}
+
 rng = random.Random(20260801)
 
 def build_learnset(pid, name, t1, t2, atk, spa):
@@ -419,6 +566,7 @@ for (pid, name, t1, t2, hp, atk, dfn, spa, spd, spe, growth) in P:
         "types": [t for t in [t1, t2] if t],
         "base": {"hp": hp, "atk": atk, "def": dfn, "spa": spa, "spd": spd, "spe": spe},
         "growth": growth,
+        "evolves": pid in EVOLVES,
         "learnset": build_learnset(pid, name, t1, t2, atk, spa),
     })
 
@@ -469,6 +617,7 @@ def make_instance(species, lvl_lo, lvl_hi, salary_scale=1.0):
         "level": level,
         "ivs": ivs,
         "moves": moves,
+        "held_item": None,
         "condition": rng.randint(70, 100),
         "fitness": rng.randint(75, 100),
         "morale": rng.randint(50, 95),
@@ -528,6 +677,61 @@ for _ in range(30):
     inst["scouted_pct"] = 0
     prospects.append(inst)
 
+# ---- item economy: starting held items on key mons + club item inventories.
+# Separate RNG so everything generated above stays byte-identical across runs.
+irng = random.Random(20260829)
+poke_by_id = {p["id"]: p for p in pokemon}
+
+def pick_held(inst):
+    sp = poke_by_id[inst["species_id"]]
+    b = sp["base"]
+    cands = [TYPE_BOOST_BY_TYPE[sp["types"][0]]]
+    if len(sp["types"]) > 1:
+        cands.append(TYPE_BOOST_BY_TYPE[sp["types"][1]])
+    if b["hp"] >= 85:
+        cands += ["leftovers", "leftovers"]
+    if b["atk"] >= b["spa"] + 15 and b["atk"] >= 90:
+        cands.append("choice_band")
+    if b["spa"] >= b["atk"] + 15 and b["spa"] >= 90:
+        cands.append("choice_specs")
+    if b["spe"] >= 100:
+        cands.append("choice_scarf")
+    if b["hp"] <= 50 and b["def"] <= 60:
+        cands += ["focus_sash", "focus_sash"]
+    if b["spd"] >= 90 and b["atk"] >= b["spa"]:
+        cands.append("assault_vest")
+    if sp.get("evolves") and (b["def"] >= 70 or b["spd"] >= 70):
+        cands.append("eviolite")
+    if b["spe"] <= 45:
+        cands.append("quick_claw")
+    cands += ["sitrus_berry", "lum_berry"]
+    return irng.choice(cands)
+
+USABLE_STOCK = ["potion", "super_potion", "hyper_potion", "full_heal", "revive",
+                "x_attack", "x_speed", "antidote", "paralyze_heal", "awakening"]
+
+for c in clubs:
+    rep = c["reputation"]
+    # equip the top (by level) key battlers, more at bigger clubs
+    key = sorted(c["squad"], key=lambda m: -m["level"])[: 2 + rep // 6]
+    for m in key:
+        if irng.random() < 0.85:
+            m["held_item"] = pick_held(m)
+    inv = {}
+    inv["potion"] = irng.randint(2, 4)
+    inv["super_potion"] = irng.randint(1, 3)
+    inv["full_heal"] = irng.randint(0, 2)
+    inv["revive"] = irng.randint(0, 1)
+    for extra in irng.sample(USABLE_STOCK, 2 + rep // 8):
+        inv[extra] = inv.get(extra, 0) + irng.randint(1, 2)
+    if rep >= 13:
+        inv["hyper_potion"] = inv.get("hyper_potion", 0) + irng.randint(1, 2)
+    # a spare held item or two in the storeroom
+    for _ in range(irng.randint(1, 2)):
+        spare = irng.choice(list(TYPE_BOOST_BY_TYPE.values()) + ["leftovers", "quick_claw", "sitrus_berry"])
+        inv[spare] = inv.get(spare, 0) + 1
+    c["items"] = {k: v for k, v in inv.items() if v > 0}
+
 world = {
     "meta": {
         "league_name": "Indigo League",
@@ -546,10 +750,16 @@ def dump(name, obj):
         json.dump(obj, f, indent=1)
     print(f"wrote {path} ({os.path.getsize(path)} bytes)")
 
+items_out = {}
+for iid, (iname, icls, price, rarity, fx, desc) in ITEMS.items():
+    items_out[iid] = {"id": iid, "name": iname, "class": icls, "price": price,
+                      "rarity": rarity, "effects": fx, "desc": desc}
+
 dump("pokemon.json", pokemon)
 dump("moves.json", moves_out)
 dump("typechart.json", {"types": TYPES, "chart": CHART})
 dump("world.json", world)
+dump("items.json", items_out)
 
 # sanity: every learnset/instance move exists in moves.json
 missing = set()
@@ -558,5 +768,15 @@ for p in pokemon:
         if m not in moves_out:
             missing.add(m)
 assert not missing, f"missing moves: {missing}"
+# sanity: every assigned/stocked item exists in items.json
+for c in clubs:
+    for m in c["squad"]:
+        assert m["held_item"] is None or m["held_item"] in items_out, m["held_item"]
+    for iid in c["items"]:
+        assert iid in items_out, iid
+held_n = sum(1 for i in items_out.values() if i["class"] == "held")
+usable_n = len(items_out) - held_n
+equipped = sum(1 for c in clubs for m in c["squad"] if m["held_item"])
 print(f"OK: {len(pokemon)} pokemon, {len(moves_out)} moves, {len(clubs)} clubs, "
-      f"{len(free_agents)} free agents, {len(prospects)} prospects")
+      f"{len(free_agents)} free agents, {len(prospects)} prospects, "
+      f"{len(items_out)} items ({held_n} held / {usable_n} usable), {equipped} mons equipped")

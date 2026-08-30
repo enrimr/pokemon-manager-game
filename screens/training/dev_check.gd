@@ -8,6 +8,7 @@ const DAYS := 42
 
 func _ready() -> void:
 	var svc: Node = load("res://screens/training/training_service.gd").new()
+	svc.no_disk = true  # throwaway timeline: never touch the real training.json
 	svc.setup()
 	var squad: Array = GameState.player_club()["squad"]
 
@@ -87,8 +88,10 @@ func _ready() -> void:
 	assert(op["kind"] == "custom" and op["am"] == "rest" and op["pm"] == "rest"
 		and op["intensity"] == "light", "date override must win over template")
 	assert(svc.day_strain_load(free_date) < 0.0, "planned rest day must recover strain")
-	var next_day: Dictionary = svc.effective_plan(Season.date_add(free_date, 1))
-	assert(not bool(next_day["ov"]["am"]), "override must not leak to other dates")
+	var next_date: String = Season.date_add(free_date, 1)
+	if (svc.date_override(next_date) as Dictionary).is_empty():
+		var next_day: Dictionary = svc.effective_plan(next_date)
+		assert(not bool(next_day["ov"]["am"]), "override must not leak to other dates")
 	print("OVERRIDE: %s planned rest/rest/light [%s] load %+.1f (template untouched elsewhere)" % [
 		free_date, op["kind"], svc.day_strain_load(free_date)])
 	# 2) a deliberate plan beats the automatic post-match recovery default
@@ -112,24 +115,30 @@ func _ready() -> void:
 	var tpl_before := JSON.stringify(svc.state["schedule"])
 	var wk_start: String = Season.date_add(GameState.current_date, 14)
 	svc.apply_preset_to_week("recovery", wk_start)
-	var planned: Array = svc.planned_custom_dates(28)
-	assert(planned.size() >= 8, "week preset must lay down 7 dated plans (+1 single)")
+	for i in 7:
+		assert(not (svc.date_override(Season.date_add(wk_start, i)) as Dictionary).is_empty(),
+			"week preset must lay a dated plan on each of the 7 days")
 	assert(JSON.stringify(svc.state["schedule"]) == tpl_before,
 		"week preset must NOT touch the weekday template")
 	var wk_load := 0.0
 	for i in 7:
 		wk_load += svc.day_strain_load(Season.date_add(wk_start, i))
 	print("OVERRIDE: recovery preset on week %s -> %d planned dates, week load %+.1f" % [
-		wk_start, planned.size(), wk_load])
+		wk_start, svc.planned_custom_dates(28).size(), wk_load])
 	# 5) clearing the week removes its plans
 	svc.clear_week_overrides(wk_start)
-	assert(svc.planned_custom_dates(28).size() == 1, "clear_week must drop the 7 plans")
+	for i in 7:
+		assert((svc.date_override(Season.date_add(wk_start, i)) as Dictionary).is_empty(),
+			"clear_week must drop the 7 plans")
 	# 6) save-week-as-template bakes overrides into the weekday default
 	var bake_day: String = svc._weekday_key(free_date)
-	svc.save_week_as_template(Season.date_add(free_date, -3))
+	var bake_start: String = Season.date_add(free_date, -3)
+	svc.save_week_as_template(bake_start)
 	assert(svc.state["schedule"][bake_day]["am"] == "rest",
 		"save_week_as_template must bake the date edit into the template")
-	assert(svc.planned_custom_dates(28).is_empty(), "baked overrides must be consumed")
+	for i in 7:
+		assert((svc.date_override(Season.date_add(bake_start, i)) as Dictionary).is_empty(),
+			"baked overrides must be consumed")
 	svc.apply_preset("balanced")  # restore a sane template for the tick run
 	print("OVERRIDE: save-week-as-template baked %s AM=rest, then template reset" % bake_day)
 	# 7) opponent-specific prep for one big fixture: the days before it become
@@ -158,6 +167,46 @@ func _ready() -> void:
 	# leave one real override in place across the tick run to verify pruning
 	var prune_date: String = Season.date_add(GameState.current_date, 2)
 	svc.set_date_session(prune_date, "am", "speed")
+
+	# --- mentoring: eligibility rules, pairing, then real daily effects ------
+	var mentor_i: Dictionary = {}
+	var junior_i: Dictionary = {}
+	for m in squad:
+		if not svc.mentor_eligible(m):
+			continue
+		for j in squad:
+			if svc.junior_eligible(j) and svc.can_mentor(m, j) == "":
+				mentor_i = m
+				junior_i = j
+				break
+		if not mentor_i.is_empty():
+			break
+	assert(not mentor_i.is_empty(), "squad must contain a valid mentor/junior pair")
+	assert(svc.can_mentor(junior_i, mentor_i) != "", "a junior must not be able to mentor a veteran")
+	assert(svc.create_mentor_group(str(mentor_i["uid"])) == "", "group creation must succeed")
+	assert(svc.create_mentor_group(str(mentor_i["uid"])) != "", "a mentor cannot lead two groups")
+	assert(svc.add_junior(str(mentor_i["uid"]), str(junior_i["uid"])) == "", "junior must join the group")
+	assert(svc.add_junior(str(mentor_i["uid"]), str(junior_i["uid"])) != "", "a junior cannot join twice")
+	var meff: Dictionary = svc.mentoring_effect(str(junior_i["uid"]))
+	assert(not meff.is_empty() and float(meff["mult"]) > 1.1, "mentoring must boost development >10%")
+	var mentored_proj: Dictionary = svc.weekly_projection(junior_i)
+	print("MENTORING: %s (Lv %d, %s) mentoring %s (Lv %d) -> x%.2f dev, stat bias %s, moves x%.1f, strain x%.2f" % [
+		mentor_i["species"], int(mentor_i["level"]), svc.personality_label(mentor_i),
+		junior_i["species"], int(junior_i["level"]), float(meff["mult"]),
+		str((meff["stat_mult"] as Dictionary).keys()), float(meff["move_mult"]), float(meff["strain_mult"])])
+	var junior_morale_before := int(junior_i.get("morale", 70))
+	var mentor_morale_before := int(mentor_i.get("morale", 70))
+	# projection with the mentor must beat the same squad plan without one
+	svc.remove_junior(str(junior_i["uid"]))
+	var solo_proj: Dictionary = svc.weekly_projection(junior_i)
+	var proj_up := false
+	for s in ["hp", "atk", "def", "spa", "spd", "spe"]:
+		if float(mentored_proj[s]) > float(solo_proj[s]) + 0.001:
+			proj_up = true
+	assert(proj_up, "mentored projection must exceed the unmentored one")
+	assert(svc.add_junior(str(mentor_i["uid"]), str(junior_i["uid"])) == "", "junior must rejoin")
+	print("MENTORING: projection spa %.1f -> %.1f with the mentor watching" % [
+		float(solo_proj["spa"]), float(mentored_proj["spa"])])
 
 	# --- projection path (Individual tab): must run clean and reflect the week
 	var proj: Dictionary = svc.weekly_projection(first)
@@ -195,6 +244,18 @@ func _ready() -> void:
 	assert(not (svc.state["overrides"] as Dictionary).has(prune_date),
 		"past-date overrides must be pruned after the day runs")
 	print("OVERRIDE: %s plan consumed and pruned after advancing %d days" % [prune_date, DAYS])
+
+	# --- mentoring verification: bonus points accrued and attributed, group
+	# persisted through the ticks, morale moved on both sides.
+	var jms: Dictionary = svc.mon_state(str(junior_i["uid"]))
+	assert(float(jms.get("mentor_pts", 0.0)) > 0.0, "mentored junior must accrue attributed bonus points")
+	assert(not (svc.group_of(str(junior_i["uid"])) as Dictionary).is_empty(), "mentor group must persist across ticks")
+	print("MENTORING: after %d days %s attributed +%.1f pts / %d IVs to learning from %s; morale junior %d->%d, mentor %d->%d" % [
+		DAYS, junior_i["species"], float(jms.get("mentor_pts", 0.0)), int(jms.get("mentor_ivs", 0)),
+		mentor_i["species"], junior_morale_before, int(junior_i.get("morale", 70)),
+		mentor_morale_before, int(mentor_i.get("morale", 70))])
+	svc.disband_mentor_group(str(mentor_i["uid"]))
+	assert((svc.mentor_of(str(junior_i["uid"])) as Dictionary).is_empty(), "disband must free the juniors")
 
 	# --- workload verification: the rested Pokémon must have gained nothing
 	var rest_b: Dictionary = before[rest_mon["uid"]]

@@ -13,6 +13,8 @@ const CATS := {
 	"scout":    {"letter": "S", "color": Color("4dc3e6"), "label": "Scouting"},
 	"transfer": {"letter": "T", "color": Color("b07be8"), "label": "Transfers"},
 	"board":    {"letter": "B", "color": Color("e06060"), "label": "Board"},
+	"media":    {"letter": "P", "color": Color("e0824d"), "label": "Press"},
+	"staff":    {"letter": "C", "color": Color("52c7a8"), "label": "Coaching"},
 }
 
 var _initial_finances: Dictionary = {}   # club_id -> starting balance (from static world.json)

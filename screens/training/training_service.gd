@@ -116,6 +116,45 @@ const STAT_LABELS := {"hp": "HP", "atk": "Attack", "def": "Defense",
 
 const GROWTH_MULT := {"fast": 1.15, "medium_fast": 1.0, "medium_slow": 0.9, "slow": 0.8}
 
+# --- mentoring (the FM Mentoring-tab analog) --------------------------------
+# Veterans whose own development has flattened are grouped with rapid
+# developers. The junior trains in the mentor's shadow every day: a real
+# development multiplier, a growth-focus bias from the mentor's personality,
+# and a morale lift on both sides — all applied in the daily tick and
+# attributed in the Development report ("learning from X").
+const MENTOR_AGE_MULT := 0.7    # age_mult at/below this = veteran, can mentor
+const JUNIOR_AGE_MULT := 1.15   # age_mult at/above this = rapid developer, can be mentored
+const MENTOR_LEVEL_GAP := 3     # mentor must be at least this many levels above
+const MENTOR_AGE_GAP := 24      # ...and this many months older
+const MENTOR_MAX_JUNIORS := 2   # attention splits beyond one junior
+
+const MENTOR_BASE_BONUS := 0.12       # every valid pairing: +12% development
+const MENTOR_TYPE_BONUS := 0.06       # shared type: the craft transfers directly
+const MENTOR_GAP_BONUS_PER_LVL := 0.008  # more to learn from a much stronger mentor
+const MENTOR_GAP_BONUS_CAP := 0.08
+const MENTOR_SPLIT_PENALTY := 0.04    # mentor watching two juniors at once
+const PERSONALITY_STAT_MULT := 1.25   # juniors' work on the mentor's favoured stats
+const STUDIOUS_MOVE_MULT := 1.3       # Studious mentors speed up juniors' move drills
+const PRO_STRAIN_MULT := 0.9          # Professional mentors teach strain discipline
+
+# A mentor's personality decides which growth focus rubs off on its juniors.
+# Derived deterministically from the Pokémon itself (species leaning + uid),
+# so it is stable across sessions with no extra saved state.
+const PERSONALITIES := {
+	"driven": {"label": "Driven", "stats": ["atk", "hp"],
+		"desc": "drills relentless physical work — juniors' Attack and HP training bites harder"},
+	"calm": {"label": "Calm Mind", "stats": ["spa", "spd"],
+		"desc": "steers juniors toward special technique — Sp. Atk and Sp. Def work bites harder"},
+	"stoic": {"label": "Stoic", "stats": ["def", "spd"],
+		"desc": "teaches juniors to soak punishment — Defense and Sp. Def work bites harder"},
+	"lively": {"label": "Lively", "stats": ["spe", "hp"],
+		"desc": "keeps juniors quick and sharp — Speed and HP work bites harder"},
+	"studious": {"label": "Studious", "stats": [],
+		"desc": "passes on technique — juniors master new moves ×1.3 faster"},
+	"professional": {"label": "Professional", "stats": [],
+		"desc": "models perfect habits — extra development across the board and ×0.9 strain intake"},
+}
+
 var state: Dictionary = {}
 
 
@@ -214,6 +253,7 @@ func _default_state() -> Dictionary:
 		"coaches": _auto_assign_coaches(),
 		"mons": {},
 		"week_gains": {},
+		"mentoring": [],   # groups: [{"mentor": uid, "juniors": [uid, ...]}]
 	}
 
 
@@ -249,12 +289,22 @@ func _load_state() -> void:
 				state["overrides"] = {}
 			if not state.has("view_weeks"):
 				state["view_weeks"] = 2
+			if not state.has("mentoring"):
+				state["mentoring"] = []
 			return
 	state = _default_state()
 	save_state()
 
 
+## Set by throwaway verification runs (dev_check): keeps the whole model in
+## memory but never writes user://training.json, so an unsaved alternate
+## timeline cannot contaminate the real career's training state on disk.
+var no_disk := false
+
+
 func save_state() -> void:
+	if no_disk:
+		return
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(state))
@@ -280,13 +330,18 @@ func mon_state(uid: String) -> Dictionary:
 			"move": null,
 			"snaps": [],
 			"learned": [],
+			"mentor_pts": 0.0,
+			"mentor_ivs": 0,
 		}
 	var m: Dictionary = mons[uid]
-	# migrate pre-workload saves in place
+	# migrate pre-workload / pre-mentoring saves in place
 	if not m.has("load"):
 		m["load"] = "auto"
 	if not m.has("complained"):
 		m["complained"] = ""
+	if not m.has("mentor_pts"):
+		m["mentor_pts"] = 0.0
+		m["mentor_ivs"] = 0
 	return m
 
 
@@ -583,6 +638,206 @@ func workload_reaction(inst: Dictionary) -> String:
 	return ""
 
 
+# --------------------------------------------------------------- mentoring
+
+func mentor_groups() -> Array:
+	if not state.has("mentoring"):
+		state["mentoring"] = []
+	return state["mentoring"]
+
+
+## A mentor's personality (stable: species stat leaning + uid hash, no state).
+func personality(inst: Dictionary) -> String:
+	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
+	var best := "atk"
+	var best_v := -1
+	for s in ["atk", "spa", "def", "spe"]:
+		if int(sp["base"][s]) > best_v:
+			best_v = int(sp["base"][s])
+			best = s
+	var lean: String = {"atk": "driven", "spa": "calm", "def": "stoic", "spe": "lively"}[best]
+	var pool: Array = [lean, "studious", "professional"]
+	return pool[absi(str(inst["uid"]).hash()) % pool.size()]
+
+
+func personality_label(inst: Dictionary) -> String:
+	return str(PERSONALITIES[personality(inst)]["label"])
+
+
+func mentor_eligible(inst: Dictionary) -> bool:
+	return age_mult(int(inst.get("age_months", 48))) <= MENTOR_AGE_MULT
+
+
+func junior_eligible(inst: Dictionary) -> bool:
+	return age_mult(int(inst.get("age_months", 48))) >= JUNIOR_AGE_MULT
+
+
+## The group a uid belongs to (as mentor or junior), or {}.
+func group_of(uid: String) -> Dictionary:
+	for g in mentor_groups():
+		if str(g["mentor"]) == uid or (g["juniors"] as Array).has(uid):
+			return g
+	return {}
+
+
+func is_mentor(uid: String) -> bool:
+	for g in mentor_groups():
+		if str(g["mentor"]) == uid:
+			return true
+	return false
+
+
+## The mentor INSTANCE for a junior uid, or {}.
+func mentor_of(uid: String) -> Dictionary:
+	for g in mentor_groups():
+		if (g["juniors"] as Array).has(uid):
+			return _find_instance(str(g["mentor"]))
+	return {}
+
+
+## "" if this pairing is allowed, else the human reason it is not.
+func can_mentor(mentor: Dictionary, junior: Dictionary) -> String:
+	if not mentor_eligible(mentor):
+		return "%s is not a veteran yet — only Pokémon whose own growth has flattened can mentor" % _display_name(mentor)
+	if not junior_eligible(junior):
+		return "%s is past rapid development — mentoring only accelerates young Pokémon" % _display_name(junior)
+	if int(mentor["level"]) - int(junior["level"]) < MENTOR_LEVEL_GAP:
+		return "needs a mentor at least %d levels above (%s is Lv %d vs Lv %d)" % [
+			MENTOR_LEVEL_GAP, _display_name(mentor), int(mentor["level"]), int(junior["level"])]
+	if int(mentor["age_months"]) - int(junior["age_months"]) < MENTOR_AGE_GAP:
+		return "age gap under %d months — too close in age to look up to" % MENTOR_AGE_GAP
+	return ""
+
+
+func create_mentor_group(mentor_uid: String) -> String:
+	var m := _find_instance(mentor_uid)
+	if m.is_empty():
+		return "not in the squad"
+	if not mentor_eligible(m):
+		return "%s is not a veteran yet" % _display_name(m)
+	if not group_of(mentor_uid).is_empty():
+		return "%s is already in a mentor group" % _display_name(m)
+	mentor_groups().append({"mentor": mentor_uid, "juniors": []})
+	save_state()
+	training_changed.emit()
+	return ""
+
+
+func disband_mentor_group(mentor_uid: String) -> void:
+	var groups := mentor_groups()
+	for i in range(groups.size() - 1, -1, -1):
+		if str(groups[i]["mentor"]) == mentor_uid:
+			groups.remove_at(i)
+	save_state()
+	training_changed.emit()
+
+
+func add_junior(mentor_uid: String, junior_uid: String) -> String:
+	var g := group_of(mentor_uid)
+	if g.is_empty() or str(g.get("mentor", "")) != mentor_uid:
+		return "no such mentor group"
+	if (g["juniors"] as Array).size() >= MENTOR_MAX_JUNIORS:
+		return "a mentor can watch at most %d juniors" % MENTOR_MAX_JUNIORS
+	if not group_of(junior_uid).is_empty():
+		return "already in a mentor group"
+	var err := can_mentor(_find_instance(mentor_uid), _find_instance(junior_uid))
+	if err != "":
+		return err
+	(g["juniors"] as Array).append(junior_uid)
+	save_state()
+	training_changed.emit()
+	return ""
+
+
+func remove_junior(junior_uid: String) -> void:
+	for g in mentor_groups():
+		(g["juniors"] as Array).erase(junior_uid)
+	save_state()
+	training_changed.emit()
+
+
+## The live daily effect of mentoring on a JUNIOR ({} if not mentored):
+##   mult       — overall development multiplier (base + type + level gap +
+##                personality − attention split)
+##   stat_mult  — extra ×1.25 on the stats the mentor's personality favours
+##   move_mult  — Studious mentors accelerate the junior's move pipeline
+##   strain_mult— Professional mentors teach strain discipline
+func mentoring_effect(junior_uid: String) -> Dictionary:
+	var m := mentor_of(junior_uid)
+	if m.is_empty():
+		return {}
+	var junior := _find_instance(junior_uid)
+	if junior.is_empty() or can_mentor(m, junior) != "":
+		return {}
+	var g := group_of(junior_uid)
+	var pk := personality(m)
+	var compat := _shares_type(m, junior)
+	var mult := pairing_mult(m, junior, (g["juniors"] as Array).size())
+	var stat_mult := {}
+	for s in PERSONALITIES[pk]["stats"]:
+		stat_mult[s] = PERSONALITY_STAT_MULT
+	return {
+		"mult": mult, "stat_mult": stat_mult,
+		"move_mult": STUDIOUS_MOVE_MULT if pk == "studious" else 1.0,
+		"strain_mult": PRO_STRAIN_MULT if pk == "professional" else 1.0,
+		"mentor": m, "mentor_name": _display_name(m),
+		"personality": pk, "compat": compat,
+	}
+
+
+## The development multiplier a mentor/junior pairing produces at a given
+## group size (also used by the UI to preview a pairing before adding it).
+func pairing_mult(m: Dictionary, junior: Dictionary, group_size: int) -> float:
+	var mult := 1.0 + MENTOR_BASE_BONUS
+	if _shares_type(m, junior):
+		mult += MENTOR_TYPE_BONUS
+	mult += minf(MENTOR_GAP_BONUS_CAP,
+		MENTOR_GAP_BONUS_PER_LVL * float(int(m["level"]) - int(junior["level"])))
+	if personality(m) == "professional":
+		mult += 0.05
+	if group_size >= 2:
+		mult -= MENTOR_SPLIT_PENALTY
+	return mult
+
+
+func _shares_type(a: Dictionary, b: Dictionary) -> bool:
+	var ta: Array = DataStore.species(int(a["species_id"]))["types"]
+	var tb: Array = DataStore.species(int(b["species_id"]))["types"]
+	for t in ta:
+		if tb.has(t):
+			return true
+	return false
+
+
+## Keep groups honest as the world moves: drop members who left the squad and
+## juniors who have aged out of rapid development (with an inbox note).
+func _validate_mentoring(date: String) -> void:
+	var groups := mentor_groups()
+	var changed := false
+	for i in range(groups.size() - 1, -1, -1):
+		var g: Dictionary = groups[i]
+		var m := _find_instance(str(g["mentor"]))
+		if m.is_empty() or not mentor_eligible(m):
+			groups.remove_at(i)
+			changed = true
+			continue
+		var juniors: Array = g["juniors"]
+		for j in range(juniors.size() - 1, -1, -1):
+			var junior := _find_instance(str(juniors[j]))
+			if junior.is_empty():
+				juniors.remove_at(j)
+				changed = true
+			elif not junior_eligible(junior):
+				GameState.add_inbox_message(date,
+					"%s has outgrown mentoring" % _display_name(junior),
+					"%s is no longer in rapid development and gains nothing more from shadowing %s. The mentor group has been adjusted." %
+					[_display_name(junior), _display_name(m)])
+				juniors.remove_at(j)
+				changed = true
+	if changed:
+		training_changed.emit()
+
+
 ## Estimated net strain change per Pokémon for a real calendar DATE,
 ## using the fixture-adjusted plan (matches add squad-average match strain).
 func day_strain_load(date: String) -> float:
@@ -683,6 +938,7 @@ func weekly_projection(inst: Dictionary) -> Dictionary:
 	var g := growth_mult(sp.get("growth", "medium_fast"))
 	var a := age_mult(int(inst.get("age_months", 48)))
 	var lm := load_mult(inst)  # personal workload scales the whole projection
+	var me := mentoring_effect(str(inst["uid"]))  # mentored juniors project faster
 	var pts := {}
 	for s in STATS:
 		pts[s] = 0.0
@@ -695,6 +951,8 @@ func weekly_projection(inst: Dictionary) -> Dictionary:
 			for s in weights:
 				var v: float = weights[s] * GAIN_SCALE * im * lm * coach_mult(f) * g * a
 				v *= _focus_mult(ms, s) * _youth_bonus(inst, f)
+				if not me.is_empty():
+					v *= float(me["mult"]) * float((me["stat_mult"] as Dictionary).get(s, 1.0))
 				pts[s] += v
 	var pen := _strain_penalty(float(ms["strain"]))
 	for s in STATS:
@@ -725,7 +983,12 @@ func move_learn_rate(inst: Dictionary) -> float:
 	var tech_per_day := float(technique_sessions_per_week()) / 7.0
 	var a := 1.15 if int(inst.get("age_months", 48)) <= 40 else (
 		1.0 if int(inst.get("age_months", 48)) <= 84 else 0.85)
-	return (1.2 + 2.6 * tech_per_day) * coach_mult("technique") * a * move_load_factor(inst)
+	var rate := (1.2 + 2.6 * tech_per_day) * coach_mult("technique") * a * move_load_factor(inst)
+	# A Studious mentor drills technique into its juniors between sessions.
+	var me := mentoring_effect(str(inst["uid"]))
+	if not me.is_empty():
+		rate *= float(me["move_mult"])
+	return rate
 
 
 func eligible_moves(inst: Dictionary) -> Array:
@@ -929,6 +1192,7 @@ func _strain_penalty(s: float) -> float:
 
 
 func _process_day(date: String) -> void:
+	_validate_mentoring(date)
 	var plan := effective_plan(date)
 	var inten: String = plan["intensity"]
 	var im := float(INTENSITY_MULT[inten])
@@ -949,6 +1213,10 @@ func _process_day(date: String) -> void:
 		var lkey := effective_load(inst)
 		var lm := float(LOAD_MULT[lkey])
 		var lsm := float(LOAD_STRAIN[lkey])
+		# Mentoring: a junior in a group trains in its mentor's shadow — extra
+		# development, a growth-focus bias from the mentor's personality, and
+		# (Professional mentors) better strain discipline. Attributed below.
+		var me := mentoring_effect(uid)
 		var strain_delta := 0.0
 
 		for slot in ["am", "pm"]:
@@ -973,7 +1241,10 @@ func _process_day(date: String) -> void:
 				# does pool/physio recovery work instead.
 				strain_delta -= 6.0
 				continue
-			strain_delta += float(INTENSITY_STRAIN[inten]) * lsm * (1.15 if a < 0.7 else 1.0)
+			var session_strain := float(INTENSITY_STRAIN[inten]) * lsm * (1.15 if a < 0.7 else 1.0)
+			if not me.is_empty():
+				session_strain *= float(me["strain_mult"])
+			strain_delta += session_strain
 			if f == "technique":
 				continue  # handled by the move pipeline below
 			var weights: Dictionary = FOCUS_STATS[f]
@@ -981,8 +1252,12 @@ func _process_day(date: String) -> void:
 				var v: float = weights[stat] * GAIN_SCALE * im * lm * coach_mult(f) * g * a
 				v *= _focus_mult(ms, stat) * _youth_bonus(inst, f) * pen
 				v *= rng.randf_range(0.85, 1.15)
+				if not me.is_empty():
+					var mv_ := v * float(me["mult"]) * float((me["stat_mult"] as Dictionary).get(stat, 1.0))
+					ms["mentor_pts"] = float(ms.get("mentor_pts", 0.0)) + (mv_ - v)
+					v = mv_
 				ms["acc"][stat] = float(ms["acc"][stat]) + v
-				_maybe_convert_iv(inst, ms, stat)
+				_maybe_convert_iv(inst, ms, stat, not me.is_empty())
 
 		# --- the fixture itself is a physical load (starters carry most of it)
 		if is_matchday:
@@ -1035,6 +1310,13 @@ func _process_day(date: String) -> void:
 					"%s is fresh (%d%% strain) and at a rapid stage of development, but is being held on a %s individual load. The coaches feel valuable growth is being wasted; morale will suffer if this continues." %
 					[_display_name(inst), int(ms["strain"]), LOAD_LABELS[load_setting(uid)]])
 
+		# --- mentoring morale: juniors are lifted by the guidance; the veteran
+		# gets renewed purpose from passing its craft on (both capped at 95).
+		if not me.is_empty() and rng.randf() < 0.15:
+			inst["morale"] = mini(95, int(inst.get("morale", 70)) + 1)
+		if is_mentor(uid) and rng.randf() < 0.12:
+			inst["morale"] = mini(95, int(inst.get("morale", 70)) + 1)
+
 		# --- daily stat snapshot for the development report (keep ~10 weeks)
 		var snaps: Array = ms["snaps"]
 		snaps.append({"date": date, "stats": current_stats(inst)})
@@ -1047,13 +1329,15 @@ func _process_day(date: String) -> void:
 		state["week_gains"] = {}
 
 
-func _maybe_convert_iv(inst: Dictionary, ms: Dictionary, stat: String) -> void:
+func _maybe_convert_iv(inst: Dictionary, ms: Dictionary, stat: String, mentored: bool = false) -> void:
 	var iv := int(inst["ivs"].get(stat, 8))
 	while iv < 15 and float(ms["acc"][stat]) >= iv_cost(iv):
 		ms["acc"][stat] = float(ms["acc"][stat]) - iv_cost(iv)
 		iv += 1
 		inst["ivs"][stat] = iv
 		ms["gained"][stat] = int(ms["gained"][stat]) + 1
+		if mentored:
+			ms["mentor_ivs"] = int(ms.get("mentor_ivs", 0)) + 1
 		var wk: Dictionary = state["week_gains"]
 		var key := "%s|%s" % [inst["uid"], stat]
 		wk[key] = int(wk.get(key, 0)) + 1
@@ -1089,6 +1373,9 @@ func _send_week_report(date: String) -> void:
 		if inst.is_empty():
 			continue
 		var nm := _display_name(inst)
+		var mentor := mentor_of(str(inst["uid"]))
+		if not mentor.is_empty():
+			nm += " (learning from %s)" % _display_name(mentor)
 		if not by_mon.has(nm):
 			by_mon[nm] = []
 		by_mon[nm].append("%s +%d" % [STAT_LABELS[parts[1]], int(state["week_gains"][key])])

@@ -37,6 +37,7 @@
       "Poison Sting",
       "Sludge"
      ],
+     "held_item": null,
      "condition": 81,
      "fitness": 97,
      "morale": 94,
@@ -66,6 +67,7 @@
       "Water Gun",
       "Waterfall"
      ],
+     "held_item": null,
      "condition": 93,
      "fitness": 98,
      "morale": 62,
@@ -95,6 +97,7 @@
       "Psychic",
       "Recover"
      ],
+     "held_item": "eviolite",
      "condition": 84,
      "fitness": 81,
      "morale": 72,
@@ -124,6 +127,7 @@
       "Toxic",
       "Sludge"
      ],
+     "held_item": "poison_barb",
      "condition": 96,
      "fitness": 79,
      "morale": 52,
@@ -153,6 +157,7 @@
       "Waterfall",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 92,
      "fitness": 96,
      "morale": 67,
@@ -182,6 +187,7 @@
       "Quick Attack",
       "Agility"
      ],
+     "held_item": null,
      "condition": 80,
      "fitness": 97,
      "morale": 93,
@@ -211,6 +217,7 @@
       "Harden",
       "Rock Throw"
      ],
+     "held_item": null,
      "condition": 82,
      "fitness": 96,
      "morale": 51,
@@ -240,6 +247,7 @@
       "String Shot",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 97,
      "fitness": 83,
      "morale": 77,
@@ -269,6 +277,7 @@
       "Peck",
       "Drill Peck"
      ],
+     "held_item": null,
      "condition": 71,
      "fitness": 92,
      "morale": 50,
@@ -298,6 +307,7 @@
       "Fly",
       "Peck"
      ],
+     "held_item": null,
      "condition": 97,
      "fitness": 90,
      "morale": 83,
@@ -327,6 +337,7 @@
       "Rock Slide",
       "Reflect"
      ],
+     "held_item": null,
      "condition": 100,
      "fitness": 90,
      "morale": 86,
@@ -356,6 +367,7 @@
       "Poison Sting",
       "String Shot"
      ],
+     "held_item": null,
      "condition": 80,
      "fitness": 77,
      "morale": 65,
@@ -391,7 +403,13 @@
       "youth": 9
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 4,
+    "super_potion": 2,
+    "hyper_potion": 2,
+    "silk_scarf": 1
+   }
   },
   {
    "id": "club01",
@@ -424,6 +442,7 @@
       "Slash",
       "Leer"
      ],
+     "held_item": null,
      "condition": 88,
      "fitness": 87,
      "morale": 75,
@@ -453,6 +472,7 @@
       "Slash",
       "Harden"
      ],
+     "held_item": "hard_stone",
      "condition": 73,
      "fitness": 90,
      "morale": 61,
@@ -482,6 +502,7 @@
       "Water Gun",
       "Surf"
      ],
+     "held_item": null,
      "condition": 100,
      "fitness": 82,
      "morale": 68,
@@ -511,6 +532,7 @@
       "Petal Dance",
       "Twineedle"
      ],
+     "held_item": null,
      "condition": 70,
      "fitness": 88,
      "morale": 71,
@@ -540,6 +562,7 @@
       "Double Team",
       "Flamethrower"
      ],
+     "held_item": "charcoal",
      "condition": 88,
      "fitness": 88,
      "morale": 85,
@@ -569,6 +592,7 @@
       "Reflect",
       "Psybeam"
      ],
+     "held_item": null,
      "condition": 97,
      "fitness": 99,
      "morale": 69,
@@ -598,6 +622,7 @@
       "Bubble Beam",
       "Surf"
      ],
+     "held_item": null,
      "condition": 71,
      "fitness": 82,
      "morale": 73,
@@ -627,6 +652,7 @@
       "Screech",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 81,
      "fitness": 95,
      "morale": 82,
@@ -686,7 +712,16 @@
       "youth": 5
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 2,
+    "full_heal": 3,
+    "revive": 1,
+    "x_speed": 2,
+    "hyper_potion": 4,
+    "black_belt": 2
+   }
   },
   {
    "id": "club02",
@@ -719,6 +754,7 @@
       "Hydro Pump",
       "Double Team"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 100,
      "morale": 70,
@@ -748,6 +784,7 @@
       "Tail Whip",
       "Dig"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 81,
      "morale": 62,
@@ -777,6 +814,7 @@
       "Headbutt",
       "Ember"
      ],
+     "held_item": null,
      "condition": 96,
      "fitness": 99,
      "morale": 53,
@@ -806,6 +844,7 @@
       "Screech",
       "Slash"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 83,
      "morale": 82,
@@ -835,6 +874,7 @@
       "Leer",
       "Sludge"
      ],
+     "held_item": "sitrus_berry",
      "condition": 85,
      "fitness": 75,
      "morale": 79,
@@ -864,6 +904,7 @@
       "Acid",
       "Body Slam"
      ],
+     "held_item": null,
      "condition": 100,
      "fitness": 84,
      "morale": 67,
@@ -893,6 +934,7 @@
       "Light Screen",
       "Acid"
      ],
+     "held_item": null,
      "condition": 99,
      "fitness": 98,
      "morale": 82,
@@ -922,6 +964,7 @@
       "Sludge",
       "Harden"
      ],
+     "held_item": null,
      "condition": 86,
      "fitness": 78,
      "morale": 64,
@@ -951,6 +994,7 @@
       "Double-Edge",
       "Fly"
      ],
+     "held_item": "silk_scarf",
      "condition": 71,
      "fitness": 81,
      "morale": 83,
@@ -980,6 +1024,7 @@
       "Smog",
       "Swift"
      ],
+     "held_item": "focus_sash",
      "condition": 73,
      "fitness": 89,
      "morale": 89,
@@ -1009,6 +1054,7 @@
       "Agility",
       "Recover"
      ],
+     "held_item": null,
      "condition": 87,
      "fitness": 87,
      "morale": 70,
@@ -1068,7 +1114,14 @@
       "youth": 15
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 4,
+    "paralyze_heal": 1,
+    "antidote": 1,
+    "leftovers": 1
+   }
   },
   {
    "id": "club03",
@@ -1101,6 +1154,7 @@
       "Double Kick",
       "Submission"
      ],
+     "held_item": null,
      "condition": 70,
      "fitness": 75,
      "morale": 68,
@@ -1130,6 +1184,7 @@
       "Surf",
       "Tail Whip"
      ],
+     "held_item": null,
      "condition": 77,
      "fitness": 90,
      "morale": 90,
@@ -1159,6 +1214,7 @@
       "Dig",
       "Slash"
      ],
+     "held_item": "leftovers",
      "condition": 96,
      "fitness": 99,
      "morale": 86,
@@ -1188,6 +1244,7 @@
       "Thunder",
       "Thunderbolt"
      ],
+     "held_item": null,
      "condition": 74,
      "fitness": 91,
      "morale": 52,
@@ -1217,6 +1274,7 @@
       "Psybeam",
       "Reflect"
      ],
+     "held_item": null,
      "condition": 93,
      "fitness": 99,
      "morale": 70,
@@ -1246,6 +1304,7 @@
       "Seismic Toss",
       "Headbutt"
      ],
+     "held_item": null,
      "condition": 100,
      "fitness": 84,
      "morale": 85,
@@ -1275,6 +1334,7 @@
       "Hydro Pump",
       "Tackle"
      ],
+     "held_item": null,
      "condition": 85,
      "fitness": 78,
      "morale": 51,
@@ -1304,6 +1364,7 @@
       "Slash",
       "Light Screen"
      ],
+     "held_item": "leftovers",
      "condition": 97,
      "fitness": 84,
      "morale": 66,
@@ -1333,6 +1394,7 @@
       "Karate Chop",
       "Double Kick"
      ],
+     "held_item": "lum_berry",
      "condition": 91,
      "fitness": 80,
      "morale": 54,
@@ -1362,6 +1424,7 @@
       "Confusion",
       "Growl"
      ],
+     "held_item": null,
      "condition": 92,
      "fitness": 89,
      "morale": 61,
@@ -1391,6 +1454,7 @@
       "Toxic",
       "Double Team"
      ],
+     "held_item": null,
      "condition": 92,
      "fitness": 90,
      "morale": 52,
@@ -1450,7 +1514,18 @@
       "youth": 10
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 2,
+    "full_heal": 2,
+    "revive": 1,
+    "antidote": 1,
+    "x_speed": 1,
+    "x_attack": 2,
+    "hyper_potion": 2,
+    "poison_barb": 1
+   }
   },
   {
    "id": "club04",
@@ -1483,6 +1558,7 @@
       "Acid",
       "Tackle"
      ],
+     "held_item": "poison_barb",
      "condition": 75,
      "fitness": 79,
      "morale": 86,
@@ -1512,6 +1588,7 @@
       "Harden",
       "Vine Whip"
      ],
+     "held_item": null,
      "condition": 70,
      "fitness": 98,
      "morale": 95,
@@ -1541,6 +1618,7 @@
       "Bone Club",
       "Sand Attack"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 89,
      "morale": 64,
@@ -1570,6 +1648,7 @@
       "Tackle",
       "Hypnosis"
      ],
+     "held_item": null,
      "condition": 74,
      "fitness": 99,
      "morale": 93,
@@ -1599,6 +1678,7 @@
       "Hydro Pump",
       "Water Gun"
      ],
+     "held_item": null,
      "condition": 90,
      "fitness": 99,
      "morale": 75,
@@ -1628,6 +1708,7 @@
       "Fire Spin",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 84,
      "fitness": 92,
      "morale": 94,
@@ -1657,6 +1738,7 @@
       "Waterfall",
       "Water Gun"
      ],
+     "held_item": "mystic_water",
      "condition": 92,
      "fitness": 96,
      "morale": 66,
@@ -1686,6 +1768,7 @@
       "Waterfall",
       "Harden"
      ],
+     "held_item": null,
      "condition": 81,
      "fitness": 98,
      "morale": 57,
@@ -1715,6 +1798,7 @@
       "Bone Club",
       "Earthquake"
      ],
+     "held_item": null,
      "condition": 77,
      "fitness": 79,
      "morale": 75,
@@ -1774,7 +1858,16 @@
       "youth": 8
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 2,
+    "revive": 1,
+    "awakening": 1,
+    "x_attack": 1,
+    "antidote": 1,
+    "poison_barb": 1
+   }
   },
   {
    "id": "club05",
@@ -1807,6 +1900,7 @@
       "Aurora Beam",
       "Surf"
      ],
+     "held_item": "sitrus_berry",
      "condition": 83,
      "fitness": 93,
      "morale": 63,
@@ -1836,6 +1930,7 @@
       "Tackle",
       "Thunder Wave"
      ],
+     "held_item": "quick_claw",
      "condition": 79,
      "fitness": 94,
      "morale": 63,
@@ -1865,6 +1960,7 @@
       "Wing Attack",
       "Fly"
      ],
+     "held_item": "silver_powder",
      "condition": 79,
      "fitness": 98,
      "morale": 58,
@@ -1894,6 +1990,7 @@
       "Quick Attack",
       "Mega Drain"
      ],
+     "held_item": null,
      "condition": 93,
      "fitness": 96,
      "morale": 83,
@@ -1923,6 +2020,7 @@
       "Tackle",
       "Smog"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 79,
      "morale": 77,
@@ -1952,6 +2050,7 @@
       "Fire Blast",
       "Fire Punch"
      ],
+     "held_item": null,
      "condition": 76,
      "fitness": 87,
      "morale": 56,
@@ -1981,6 +2080,7 @@
       "Mega Drain",
       "Razor Leaf"
      ],
+     "held_item": null,
      "condition": 77,
      "fitness": 96,
      "morale": 91,
@@ -2010,6 +2110,7 @@
       "Earthquake",
       "Rock Throw"
      ],
+     "held_item": "eviolite",
      "condition": 97,
      "fitness": 94,
      "morale": 57,
@@ -2039,6 +2140,7 @@
       "Quick Attack",
       "Tail Whip"
      ],
+     "held_item": null,
      "condition": 81,
      "fitness": 97,
      "morale": 90,
@@ -2086,7 +2188,18 @@
       "youth": 15
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 1,
+    "full_heal": 2,
+    "revive": 3,
+    "awakening": 2,
+    "x_attack": 1,
+    "hyper_potion": 1,
+    "poison_barb": 1,
+    "leftovers": 1
+   }
   },
   {
    "id": "club06",
@@ -2119,6 +2232,7 @@
       "Razor Leaf",
       "Smog"
      ],
+     "held_item": "miracle_seed",
      "condition": 95,
      "fitness": 75,
      "morale": 56,
@@ -2148,6 +2262,7 @@
       "Body Slam",
       "Acid"
      ],
+     "held_item": null,
      "condition": 90,
      "fitness": 93,
      "morale": 86,
@@ -2177,6 +2292,7 @@
       "Hyper Beam",
       "Quick Attack"
      ],
+     "held_item": "leftovers",
      "condition": 75,
      "fitness": 76,
      "morale": 89,
@@ -2206,6 +2322,7 @@
       "Hyper Beam",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 90,
      "fitness": 75,
      "morale": 60,
@@ -2235,6 +2352,7 @@
       "Tackle",
       "Smog"
      ],
+     "held_item": null,
      "condition": 84,
      "fitness": 91,
      "morale": 73,
@@ -2264,6 +2382,7 @@
       "Hyper Beam",
       "Body Slam"
      ],
+     "held_item": null,
      "condition": 89,
      "fitness": 97,
      "morale": 88,
@@ -2293,6 +2412,7 @@
       "Agility",
       "Bubble Beam"
      ],
+     "held_item": null,
      "condition": 77,
      "fitness": 83,
      "morale": 51,
@@ -2322,6 +2442,7 @@
       "Rock Throw",
       "Harden"
      ],
+     "held_item": null,
      "condition": 75,
      "fitness": 83,
      "morale": 60,
@@ -2357,7 +2478,17 @@
       "youth": 10
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 4,
+    "super_potion": 3,
+    "full_heal": 1,
+    "revive": 1,
+    "awakening": 1,
+    "x_attack": 2,
+    "twisted_spoon": 1,
+    "miracle_seed": 1
+   }
   },
   {
    "id": "club07",
@@ -2390,6 +2521,7 @@
       "Body Slam",
       "Reflect"
      ],
+     "held_item": null,
      "condition": 87,
      "fitness": 90,
      "morale": 83,
@@ -2419,6 +2551,7 @@
       "Fly",
       "Gust"
      ],
+     "held_item": null,
      "condition": 95,
      "fitness": 100,
      "morale": 73,
@@ -2448,6 +2581,7 @@
       "Soft-Boiled",
       "Seismic Toss"
      ],
+     "held_item": "leftovers",
      "condition": 95,
      "fitness": 80,
      "morale": 93,
@@ -2477,6 +2611,7 @@
       "Mega Drain",
       "Sludge"
      ],
+     "held_item": null,
      "condition": 85,
      "fitness": 80,
      "morale": 64,
@@ -2506,6 +2641,7 @@
       "Smog",
       "Light Screen"
      ],
+     "held_item": null,
      "condition": 83,
      "fitness": 99,
      "morale": 70,
@@ -2535,6 +2671,7 @@
       "Double-Edge",
       "Slash"
      ],
+     "held_item": null,
      "condition": 73,
      "fitness": 92,
      "morale": 50,
@@ -2564,6 +2701,7 @@
       "Hypnosis",
       "Recover"
      ],
+     "held_item": null,
      "condition": 94,
      "fitness": 89,
      "morale": 83,
@@ -2593,6 +2731,7 @@
       "Vine Whip",
       "Body Slam"
      ],
+     "held_item": null,
      "condition": 71,
      "fitness": 88,
      "morale": 64,
@@ -2622,6 +2761,7 @@
       "Harden",
       "Swift"
      ],
+     "held_item": "poison_barb",
      "condition": 96,
      "fitness": 87,
      "morale": 68,
@@ -2651,6 +2791,7 @@
       "Water Gun",
       "Rock Throw"
      ],
+     "held_item": null,
      "condition": 82,
      "fitness": 87,
      "morale": 52,
@@ -2680,6 +2821,7 @@
       "Hydro Pump",
       "Sludge"
      ],
+     "held_item": null,
      "condition": 78,
      "fitness": 97,
      "morale": 51,
@@ -2709,6 +2851,7 @@
       "Confusion",
       "Psybeam"
      ],
+     "held_item": "twisted_spoon",
      "condition": 81,
      "fitness": 79,
      "morale": 86,
@@ -2768,7 +2911,16 @@
       "youth": 9
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 3,
+    "full_heal": 2,
+    "revive": 3,
+    "hyper_potion": 4,
+    "antidote": 1,
+    "black_belt": 1
+   }
   },
   {
    "id": "club08",
@@ -2801,6 +2953,7 @@
       "Petal Dance",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 73,
      "fitness": 93,
      "morale": 75,
@@ -2830,6 +2983,7 @@
       "Hydro Pump",
       "Water Gun"
      ],
+     "held_item": null,
      "condition": 73,
      "fitness": 97,
      "morale": 75,
@@ -2859,6 +3013,7 @@
       "Acid",
       "Leer"
      ],
+     "held_item": null,
      "condition": 78,
      "fitness": 97,
      "morale": 73,
@@ -2888,6 +3043,7 @@
       "Aurora Beam",
       "Ice Beam"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 79,
      "morale": 64,
@@ -2917,6 +3073,7 @@
       "Solar Beam",
       "Petal Dance"
      ],
+     "held_item": null,
      "condition": 88,
      "fitness": 96,
      "morale": 78,
@@ -2946,6 +3103,7 @@
       "Body Slam",
       "Headbutt"
      ],
+     "held_item": "leftovers",
      "condition": 71,
      "fitness": 86,
      "morale": 87,
@@ -2975,6 +3133,7 @@
       "Tackle",
       "Thunder"
      ],
+     "held_item": null,
      "condition": 96,
      "fitness": 95,
      "morale": 94,
@@ -3004,6 +3163,7 @@
       "Gust",
       "Fly"
      ],
+     "held_item": null,
      "condition": 94,
      "fitness": 98,
      "morale": 81,
@@ -3033,6 +3193,7 @@
       "Psybeam",
       "Recover"
      ],
+     "held_item": null,
      "condition": 86,
      "fitness": 93,
      "morale": 61,
@@ -3062,6 +3223,7 @@
       "Harden",
       "Body Slam"
      ],
+     "held_item": null,
      "condition": 92,
      "fitness": 76,
      "morale": 70,
@@ -3091,6 +3253,7 @@
       "Thunder",
       "Tackle"
      ],
+     "held_item": "choice_scarf",
      "condition": 92,
      "fitness": 96,
      "morale": 89,
@@ -3120,6 +3283,7 @@
       "Low Kick",
       "Submission"
      ],
+     "held_item": null,
      "condition": 96,
      "fitness": 99,
      "morale": 56,
@@ -3149,6 +3313,7 @@
       "Double-Edge",
       "Body Slam"
      ],
+     "held_item": null,
      "condition": 91,
      "fitness": 83,
      "morale": 51,
@@ -3184,7 +3349,17 @@
       "youth": 14
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 4,
+    "super_potion": 3,
+    "full_heal": 2,
+    "revive": 1,
+    "awakening": 1,
+    "antidote": 2,
+    "hyper_potion": 2,
+    "silk_scarf": 1
+   }
   },
   {
    "id": "club09",
@@ -3217,6 +3392,7 @@
       "Recover",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 75,
      "morale": 76,
@@ -3246,6 +3422,7 @@
       "Gust",
       "Quick Attack"
      ],
+     "held_item": null,
      "condition": 99,
      "fitness": 93,
      "morale": 81,
@@ -3275,6 +3452,7 @@
       "Quick Attack",
       "Gust"
      ],
+     "held_item": null,
      "condition": 87,
      "fitness": 93,
      "morale": 50,
@@ -3304,6 +3482,7 @@
       "Thunderbolt",
       "Agility"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 88,
      "morale": 53,
@@ -3333,6 +3512,7 @@
       "Smog",
       "Toxic"
      ],
+     "held_item": null,
      "condition": 71,
      "fitness": 81,
      "morale": 67,
@@ -3362,6 +3542,7 @@
       "Poison Sting",
       "Sludge"
      ],
+     "held_item": null,
      "condition": 92,
      "fitness": 85,
      "morale": 84,
@@ -3391,6 +3572,7 @@
       "Surf",
       "Hydro Pump"
      ],
+     "held_item": null,
      "condition": 94,
      "fitness": 98,
      "morale": 56,
@@ -3420,6 +3602,7 @@
       "Quick Attack",
       "Toxic"
      ],
+     "held_item": null,
      "condition": 70,
      "fitness": 99,
      "morale": 72,
@@ -3449,6 +3632,7 @@
       "Smog",
       "Reflect"
      ],
+     "held_item": null,
      "condition": 72,
      "fitness": 89,
      "morale": 61,
@@ -3478,6 +3662,7 @@
       "Sludge",
       "Poison Sting"
      ],
+     "held_item": null,
      "condition": 86,
      "fitness": 93,
      "morale": 52,
@@ -3507,6 +3692,7 @@
       "Double Kick",
       "Karate Chop"
      ],
+     "held_item": "black_belt",
      "condition": 77,
      "fitness": 77,
      "morale": 91,
@@ -3536,6 +3722,7 @@
       "Reflect",
       "Hydro Pump"
      ],
+     "held_item": "sitrus_berry",
      "condition": 87,
      "fitness": 78,
      "morale": 67,
@@ -3583,7 +3770,17 @@
       "youth": 5
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 2,
+    "full_heal": 2,
+    "paralyze_heal": 1,
+    "x_speed": 2,
+    "awakening": 2,
+    "black_belt": 1,
+    "silk_scarf": 1
+   }
   },
   {
    "id": "club10",
@@ -3616,6 +3813,7 @@
       "Quick Attack",
       "Hypnosis"
      ],
+     "held_item": null,
      "condition": 88,
      "fitness": 76,
      "morale": 72,
@@ -3645,6 +3843,7 @@
       "Body Slam",
       "Reflect"
      ],
+     "held_item": "lum_berry",
      "condition": 98,
      "fitness": 90,
      "morale": 72,
@@ -3674,6 +3873,7 @@
       "Screech",
       "Slash"
      ],
+     "held_item": null,
      "condition": 72,
      "fitness": 96,
      "morale": 87,
@@ -3703,6 +3903,7 @@
       "Icy Wind",
       "Gust"
      ],
+     "held_item": null,
      "condition": 85,
      "fitness": 88,
      "morale": 94,
@@ -3732,6 +3933,7 @@
       "Gust",
       "Drill Peck"
      ],
+     "held_item": "lum_berry",
      "condition": 75,
      "fitness": 92,
      "morale": 90,
@@ -3761,6 +3963,7 @@
       "Sand Attack",
       "Focus Energy"
      ],
+     "held_item": null,
      "condition": 73,
      "fitness": 79,
      "morale": 71,
@@ -3790,6 +3993,7 @@
       "Body Slam",
       "Leech Life"
      ],
+     "held_item": "lum_berry",
      "condition": 90,
      "fitness": 78,
      "morale": 70,
@@ -3819,6 +4023,7 @@
       "Slash",
       "Acid"
      ],
+     "held_item": null,
      "condition": 89,
      "fitness": 100,
      "morale": 51,
@@ -3848,6 +4053,7 @@
       "Fire Blast",
       "Ember"
      ],
+     "held_item": null,
      "condition": 81,
      "fitness": 99,
      "morale": 60,
@@ -3877,6 +4083,7 @@
       "Gust",
       "Double-Edge"
      ],
+     "held_item": null,
      "condition": 87,
      "fitness": 83,
      "morale": 83,
@@ -3912,7 +4119,14 @@
       "youth": 6
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 2,
+    "full_heal": 2,
+    "x_attack": 1,
+    "hard_stone": 1
+   }
   },
   {
    "id": "club11",
@@ -3945,6 +4159,7 @@
       "Slash",
       "Tackle"
      ],
+     "held_item": null,
      "condition": 82,
      "fitness": 85,
      "morale": 79,
@@ -3974,6 +4189,7 @@
       "Water Gun",
       "Harden"
      ],
+     "held_item": null,
      "condition": 84,
      "fitness": 80,
      "morale": 69,
@@ -4003,6 +4219,7 @@
       "Drill Peck",
       "Peck"
      ],
+     "held_item": "sitrus_berry",
      "condition": 97,
      "fitness": 99,
      "morale": 66,
@@ -4032,6 +4249,7 @@
       "Ember",
       "Flame Wheel"
      ],
+     "held_item": null,
      "condition": 84,
      "fitness": 91,
      "morale": 65,
@@ -4061,6 +4279,7 @@
       "Pin Missile",
       "Double Team"
      ],
+     "held_item": "focus_sash",
      "condition": 99,
      "fitness": 87,
      "morale": 91,
@@ -4090,6 +4309,7 @@
       "Quick Attack",
       "Headbutt"
      ],
+     "held_item": null,
      "condition": 75,
      "fitness": 75,
      "morale": 68,
@@ -4119,6 +4339,7 @@
       "Swift",
       "Harden"
      ],
+     "held_item": null,
      "condition": 86,
      "fitness": 94,
      "morale": 63,
@@ -4148,6 +4369,7 @@
       "Recover",
       "Psychic"
      ],
+     "held_item": null,
      "condition": 74,
      "fitness": 94,
      "morale": 69,
@@ -4177,6 +4399,7 @@
       "Leer",
       "Psychic"
      ],
+     "held_item": null,
      "condition": 84,
      "fitness": 89,
      "morale": 89,
@@ -4206,6 +4429,7 @@
       "Headbutt",
       "Gust"
      ],
+     "held_item": null,
      "condition": 85,
      "fitness": 84,
      "morale": 74,
@@ -4265,7 +4489,15 @@
       "youth": 15
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 4,
+    "full_heal": 2,
+    "revive": 2,
+    "antidote": 1,
+    "silver_powder": 1
+   }
   },
   {
    "id": "club12",
@@ -4298,6 +4530,7 @@
       "Hyper Beam",
       "Fly"
      ],
+     "held_item": null,
      "condition": 70,
      "fitness": 95,
      "morale": 81,
@@ -4327,6 +4560,7 @@
       "Quick Attack",
       "Thunder Wave"
      ],
+     "held_item": "focus_sash",
      "condition": 98,
      "fitness": 75,
      "morale": 65,
@@ -4356,6 +4590,7 @@
       "Slash",
       "Screech"
      ],
+     "held_item": null,
      "condition": 76,
      "fitness": 82,
      "morale": 64,
@@ -4385,6 +4620,7 @@
       "Growl",
       "Sludge"
      ],
+     "held_item": null,
      "condition": 73,
      "fitness": 92,
      "morale": 54,
@@ -4414,6 +4650,7 @@
       "Ember",
       "Flame Wheel"
      ],
+     "held_item": null,
      "condition": 90,
      "fitness": 96,
      "morale": 87,
@@ -4443,6 +4680,7 @@
       "Water Gun",
       "Waterfall"
      ],
+     "held_item": null,
      "condition": 97,
      "fitness": 88,
      "morale": 69,
@@ -4472,6 +4710,7 @@
       "Reflect",
       "Sludge"
      ],
+     "held_item": null,
      "condition": 89,
      "fitness": 90,
      "morale": 65,
@@ -4501,6 +4740,7 @@
       "Sludge",
       "Acid"
      ],
+     "held_item": "sitrus_berry",
      "condition": 98,
      "fitness": 95,
      "morale": 88,
@@ -4530,6 +4770,7 @@
       "Dig",
       "Double Team"
      ],
+     "held_item": null,
      "condition": 75,
      "fitness": 100,
      "morale": 68,
@@ -4559,6 +4800,7 @@
       "Harden",
       "Hydro Pump"
      ],
+     "held_item": "lum_berry",
      "condition": 96,
      "fitness": 76,
      "morale": 84,
@@ -4588,6 +4830,7 @@
       "Thunder Shock",
       "Thunder Punch"
      ],
+     "held_item": null,
      "condition": 96,
      "fitness": 95,
      "morale": 55,
@@ -4647,7 +4890,15 @@
       "youth": 10
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 4,
+    "full_heal": 1,
+    "revive": 1,
+    "x_attack": 1,
+    "hard_stone": 1
+   }
   },
   {
    "id": "club13",
@@ -4680,6 +4931,7 @@
       "Hydro Pump",
       "Waterfall"
      ],
+     "held_item": null,
      "condition": 84,
      "fitness": 79,
      "morale": 52,
@@ -4709,6 +4961,7 @@
       "Drill Peck",
       "Double-Edge"
      ],
+     "held_item": null,
      "condition": 77,
      "fitness": 95,
      "morale": 82,
@@ -4738,6 +4991,7 @@
       "Smog",
       "Poison Sting"
      ],
+     "held_item": "lum_berry",
      "condition": 87,
      "fitness": 91,
      "morale": 74,
@@ -4767,6 +5021,7 @@
       "Sludge",
       "Double Team"
      ],
+     "held_item": null,
      "condition": 90,
      "fitness": 96,
      "morale": 57,
@@ -4796,6 +5051,7 @@
       "Screech",
       "Slash"
      ],
+     "held_item": null,
      "condition": 94,
      "fitness": 98,
      "morale": 75,
@@ -4825,6 +5081,7 @@
       "Surf",
       "Smog"
      ],
+     "held_item": "sitrus_berry",
      "condition": 96,
      "fitness": 78,
      "morale": 50,
@@ -4854,6 +5111,7 @@
       "Harden",
       "Hyper Beam"
      ],
+     "held_item": null,
      "condition": 90,
      "fitness": 84,
      "morale": 78,
@@ -4883,6 +5141,7 @@
       "Sludge",
       "Hydro Pump"
      ],
+     "held_item": "poison_barb",
      "condition": 81,
      "fitness": 93,
      "morale": 73,
@@ -4912,6 +5171,7 @@
       "Double-Edge",
       "Slash"
      ],
+     "held_item": null,
      "condition": 71,
      "fitness": 95,
      "morale": 55,
@@ -4941,6 +5201,7 @@
       "Water Gun",
       "Surf"
      ],
+     "held_item": null,
      "condition": 97,
      "fitness": 96,
      "morale": 51,
@@ -4976,7 +5237,16 @@
       "youth": 9
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 6,
+    "super_potion": 1,
+    "full_heal": 2,
+    "revive": 1,
+    "paralyze_heal": 2,
+    "antidote": 2,
+    "sitrus_berry": 1
+   }
   },
   {
    "id": "club14",
@@ -5009,6 +5279,7 @@
       "Leer",
       "Submission"
      ],
+     "held_item": null,
      "condition": 95,
      "fitness": 82,
      "morale": 51,
@@ -5038,6 +5309,7 @@
       "Toxic",
       "Body Slam"
      ],
+     "held_item": null,
      "condition": 71,
      "fitness": 88,
      "morale": 84,
@@ -5067,6 +5339,7 @@
       "Thunder Punch",
       "Thunder Wave"
      ],
+     "held_item": null,
      "condition": 96,
      "fitness": 84,
      "morale": 73,
@@ -5096,6 +5369,7 @@
       "Tackle",
       "Headbutt"
      ],
+     "held_item": null,
      "condition": 88,
      "fitness": 89,
      "morale": 78,
@@ -5125,6 +5399,7 @@
       "Bubble Beam",
       "Aurora Beam"
      ],
+     "held_item": null,
      "condition": 88,
      "fitness": 92,
      "morale": 87,
@@ -5154,6 +5429,7 @@
       "Double Team",
       "Fire Punch"
      ],
+     "held_item": null,
      "condition": 96,
      "fitness": 79,
      "morale": 72,
@@ -5183,6 +5459,7 @@
       "Fly",
       "Screech"
      ],
+     "held_item": null,
      "condition": 71,
      "fitness": 96,
      "morale": 94,
@@ -5212,6 +5489,7 @@
       "Poison Sting",
       "Quick Attack"
      ],
+     "held_item": "miracle_seed",
      "condition": 80,
      "fitness": 84,
      "morale": 89,
@@ -5241,6 +5519,7 @@
       "Body Slam",
       "Sing"
      ],
+     "held_item": null,
      "condition": 80,
      "fitness": 81,
      "morale": 92,
@@ -5270,6 +5549,7 @@
       "Sing",
       "Soft-Boiled"
      ],
+     "held_item": "leftovers",
      "condition": 98,
      "fitness": 90,
      "morale": 95,
@@ -5299,6 +5579,7 @@
       "Slash",
       "Tackle"
      ],
+     "held_item": "leftovers",
      "condition": 85,
      "fitness": 96,
      "morale": 85,
@@ -5334,7 +5615,16 @@
       "youth": 19
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 4,
+    "super_potion": 3,
+    "antidote": 1,
+    "x_attack": 1,
+    "x_speed": 1,
+    "hyper_potion": 1,
+    "leftovers": 1
+   }
   },
   {
    "id": "club15",
@@ -5367,6 +5657,7 @@
       "Sludge",
       "Poison Sting"
      ],
+     "held_item": null,
      "condition": 96,
      "fitness": 76,
      "morale": 84,
@@ -5396,6 +5687,7 @@
       "Water Gun",
       "Slash"
      ],
+     "held_item": null,
      "condition": 73,
      "fitness": 79,
      "morale": 75,
@@ -5425,6 +5717,7 @@
       "Slash",
       "Screech"
      ],
+     "held_item": "sitrus_berry",
      "condition": 88,
      "fitness": 81,
      "morale": 76,
@@ -5454,6 +5747,7 @@
       "Water Gun",
       "Reflect"
      ],
+     "held_item": null,
      "condition": 77,
      "fitness": 84,
      "morale": 95,
@@ -5483,6 +5777,7 @@
       "Body Slam",
       "Reflect"
      ],
+     "held_item": null,
      "condition": 98,
      "fitness": 84,
      "morale": 70,
@@ -5512,6 +5807,7 @@
       "Harden",
       "Water Gun"
      ],
+     "held_item": null,
      "condition": 87,
      "fitness": 95,
      "morale": 89,
@@ -5541,6 +5837,7 @@
       "Reflect",
       "Recover"
      ],
+     "held_item": "lum_berry",
      "condition": 92,
      "fitness": 85,
      "morale": 77,
@@ -5570,6 +5867,7 @@
       "Leech Life",
       "Twineedle"
      ],
+     "held_item": null,
      "condition": 73,
      "fitness": 87,
      "morale": 75,
@@ -5599,6 +5897,7 @@
       "Psybeam",
       "Quick Attack"
      ],
+     "held_item": "quick_claw",
      "condition": 85,
      "fitness": 82,
      "morale": 86,
@@ -5628,6 +5927,7 @@
       "Acid",
       "Toxic"
      ],
+     "held_item": null,
      "condition": 99,
      "fitness": 85,
      "morale": 65,
@@ -5657,6 +5957,7 @@
       "Leer",
       "Hyper Beam"
      ],
+     "held_item": null,
      "condition": 89,
      "fitness": 79,
      "morale": 56,
@@ -5692,7 +5993,16 @@
       "youth": 17
      }
     }
-   ]
+   ],
+   "items": {
+    "potion": 4,
+    "super_potion": 3,
+    "full_heal": 2,
+    "revive": 3,
+    "awakening": 2,
+    "x_speed": 2,
+    "leftovers": 2
+   }
   }
  ],
  "free_agents": [
@@ -5716,6 +6026,7 @@
     "Earthquake",
     "Hyper Beam"
    ],
+   "held_item": null,
    "condition": 83,
    "fitness": 100,
    "morale": 84,
@@ -5745,6 +6056,7 @@
     "Water Gun",
     "Surf"
    ],
+   "held_item": null,
    "condition": 76,
    "fitness": 81,
    "morale": 75,
@@ -5774,6 +6086,7 @@
     "Flamethrower",
     "Fire Punch"
    ],
+   "held_item": null,
    "condition": 95,
    "fitness": 81,
    "morale": 71,
@@ -5803,6 +6116,7 @@
     "Solar Beam",
     "Sleep Powder"
    ],
+   "held_item": null,
    "condition": 97,
    "fitness": 79,
    "morale": 92,
@@ -5832,6 +6146,7 @@
     "Wing Attack",
     "Double-Edge"
    ],
+   "held_item": null,
    "condition": 90,
    "fitness": 93,
    "morale": 77,
@@ -5861,6 +6176,7 @@
     "Body Slam",
     "Smog"
    ],
+   "held_item": null,
    "condition": 97,
    "fitness": 81,
    "morale": 52,
@@ -5890,6 +6206,7 @@
     "Leer",
     "Sludge"
    ],
+   "held_item": null,
    "condition": 72,
    "fitness": 85,
    "morale": 79,
@@ -5919,6 +6236,7 @@
     "Sand Attack",
     "Rock Throw"
    ],
+   "held_item": null,
    "condition": 82,
    "fitness": 85,
    "morale": 90,
@@ -5948,6 +6266,7 @@
     "Leech Life",
     "Twineedle"
    ],
+   "held_item": null,
    "condition": 84,
    "fitness": 86,
    "morale": 56,
@@ -5977,6 +6296,7 @@
     "Twineedle",
     "Body Slam"
    ],
+   "held_item": null,
    "condition": 94,
    "fitness": 77,
    "morale": 80,
@@ -6006,6 +6326,7 @@
     "Peck",
     "Focus Energy"
    ],
+   "held_item": null,
    "condition": 78,
    "fitness": 93,
    "morale": 86,
@@ -6035,6 +6356,7 @@
     "Slash",
     "Toxic"
    ],
+   "held_item": null,
    "condition": 83,
    "fitness": 94,
    "morale": 52,
@@ -6064,6 +6386,7 @@
     "Swift",
     "Headbutt"
    ],
+   "held_item": null,
    "condition": 92,
    "fitness": 90,
    "morale": 95,
@@ -6093,6 +6416,7 @@
     "Tackle",
     "Fire Spin"
    ],
+   "held_item": null,
    "condition": 94,
    "fitness": 94,
    "morale": 88,
@@ -6122,6 +6446,7 @@
     "Slash",
     "Earthquake"
    ],
+   "held_item": null,
    "condition": 73,
    "fitness": 82,
    "morale": 57,
@@ -6151,6 +6476,7 @@
     "Slash",
     "Sand Attack"
    ],
+   "held_item": null,
    "condition": 92,
    "fitness": 99,
    "morale": 69,
@@ -6180,6 +6506,7 @@
     "Hyper Beam",
     "Swords Dance"
    ],
+   "held_item": null,
    "condition": 93,
    "fitness": 94,
    "morale": 53,
@@ -6209,6 +6536,7 @@
     "Smog",
     "Screech"
    ],
+   "held_item": null,
    "condition": 79,
    "fitness": 85,
    "morale": 93,
@@ -6238,6 +6566,7 @@
     "Bone Club",
     "Dig"
    ],
+   "held_item": null,
    "condition": 86,
    "fitness": 84,
    "morale": 76,
@@ -6267,6 +6596,7 @@
     "Poison Sting",
     "Toxic"
    ],
+   "held_item": null,
    "condition": 73,
    "fitness": 99,
    "morale": 75,
@@ -6296,6 +6626,7 @@
     "Slash",
     "Double Team"
    ],
+   "held_item": null,
    "condition": 76,
    "fitness": 79,
    "morale": 94,
@@ -6325,6 +6656,7 @@
     "Body Slam",
     "Water Gun"
    ],
+   "held_item": null,
    "condition": 75,
    "fitness": 96,
    "morale": 81,
@@ -6354,6 +6686,7 @@
     "Sleep Powder",
     "Poison Sting"
    ],
+   "held_item": null,
    "condition": 90,
    "fitness": 88,
    "morale": 77,
@@ -6383,6 +6716,7 @@
     "Thunder Wave",
     "Thunder Punch"
    ],
+   "held_item": null,
    "condition": 82,
    "fitness": 98,
    "morale": 72,
@@ -6412,6 +6746,7 @@
     "Thunderbolt",
     "Swords Dance"
    ],
+   "held_item": null,
    "condition": 70,
    "fitness": 84,
    "morale": 94,
@@ -6441,6 +6776,7 @@
     "Agility",
     "Waterfall"
    ],
+   "held_item": null,
    "condition": 88,
    "fitness": 99,
    "morale": 76,
@@ -6470,6 +6806,7 @@
     "Swift",
     "Double-Edge"
    ],
+   "held_item": null,
    "condition": 90,
    "fitness": 78,
    "morale": 64,
@@ -6499,6 +6836,7 @@
     "Dig",
     "Bone Club"
    ],
+   "held_item": null,
    "condition": 71,
    "fitness": 86,
    "morale": 62,
@@ -6528,6 +6866,7 @@
     "Acid",
     "Sludge"
    ],
+   "held_item": null,
    "condition": 71,
    "fitness": 80,
    "morale": 79,
@@ -6557,6 +6896,7 @@
     "Fire Punch",
     "Fire Spin"
    ],
+   "held_item": null,
    "condition": 82,
    "fitness": 100,
    "morale": 87,
@@ -6586,6 +6926,7 @@
     "Double-Edge",
     "Leer"
    ],
+   "held_item": null,
    "condition": 89,
    "fitness": 86,
    "morale": 82,
@@ -6615,6 +6956,7 @@
     "High Jump Kick",
     "Screech"
    ],
+   "held_item": null,
    "condition": 91,
    "fitness": 82,
    "morale": 54,
@@ -6644,6 +6986,7 @@
     "Hypnosis",
     "Tail Whip"
    ],
+   "held_item": null,
    "condition": 70,
    "fitness": 85,
    "morale": 56,
@@ -6673,6 +7016,7 @@
     "Fly",
     "Screech"
    ],
+   "held_item": null,
    "condition": 99,
    "fitness": 88,
    "morale": 80,
@@ -6702,6 +7046,7 @@
     "Body Slam",
     "Double Team"
    ],
+   "held_item": null,
    "condition": 89,
    "fitness": 100,
    "morale": 90,
@@ -6731,6 +7076,7 @@
     "Ice Beam",
     "Ice Punch"
    ],
+   "held_item": null,
    "condition": 88,
    "fitness": 80,
    "morale": 76,
@@ -6760,6 +7106,7 @@
     "Mega Drain",
     "Stun Spore"
    ],
+   "held_item": null,
    "condition": 81,
    "fitness": 93,
    "morale": 89,
@@ -6789,6 +7136,7 @@
     "Wing Attack",
     "Drill Peck"
    ],
+   "held_item": null,
    "condition": 76,
    "fitness": 88,
    "morale": 69,
@@ -6818,6 +7166,7 @@
     "Body Slam",
     "Tail Whip"
    ],
+   "held_item": null,
    "condition": 93,
    "fitness": 95,
    "morale": 94,
@@ -6847,6 +7196,7 @@
     "Low Kick",
     "Slash"
    ],
+   "held_item": null,
    "condition": 82,
    "fitness": 99,
    "morale": 87,
@@ -6876,6 +7226,7 @@
     "Acid",
     "Poison Sting"
    ],
+   "held_item": null,
    "condition": 96,
    "fitness": 77,
    "morale": 65,
@@ -6905,6 +7256,7 @@
     "Recover",
     "Psychic"
    ],
+   "held_item": null,
    "condition": 97,
    "fitness": 83,
    "morale": 51,
@@ -6934,6 +7286,7 @@
     "Water Gun",
     "Slash"
    ],
+   "held_item": null,
    "condition": 88,
    "fitness": 95,
    "morale": 88,
@@ -6963,6 +7316,7 @@
     "Light Screen",
     "Poison Sting"
    ],
+   "held_item": null,
    "condition": 91,
    "fitness": 92,
    "morale": 68,
@@ -6992,6 +7346,7 @@
     "Flame Wheel",
     "Flamethrower"
    ],
+   "held_item": null,
    "condition": 82,
    "fitness": 91,
    "morale": 64,
@@ -7021,6 +7376,7 @@
     "Harden",
     "Recover"
    ],
+   "held_item": null,
    "condition": 98,
    "fitness": 87,
    "morale": 63,
@@ -7050,6 +7406,7 @@
     "Swords Dance",
     "Submission"
    ],
+   "held_item": null,
    "condition": 100,
    "fitness": 94,
    "morale": 64,
@@ -7079,6 +7436,7 @@
     "Peck",
     "Gust"
    ],
+   "held_item": null,
    "condition": 94,
    "fitness": 98,
    "morale": 74,
@@ -7108,6 +7466,7 @@
     "Poison Sting",
     "Acid"
    ],
+   "held_item": null,
    "condition": 75,
    "fitness": 77,
    "morale": 54,
@@ -7137,6 +7496,7 @@
     "Water Gun",
     "Harden"
    ],
+   "held_item": null,
    "condition": 74,
    "fitness": 93,
    "morale": 67,
@@ -7166,6 +7526,7 @@
     "Hyper Beam",
     "Outrage"
    ],
+   "held_item": null,
    "condition": 95,
    "fitness": 78,
    "morale": 52,
@@ -7195,6 +7556,7 @@
     "Toxic",
     "Smog"
    ],
+   "held_item": null,
    "condition": 71,
    "fitness": 76,
    "morale": 68,
@@ -7224,6 +7586,7 @@
     "Flame Wheel",
     "Flamethrower"
    ],
+   "held_item": null,
    "condition": 99,
    "fitness": 98,
    "morale": 92,
@@ -7253,6 +7616,7 @@
     "Surf",
     "Swift"
    ],
+   "held_item": null,
    "condition": 84,
    "fitness": 86,
    "morale": 93,
@@ -7282,6 +7646,7 @@
     "Tail Whip",
     "Dig"
    ],
+   "held_item": null,
    "condition": 97,
    "fitness": 100,
    "morale": 75,
@@ -7311,6 +7676,7 @@
     "Toxic",
     "Razor Leaf"
    ],
+   "held_item": null,
    "condition": 91,
    "fitness": 88,
    "morale": 89,
@@ -7340,6 +7706,7 @@
     "Tail Whip",
     "Earthquake"
    ],
+   "held_item": null,
    "condition": 92,
    "fitness": 81,
    "morale": 53,
@@ -7369,6 +7736,7 @@
     "Bubble Beam",
     "Quick Attack"
    ],
+   "held_item": null,
    "condition": 81,
    "fitness": 84,
    "morale": 92,
@@ -7398,6 +7766,7 @@
     "Tackle",
     "Rock Slide"
    ],
+   "held_item": null,
    "condition": 85,
    "fitness": 87,
    "morale": 86,
@@ -7427,6 +7796,7 @@
     "Surf",
     "Bubble Beam"
    ],
+   "held_item": null,
    "condition": 96,
    "fitness": 85,
    "morale": 78,
@@ -7456,6 +7826,7 @@
     "Aurora Beam",
     "Waterfall"
    ],
+   "held_item": null,
    "condition": 88,
    "fitness": 76,
    "morale": 83,
@@ -7485,6 +7856,7 @@
     "Leech Life",
     "Pin Missile"
    ],
+   "held_item": null,
    "condition": 79,
    "fitness": 78,
    "morale": 72,
@@ -7514,6 +7886,7 @@
     "Tackle",
     "Waterfall"
    ],
+   "held_item": null,
    "condition": 83,
    "fitness": 91,
    "morale": 60,
@@ -7543,6 +7916,7 @@
     "Smog",
     "Poison Sting"
    ],
+   "held_item": null,
    "condition": 72,
    "fitness": 95,
    "morale": 84,
@@ -7572,6 +7946,7 @@
     "Night Shade",
     "Swords Dance"
    ],
+   "held_item": null,
    "condition": 88,
    "fitness": 98,
    "morale": 83,
@@ -7601,6 +7976,7 @@
     "Double Team",
     "Bone Club"
    ],
+   "held_item": null,
    "condition": 72,
    "fitness": 98,
    "morale": 70,
@@ -7630,6 +8006,7 @@
     "Reflect",
     "Flame Wheel"
    ],
+   "held_item": null,
    "condition": 85,
    "fitness": 86,
    "morale": 79,
@@ -7659,6 +8036,7 @@
     "Hypnosis",
     "Confuse Ray"
    ],
+   "held_item": null,
    "condition": 78,
    "fitness": 78,
    "morale": 62,
@@ -7688,6 +8066,7 @@
     "Wing Attack",
     "Slash"
    ],
+   "held_item": null,
    "condition": 84,
    "fitness": 90,
    "morale": 54,
@@ -7717,6 +8096,7 @@
     "Swords Dance",
     "Double-Edge"
    ],
+   "held_item": null,
    "condition": 93,
    "fitness": 90,
    "morale": 58,
@@ -7746,6 +8126,7 @@
     "Tackle",
     "Thunder Wave"
    ],
+   "held_item": null,
    "condition": 93,
    "fitness": 80,
    "morale": 85,
@@ -7775,6 +8156,7 @@
     "Dig",
     "Bone Club"
    ],
+   "held_item": null,
    "condition": 72,
    "fitness": 100,
    "morale": 75,
@@ -7804,6 +8186,7 @@
     "Thunderbolt",
     "Tackle"
    ],
+   "held_item": null,
    "condition": 99,
    "fitness": 98,
    "morale": 71,
@@ -7833,6 +8216,7 @@
     "Gust",
     "Fly"
    ],
+   "held_item": null,
    "condition": 75,
    "fitness": 77,
    "morale": 62,
@@ -7862,6 +8246,7 @@
     "Body Slam",
     "Smog"
    ],
+   "held_item": null,
    "condition": 86,
    "fitness": 93,
    "morale": 89,
@@ -7891,6 +8276,7 @@
     "Flame Wheel",
     "Fire Punch"
    ],
+   "held_item": null,
    "condition": 74,
    "fitness": 82,
    "morale": 71,
@@ -7920,6 +8306,7 @@
     "Poison Sting",
     "Slash"
    ],
+   "held_item": null,
    "condition": 75,
    "fitness": 85,
    "morale": 83,
@@ -7949,6 +8336,7 @@
     "String Shot",
     "Twineedle"
    ],
+   "held_item": null,
    "condition": 73,
    "fitness": 97,
    "morale": 74,
@@ -7978,6 +8366,7 @@
     "Acid",
     "Sludge"
    ],
+   "held_item": null,
    "condition": 96,
    "fitness": 89,
    "morale": 94,
@@ -8007,6 +8396,7 @@
     "Recover",
     "Confusion"
    ],
+   "held_item": null,
    "condition": 71,
    "fitness": 92,
    "morale": 93,
@@ -8038,6 +8428,7 @@
     "Rock Slide",
     "Surf"
    ],
+   "held_item": null,
    "condition": 81,
    "fitness": 87,
    "morale": 85,
@@ -8069,6 +8460,7 @@
     "Hydro Pump",
     "Tackle"
    ],
+   "held_item": null,
    "condition": 99,
    "fitness": 85,
    "morale": 84,
@@ -8100,6 +8492,7 @@
     "Bubble Beam",
     "Tackle"
    ],
+   "held_item": null,
    "condition": 98,
    "fitness": 82,
    "morale": 60,
@@ -8131,6 +8524,7 @@
     "Leer",
     "Hydro Pump"
    ],
+   "held_item": null,
    "condition": 76,
    "fitness": 98,
    "morale": 78,
@@ -8162,6 +8556,7 @@
     "Headbutt",
     "Quick Attack"
    ],
+   "held_item": null,
    "condition": 87,
    "fitness": 81,
    "morale": 54,
@@ -8193,6 +8588,7 @@
     "Waterfall",
     "Reflect"
    ],
+   "held_item": null,
    "condition": 82,
    "fitness": 76,
    "morale": 68,
@@ -8224,6 +8620,7 @@
     "Double Team",
     "Waterfall"
    ],
+   "held_item": null,
    "condition": 97,
    "fitness": 86,
    "morale": 53,
@@ -8255,6 +8652,7 @@
     "Flamethrower",
     "Fire Punch"
    ],
+   "held_item": null,
    "condition": 89,
    "fitness": 77,
    "morale": 82,
@@ -8286,6 +8684,7 @@
     "Screech",
     "Smog"
    ],
+   "held_item": null,
    "condition": 84,
    "fitness": 76,
    "morale": 72,
@@ -8317,6 +8716,7 @@
     "Light Screen",
     "Body Slam"
    ],
+   "held_item": null,
    "condition": 91,
    "fitness": 76,
    "morale": 58,
@@ -8348,6 +8748,7 @@
     "Body Slam",
     "Double-Edge"
    ],
+   "held_item": null,
    "condition": 86,
    "fitness": 83,
    "morale": 61,
@@ -8379,6 +8780,7 @@
     "Swift",
     "Leer"
    ],
+   "held_item": null,
    "condition": 90,
    "fitness": 94,
    "morale": 68,
@@ -8410,6 +8812,7 @@
     "Razor Leaf",
     "Quick Attack"
    ],
+   "held_item": null,
    "condition": 91,
    "fitness": 97,
    "morale": 68,
@@ -8441,6 +8844,7 @@
     "Rock Throw",
     "Swift"
    ],
+   "held_item": null,
    "condition": 90,
    "fitness": 92,
    "morale": 68,
@@ -8472,6 +8876,7 @@
     "Growl",
     "Icy Wind"
    ],
+   "held_item": null,
    "condition": 70,
    "fitness": 98,
    "morale": 70,
@@ -8503,6 +8908,7 @@
     "Screech",
     "Tackle"
    ],
+   "held_item": null,
    "condition": 97,
    "fitness": 89,
    "morale": 92,
@@ -8534,6 +8940,7 @@
     "Tackle",
     "High Jump Kick"
    ],
+   "held_item": null,
    "condition": 92,
    "fitness": 95,
    "morale": 75,
@@ -8565,6 +8972,7 @@
     "Slash",
     "Swords Dance"
    ],
+   "held_item": null,
    "condition": 75,
    "fitness": 90,
    "morale": 75,
@@ -8596,6 +9004,7 @@
     "Slash",
     "Harden"
    ],
+   "held_item": null,
    "condition": 72,
    "fitness": 92,
    "morale": 77,
@@ -8627,6 +9036,7 @@
     "Psychic",
     "Night Shade"
    ],
+   "held_item": null,
    "condition": 100,
    "fitness": 78,
    "morale": 63,
@@ -8658,6 +9068,7 @@
     "Fire Spin",
     "Double Team"
    ],
+   "held_item": null,
    "condition": 100,
    "fitness": 88,
    "morale": 69,
@@ -8689,6 +9100,7 @@
     "Rest",
     "Earthquake"
    ],
+   "held_item": null,
    "condition": 72,
    "fitness": 77,
    "morale": 75,
@@ -8720,6 +9132,7 @@
     "Tackle",
     "Thunderbolt"
    ],
+   "held_item": null,
    "condition": 86,
    "fitness": 93,
    "morale": 54,
@@ -8751,6 +9164,7 @@
     "Tackle",
     "Toxic"
    ],
+   "held_item": null,
    "condition": 97,
    "fitness": 76,
    "morale": 64,
@@ -8782,6 +9196,7 @@
     "Agility",
     "Recover"
    ],
+   "held_item": null,
    "condition": 92,
    "fitness": 100,
    "morale": 50,
@@ -8813,6 +9228,7 @@
     "Poison Sting",
     "Smog"
    ],
+   "held_item": null,
    "condition": 75,
    "fitness": 81,
    "morale": 88,
@@ -8844,6 +9260,7 @@
     "Poison Sting",
     "Reflect"
    ],
+   "held_item": null,
    "condition": 100,
    "fitness": 86,
    "morale": 83,
@@ -8875,6 +9292,7 @@
     "Hydro Pump",
     "Tail Whip"
    ],
+   "held_item": null,
    "condition": 72,
    "fitness": 85,
    "morale": 59,
@@ -8906,6 +9324,7 @@
     "Double-Edge",
     "Body Slam"
    ],
+   "held_item": null,
    "condition": 88,
    "fitness": 80,
    "morale": 95,
@@ -8937,6 +9356,7 @@
     "Fly",
     "Reflect"
    ],
+   "held_item": null,
    "condition": 100,
    "fitness": 92,
    "morale": 53,

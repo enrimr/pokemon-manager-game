@@ -1,7 +1,8 @@
 extends Control
 ## Training screen — owned by the "training" piece.
-## Four tabs, FM-style: Schedule (weekly grid), Individual (per-Pokémon focus +
-## move learning), Coaches (staff assignments + workload), Development (deltas).
+## Five tabs, FM-style: Schedule (dated calendar), Individual (per-Pokémon
+## focus + move learning), Coaches (staff assignments + workload), Mentoring
+## (veteran → junior groups), Development (deltas + attribution).
 ## All model logic lives in training_service.gd (kept alive at /root).
 
 const TrainingServiceScript := preload("res://screens/training/training_service.gd")
@@ -40,6 +41,15 @@ var _dialog_moves: Array = []
 # coaches tab
 var _coach_cards_box: VBoxContainer
 var _assign_box: VBoxContainer
+
+# mentoring tab
+var _groups_box: VBoxContainer
+var _mentor_side: VBoxContainer
+
+const PERSONALITY_COLORS := {
+	"driven": Color("e06868"), "calm": Color("f085b0"), "stoic": Color("6890f0"),
+	"lively": Color("e8cf50"), "studious": Color("9b8cff"), "professional": Color("58b8d8"),
+}
 
 # development tab
 var _dev_tree: Tree
@@ -102,7 +112,7 @@ func _build_layout() -> void:
 	tabbar.add_theme_constant_override("separation", 4)
 	root.add_child(tabbar)
 	for t in [["schedule", "Schedule"], ["individual", "Individual"],
-			["coaches", "Coaches"], ["development", "Development"]]:
+			["coaches", "Coaches"], ["mentoring", "Mentoring"], ["development", "Development"]]:
 		var b := Button.new()
 		b.text = t[1]
 		b.toggle_mode = true
@@ -115,6 +125,7 @@ func _build_layout() -> void:
 	_tabs["schedule"] = _build_schedule_tab()
 	_tabs["individual"] = _build_individual_tab()
 	_tabs["coaches"] = _build_coaches_tab()
+	_tabs["mentoring"] = _build_mentoring_tab()
 	_tabs["development"] = _build_development_tab()
 	for k in _tabs:
 		_tabs[k].size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -139,6 +150,8 @@ func _refresh_all() -> void:
 			_refresh_individual()
 		"coaches":
 			_refresh_coaches()
+		"mentoring":
+			_refresh_mentoring()
 		"development":
 			_refresh_development()
 
@@ -1248,6 +1261,47 @@ func _refresh_detail() -> void:
 
 	_detail_box.add_child(HSeparator.new())
 
+	# --- mentoring status
+	var mtl := Label.new()
+	mtl.text = "MENTORING"
+	mtl.add_theme_font_size_override("font_size", 11)
+	mtl.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
+	_detail_box.add_child(mtl)
+	var mline := Label.new()
+	var meff: Dictionary = svc.mentoring_effect(str(inst["uid"]))
+	if not meff.is_empty():
+		mline.text = "Learning from %s (%s): ×%.2f development%s%s%s — included in the projection above." % [
+			str(meff["mentor_name"]), svc.PERSONALITIES[meff["personality"]]["label"],
+			float(meff["mult"]),
+			", ×1.25 on %s" % " & ".join((meff["stat_mult"] as Dictionary).keys().map(
+				func(s): return str(svc.STAT_LABELS[s]))) if not (meff["stat_mult"] as Dictionary).is_empty() else "",
+			", moves ×%.1f" % float(meff["move_mult"]) if float(meff["move_mult"]) > 1.0 else "",
+			", strain ×%.2f" % float(meff["strain_mult"]) if float(meff["strain_mult"]) < 1.0 else ""]
+		mline.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
+	elif svc.is_mentor(str(inst["uid"])):
+		var grp: Dictionary = svc.group_of(str(inst["uid"]))
+		var jnames: Array = (grp["juniors"] as Array).map(func(u):
+			var ji: Dictionary = svc._find_instance(str(u))
+			return _display_name(ji) if not ji.is_empty() else "?")
+		mline.text = "Mentoring %s — passing on its %s example gives this veteran renewed purpose (morale %d%%)." % [
+			", ".join(jnames) if not jnames.is_empty() else "no one yet",
+			svc.personality_label(inst), int(inst.get("morale", 70))]
+		mline.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
+	elif svc.mentor_eligible(inst):
+		mline.text = "Eligible mentor (%s personality) with no group — set one up in the Mentoring tab to give this veteran purpose." % svc.personality_label(inst)
+		mline.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+	elif svc.junior_eligible(inst):
+		mline.text = "In rapid development and unmentored — pairing it with a veteran (Mentoring tab) would add +12–31% development speed."
+		mline.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+	else:
+		mline.text = "Not eligible: mentoring links veterans with Pokémon still in rapid development."
+		mline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	mline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mline.add_theme_font_size_override("font_size", 12)
+	_detail_box.add_child(mline)
+
+	_detail_box.add_child(HSeparator.new())
+
 	# --- move learning
 	var ml := Label.new()
 	ml.text = "MOVE LEARNING"
@@ -1560,6 +1614,410 @@ func _assignment_row(cat: String) -> Control:
 	return r
 
 
+# ================================================================== MENTORING
+
+func _build_mentoring_tab() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+
+	var left_wrap := _panel("Mentor groups")
+	(left_wrap[0] as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_groups_box = VBoxContainer.new()
+	_groups_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_groups_box.add_theme_constant_override("separation", 10)
+	scroll.add_child(_groups_box)
+	(left_wrap[1] as VBoxContainer).add_child(scroll)
+	(left_wrap[1] as VBoxContainer).size_flags_vertical = Control.SIZE_EXPAND_FILL
+	row.add_child(left_wrap[0])
+
+	var right_wrap := _panel("Eligibility & personalities")
+	(right_wrap[0] as Control).custom_minimum_size.x = 460
+	var rscroll := ScrollContainer.new()
+	rscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_mentor_side = VBoxContainer.new()
+	_mentor_side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mentor_side.add_theme_constant_override("separation", 6)
+	rscroll.add_child(_mentor_side)
+	(right_wrap[1] as VBoxContainer).add_child(rscroll)
+	(right_wrap[1] as VBoxContainer).size_flags_vertical = Control.SIZE_EXPAND_FILL
+	row.add_child(right_wrap[0])
+	return row
+
+
+func _personality_chip(key: String) -> Control:
+	var p := PanelContainer.new()
+	var col: Color = PERSONALITY_COLORS.get(key, ThemeBuilder.COL_ACCENT)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = col.darkened(0.72)
+	sb.border_color = col
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(3)
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
+	sb.content_margin_top = 1
+	sb.content_margin_bottom = 1
+	p.add_theme_stylebox_override("panel", sb)
+	p.tooltip_text = str(svc.PERSONALITIES[key]["desc"])
+	var l := Label.new()
+	l.text = str(svc.PERSONALITIES[key]["label"]).to_upper()
+	l.add_theme_font_size_override("font_size", 11)
+	l.add_theme_color_override("font_color", col.lightened(0.35))
+	p.add_child(l)
+	return p
+
+
+## Juniors that could join THIS mentor's group right now.
+func _addable_juniors(mentor: Dictionary) -> Array:
+	var out: Array = []
+	for inst in svc.squad():
+		if str(inst["uid"]) == str(mentor["uid"]):
+			continue
+		if not svc.junior_eligible(inst):
+			continue
+		if not (svc.group_of(str(inst["uid"])) as Dictionary).is_empty():
+			continue
+		if svc.can_mentor(mentor, inst) != "":
+			continue
+		out.append(inst)
+	return out
+
+
+func _mentor_group_card(g: Dictionary) -> Control:
+	var mentor: Dictionary = {}
+	for i in svc.squad():
+		if str(i["uid"]) == str(g["mentor"]):
+			mentor = i
+	if mentor.is_empty():
+		return Control.new()
+	var pk: String = svc.personality(mentor)
+	var wrap := _panel()
+	var v: VBoxContainer = wrap[1]
+
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 10)
+	head.add_child(_monogram(mentor, 40))
+	var hv := VBoxContainer.new()
+	hv.add_theme_constant_override("separation", 0)
+	var nm := Label.new()
+	nm.text = _display_name(mentor)
+	nm.add_theme_font_size_override("font_size", 17)
+	nm.add_theme_color_override("font_color", Color.WHITE)
+	hv.add_child(nm)
+	var sub := Label.new()
+	sub.text = "Lv %d · %s · veteran mentor · morale %d%%" % [int(mentor["level"]),
+		_age_str(int(mentor["age_months"])), int(mentor.get("morale", 70))]
+	sub.add_theme_font_size_override("font_size", 12)
+	sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	hv.add_child(sub)
+	head.add_child(hv)
+	head.add_child(_personality_chip(pk))
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(sp)
+	var disband := Button.new()
+	disband.text = "Disband"
+	disband.tooltip_text = "Remove this mentor group. Juniors lose the development bonus immediately."
+	disband.pressed.connect(func():
+		svc.disband_mentor_group(str(mentor["uid"]))
+		_refresh_mentoring.call_deferred())
+	head.add_child(disband)
+	v.add_child(head)
+
+	var pdesc := Label.new()
+	pdesc.text = "%s — %s." % [svc.personality_label(mentor), str(svc.PERSONALITIES[pk]["desc"])]
+	pdesc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pdesc.add_theme_font_size_override("font_size", 12)
+	pdesc.add_theme_color_override("font_color", PERSONALITY_COLORS.get(pk, ThemeBuilder.COL_TEXT_DIM))
+	v.add_child(pdesc)
+
+	var juniors: Array = g["juniors"]
+	if juniors.is_empty():
+		var none := Label.new()
+		none.text = "No juniors yet — add one below to start the daily transfer."
+		none.add_theme_font_size_override("font_size", 12)
+		none.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		v.add_child(none)
+	for jid in juniors:
+		var junior: Dictionary = {}
+		for i in svc.squad():
+			if str(i["uid"]) == str(jid):
+				junior = i
+		if junior.is_empty():
+			continue
+		var eff: Dictionary = svc.mentoring_effect(str(jid))
+		var jms: Dictionary = svc.mon_state(str(jid))
+		var r := HBoxContainer.new()
+		r.add_theme_constant_override("separation", 8)
+		r.add_child(_monogram(junior, 26))
+		var jn := Label.new()
+		jn.text = "%s  Lv %d · %s" % [_display_name(junior), int(junior["level"]),
+			_age_str(int(junior["age_months"]))]
+		jn.custom_minimum_size.x = 190
+		jn.add_theme_font_size_override("font_size", 12)
+		jn.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
+		r.add_child(jn)
+		var lrn := Label.new()
+		if eff.is_empty():
+			lrn.text = "pairing no longer valid"
+			lrn.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+		else:
+			var stat_bias: Array = (eff["stat_mult"] as Dictionary).keys().map(
+				func(s): return str(svc.STAT_LABELS[s]))
+			var extras: Array = []
+			if not stat_bias.is_empty():
+				extras.append("×1.25 %s" % " & ".join(stat_bias))
+			if float(eff["move_mult"]) > 1.0:
+				extras.append("moves ×%.1f" % float(eff["move_mult"]))
+			if float(eff["strain_mult"]) < 1.0:
+				extras.append("strain ×%.2f" % float(eff["strain_mult"]))
+			lrn.text = "learning from %s · +%d%% dev%s" % [eff["mentor_name"],
+				int(round((float(eff["mult"]) - 1.0) * 100.0)),
+				(" · " + " · ".join(extras)) if not extras.is_empty() else ""]
+			lrn.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
+			lrn.tooltip_text = "Base +%d%%%s · level gap +%d%%%s%s.\nAttributed so far: +%.1f training points, %d IVs." % [
+				int(svc.MENTOR_BASE_BONUS * 100),
+				" · shared type +%d%%" % int(svc.MENTOR_TYPE_BONUS * 100) if bool(eff["compat"]) else "",
+				int(round(minf(svc.MENTOR_GAP_BONUS_CAP, svc.MENTOR_GAP_BONUS_PER_LVL
+					* float(int(eff["mentor"]["level"]) - int(junior["level"]))) * 100.0)),
+				" · Professional +5%" if str(eff["personality"]) == "professional" else "",
+				" · split attention −%d%%" % int(svc.MENTOR_SPLIT_PENALTY * 100) if juniors.size() >= 2 else "",
+				float(jms.get("mentor_pts", 0.0)), int(jms.get("mentor_ivs", 0))]
+			lrn.mouse_filter = Control.MOUSE_FILTER_STOP
+		lrn.add_theme_font_size_override("font_size", 12)
+		lrn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lrn.clip_text = true
+		r.add_child(lrn)
+		var mor := Label.new()
+		mor.text = "morale %d%%" % int(junior.get("morale", 70))
+		mor.add_theme_font_size_override("font_size", 11)
+		mor.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		r.add_child(mor)
+		var x := Button.new()
+		x.text = "✕"
+		x.custom_minimum_size = Vector2(26, 22)
+		x.tooltip_text = "Remove %s from the group." % _display_name(junior)
+		x.pressed.connect(func():
+			svc.remove_junior(str(jid))
+			_refresh_mentoring.call_deferred())
+		r.add_child(x)
+		v.add_child(r)
+
+	# --- add-junior row
+	if juniors.size() < svc.MENTOR_MAX_JUNIORS:
+		var addable := _addable_juniors(mentor)
+		var ar := HBoxContainer.new()
+		ar.add_theme_constant_override("separation", 8)
+		if addable.is_empty():
+			var no := Label.new()
+			no.text = "No further eligible juniors (young, ≥%d levels and ≥%d months below %s, not already mentored)." % [
+				svc.MENTOR_LEVEL_GAP, svc.MENTOR_AGE_GAP, _display_name(mentor)]
+			no.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			no.add_theme_font_size_override("font_size", 12)
+			no.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+			ar.add_child(no)
+		else:
+			var ob := OptionButton.new()
+			ob.custom_minimum_size = Vector2(280, 30)
+			for j in addable:
+				ob.add_item("%s  (Lv %d · %s · +%d%% dev)" % [_display_name(j), int(j["level"]),
+					_age_str(int(j["age_months"])),
+					int(round((svc.pairing_mult(mentor, j, juniors.size() + 1) - 1.0) * 100.0))])
+			ar.add_child(ob)
+			var add := Button.new()
+			add.text = "Add junior"
+			add.pressed.connect(func():
+				var idx: int = ob.selected
+				if idx >= 0 and idx < addable.size():
+					var err: String = svc.add_junior(str(mentor["uid"]), str(addable[idx]["uid"]))
+					if err != "":
+						push_warning(err)
+				_refresh_mentoring.call_deferred())
+			ar.add_child(add)
+		v.add_child(ar)
+	else:
+		var full := Label.new()
+		full.text = "Group full — a mentor can watch %d juniors (attention already split: −%d%% each)." % [
+			svc.MENTOR_MAX_JUNIORS, int(svc.MENTOR_SPLIT_PENALTY * 100)]
+		full.add_theme_font_size_override("font_size", 12)
+		full.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		v.add_child(full)
+	return wrap[0]
+
+
+func _refresh_mentoring() -> void:
+	if _groups_box == null or not is_instance_valid(_groups_box):
+		return
+	_clear(_groups_box)
+
+	var intro := Label.new()
+	intro.text = "Group a senior Pokémon with up to %d rapid developers. Every training day the juniors gain development speed and morale from the mentor's example — the mentor's personality steers WHICH stats bite hardest — and the veteran gets renewed purpose. Gains are attributed in the Development report." % svc.MENTOR_MAX_JUNIORS
+	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro.add_theme_font_size_override("font_size", 12)
+	intro.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	_groups_box.add_child(intro)
+
+	var groups: Array = svc.mentor_groups()
+	for g in groups:
+		_groups_box.add_child(_mentor_group_card(g))
+	if groups.is_empty():
+		var none := Label.new()
+		none.text = "No mentor groups yet."
+		none.add_theme_font_size_override("font_size", 13)
+		none.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+		_groups_box.add_child(none)
+
+	# --- new group
+	var free_mentors: Array = svc.squad().filter(func(i):
+		return svc.mentor_eligible(i) and (svc.group_of(str(i["uid"])) as Dictionary).is_empty())
+	_groups_box.add_child(HSeparator.new())
+	var nr := HBoxContainer.new()
+	nr.add_theme_constant_override("separation", 8)
+	var nl := Label.new()
+	nl.text = "New group:"
+	nl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	nr.add_child(nl)
+	if free_mentors.is_empty():
+		var no := Label.new()
+		no.text = "no free veterans — every eligible mentor already leads a group."
+		no.add_theme_font_size_override("font_size", 12)
+		no.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		nr.add_child(no)
+	else:
+		var ob := OptionButton.new()
+		ob.custom_minimum_size = Vector2(300, 30)
+		for m in free_mentors:
+			ob.add_item("%s  (Lv %d · %s · %s)" % [_display_name(m), int(m["level"]),
+				_age_str(int(m["age_months"])), svc.personality_label(m)])
+		nr.add_child(ob)
+		var mk := Button.new()
+		mk.text = "Create group"
+		mk.pressed.connect(func():
+			var idx: int = ob.selected
+			if idx >= 0 and idx < free_mentors.size():
+				svc.create_mentor_group(str(free_mentors[idx]["uid"]))
+			_refresh_mentoring.call_deferred())
+		nr.add_child(mk)
+	_groups_box.add_child(nr)
+
+	_refresh_mentor_side()
+
+
+func _side_head(text: String) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", 11)
+	l.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	return l
+
+
+func _refresh_mentor_side() -> void:
+	_clear(_mentor_side)
+
+	var rules := Label.new()
+	rules.text = "Eligibility: mentors are veterans whose own development has flattened (age ≥ ~5y7m); juniors are in rapid development (age ≤ 4y) and must sit ≥%d levels and ≥%d months below their mentor. Effect: +%d%% development base, +%d%% shared type, up to +%d%% for a big level gap; −%d%% each when attention splits across two juniors." % [
+		svc.MENTOR_LEVEL_GAP, svc.MENTOR_AGE_GAP, int(svc.MENTOR_BASE_BONUS * 100),
+		int(svc.MENTOR_TYPE_BONUS * 100), int(svc.MENTOR_GAP_BONUS_CAP * 100),
+		int(svc.MENTOR_SPLIT_PENALTY * 100)]
+	rules.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rules.add_theme_font_size_override("font_size", 12)
+	rules.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	_mentor_side.add_child(rules)
+
+	_mentor_side.add_child(HSeparator.new())
+	_mentor_side.add_child(_side_head("ELIGIBLE MENTORS (VETERANS)"))
+	var any_m := false
+	for inst in svc.squad():
+		if not svc.mentor_eligible(inst):
+			continue
+		any_m = true
+		var r := HBoxContainer.new()
+		r.add_theme_constant_override("separation", 8)
+		var nm := Label.new()
+		nm.text = "%s  Lv %d · %s" % [_display_name(inst), int(inst["level"]),
+			_age_str(int(inst["age_months"]))]
+		nm.custom_minimum_size.x = 190
+		nm.add_theme_font_size_override("font_size", 12)
+		r.add_child(nm)
+		r.add_child(_personality_chip(svc.personality(inst)))
+		var st := Label.new()
+		var grp: Dictionary = svc.group_of(str(inst["uid"]))
+		if not grp.is_empty() and str(grp.get("mentor", "")) == str(inst["uid"]):
+			st.text = "mentoring %d" % (grp["juniors"] as Array).size()
+			st.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
+		else:
+			st.text = "available"
+			st.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		st.add_theme_font_size_override("font_size", 12)
+		r.add_child(st)
+		_mentor_side.add_child(r)
+	if not any_m:
+		var no := Label.new()
+		no.text = "No veterans in the squad."
+		no.add_theme_font_size_override("font_size", 12)
+		no.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		_mentor_side.add_child(no)
+
+	_mentor_side.add_child(HSeparator.new())
+	_mentor_side.add_child(_side_head("ELIGIBLE JUNIORS (RAPID DEVELOPERS)"))
+	var any_j := false
+	for inst in svc.squad():
+		if not svc.junior_eligible(inst):
+			continue
+		any_j = true
+		var r := HBoxContainer.new()
+		r.add_theme_constant_override("separation", 8)
+		var nm := Label.new()
+		nm.text = "%s  Lv %d · %s" % [_display_name(inst), int(inst["level"]),
+			_age_str(int(inst["age_months"]))]
+		nm.custom_minimum_size.x = 190
+		nm.add_theme_font_size_override("font_size", 12)
+		r.add_child(nm)
+		var st := Label.new()
+		var mentor: Dictionary = svc.mentor_of(str(inst["uid"]))
+		if not mentor.is_empty():
+			st.text = "learning from %s" % _display_name(mentor)
+			st.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
+		else:
+			# is anyone in the squad actually able to take this junior?
+			var fits: Array = svc.squad().filter(func(m):
+				return svc.mentor_eligible(m) and svc.can_mentor(m, inst) == "")
+			if fits.is_empty():
+				st.text = "no valid mentor (level/age gap)"
+				st.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+			else:
+				st.text = "unmentored — %d possible mentor%s" % [fits.size(), "" if fits.size() == 1 else "s"]
+				st.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+		st.add_theme_font_size_override("font_size", 12)
+		st.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		st.clip_text = true
+		r.add_child(st)
+		_mentor_side.add_child(r)
+	if not any_j:
+		var no := Label.new()
+		no.text = "No rapid developers in the squad — sign or promote young Pokémon."
+		no.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		no.add_theme_font_size_override("font_size", 12)
+		no.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		_mentor_side.add_child(no)
+
+	_mentor_side.add_child(HSeparator.new())
+	_mentor_side.add_child(_side_head("MENTOR PERSONALITIES"))
+	for pk in svc.PERSONALITIES:
+		var r := HBoxContainer.new()
+		r.add_theme_constant_override("separation", 8)
+		r.add_child(_personality_chip(pk))
+		var d := Label.new()
+		d.text = str(svc.PERSONALITIES[pk]["desc"])
+		d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		d.add_theme_font_size_override("font_size", 11)
+		d.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		d.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		r.add_child(d)
+		_mentor_side.add_child(r)
+
+
 # ================================================================== DEVELOPMENT
 
 func _build_development_tab() -> Control:
@@ -1580,15 +2038,15 @@ func _build_development_tab() -> Control:
 
 	_dev_tree = Tree.new()
 	_dev_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_dev_tree.columns = 11
+	_dev_tree.columns = 12
 	_dev_tree.column_titles_visible = true
 	_dev_tree.hide_root = true
-	var titles := ["Pokémon", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "IV gains", "Strain", "Moves learned"]
+	var titles := ["Pokémon", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "IV gains", "Strain", "Moves", "Mentoring"]
 	for i in titles.size():
 		_dev_tree.set_column_title(i, titles[i])
-		_dev_tree.set_column_expand(i, i == 0)
+		_dev_tree.set_column_expand(i, i == 0 or i == 11)
 		if i > 0:
-			_dev_tree.set_column_custom_minimum_width(i, 66 if i < 9 else 92)
+			_dev_tree.set_column_custom_minimum_width(i, 62 if i < 9 else (70 if i < 11 else 168))
 	v.add_child(_dev_tree)
 
 	_dev_note = Label.new()
@@ -1638,6 +2096,27 @@ func _refresh_development() -> void:
 		var learned: Array = svc.mon_state(str(inst["uid"]))["learned"]
 		it.set_text(10, str(learned.size()) if not learned.is_empty() else "—")
 		it.set_custom_color(10, ThemeBuilder.COL_ACCENT if not learned.is_empty() else Color("3a4058"))
+		# --- mentoring attribution: who is teaching whom, and what it earned
+		var jms: Dictionary = svc.mon_state(str(inst["uid"]))
+		var mentor: Dictionary = svc.mentor_of(str(inst["uid"]))
+		if not mentor.is_empty():
+			it.set_text(11, "learning from %s" % _display_name(mentor))
+			it.set_custom_color(11, ThemeBuilder.COL_GOOD)
+			it.set_tooltip_text(11, "Mentored by %s (%s): +%.1f bonus training points, %d of its IV gains attributed to mentoring." % [
+				_display_name(mentor), svc.personality_label(mentor),
+				float(jms.get("mentor_pts", 0.0)), int(jms.get("mentor_ivs", 0))])
+		elif svc.is_mentor(str(inst["uid"])):
+			var grp: Dictionary = svc.group_of(str(inst["uid"]))
+			var jnames: Array = (grp["juniors"] as Array).map(func(u):
+				var ji: Dictionary = svc._find_instance(str(u))
+				return _display_name(ji) if not ji.is_empty() else "?")
+			it.set_text(11, "mentoring %s" % ", ".join(jnames))
+			it.set_custom_color(11, ThemeBuilder.COL_ACCENT)
+			it.set_tooltip_text(11, "%s personality — renewed purpose from mentoring lifts its morale (currently %d%%)." % [
+				svc.personality_label(inst), int(inst.get("morale", 70))])
+		else:
+			it.set_text(11, "—")
+			it.set_custom_color(11, Color("3a4058"))
 
 	_dev_note.text = "Attribute changes over the last 28 training days (tracking %d day%s so far). ▲ real stat increases from training — IVs are capped at 15 per stat." % [tracked, "" if tracked == 1 else "s"]
 
@@ -1646,7 +2125,11 @@ func _refresh_development() -> void:
 	for row in rows:
 		if int(row["total"]) <= 0 or best >= 3:
 			continue
-		_best_box.add_child(_dev_summary_row(row["inst"], "+%d stat points · %d IVs gained" % [int(row["total"]), int(row["gained"])], ThemeBuilder.COL_GOOD))
+		var detail := "+%d stat points · %d IVs gained" % [int(row["total"]), int(row["gained"])]
+		var mrow: Dictionary = svc.mentor_of(str((row["inst"] as Dictionary)["uid"]))
+		if not mrow.is_empty():
+			detail += " · learning from %s" % _display_name(mrow)
+		_best_box.add_child(_dev_summary_row(row["inst"], detail, ThemeBuilder.COL_GOOD))
 		best += 1
 	if best == 0:
 		var l := Label.new()
@@ -1674,8 +2157,8 @@ func _refresh_development() -> void:
 		elif reaction == "wants_more":
 			reason = "held on %s while fresh — a rapid developer wasting growth; raise the individual load" % \
 				svc.LOAD_LABELS[svc.effective_load(inst)]
-		elif svc.age_mult(age) <= 0.6 and int(row["total"]) <= 0:
-			reason = "veteran (%s) — stagnating, consider Move Practice or a successor" % _age_str(age)
+		elif svc.age_mult(age) <= 0.6 and int(row["total"]) <= 0 and not svc.is_mentor(str(inst["uid"])):
+			reason = "veteran (%s) — stagnating; give it purpose as a mentor (Mentoring tab)" % _age_str(age)
 		if reason == "" or listed >= 3:
 			continue
 		_stag_box.add_child(_dev_summary_row(inst, reason,

@@ -1,10 +1,10 @@
 {
  "piece": "inbox",
  "fm_reference": "FM24 Inbox + Board/Finances",
- "status": "capped",
- "round": 4,
+ "status": "fixing",
+ "round": 1,
  "verdict": "fm wins",
- "biggest_gap": "The inbox has no people/media layer: every message is club operations (match reports, cup draws, scout files, offers, money). FM24's inbox is the game's narrative heart because people talk to you through it — player unhappiness and praise, injury news, milestones, monthly awards, press reaction — and many of those items carry a response choice. Game A's operational spine is now verifiably real (offers move money and squad members, the economy debits payroll and credits gates, board grants mutate live budgets), but the world is socially dead. Fix: generate person-driven mail from data the sim already produces — battler milestones (KO counts, ratings streaks from the re-simmed reports), morale/wage complaints keyed to contract and form, monthly league awards from the table — with at least one message type offering a reply that changes something (e.g. promise a new contract, which the transfers/contract system then holds you to).",
+ "biggest_gap": "The people/media layer is real and state-mutating, but its writing pool is too shallow to survive even one simmed month without verbatim repetition: rival mind-game quote banks hold 3 lines per tone and each press-piece kind has a single prose template, so the identical manager quote ('People keep asking me about PAL. What is there to say? We are the bigger club...') was published three times in six weeks by three different rival managers (mind:L013 13 Aug, mind:L027 27 Aug, CIN 17 Sep). FM24's inbox never shows a verbatim quote repeat inside a month. Fix: expand each tone/kind bank to 8-12 variants, track recently-used lines per career and exclude them from selection, and condition phrasing on the rival manager so two managers never share a word-for-word quote.",
  "history": [
   {
    "round": 1,
@@ -25,7 +25,13 @@
    "round": 4,
    "winner": "fm",
    "gap": "No people/media layer in the inbox — the operating economy, board requests and offer decisions are all verifiably live now, but every message is operational; add person-driven mail (milestones, morale, awards, injuries) with at least one respondable message type."
+  },
+  {
+   "round": 1,
+   "phase": "feature",
+   "winner": "fm",
+   "gap": "Verbatim quote repetition within a single simmed month — 3-line mind-game quote banks and single-template press pieces produced the same rival quote three times in six weeks; secondary: promised-battles pledges are never tracked/enforced, and mind-game FACTS blocks show read-time form instead of publication-time form."
   }
  ],
- "updated": "2026-08-30 02:10"
+ "updated": "2026-08-30 03:39"
 }

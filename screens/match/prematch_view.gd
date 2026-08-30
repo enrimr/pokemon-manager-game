@@ -2,7 +2,7 @@ extends Control
 ## Pre-match: opponent scout report, both lineups, expected difficulty,
 ## confirm/adjust the starting six (order matters — slot 1 leads).
 
-signal start_live
+signal start_live(manual: bool)
 signal instant_result
 
 const UI := preload("res://screens/match/ui_bits.gd")
@@ -93,6 +93,31 @@ func _build_lineup_panel() -> Control:
 	_res_list.custom_minimum_size = Vector2(0, 120)
 	_res_list.add_theme_font_size_override("font_size", 13)
 	box.add_child(_res_list)
+
+	box.add_child(UI.label("MATCH BAG — usable mid-battle (an item spends the turn)", 10, UI.COL_DIM))
+	var bag: Dictionary = runner.usable_only(GameState.player_inventory())
+	if bag.is_empty():
+		box.add_child(UI.label("Bag is empty — visit the Items screen to stock up on potions and heals.",
+			12, UI.COL_WARN))
+	else:
+		var bag_row := UI.hbox(6)
+		for iid in bag:
+			var it: Dictionary = DataStore.item(str(iid))
+			var chip := UI.label("%s ×%d" % [str(it.get("name", iid)), int(bag[iid])], 12, UI.COL_TEXT)
+			chip.tooltip_text = str(it.get("desc", ""))
+			chip.mouse_filter = Control.MOUSE_FILTER_STOP
+			var sb := StyleBoxFlat.new()
+			sb.bg_color = Color("222840")
+			sb.border_color = UI.COL_BORDER
+			sb.set_border_width_all(1)
+			sb.set_corner_radius_all(3)
+			sb.content_margin_left = 7
+			sb.content_margin_right = 7
+			sb.content_margin_top = 2
+			sb.content_margin_bottom = 2
+			chip.add_theme_stylebox_override("normal", sb)
+			bag_row.add_child(chip)
+		box.add_child(bag_row)
 	return p
 
 
@@ -101,9 +126,11 @@ func _inst_row(inst: Dictionary, slot: int = -1) -> String:
 	var types: String = "/".join(sp.get("types", []))
 	var prefix := ("%d.  " % (slot + 1)) if slot >= 0 else ""
 	var nick: String = inst.get("nickname") if inst.get("nickname") else str(inst.get("species", sp.get("name", "?")))
-	return "%s%-14s Lv%-3d %-16s cond %d%%  fit %d%%  mor %d%%" % [
+	var held := str(inst.get("held_item", "") if inst.get("held_item") != null else "")
+	return "%s%-14s Lv%-3d %-16s cond %d%%  fit %d%%  mor %d%%  %s" % [
 		prefix, nick, int(inst["level"]), types,
-		int(inst.get("condition", 100)), int(inst.get("fitness", 100)), int(inst.get("morale", 70))]
+		int(inst.get("condition", 100)), int(inst.get("fitness", 100)), int(inst.get("morale", 70)),
+		("◆ " + DataStore.item_name(held)) if held != "" else "—"]
 
 
 func _refresh_lists() -> void:
@@ -318,6 +345,12 @@ func _build_their_panel() -> Control:
 		box.add_child(UI.label("     HP %d · Atk %d · Def %d · SpA %d · SpD %d · Spe %d" % [
 			hp, int(b["stats"]["atk"]), int(b["stats"]["def"]), int(b["stats"]["spa"]),
 			int(b["stats"]["spd"]), int(b["stats"]["spe"])], 11, UI.COL_DIM))
+		var held := str(b.get("held_item", "") if b.get("held_item") != null else "")
+		if held != "":
+			var hl := UI.label("     ◆ holds %s" % DataStore.item_name(held), 11, UI.COL_WARN)
+			hl.tooltip_text = str(DataStore.item(held).get("desc", ""))
+			hl.mouse_filter = Control.MOUSE_FILTER_STOP
+			box.add_child(hl)
 	box.add_child(UI.spacer_v())
 	box.add_child(UI.label("Six picked by level and condition — expect this exact\nlineup in every battle of the series.", 11, UI.COL_DIM))
 	return p
@@ -329,16 +362,24 @@ func _build_footer() -> Control:
 	var pair: Array = UI.panel("", true)
 	var row := UI.hbox(10)
 	pair[1].add_child(row)
-	row.add_child(UI.label("Touchline instructions, forced switches and full manual control are available once the battle starts.", 12, UI.COL_DIM))
+	row.add_child(UI.label("Play it yourself — every move, switch and item is your call —\nor delegate: watch the coach run it, or take the instant result.", 12, UI.COL_DIM))
 	row.add_child(UI.spacer_h())
 	var instant := Button.new()
 	instant.text = "Instant result  ⏩"
-	instant.custom_minimum_size = Vector2(160, 38)
+	instant.tooltip_text = "Simulate the whole tie and jump to the report."
+	instant.custom_minimum_size = Vector2(150, 38)
 	instant.pressed.connect(func(): instant_result.emit())
 	row.add_child(instant)
+	var watch := Button.new()
+	watch.text = "Watch — coach decides  ▷"
+	watch.tooltip_text = "Sit back on the touchline: the AI coach picks moves under your instructions.\nYou can still force switches, change instructions or take over at any time."
+	watch.custom_minimum_size = Vector2(200, 38)
+	watch.pressed.connect(func(): start_live.emit(false))
+	row.add_child(watch)
 	var go := Button.new()
-	go.text = "Confirm lineup — start match  ▶"
-	go.custom_minimum_size = Vector2(260, 38)
+	go.text = "PLAY THE MATCH — you call every turn  ▶"
+	go.tooltip_text = "Interactive battle: choose attacks, switches and bag items each turn."
+	go.custom_minimum_size = Vector2(310, 38)
 	go.add_theme_color_override("font_color", Color.WHITE)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = UI.COL_ACCENT * Color(1, 1, 1, 0.85)
@@ -346,7 +387,7 @@ func _build_footer() -> Control:
 	sb.content_margin_left = 12
 	sb.content_margin_right = 12
 	go.add_theme_stylebox_override("normal", sb)
-	go.pressed.connect(func(): start_live.emit())
+	go.pressed.connect(func(): start_live.emit(true))
 	row.add_child(go)
 	return pair[0]
 

@@ -12,8 +12,11 @@ Project root: `/Users/enrique/development/projects/pokemon-manager-game`
 Runs two headless passes and exits nonzero on any failure:
 1. Full game boot (`--quit-after 60`), greps output for `SCRIPT ERROR` / `ERROR`.
 2. `res://tools/sim_check.tscn` — battle engine determinism + step-mode API checks,
-   a 50-day season fast-forward (league + cup fixtures simulated, table verified),
-   and a save/load roundtrip. Must print `SIM CHECK OK`.
+   the items system (held-item effects fire, `use_item` actions work and cost the
+   turn, Choice locks, AI item budget, determinism with items; club economy:
+   buy/assign/unassign, budget enforcement, AI starting held items), a 50-day
+   season fast-forward (league + cup fixtures simulated, table verified),
+   and a save/load roundtrip incl. item inventories. Must print `SIM CHECK OK`.
 
 Expected final line: `SMOKE OK`.
 

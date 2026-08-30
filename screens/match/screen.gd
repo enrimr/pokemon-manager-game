@@ -39,7 +39,8 @@ func _render() -> void:
 		MatchRunner.Phase.PRE:
 			var pre: Control = PrematchView.new()
 			pre.setup(runner)
-			pre.start_live.connect(func():
+			pre.start_live.connect(func(manual: bool):
+				runner.set_policy("full_control", manual)
 				runner.confirm_lineup()
 				_render())
 			pre.instant_result.connect(func():
@@ -94,13 +95,22 @@ func _maybe_setup_demo() -> void:
 	runner.exhibition = true
 	match kind:
 		"live":
+			# Watch mode: coach drives, stage plays out on its own.
+			runner.set_policy("full_control", false)
 			runner.confirm_lineup()
-			for i in 140:
+			var seen := 0
+			while seen < 200:
 				var e: Dictionary = runner.consume_next()
 				if e.is_empty():
 					break
+				seen += 1
+				# stop on a turn boundary so both actives are standing for capture
+				if seen >= 110 and str(e.get("t", "")) == "turn_start":
+					break
+			runner.set_meta("demo_pause", true)  # pose the stage for capture
 		"input":
-			# Exercise touchline policies, then full control (await-input UI).
+			# Manual combat (the default flow): halt at the action bar.
+			runner.set_policy("full_control", false)
 			runner.confirm_lineup()
 			runner.set_policy("aggression", "attacking")
 			runner.set_policy("switching", "eager")

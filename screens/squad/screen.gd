@@ -9,13 +9,16 @@ const Actions := preload("res://screens/squad/actions_ui.gd")
 const Service := preload("res://screens/squad/squad_service.gd")
 const History := preload("res://screens/squad/career_history.gd")
 const Ability := preload("res://screens/squad/ability.gd")
+const Selection := preload("res://screens/squad/selection.gd")
 
 const PRESETS := {
-	"General": ["name", "species", "type", "lv", "age", "cur", "pot", "rec", "cond",
-		"morale", "apps", "kos", "rat", "salary", "expiry", "status"],
-	"Battle Stats": ["name", "type", "lv", "cur", "pot", "hp", "atk", "def", "spa", "spd", "spe",
-		"tot", "dev", "apps", "wins", "kos", "dmg", "taken", "faints", "rat"],
-	"Contracts": ["name", "type", "age", "lv", "cur", "pot", "rec", "morale",
+	"General": ["pick", "name", "avail", "type", "lv", "age", "cur", "pot", "rec",
+		"cond", "morale", "item", "apps", "rat", "salary", "status"],
+	"Selection": ["pick", "name", "avail", "role", "type", "lv", "cond", "fit", "morale",
+		"item", "apps", "kos", "rat", "value", "status"],
+	"Battle Stats": ["pick", "name", "type", "lv", "cur", "pot", "hp", "atk", "def",
+		"spa", "spd", "spe", "tot", "dev", "apps", "wins", "kos", "dmg", "taken", "faints", "rat"],
+	"Contracts": ["pick", "name", "avail", "age", "lv", "cur", "pot", "rec", "morale",
 		"salary", "wage_pct", "expiry", "days_left", "demand", "value", "status"],
 }
 
@@ -23,9 +26,10 @@ const VERDICT_RANK := {"Key battler": 5, "First team": 4, "Develop": 3,
 	"Squad depth": 2, "Aging": 1, "Surplus": 0}
 
 var _records: Array = []          # one dict per squad instance, precomputed
+var _sel: Dictionary = {}         # matchday selection snapshot (Selection.selection())
 var _view: String = "General"
-var _sort_key: String = "cur"
-var _sort_desc := true
+var _sort_key: String = "pick"
+var _sort_desc := false
 var _filter := ""
 var _selected_uid := ""
 
@@ -219,6 +223,7 @@ func _refresh() -> void:
 	var wage_bill := 0
 	for inst in club["squad"]:
 		wage_bill += int(inst["contract"]["salary"])
+	_sel = Selection.selection()
 	_records.clear()
 	for inst in club["squad"]:
 		_records.append(_make_record(inst, wage_bill))
@@ -244,7 +249,14 @@ func _make_record(inst: Dictionary, wage_bill: int) -> Dictionary:
 	var salary := int(inst["contract"]["salary"])
 	var expiry: String = inst["contract"]["expiry"]
 	var rep: Dictionary = Ability.report(inst)
+	var pick: Dictionary = Selection.pick_info(uid, _sel)
+	var flags: Array = Selection.flags(inst)
+	var item_id := str(inst.get("held_item")) if inst.get("held_item") else ""
+	var item: Dictionary = DataStore.item(item_id) if item_id != "" else {}
 	return {
+		"pick": pick, "pick_rank": int(pick["rank"]),
+		"flags": flags, "role": str(pick["role"]),
+		"item_id": item_id, "item": item, "item_name": str(item.get("name", "")),
 		"cur": float(rep["now"]), "pot": float(rep["pot"]),
 		"rec": str(rep["verdict"]), "report": rep,
 		"inst": inst, "uid": uid,
@@ -280,9 +292,10 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 	if pos % 10 == 1 and pos % 100 != 11: suffix = "st"
 	elif pos % 10 == 2 and pos % 100 != 12: suffix = "nd"
 	elif pos % 10 == 3 and pos % 100 != 13: suffix = "rd"
-	_header_info.text = "%s · %s · %d%s in the %s · %s" % [
+	_header_info.text = "%s · %s · %d%s in the %s · %s · Tactic: %s%s" % [
 		club["name"], Season.pretty_date(GameState.current_date), pos, suffix,
-		GameState.world["meta"]["league_name"], "Manager: %s" % club["manager"]]
+		GameState.world["meta"]["league_name"], "Manager: %s" % club["manager"],
+		_sel.get("name", "-"), "" if _sel.get("source", "") == "tactic" else " (auto)"]
 	for c in _chips_box.get_children():
 		c.queue_free()
 	var lv_sum := 0
@@ -292,6 +305,24 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 		cond_sum += int(inst["condition"])
 	var n := maxi(squad.size(), 1)
 	_chips_box.add_child(_chip("POKEMON", str(squad.size()), UI.COL_TEXT))
+	var picked_fit := 0
+	var avail_all := 0
+	for rec in _records:
+		var red := false
+		for fl in rec["flags"]:
+			if int(fl["sev"]) >= 2:
+				red = true
+		if not red:
+			avail_all += 1
+			if rec["pick"]["kind"] == "starter":
+				picked_fit += 1
+	var picked_n: int = (_sel.get("slot", {}) as Dictionary).size()
+	var six_chip := _chip("PICKED SIX", "%d/%d fit" % [picked_fit, maxi(picked_n, 1)],
+		UI.COL_GOOD if picked_fit >= picked_n else UI.COL_WARN)
+	six_chip.tooltip_text = ("Starters of the saved tactic '%s' clear of serious availability doubts (%d of the %d-strong squad fully available)." %
+		[_sel.get("name", "-"), avail_all, squad.size()]) if _sel.get("source", "") == "tactic" \
+		else "No tactic saved yet: the six are auto-picked by level and condition. Set a lineup on the Tactics screen."
+	_chips_box.add_child(six_chip)
 	_chips_box.add_child(_chip("AVG LEVEL", "%.1f" % (float(lv_sum) / n), UI.COL_TEXT))
 	_chips_box.add_child(_chip("AVG COND", "%d%%" % int(float(cond_sum) / n),
 		UI.pct_color(int(float(cond_sum) / n))))
@@ -333,6 +364,10 @@ func _chip(label: String, value: String, col: Color) -> Control:
 
 func _col_def(id: String) -> Dictionary:
 	match id:
+		"pick": return {"title": "Picked", "w": 84, "expand": false, "num": false}
+		"avail": return {"title": "Avail", "w": 76, "expand": false, "num": false}
+		"item": return {"title": "Held Item", "w": 100, "expand": false, "num": false}
+		"role": return {"title": "Role", "w": 100, "expand": false, "num": false}
 		"name": return {"title": "Name", "w": 140, "expand": true, "num": false}
 		"species": return {"title": "Species", "w": 108, "expand": true, "num": false}
 		"type": return {"title": "Type", "w": 96, "expand": false, "num": false}
@@ -355,8 +390,8 @@ func _col_def(id: String) -> Dictionary:
 		"apps": return {"title": "Apps", "w": 52, "expand": false, "num": true}
 		"wins": return {"title": "Won", "w": 50, "expand": false, "num": true}
 		"kos": return {"title": "KOs", "w": 48, "expand": false, "num": true}
-		"dmg": return {"title": "Dmg", "w": 62, "expand": false, "num": true}
-		"taken": return {"title": "Tkn", "w": 62, "expand": false, "num": true}
+		"dmg": return {"title": "Dmg", "w": 56, "expand": false, "num": true}
+		"taken": return {"title": "Tkn", "w": 56, "expand": false, "num": true}
 		"faints": return {"title": "Fnt", "w": 44, "expand": false, "num": true}
 		"rat": return {"title": "Av Rat", "w": 60, "expand": false, "num": true}
 		"salary": return {"title": "Salary", "w": 88, "expand": false, "num": true}
@@ -371,6 +406,10 @@ func _col_def(id: String) -> Dictionary:
 
 func _cell_text(rec: Dictionary, id: String) -> String:
 	match id:
+		"pick": return (rec["pick"] as Dictionary)["text"]
+		"avail": return Selection.flags_text(rec["flags"])
+		"item": return rec["item_name"] if rec["item_name"] != "" else "-"
+		"role": return rec["role"] if rec["role"] != "" else "-"
 		"cur", "pot": return ""  # star icon cells
 		"rec": return rec["rec"]
 		"type": return "/".join(rec["types"].map(func(t): return UI.type_abbr(t)))
@@ -393,6 +432,11 @@ func _cell_text(rec: Dictionary, id: String) -> String:
 
 func _cell_color(rec: Dictionary, id: String) -> Color:
 	match id:
+		"pick": return (rec["pick"] as Dictionary)["color"]
+		"avail": return Selection.worst_color(rec["flags"])
+		"item": return UI.rarity_color(str((rec["item"] as Dictionary).get("rarity", ""))) \
+			if rec["item_name"] != "" else UI.COL_TEXT_DIM
+		"role": return UI.COL_TEXT if rec["role"] != "" else UI.COL_TEXT_DIM
 		"rec": return (rec["report"] as Dictionary)["verdict_color"]
 		"name": return Color.WHITE
 		"species": return UI.COL_TEXT_DIM
@@ -430,6 +474,17 @@ func _status_text(rec: Dictionary) -> String:
 
 
 func _sort_value(rec: Dictionary, id: String) -> Variant:
+	if id == "pick":
+		return rec["pick_rank"]
+	if id == "avail":
+		var total := 0
+		for fl in rec["flags"]:
+			total += int(fl["sev"]) * 10 + 1
+		return total
+	if id == "item":
+		return rec["item_name"] if rec["item_name"] != "" else "zzz"
+	if id == "role":
+		return rec["role"] if rec["role"] != "" else "zzz"
 	if id == "type":
 		return rec["types"][0]
 	if id == "rec":
@@ -506,6 +561,28 @@ func _rebuild_table() -> void:
 		var morale_col := cols.find("morale")
 		if morale_col >= 0:
 			it.set_icon(morale_col, UI.dot_icon(UI.pct_color(rec["morale"])))
+		var pick_col := cols.find("pick")
+		if pick_col >= 0:
+			var pick: Dictionary = rec["pick"]
+			it.set_tooltip_text(pick_col, str(pick["tip"]))
+			if pick["kind"] == "starter":
+				it.set_icon(pick_col, UI.dot_icon(UI.COL_ACCENT.lightened(0.1), 9))
+				it.set_custom_bg_color(pick_col, Color(UI.COL_ACCENT, 0.13))
+		var avail_col := cols.find("avail")
+		if avail_col >= 0:
+			var flags: Array = rec["flags"]
+			it.set_tooltip_text(avail_col, Selection.flags_tip(flags))
+			if not flags.is_empty():
+				it.set_icon(avail_col, UI.dots_icon(flags.map(func(fl): return fl["color"])))
+		var item_col := cols.find("item")
+		if item_col >= 0:
+			if rec["item_name"] != "":
+				var item: Dictionary = rec["item"]
+				it.set_icon(item_col, UI.dot_icon(UI.rarity_color(str(item.get("rarity", ""))), 9))
+				it.set_tooltip_text(item_col, "%s (%s, held)\n%s\nEquip or swap items from the Items screen." %
+					[item.get("name", "?"), item.get("rarity", "?"), item.get("desc", "")])
+			else:
+				it.set_tooltip_text(item_col, "No held item — equip one from the Items screen storeroom.")
 		var name_col := cols.find("name")
 		if name_col >= 0:
 			it.set_icon(name_col, UI.dot_icon(DataStore.type_color(rec["types"][0]), 9))
@@ -608,6 +685,23 @@ func _update_footer() -> void:
 		badges.add_child(UI.type_badge(t, 10))
 	idbox.add_child(badges)
 
+	var pick: Dictionary = rec["pick"]
+	var sel_stat := _footer_stat("PICKED",
+		("Starter %d" % int(pick["rank"])) if pick["kind"] == "starter" else str(pick["text"]).replace("S", "Sub "),
+		UI.COL_ACCENT.lightened(0.2) if pick["kind"] == "starter" else UI.COL_TEXT_DIM)
+	sel_stat.tooltip_text = str(pick["tip"])
+	_footer_box.add_child(sel_stat)
+	var item_stat := _footer_stat("HELD ITEM",
+		rec["item_name"] if rec["item_name"] != "" else "None",
+		UI.rarity_color(str((rec["item"] as Dictionary).get("rarity", ""))) if rec["item_name"] != "" else UI.COL_TEXT_DIM)
+	item_stat.tooltip_text = ("%s\nManage from the Items screen." % (rec["item"] as Dictionary).get("desc", "")) \
+		if rec["item_name"] != "" else "No held item — equip one from the Items screen."
+	_footer_box.add_child(item_stat)
+	if not (rec["flags"] as Array).is_empty():
+		var av_stat := _footer_stat("AVAILABILITY", Selection.flags_text(rec["flags"]),
+			Selection.worst_color(rec["flags"]))
+		av_stat.tooltip_text = Selection.flags_tip(rec["flags"])
+		_footer_box.add_child(av_stat)
 	var rep: Dictionary = rec["report"]
 	_footer_box.add_child(_footer_stars("ABILITY", Ability.stars_icon(rec["cur"], -1.0, Ability.COL_STARS_NOW, 12),
 		Ability.ability_word(rec["cur"])))
@@ -615,9 +709,9 @@ func _update_footer() -> void:
 		Ability.stars_icon(float(rep["pot_lo"]), float(rep["pot_hi"]), Ability.COL_STARS_POT, 12),
 		"%s conf." % rep["confidence"]))
 	_footer_box.add_child(_footer_stat("COACH CALL", rec["rec"], rep["verdict_color"]))
-	_footer_box.add_child(_footer_stat("COND / FIT", "%d%% / %d%%" % [rec["cond"], rec["fit"]],
-		UI.pct_color(mini(rec["cond"], rec["fit"]))))
-	_footer_box.add_child(_footer_stat("MORALE", UI.morale_word(rec["morale"]), UI.pct_color(rec["morale"])))
+	if (rec["flags"] as Array).is_empty():
+		_footer_box.add_child(_footer_stat("COND / FIT", "%d%% / %d%%" % [rec["cond"], rec["fit"]],
+			UI.pct_color(mini(rec["cond"], rec["fit"]))))
 	_footer_box.add_child(_footer_stat("SEASON",
 		"%d apps · %d KOs · av %s" % [rec["apps"], rec["kos"],
 			("%.2f" % rec["rat"]) if rec["apps"] > 0 else "-"],
@@ -638,7 +732,7 @@ func _update_footer() -> void:
 		bids_b.pressed.connect(func() -> void: Actions.open_offers_dialog(self, uid))
 		_footer_box.add_child(bids_b)
 	var contract_b := Button.new()
-	contract_b.text = "New Contract"
+	contract_b.text = "Contract..."
 	contract_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	contract_b.disabled = rec["talks_locked"]
 	contract_b.tooltip_text = "Open contract renewal talks" if not rec["talks_locked"] \
@@ -664,7 +758,8 @@ func _update_footer() -> void:
 			func(u: String) -> void: _open_profile(u)))
 	_footer_box.add_child(actions_b)
 	_profile_btn = Button.new()
-	_profile_btn.text = "Open Profile"
+	_profile_btn.text = "Profile"
+	_profile_btn.tooltip_text = "Open the full profile (or double-click the row)"
 	_profile_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_profile_btn.pressed.connect(_open_selected_profile)
 	_footer_box.add_child(_profile_btn)

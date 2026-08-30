@@ -11,6 +11,7 @@ signal fixture_played(fixture: Dictionary)
 signal table_updated
 signal inbox_updated
 signal player_match_due(fixture: Dictionary)
+signal inventory_changed
 
 const SAVE_PATH := "user://save.json"
 
@@ -42,6 +43,7 @@ func new_career(seed_value: int = 20260801) -> void:
 	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
 	world = JSON.parse_string(f.get_as_text())
 	_index_clubs()
+	_ensure_item_state()
 	season_start = world["meta"]["season_start"]
 	current_date = season_start
 	fixtures = Season.make_league_fixtures(club_ids(), season_start)
@@ -92,6 +94,7 @@ func load_game() -> bool:
 	fixtures = data["fixtures"]
 	inbox = data["inbox"]
 	_index_clubs()
+	_ensure_item_state()
 	_table_dirty = true
 	career_started.emit()
 	date_changed.emit(current_date)
@@ -166,6 +169,186 @@ func unread_inbox_count() -> int:
 	return inbox.filter(func(m): return not m.get("read", false)).size()
 
 
+# ------------------------------------------------------------------ items & inventory
+# Per-club item store: club["items"] = {item_id: count}. Held items live on the
+# squad instance's "held_item" slot (null/"" = bare). Item catalog: DataStore.item().
+
+## A club's item inventory (live dict — mutate only via the API below).
+func club_inventory(club_id: String) -> Dictionary:
+	var c := club(club_id)
+	if c.is_empty():
+		return {}
+	if not c.has("items") or typeof(c["items"]) != TYPE_DICTIONARY:
+		c["items"] = {}
+	return c["items"]
+
+
+func player_inventory() -> Dictionary:
+	return club_inventory(world["meta"]["player_club_id"])
+
+
+## Buy `qty` of an item from the league store with club funds. "" = ok, else error.
+func buy_item(item_id: String, qty: int = 1) -> String:
+	var it: Dictionary = DataStore.item(item_id)
+	if it.is_empty():
+		return "Unknown item."
+	qty = maxi(1, qty)
+	var cost := int(it["price"]) * qty
+	var fin: Dictionary = player_club()["finances"]
+	if int(fin["balance"]) < cost:
+		return "Not enough funds — %s %d needed, %s %d available." % [
+			world["meta"]["currency"], cost, world["meta"]["currency"], int(fin["balance"])]
+	fin["balance"] = int(fin["balance"]) - cost
+	var inv := player_inventory()
+	inv[item_id] = int(inv.get(item_id, 0)) + qty
+	inventory_changed.emit()
+	return ""
+
+
+## Sell surplus stock back at half price. "" = ok, else error.
+func sell_item(item_id: String, qty: int = 1) -> String:
+	qty = maxi(1, qty)
+	var inv := player_inventory()
+	if int(inv.get(item_id, 0)) < qty:
+		return "Not enough of that item in the storeroom."
+	inv[item_id] = int(inv[item_id]) - qty
+	if int(inv[item_id]) <= 0:
+		inv.erase(item_id)
+	var fin: Dictionary = player_club()["finances"]
+	fin["balance"] = int(fin["balance"]) + int(int(DataStore.item(item_id)["price"]) * 0.5) * qty
+	inventory_changed.emit()
+	return ""
+
+
+## Find a player-squad instance by uid ({} if absent).
+func squad_member(uid: String) -> Dictionary:
+	for m in player_club()["squad"]:
+		if str(m["uid"]) == uid:
+			return m
+	return {}
+
+
+## Equip a held item from the storeroom onto a squad Pokémon. Any item it was
+## already holding goes back to stock. "" = ok, else error.
+func assign_held_item(uid: String, item_id: String) -> String:
+	var m := squad_member(uid)
+	if m.is_empty():
+		return "That Pokémon is not in your squad."
+	var it: Dictionary = DataStore.item(item_id)
+	if it.is_empty() or str(it["class"]) != "held":
+		return "Only held-class items can be equipped."
+	var inv := player_inventory()
+	if int(inv.get(item_id, 0)) <= 0:
+		return "None in the storeroom — buy one first."
+	var cur: Variant = m.get("held_item")
+	if cur != null and str(cur) != "":
+		if str(cur) == item_id:
+			return "Already holding that item."
+		inv[str(cur)] = int(inv.get(str(cur), 0)) + 1
+	inv[item_id] = int(inv[item_id]) - 1
+	if int(inv[item_id]) <= 0:
+		inv.erase(item_id)
+	m["held_item"] = item_id
+	inventory_changed.emit()
+	return ""
+
+
+## Take a squad Pokémon's held item back into the storeroom. "" = ok.
+func unassign_held_item(uid: String) -> String:
+	var m := squad_member(uid)
+	if m.is_empty():
+		return "That Pokémon is not in your squad."
+	var cur: Variant = m.get("held_item")
+	if cur == null or str(cur) == "":
+		return "It isn't holding anything."
+	var inv := player_inventory()
+	inv[str(cur)] = int(inv.get(str(cur), 0)) + 1
+	m["held_item"] = null
+	inventory_changed.emit()
+	return ""
+
+
+## Deduct items a club consumed (e.g. trainer items spent in an interactive
+## match — the match screen reports {item_id: count_used} per club afterwards).
+func consume_club_items(club_id: String, used: Dictionary) -> void:
+	if used.is_empty():
+		return
+	var inv := club_inventory(club_id)
+	for iid in used:
+		inv[iid] = int(inv.get(iid, 0)) - int(used[iid])
+		if int(inv[iid]) <= 0:
+			inv.erase(iid)
+	inventory_changed.emit()
+
+
+## Save-compat / world-compat migration: every club gets an item store and
+## every instance a held_item slot, so pre-items careers keep working.
+func _ensure_item_state() -> void:
+	for c in world["clubs"]:
+		if not c.has("items") or typeof(c["items"]) != TYPE_DICTIONARY:
+			c["items"] = {"potion": 3, "super_potion": 2, "full_heal": 1}
+		for m in c["squad"]:
+			if not m.has("held_item"):
+				m["held_item"] = null
+	for pool in ["free_agents", "prospects"]:
+		for m in world.get(pool, []):
+			if not m.has("held_item"):
+				m["held_item"] = null
+
+
+## AI clubs occasionally shop: equip a bare key battler or restock trainer
+## items. Deterministic per (career_seed, date, club).
+func _ai_daily_items() -> void:
+	for c in world["clubs"]:
+		if is_player_club(c["id"]):
+			continue
+		var r := RandomNumberGenerator.new()
+		r.seed = career_seed + (current_date + "|items|" + str(c["id"])).hash()
+		if r.randf() > 0.06:
+			continue
+		var fin: Dictionary = c["finances"]
+		var bare: Array = c["squad"].filter(func(m):
+			return m.get("held_item") == null or str(m.get("held_item", "")) == "")
+		bare.sort_custom(func(a, b): return int(a["level"]) > int(b["level"]))
+		if not bare.is_empty() and r.randf() < 0.65:
+			var m: Dictionary = bare[0]
+			var iid := _ai_pick_held_item(m, r)
+			var price := int(DataStore.item(iid).get("price", 0))
+			if price > 0 and int(fin["balance"]) >= price * 5:
+				fin["balance"] = int(fin["balance"]) - price
+				m["held_item"] = iid
+		else:
+			var pool := ["potion", "super_potion", "hyper_potion", "full_heal", "revive", "x_attack"]
+			var iid2: String = pool[r.randi_range(0, pool.size() - 1)]
+			var price2 := int(DataStore.item(iid2).get("price", 0))
+			if price2 > 0 and int(fin["balance"]) >= price2 * 5:
+				fin["balance"] = int(fin["balance"]) - price2
+				var inv := club_inventory(str(c["id"]))
+				inv[iid2] = int(inv.get(iid2, 0)) + 1
+
+
+func _ai_pick_held_item(m: Dictionary, r: RandomNumberGenerator) -> String:
+	var sp: Dictionary = DataStore.species(int(m["species_id"]))
+	if sp.is_empty():
+		return "leftovers"
+	var base: Dictionary = sp["base"]
+	var cands: Array = ["leftovers", "sitrus_berry", "lum_berry", "quick_claw"]
+	for t in sp["types"]:
+		for iid in DataStore.items:
+			for fx in DataStore.items[iid].get("effects", []):
+				if str(fx) == "type_boost:%s:1.2" % str(t):
+					cands.append(str(iid))
+	if int(base["atk"]) >= int(base["spa"]) + 15:
+		cands.append("choice_band")
+	elif int(base["spa"]) >= int(base["atk"]) + 15:
+		cands.append("choice_specs")
+	if int(base["spe"]) >= 100:
+		cands.append("choice_scarf")
+	if bool(sp.get("evolves", false)):
+		cands.append("eviolite")
+	return str(cands[r.randi_range(0, cands.size() - 1)])
+
+
 # ------------------------------------------------------------------ time
 
 ## Advance the calendar one day; sim any fixtures due. Returns events of the day.
@@ -183,6 +366,7 @@ func advance_day() -> Array:
 		_play_fixture(f)
 		day_events.append({"t": "fixture_played", "fixture": f})
 	_maybe_generate_next_cup_round()
+	_ai_daily_items()
 	date_changed.emit(current_date)
 	return day_events
 

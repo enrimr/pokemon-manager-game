@@ -1,0 +1,629 @@
+{
+ "leftovers": {
+  "id": "leftovers",
+  "name": "Leftovers",
+  "class": "held",
+  "price": 4000,
+  "rarity": "rare",
+  "effects": [
+   "end_turn_heal:0.0625"
+  ],
+  "desc": "The holder restores 1/16 of its max HP at the end of every turn."
+ },
+ "choice_band": {
+  "id": "choice_band",
+  "name": "Choice Band",
+  "class": "held",
+  "price": 5000,
+  "rarity": "rare",
+  "effects": [
+   "choice:atk:1.5"
+  ],
+  "desc": "Boosts Attack by 50%, but locks the holder into the first move it uses."
+ },
+ "choice_specs": {
+  "id": "choice_specs",
+  "name": "Choice Specs",
+  "class": "held",
+  "price": 5000,
+  "rarity": "rare",
+  "effects": [
+   "choice:spa:1.5"
+  ],
+  "desc": "Boosts Sp. Atk by 50%, but locks the holder into the first move it uses."
+ },
+ "choice_scarf": {
+  "id": "choice_scarf",
+  "name": "Choice Scarf",
+  "class": "held",
+  "price": 5000,
+  "rarity": "rare",
+  "effects": [
+   "choice:spe:1.5"
+  ],
+  "desc": "Boosts Speed by 50%, but locks the holder into the first move it uses."
+ },
+ "focus_sash": {
+  "id": "focus_sash",
+  "name": "Focus Sash",
+  "class": "held",
+  "price": 3000,
+  "rarity": "rare",
+  "effects": [
+   "sash"
+  ],
+  "desc": "If the holder is at full HP, it survives a knockout blow with 1 HP. Single use."
+ },
+ "life_orb": {
+  "id": "life_orb",
+  "name": "Life Orb",
+  "class": "held",
+  "price": 5000,
+  "rarity": "rare",
+  "effects": [
+   "life_orb"
+  ],
+  "desc": "Boosts move damage by 30%, but the holder loses 10% max HP after each attack."
+ },
+ "quick_claw": {
+  "id": "quick_claw",
+  "name": "Quick Claw",
+  "class": "held",
+  "price": 2500,
+  "rarity": "uncommon",
+  "effects": [
+   "quick_claw:0.2"
+  ],
+  "desc": "20% chance each turn for the holder to move first within its priority bracket."
+ },
+ "rocky_helmet": {
+  "id": "rocky_helmet",
+  "name": "Rocky Helmet",
+  "class": "held",
+  "price": 3000,
+  "rarity": "uncommon",
+  "effects": [
+   "rocky_helmet:0.166"
+  ],
+  "desc": "Attackers striking the holder with physical moves lose 1/6 of their max HP."
+ },
+ "assault_vest": {
+  "id": "assault_vest",
+  "name": "Assault Vest",
+  "class": "held",
+  "price": 4500,
+  "rarity": "rare",
+  "effects": [
+   "assault_vest"
+  ],
+  "desc": "Raises Sp. Def by 50%, but the holder cannot select status moves."
+ },
+ "eviolite": {
+  "id": "eviolite",
+  "name": "Eviolite",
+  "class": "held",
+  "price": 4500,
+  "rarity": "rare",
+  "effects": [
+   "eviolite"
+  ],
+  "desc": "Raises Defense and Sp. Def by 50% if the holder can still evolve."
+ },
+ "shell_bell": {
+  "id": "shell_bell",
+  "name": "Shell Bell",
+  "class": "held",
+  "price": 2500,
+  "rarity": "uncommon",
+  "effects": [
+   "shell_bell:0.125"
+  ],
+  "desc": "The holder restores HP equal to 1/8 of the damage it deals."
+ },
+ "kings_rock": {
+  "id": "kings_rock",
+  "name": "King's Rock",
+  "class": "held",
+  "price": 2500,
+  "rarity": "uncommon",
+  "effects": [
+   "kings_rock:0.1"
+  ],
+  "desc": "The holder's damaging moves gain a 10% chance to make the target flinch."
+ },
+ "bright_powder": {
+  "id": "bright_powder",
+  "name": "Bright Powder",
+  "class": "held",
+  "price": 2500,
+  "rarity": "uncommon",
+  "effects": [
+   "bright_powder:0.9"
+  ],
+  "desc": "Moves aimed at the holder are 10% less accurate."
+ },
+ "scope_lens": {
+  "id": "scope_lens",
+  "name": "Scope Lens",
+  "class": "held",
+  "price": 2000,
+  "rarity": "uncommon",
+  "effects": [
+   "scope_lens"
+  ],
+  "desc": "Doubles the holder's critical-hit chance."
+ },
+ "silk_scarf": {
+  "id": "silk_scarf",
+  "name": "Silk Scarf",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:normal:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Normal-type moves by 20%."
+ },
+ "charcoal": {
+  "id": "charcoal",
+  "name": "Charcoal",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:fire:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Fire-type moves by 20%."
+ },
+ "mystic_water": {
+  "id": "mystic_water",
+  "name": "Mystic Water",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:water:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Water-type moves by 20%."
+ },
+ "miracle_seed": {
+  "id": "miracle_seed",
+  "name": "Miracle Seed",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:grass:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Grass-type moves by 20%."
+ },
+ "magnet": {
+  "id": "magnet",
+  "name": "Magnet",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:electric:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Electric-type moves by 20%."
+ },
+ "never_melt_ice": {
+  "id": "never_melt_ice",
+  "name": "Never-Melt Ice",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:ice:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Ice-type moves by 20%."
+ },
+ "black_belt": {
+  "id": "black_belt",
+  "name": "Black Belt",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:fighting:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Fighting-type moves by 20%."
+ },
+ "poison_barb": {
+  "id": "poison_barb",
+  "name": "Poison Barb",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:poison:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Poison-type moves by 20%."
+ },
+ "soft_sand": {
+  "id": "soft_sand",
+  "name": "Soft Sand",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:ground:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Ground-type moves by 20%."
+ },
+ "sharp_beak": {
+  "id": "sharp_beak",
+  "name": "Sharp Beak",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:flying:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Flying-type moves by 20%."
+ },
+ "twisted_spoon": {
+  "id": "twisted_spoon",
+  "name": "Twisted Spoon",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:psychic:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Psychic-type moves by 20%."
+ },
+ "silver_powder": {
+  "id": "silver_powder",
+  "name": "Silver Powder",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:bug:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Bug-type moves by 20%."
+ },
+ "hard_stone": {
+  "id": "hard_stone",
+  "name": "Hard Stone",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:rock:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Rock-type moves by 20%."
+ },
+ "spell_tag": {
+  "id": "spell_tag",
+  "name": "Spell Tag",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:ghost:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Ghost-type moves by 20%."
+ },
+ "dragon_fang": {
+  "id": "dragon_fang",
+  "name": "Dragon Fang",
+  "class": "held",
+  "price": 1500,
+  "rarity": "common",
+  "effects": [
+   "type_boost:dragon:1.2"
+  ],
+  "desc": "Boosts the power of the holder's Dragon-type moves by 20%."
+ },
+ "lum_berry": {
+  "id": "lum_berry",
+  "name": "Lum Berry",
+  "class": "held",
+  "price": 1200,
+  "rarity": "uncommon",
+  "effects": [
+   "cure_berry:all"
+  ],
+  "desc": "Cures the holder of any status condition or confusion the moment it strikes. Single use."
+ },
+ "sitrus_berry": {
+  "id": "sitrus_berry",
+  "name": "Sitrus Berry",
+  "class": "held",
+  "price": 800,
+  "rarity": "uncommon",
+  "effects": [
+   "sitrus:0.25"
+  ],
+  "desc": "Restores 25% max HP when the holder drops to half health or below. Single use."
+ },
+ "chesto_berry": {
+  "id": "chesto_berry",
+  "name": "Chesto Berry",
+  "class": "held",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "cure_berry:sleep"
+  ],
+  "desc": "Wakes the holder the moment it falls asleep. Single use."
+ },
+ "cheri_berry": {
+  "id": "cheri_berry",
+  "name": "Cheri Berry",
+  "class": "held",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "cure_berry:para"
+  ],
+  "desc": "Cures the holder of paralysis the moment it is inflicted. Single use."
+ },
+ "rawst_berry": {
+  "id": "rawst_berry",
+  "name": "Rawst Berry",
+  "class": "held",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "cure_berry:burn"
+  ],
+  "desc": "Heals the holder's burn the moment it is inflicted. Single use."
+ },
+ "pecha_berry": {
+  "id": "pecha_berry",
+  "name": "Pecha Berry",
+  "class": "held",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "cure_berry:poison"
+  ],
+  "desc": "Cures the holder of poison the moment it is inflicted. Single use."
+ },
+ "aspear_berry": {
+  "id": "aspear_berry",
+  "name": "Aspear Berry",
+  "class": "held",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "cure_berry:freeze"
+  ],
+  "desc": "Thaws the holder the moment it is frozen. Single use."
+ },
+ "persim_berry": {
+  "id": "persim_berry",
+  "name": "Persim Berry",
+  "class": "held",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "cure_berry:confuse"
+  ],
+  "desc": "Snaps the holder out of confusion the moment it sets in. Single use."
+ },
+ "potion": {
+  "id": "potion",
+  "name": "Potion",
+  "class": "usable",
+  "price": 200,
+  "rarity": "common",
+  "effects": [
+   "heal:20"
+  ],
+  "desc": "Restores 20 HP to one of your Pok\u00e9mon."
+ },
+ "super_potion": {
+  "id": "super_potion",
+  "name": "Super Potion",
+  "class": "usable",
+  "price": 700,
+  "rarity": "common",
+  "effects": [
+   "heal:60"
+  ],
+  "desc": "Restores 60 HP to one of your Pok\u00e9mon."
+ },
+ "hyper_potion": {
+  "id": "hyper_potion",
+  "name": "Hyper Potion",
+  "class": "usable",
+  "price": 1500,
+  "rarity": "uncommon",
+  "effects": [
+   "heal:120"
+  ],
+  "desc": "Restores 120 HP to one of your Pok\u00e9mon."
+ },
+ "max_potion": {
+  "id": "max_potion",
+  "name": "Max Potion",
+  "class": "usable",
+  "price": 2500,
+  "rarity": "rare",
+  "effects": [
+   "heal:full"
+  ],
+  "desc": "Fully restores one of your Pok\u00e9mon's HP."
+ },
+ "full_restore": {
+  "id": "full_restore",
+  "name": "Full Restore",
+  "class": "usable",
+  "price": 3000,
+  "rarity": "rare",
+  "effects": [
+   "full_restore"
+  ],
+  "desc": "Fully restores HP and cures all status conditions and confusion."
+ },
+ "antidote": {
+  "id": "antidote",
+  "name": "Antidote",
+  "class": "usable",
+  "price": 100,
+  "rarity": "common",
+  "effects": [
+   "cure:poison"
+  ],
+  "desc": "Cures a poisoned Pok\u00e9mon."
+ },
+ "awakening": {
+  "id": "awakening",
+  "name": "Awakening",
+  "class": "usable",
+  "price": 150,
+  "rarity": "common",
+  "effects": [
+   "cure:sleep"
+  ],
+  "desc": "Wakes a sleeping Pok\u00e9mon."
+ },
+ "burn_heal": {
+  "id": "burn_heal",
+  "name": "Burn Heal",
+  "class": "usable",
+  "price": 150,
+  "rarity": "common",
+  "effects": [
+   "cure:burn"
+  ],
+  "desc": "Heals a burned Pok\u00e9mon."
+ },
+ "ice_heal": {
+  "id": "ice_heal",
+  "name": "Ice Heal",
+  "class": "usable",
+  "price": 150,
+  "rarity": "common",
+  "effects": [
+   "cure:freeze"
+  ],
+  "desc": "Thaws a frozen Pok\u00e9mon."
+ },
+ "paralyze_heal": {
+  "id": "paralyze_heal",
+  "name": "Paralyze Heal",
+  "class": "usable",
+  "price": 150,
+  "rarity": "common",
+  "effects": [
+   "cure:para"
+  ],
+  "desc": "Cures a paralyzed Pok\u00e9mon."
+ },
+ "full_heal": {
+  "id": "full_heal",
+  "name": "Full Heal",
+  "class": "usable",
+  "price": 400,
+  "rarity": "uncommon",
+  "effects": [
+   "cure:all"
+  ],
+  "desc": "Cures all status conditions and confusion on one Pok\u00e9mon."
+ },
+ "revive": {
+  "id": "revive",
+  "name": "Revive",
+  "class": "usable",
+  "price": 2000,
+  "rarity": "rare",
+  "effects": [
+   "revive:0.5"
+  ],
+  "desc": "Revives a fainted Pok\u00e9mon with half its max HP."
+ },
+ "max_revive": {
+  "id": "max_revive",
+  "name": "Max Revive",
+  "class": "usable",
+  "price": 4000,
+  "rarity": "rare",
+  "effects": [
+   "revive:1.0"
+  ],
+  "desc": "Revives a fainted Pok\u00e9mon with full HP."
+ },
+ "x_attack": {
+  "id": "x_attack",
+  "name": "X Attack",
+  "class": "usable",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "xstat:atk:1"
+  ],
+  "desc": "Sharply focuses your active Pok\u00e9mon: raises Attack by one stage."
+ },
+ "x_defense": {
+  "id": "x_defense",
+  "name": "X Defense",
+  "class": "usable",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "xstat:def:1"
+  ],
+  "desc": "Raises your active Pok\u00e9mon's Defense by one stage."
+ },
+ "x_sp_atk": {
+  "id": "x_sp_atk",
+  "name": "X Sp. Atk",
+  "class": "usable",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "xstat:spa:1"
+  ],
+  "desc": "Raises your active Pok\u00e9mon's Sp. Atk by one stage."
+ },
+ "x_sp_def": {
+  "id": "x_sp_def",
+  "name": "X Sp. Def",
+  "class": "usable",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "xstat:spd:1"
+  ],
+  "desc": "Raises your active Pok\u00e9mon's Sp. Def by one stage."
+ },
+ "x_speed": {
+  "id": "x_speed",
+  "name": "X Speed",
+  "class": "usable",
+  "price": 500,
+  "rarity": "common",
+  "effects": [
+   "xstat:spe:1"
+  ],
+  "desc": "Raises your active Pok\u00e9mon's Speed by one stage."
+ },
+ "dire_hit": {
+  "id": "dire_hit",
+  "name": "Dire Hit",
+  "class": "usable",
+  "price": 600,
+  "rarity": "uncommon",
+  "effects": [
+   "dire_hit"
+  ],
+  "desc": "Doubles your active Pok\u00e9mon's critical-hit chance for the rest of the battle."
+ },
+ "guard_spec": {
+  "id": "guard_spec",
+  "name": "Guard Spec.",
+  "class": "usable",
+  "price": 700,
+  "rarity": "uncommon",
+  "effects": [
+   "guard_spec"
+  ],
+  "desc": "Prevents the opponent from lowering your active Pok\u00e9mon's stats for 5 turns."
+ }
+}

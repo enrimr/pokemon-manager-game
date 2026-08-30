@@ -1,1 +1,7 @@
-{"title": "Training", "order": 60, "icon_letter": "R"}
+{"title": "Training", "order": 60, "icon_letter": "R", "tabs": [
+	{"id": "schedule", "title": "Schedule"},
+	{"id": "individual", "title": "Individual"},
+	{"id": "coaches", "title": "Coaches"},
+	{"id": "mentoring", "title": "Mentoring"},
+	{"id": "development", "title": "Development"}
+]}
