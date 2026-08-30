@@ -1,10 +1,10 @@
 {
  "piece": "transfers",
  "fm_reference": "FM24 Transfer Centre + Scouting Hub",
- "status": "capped",
- "round": 2,
- "verdict": "fm wins",
- "biggest_gap": "Market scale starves the scouting game: one 16-club league with ~266 scoutable targets, where a single scout takes a top target from a masked P$254K-742K range to 100% knowledge and a full report in ~10 days — the discovery/uncertainty engine that makes FM24's global, effectively inexhaustible scouting hub a season-long strategic layer collapses into a two-week checklist here.",
+ "status": "passed",
+ "round": 3,
+ "verdict": "ours wins",
+ "biggest_gap": null,
  "history": [
   {
    "round": 1,
@@ -32,8 +32,15 @@
    "phase": "wave2",
    "winner": "fm",
    "gap": "Market scale starves the scouting game: one 16-club league with ~266 scoutable targets, where a single scout takes a top target from a masked P$254K-742K range to 100% knowledge and a full report in ~10 days — the discovery/uncertainty engine that makes FM24's global, effectively inexhaustible scouting hub a season-long strategic layer collapses into a two-week checklist here."
+  },
+  {
+   "round": 1,
+   "phase": "final",
+   "winner": "ours",
+   "gap": null,
+   "note": "Discovery-economy gap verified closed by an independent critic driver: 694-target universe (366 club / 80 FA / 248 prospects; 426 external), 6-stage knowledge ladder with truth-containing bands that narrow ([24,25,13,10,4,0] -> exact), travel really gates flow (5 zero-gain transit days to the islands), focus sweeps hard-capped at 60%, hiring bounded at 4 dedicated scouts; one scout deep-covers 0.4% in 60 days, a MAX-staffed 6-judge department only 3.7% in 90 days; assignments incl. travel_left survive save/load. Residual FM24 edges (raw database scale, data-hub/statistical scouting channel, free existence-enumeration in Search) noted but not area-losing."
   }
  ],
- "updated": "2026-08-30 06:59",
- "fix_note": "Wave2 fix: full push-based recruitment pipeline added — Recruitment hub tab (shortlist board with watch alerts, scout recommendation queue, agent-offered players with mechanically greased deals, rumour mill whose listings slash ask prices and whose rumours ripen into real transfers/bids), scout hiring market + 5-region scouting network (home-patch speed, region focuses, coverage board), and DoF delegation that swats lowballs, auto-scouts and opens/negotiates/closes shortlist deals inside board limits. 120-check selftest, SMOKE OK, screenshots in artifacts/transfers/w2_fix."
+ "updated": "2026-08-30 07:51",
+ "fix_note": "Wave2 round3 fix: rebuilt the discovery ECONOMY. (1) Scoutable universe 266 -> 694: two overseas leagues (Sevii Island League + Orange Archipelago League, 16 virtual clubs, transfer-eligible/no loans) and 7 regional prospect pools, all regenerated deterministically from career_seed with only departures persisted (ext_removed delta) so saves stay light. (2) Knowledge is STAGED and costly: 6-stage ladder (Untracked/Rumour/Initial/Part scouted/Detailed/Full) with per-stage unlocks (moves at 50, IVs+exact at 100), daily knowledge accrual by scout JA x region familiarity, interim reports at 50% with star-rating UNCERTAINTY BANDS that narrow (banded pros/cons, no leaks), full book ~10-25 days per target. (3) Throughput throttled: scouts have physical locations, cross-region travel 2d / overseas 5d before any knowledge flows, focus sweeps hard-capped at 60% (3 targets/day) so depth demands dedicated watches, overseas-native hire-market scouts unlock the islands. Proof: coverage_driver.tscn simulates 60 days with one scout auto-reassigned - 3/694 = 0.4% deep coverage, stage histograms printed at day 15/30/45/60, determinism + save/load byte-true. SMOKE OK, TRANSFERS SELFTEST OK (all staged/ext/travel/cap checks), COVERAGE DRIVER OK, 10 screenshots in artifacts/transfers/w3_fix."
 }

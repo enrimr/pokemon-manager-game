@@ -99,6 +99,12 @@ func load_game() -> bool:
 	_index_clubs()
 	_ensure_item_state()
 	_ensure_budget_state()
+	# Save migration: fixtures played before match details were persisted at
+	# play time get reconciled once (adopt a faithful replay, or a score-only
+	# stub when squads have drifted) so reports can never contradict scores.
+	var rec := Season.reconcile_fixture_details(fixtures)
+	if int(rec["adopted"]) + int(rec["cleared"]) > 0:
+		save_game()
 	_table_dirty = true
 	career_started.emit()
 	date_changed.emit(current_date)
@@ -470,6 +476,9 @@ func _play_fixture(f: Dictionary) -> void:
 	f["played"] = true
 	f["score_home"] = result["score_home"]
 	f["score_away"] = result["score_away"]
+	# Persist the play-time match report (single source of truth for the
+	# Competition screen's reports and season stats — never re-derived later).
+	f["detail"] = result["detail"]
 	_table_dirty = true
 	fixture_played.emit(f)
 	table_updated.emit()

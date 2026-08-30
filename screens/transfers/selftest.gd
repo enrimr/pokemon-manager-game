@@ -22,6 +22,15 @@ func _advance(n: int) -> void:
 		GameState.advance_day()
 
 
+func _advance_deal(o: Dictionary, n: int) -> void:
+	## Advance days while keeping rival hijackers out of THIS negotiation —
+	## the hijack mechanic has its own dedicated test further down.
+	for i in n:
+		GameState.auto_sim_player_matches = true
+		GameState.advance_day()
+		o["rival"] = {}
+
+
 const SaveGuard := preload("res://tools/save_guard.gd")
 
 
@@ -46,10 +55,25 @@ func _ready() -> void:
 	_ok(m.deadline_factor() == 1.0, "mid-window market temperature is baseline")
 	_ok(String(m.next_window()["name"]) == "Winter window", "winter window queued next")
 
-	print("=== transfers: search pool ===")
+	print("=== transfers: search pool + external world ===")
 	var targets: Array = m.all_targets()
-	_ok(targets.size() > 200, "market has %d targets (clubs + 80 FA + 30 prospects)" % targets.size())
-	var club_t: Dictionary = targets.filter(func(t): return t["pool"] == "club").front()
+	_ok(targets.size() > 600, "scoutable universe: %d targets (domestic + overseas + youth pools)" % targets.size())
+	var ext_t: Array = targets.filter(func(t): return m.is_ext_uid(String(t["inst"]["uid"])))
+	_ok(ext_t.size() > 350, "external world adds %d targets" % ext_t.size())
+	_ok(m.ext_clubs().size() == 16, "two overseas leagues x 8 clubs (%d)" % m.ext_clubs().size())
+	var first_uid: String = String(m.ext_clubs()[0]["squad"][0]["uid"])
+	var first_lv: int = int(m.ext_clubs()[0]["squad"][0]["level"])
+	m._ext_built_seed = -2
+	m._ensure_ext_world()
+	_ok(String(m.ext_clubs()[0]["squad"][0]["uid"]) == first_uid and int(m.ext_clubs()[0]["squad"][0]["level"]) == first_lv,
+		"external world regenerates deterministically from the career seed")
+	var ext_club_t: Dictionary = ext_t.filter(func(t): return t["pool"] == "club").front()
+	var ext_uid: String = String(ext_club_t["inst"]["uid"])
+	_ok(not m.find_target(ext_uid).is_empty(), "ext target resolvable by uid")
+	_ok(m.region_of(ext_club_t["inst"]) in m.OVERSEAS_REGIONS, "overseas battlers live in an overseas region")
+	_ok(m.ask_price(ext_club_t["inst"], ext_club_t["club_id"]) > 0, "overseas ask price computable (virtual club)")
+	_ok(m.make_loan_offer(ext_uid, 100, 0) != "", "overseas clubs refuse loans — permanent deals only")
+	var club_t: Dictionary = targets.filter(func(t): return t["pool"] == "club" and not m.is_ext_uid(String(t["inst"]["uid"]))).front()
 	var uid: String = club_t["inst"]["uid"]
 	_ok(m.knowledge_of(uid) < 100.0, "club target starts unscouted")
 	var stats: Dictionary = m.exact_stats(club_t["inst"])
@@ -69,21 +93,61 @@ func _ready() -> void:
 	# release the full bank for the negotiation-mechanics tests below
 	pc0["finances"]["transfer_budget"] = int(pc0["finances"]["balance"])
 
-	print("=== transfers: scouting ===")
+	print("=== transfers: staged scouting economy ===")
 	var scouts: Array = m.player_scouts()
 	_ok(scouts.size() >= 1, "%d staff can scout" % scouts.size())
+	scouts.sort_custom(func(a, b): return int(a["ratings"]["judging_ability"]) > int(b["ratings"]["judging_ability"]))
 	var sname: String = scouts[0]["name"]
+	var eta0: int = m.scout_days_for(scouts[0], uid)
+	_ok(eta0 >= 6, "a full book takes real days even for our best scout (~%d)" % eta0)
+	_ok(m.scout_days_for(scouts[0], ext_uid) >= eta0 + 3, "overseas watch costs travel + cold-region days (~%d)" % m.scout_days_for(scouts[0], ext_uid))
+	# travel throttle: a scout sent overseas produces NOTHING until the boat lands
+	_ok(m.assign_scout_to_target(sname, ext_uid) == "", "scout dispatched overseas")
+	var a_ext: Dictionary = m.assignment_for_scout(sname)
+	_ok(int(a_ext["travel_left"]) == m.TRAVEL_OVERSEAS, "overseas travel costs %d days" % m.TRAVEL_OVERSEAS)
+	var t_rng := RandomNumberGenerator.new()
+	t_rng.seed = 42
+	m._tick_scouting(t_rng)
+	_ok(m.knowledge_of(ext_uid) == 0.0, "no knowledge flows while in transit")
+	m.recall_scout(sname)
+	# staged progress on a domestic target: rumour -> interim (bands) -> full
 	_ok(m.assign_scout_to_target(sname, uid) == "", "scout assigned to target")
 	_ok(m.assign_scout_to_target(sname, uid) != "", "busy scout cannot be double-assigned")
-	var days: int = m.scout_days_for(scouts[0], uid)
-	_advance(days)
-	_ok(m.knowledge_of(uid) >= 100.0, "knowledge unlocked after %d days" % days)
-	_ok(m.reports.has(uid), "written report filed")
+	var ticks := 0
+	while int(m.assignment_for_scout(sname).get("travel_left", 0)) > 0 and ticks < 10:
+		m._tick_scouting(t_rng)
+		ticks += 1
+	m._tick_scouting(t_rng)
+	var k1: float = m.knowledge_of(uid)
+	_ok(k1 > 0.0 and k1 < 100.0, "one day of fieldwork = partial knowledge (%.0f%%)" % k1)
+	_ok(String(m.knowledge_stage(uid)["name"]) != "Full report", "stage ladder engaged (%s)" % m.knowledge_stage(uid)["name"])
+	while m.knowledge_of(uid) < m.INTERIM_AT and ticks < 60:
+		m._tick_scouting(t_rng)
+		ticks += 1
+	_ok(m.reports.has(uid) and String(m.reports[uid].get("stage", "")) == "interim",
+		"interim report filed on crossing %d%%" % int(m.INTERIM_AT))
+	if m.reports.has(uid):
+		var ri: Dictionary = m.reports[uid]
+		_ok(float(ri["ability_lo"]) < float(ri["ability_hi"]), "interim stars are a RANGE (%s-%s)" % [ri["ability_lo"], ri["ability_hi"]])
+	_ok(m.masked_int(uid, "atk", int(stats["atk"])).contains("-"), "attributes still banded at interim stage")
+	while m.knowledge_of(uid) < 100.0 and ticks < 90:
+		m._tick_scouting(t_rng)
+		ticks += 1
+	_ok(m.knowledge_of(uid) >= 100.0, "full knowledge after %d field days" % ticks)
+	_ok(ticks >= 6, "deep coverage is slow by design (%d days for ONE target)" % ticks)
+	_ok(m.assignment_for_scout(sname).is_empty(), "assignment closes itself on the full report")
+	_ok(m.reports.has(uid) and String(m.reports[uid].get("stage", "")) == "full", "full written report filed")
 	if m.reports.has(uid):
 		var r: Dictionary = m.reports[uid]
 		_ok(not r["pros"].is_empty() and not r["cons"].is_empty(), "report has pros and cons")
 		_ok(float(r["ability_stars"]) > 0.0, "report has star ratings")
 	_ok(m.masked_int(uid, "atk", int(stats["atk"])) == str(int(stats["atk"])), "exact stats now shown")
+	# focus sweeps are breadth, not depth: hard-capped below a full book
+	var cap_t: Dictionary = ext_t.front()
+	m._bump_knowledge(String(cap_t["inst"]["uid"]), 999.0, sname, true)
+	_ok(m.knowledge_of(String(cap_t["inst"]["uid"])) <= m.FOCUS_KNOW_CAP,
+		"focus knowledge hard-capped at %d%%" % int(m.FOCUS_KNOW_CAP))
+	m.knowledge.erase(String(cap_t["inst"]["uid"]))
 	if scouts.size() > 1:
 		_ok(m.assign_scout_to_focus(scouts[1]["name"], "water") == "", "second scout set to type focus")
 
@@ -109,7 +173,7 @@ func _ready() -> void:
 	# --- interest rumour ripens into a REAL AI deal
 	var rum_t: Dictionary = {}
 	for tR in m.all_targets():
-		if tR["pool"] != "club" or String(tR["inst"]["uid"]) in [uid, sl_uid]:
+		if tR["pool"] != "club" or String(tR["inst"]["uid"]) in [uid, sl_uid] or m.is_ext_uid(String(tR["inst"]["uid"])):
 			continue
 		var cR: Dictionary = GameState.club(tR["club_id"])
 		if cR["squad"].size() > 9 and m.importance_of(tR["inst"], cR) < 1.15:
@@ -172,7 +236,7 @@ func _ready() -> void:
 	var reg_t: String = m.region_of(sl_t["inst"])
 	_ok(m.REGIONS.has(reg_t), "every target maps to a scouting region (%s)" % reg_t)
 	var cov: Dictionary = m.region_coverage()
-	_ok(cov.size() == 5 and int(cov[m.scout_region(hired_s)]["scouts"]) >= 1, "region coverage sees the new scout")
+	_ok(cov.size() == m.REGIONS.size() and int(cov[m.scout_region(hired_s)]["scouts"]) >= 1, "region coverage spans %d regions incl. overseas" % cov.size())
 	_ok(m.fire_scout(String(cand["name"])) == "", "hired scout released")
 	_ok(m.fire_scout(scouts[0]["name"]) != "", "club coaches cannot be released")
 	# --- scout recommendations push into the queue
@@ -238,7 +302,7 @@ func _ready() -> void:
 	var pkg := {"upfront": int(ask * 0.6), "inst_amount": int(ask * 0.25), "inst_years": 2, "sell_on": 15}
 	_ok(m.make_offer(uid, pkg) == "", "structured package submitted (ask %d)" % ask)
 	var o: Dictionary = m.offer_for_target(uid)
-	_advance(4)
+	_advance_deal(o, 4)
 	_ok(String(o["stage"]) in ["countered", "fee_agreed", "rejected"], "club responded (stage=%s)" % o["stage"])
 	if String(o["stage"]) == "countered":
 		_ok(not o["ask_package"].is_empty(), "counter is a structured package: %s" % m.describe_package(o["ask_package"]))
@@ -249,7 +313,7 @@ func _ready() -> void:
 			_ok(int(alt["upfront"]) < int(o["ask_package"]["upfront"]),
 				"alternative trades up-front cash for structure: %s" % m.describe_package(alt))
 		_ok(m.accept_package(int(o["id"]), "ask") == "", "accepted their proposal")
-		_advance(3)
+		_advance_deal(o, 3)
 	_ok(String(o["stage"]) == "fee_agreed", "package agreed (stage=%s)" % o["stage"])
 	if String(o["stage"]) == "fee_agreed":
 		var demand: Dictionary = o["contract_demand"]
@@ -259,7 +323,7 @@ func _ready() -> void:
 		_ok(m.offer_contract(int(o["id"]), {"wage": int(demand["wage"]), "years": int(demand["years"]),
 			"bonus": 0, "status": "First team"}) == "", "contract offered at demand")
 		var size0: int = pc["squad"].size()
-		_advance(3)
+		_advance_deal(o, 3)
 		_ok(String(o["stage"]) == "completed", "transfer completed (stage=%s)" % o["stage"])
 		_ok(pc["squad"].size() == size0 + 1, "squad grew to %d" % pc["squad"].size())
 		_ok(int(pc["finances"]["balance"]) < bal0, "up-front fee deducted (balance %d)" % int(pc["finances"]["balance"]))
@@ -278,7 +342,7 @@ func _ready() -> void:
 	# find a fringe battler at a big-squad club (importance low => loanable)
 	var loan_t: Dictionary = {}
 	for t2 in m.all_targets():
-		if t2["pool"] != "club":
+		if t2["pool"] != "club" or m.is_ext_uid(String(t2["inst"]["uid"])):
 			continue
 		var c2: Dictionary = GameState.club(t2["club_id"])
 		if c2["squad"].size() > 9 and m.importance_of(t2["inst"], c2) < 1.15 and m.offer_for_target(t2["inst"]["uid"]).is_empty():
@@ -290,11 +354,11 @@ func _ready() -> void:
 		var opt_fee: int = m.ask_price(loan_t["inst"], loan_t["club_id"])
 		_ok(m.make_loan_offer(luid, 100, opt_fee) == "", "loan offer submitted (100%% wages, option %d)" % opt_fee)
 		var lo: Dictionary = m.offer_for_target(luid)
-		_advance(4)
+		_advance_deal(lo, 4)
 		if String(lo["stage"]) == "countered":
 			_ok(not lo["loan_ask"].is_empty(), "loan countered with terms: %s" % m.describe_loan(lo["loan_ask"]))
 			m.accept_package(int(lo["id"]))
-			_advance(3)
+			_advance_deal(lo, 3)
 		_ok(String(lo["stage"]) == "completed", "loan completed (stage=%s)" % lo["stage"])
 		var loanees: Array = m.loaned_in()
 		_ok(loanees.size() == 1, "loanee in our squad with loan marker")
@@ -327,14 +391,39 @@ func _ready() -> void:
 	_ok(String(fo["stage"]) == "completed", "free agent signed on wages alone")
 	_ok(pc["squad"].size() == size1 + 1, "free agent in squad")
 
+	print("=== transfers: signing from the external world ===")
+	var xps: Array = m.all_targets().filter(func(t):
+		return t["pool"] == "prospect" and m.is_ext_uid(String(t["inst"]["uid"])))
+	xps.sort_custom(func(a, b): return m.value_of(a["inst"]) < m.value_of(b["inst"]))
+	_ok(not xps.is_empty(), "regional prospect pools populated (%d youth targets)" % xps.size())
+	var xp: Dictionary = xps[0]
+	var xp_uid: String = String(xp["inst"]["uid"])
+	var xp_wage: int = clampi(int(float(xp["inst"]["contract"]["salary"]) * 1.4), 60, maxi(60, m.wage_room()))
+	var xp_err: String = m.sign_free_agent(xp_uid, {"wage": xp_wage, "years": 3, "bonus": 0, "status": "Development"})
+	_ok(xp_err == "", "contract offered to a pool prospect (%s)" % xp_err)
+	var xo: Dictionary = m.offer_for_target(xp_uid)
+	var size_x: int = pc["squad"].size()
+	_advance(4)
+	if String(xo.get("stage", "")) == "wage_countered":
+		m.offer_contract(int(xo["id"]), {"wage": int(xo["contract_demand"]["wage"]),
+			"years": int(xo["contract_demand"]["years"]), "bonus": 0, "status": String(xo["contract_demand"]["status"])})
+		_advance(3)
+	_ok(String(xo.get("stage", "")) == "completed", "external prospect signed (stage=%s)" % xo.get("stage", ""))
+	_ok(pc["squad"].size() == size_x + 1, "prospect joined the squad")
+	_ok(m.ext_removed.has(xp_uid), "departure recorded as an ext-removed delta")
+	_ok(m.find_target(xp_uid).get("pool", "") == "mine", "prospect no longer duplicated in the pool")
+
 	print("=== transfers: living world ===")
 	_advance(25)
 	var ai_deals: Array = m.deals.filter(func(d): return d["kind"] in ["ai", "ai_fa"])
 	_ok(not ai_deals.is_empty(), "AI clubs traded among themselves (%d AI deals)" % ai_deals.size())
 
 	print("=== transfers: window shut — market locked ===")
-	# All the trading above happened inside the summer window; the "living
-	# world" advance carried us past deadline day.
+	# Make sure we are actually past deadline day (the staged scouting tests
+	# no longer burn calendar days, so the section above may end mid-window).
+	var to_shut: int = Season.days_between(GameState.current_date, String(w0["close"])) + 1
+	if to_shut > 0:
+		_advance(to_shut)
 	_ok(not m.window_open(), "market closed after the summer deadline (%s)" % GameState.current_date)
 	_ok(m.days_to_deadline() == -1, "no deadline countdown between windows")
 	_ok(m.deadline_factor() == 0.0, "AI transfer churn frozen between windows")
@@ -407,7 +496,8 @@ func _ready() -> void:
 	var pcC: Dictionary = GameState.player_club()
 	var oC_t: Dictionary = {}
 	for t5 in m.all_targets():
-		if t5["pool"] != "club" or not m.offer_for_target(t5["inst"]["uid"]).is_empty():
+		if t5["pool"] != "club" or not m.offer_for_target(t5["inst"]["uid"]).is_empty() \
+				or m.is_ext_uid(String(t5["inst"]["uid"])):
 			continue
 		var sc5: Dictionary = GameState.club(t5["club_id"])
 		if int(sc5["reputation"]) <= int(pcC["reputation"]) and sc5["squad"].size() > 7:
@@ -451,6 +541,11 @@ func _ready() -> void:
 	_ok(not m.reports.is_empty(), "reports survive load")
 	_ok(m.shortlist.size() == sl_before, "shortlist survives load")
 	_ok(m.rumours.size() == rum_before, "rumour mill survives load")
+	_ok(m.ext_removed.has(xp_uid), "ext-world departures survive load")
+	m._ext_built_seed = -2
+	m._ensure_ext_world()
+	_ok(m.find_target(xp_uid).get("pool", "") == "mine", "regenerated ext world respects departures (no duplicates)")
+	_ok(m.knowledge_stage(uid)["name"] == "Full report", "knowledge stage recomputes after load")
 	_ok(m.recs.size() == rec_before and m.agent_offers.size() == agent_before, "recs + agent offers survive load")
 	_ok(bool(m.dof.get("pursue_shortlist", false)) and m.dof.has("max_over_pct"), "DoF settings survive load (with defaults merged)")
 	m.dof["pursue_shortlist"] = false

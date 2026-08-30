@@ -351,6 +351,12 @@ func _render_report(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 	if detail.is_empty():
 		_detail_body.add_child(UI.dim("Match data unavailable.", 13))
 		return
+	if detail.get("no_report", false) or (detail["battles"] as Array).is_empty():
+		# Legacy fixture: the result stands but no battle-level report was
+		# recorded at play time — never reconstruct one that could lie.
+		_detail_body.add_child(UI.dim(
+			"Full match report unavailable — this result was recorded before\ndetailed match reports were kept. The score above is official.", 13))
+		return
 
 	_detail_body.add_child(UI.dim("BEST-OF-3 BATTLES", 11))
 	var battles: Array = detail["battles"]

@@ -49,6 +49,9 @@ func _process(_delta: float) -> bool:
 	if OS.get_cmdline_user_args().has("mindtest"):
 		_mindtest(gs)
 		return true
+	if OS.get_cmdline_user_args().has("viewtest"):
+		_viewtest(gs)
+		return true
 	# Live services (same nodes a real session runs): history recorder and,
 	# if the training piece is present, its daily training model.
 	var svc: Node = load("res://screens/squad/squad_service.gd").ensure()
@@ -334,3 +337,62 @@ func _histtest(gs: Node) -> void:
 		"history state persisted to user://squad_history.json")
 
 	print("SQUAD HISTORY SELFTEST %s" % ("OK" if _fails == 0 else "FAILED (%d)" % _fails))
+
+
+# ------------------------------------------------------------------ viewtest
+
+## Customizable column views: editor model + persistence inside the save.
+func _viewtest(gs: Node) -> void:
+	gs.delete_save()
+	gs.new_career()
+	var V: GDScript = load("res://screens/squad/views.gd")
+
+	print("=== squad views (custom columns) selftest ===")
+	_check(V.view_names().size() == 5, "5 preset views out of the box")
+	_check(V.columns("General").has("status"), "General preset carries the live Status column")
+
+	# Create a custom view through the same API the editor uses.
+	var err: String = V.create("Scouting", ["pick", "name", "lv", "cur", "pot", "value"])
+	_check(err == "", "create custom view (err='%s')" % err)
+	_check(V.view_names().has("Scouting"), "custom view appears in the view list")
+	_check(V.active() == "Scouting", "created view becomes the active view")
+
+	# Edit a preset -> stored as an override; factory list untouched.
+	var gcols: Array = V.columns("General")
+	gcols.erase("age")
+	gcols.append("wins")
+	_check(V.save_columns("General", gcols) == "", "preset accepts edits (saved as override)")
+	_check(V.is_modified("General"), "edited preset flagged as modified")
+	_check((V.PRESETS["General"] as Array).has("age"), "factory preset definition untouched")
+
+	# Guard rails.
+	_check(V.create("Scouting", ["name", "lv", "cur"]) != "", "duplicate view name rejected")
+	_check(V.create("x", ["name", "lv", "cur"]) != "", "too-short name rejected")
+	_check(V.save_columns("Scouting", ["lv"]) != "", "view below minimum columns rejected")
+	_check(V.sanitize(["lv", "bogus", "lv"]) == ["lv", "name"], "sanitize drops unknown/dupes, keeps Name")
+
+	# THE critic check: views survive a full save -> wipe -> load round-trip.
+	gs.save_game()
+	(gs.world["meta"] as Dictionary).erase("squad_views")   # wipe in-memory state
+	_check(gs.load_game(), "save file reloads")
+	_check(V.view_names().has("Scouting"), "custom view survives save/load")
+	_check(V.columns("Scouting") == ["pick", "name", "lv", "cur", "pot", "value"],
+		"custom column order survives save/load")
+	_check(V.is_modified("General") and V.columns("General").has("wins")
+		and not V.columns("General").has("age"), "preset override survives save/load")
+	_check(V.active() == "Scouting", "active view survives save/load")
+
+	# Rename / reset / delete lifecycle.
+	_check(V.rename("Scouting", "Scout List") == "", "rename custom view")
+	_check(V.view_names().has("Scout List") and not V.view_names().has("Scouting"),
+		"rename applied to list and storage")
+	_check(V.active() == "Scout List", "active view follows the rename")
+	V.reset("General")
+	_check(not V.is_modified("General") and V.columns("General").has("age"),
+		"preset reset restores the factory layout")
+	_check(V.delete_view("General") != "", "presets cannot be deleted")
+	_check(V.delete_view("Scout List") == "", "delete custom view")
+	_check(V.active() == "General", "active view falls back to General after delete")
+	gs.delete_save()
+
+	print("SQUAD VIEWS SELFTEST %s" % ("OK" if _fails == 0 else "FAILED (%d)" % _fails))

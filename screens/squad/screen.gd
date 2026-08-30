@@ -11,19 +11,8 @@ const History := preload("res://screens/squad/career_history.gd")
 const Ability := preload("res://screens/squad/ability.gd")
 const Selection := preload("res://screens/squad/selection.gd")
 const Personality := preload("res://screens/squad/personality.gd")
-
-const PRESETS := {
-	"General": ["pick", "name", "avail", "type", "lv", "age", "cur", "pot", "rec",
-		"cond", "morale", "happy", "item", "apps", "rat", "salary", "status"],
-	"Selection": ["pick", "name", "avail", "role", "type", "lv", "cond", "fit", "morale",
-		"item", "apps", "kos", "rat", "value", "status"],
-	"Battle Stats": ["pick", "name", "type", "lv", "cur", "pot", "hp", "atk", "def",
-		"spa", "spd", "spe", "tot", "dev", "apps", "wins", "kos", "dmg", "taken", "faints", "rat"],
-	"Contracts": ["pick", "name", "avail", "age", "lv", "cur", "pot", "rec", "morale",
-		"salary", "wage_pct", "expiry", "days_left", "demand", "value", "status"],
-	"Happiness": ["pick", "name", "pers", "sstat", "morale", "happy",
-		"concern", "promise", "apps", "rat", "salary", "status"],
-}
+const Views := preload("res://screens/squad/views.gd")
+const ViewEditor := preload("res://screens/squad/view_editor.gd")
 
 const VERDICT_RANK := {"Key battler": 5, "First team": 4, "Develop": 3,
 	"Squad depth": 2, "Aging": 1, "Surplus": 0}
@@ -41,10 +30,13 @@ var _selected_uid := ""
 var _table_view: VBoxContainer
 var _tree: Tree
 var _header_info: Label
-var _chips_box: HBoxContainer
-var _preset_buttons: Dictionary = {}
+var _chips_box: HFlowContainer
+var _views_bar: HFlowContainer
+var _view_buttons: Dictionary = {}
+var _active_cols: Array = []
 var _footer: PanelContainer
-var _footer_box: HBoxContainer
+var _footer_stats: HFlowContainer
+var _footer_actions: HBoxContainer
 var _profile_btn: Button
 var _bids_btn: Button
 var _profile: ProfileView
@@ -57,6 +49,10 @@ var _hist: Node
 func _ready() -> void:
 	_svc = Service.ensure()
 	_hist = History.ensure()
+	_view = Views.active()
+	if not Views.columns(_view).has(_sort_key):
+		_sort_key = "lv"
+		_sort_desc = true
 	_build_layout()
 	_refresh()
 	if not GameState.date_changed.is_connected(_on_date_changed):
@@ -77,8 +73,18 @@ func on_show() -> void:
 			GameState.advance_day()
 		GameState.save_game()
 	_refresh()
+	if OS.get_environment("SQUAD_DEV_MAKEVIEW") != "":
+		# Build a demo custom view through the real Views API, then show it.
+		var vname := OS.get_environment("SQUAD_DEV_MAKEVIEW")
+		if not Views.has_view(vname):
+			# Deliberately wide (24 cols) to exercise responsive widths + h-scroll.
+			Views.create(vname, ["pick", "name", "avail", "type", "lv", "age", "cur",
+				"pot", "rec", "cond", "fit", "morale", "happy", "item", "apps", "wins",
+				"kos", "dmg", "rat", "salary", "expiry", "demand", "value", "status"])
+		_rebuild_views_bar()
+		_on_preset(vname)
 	var dev_view := OS.get_environment("SQUAD_DEV_VIEW")
-	if dev_view != "" and PRESETS.has(dev_view):
+	if dev_view != "" and Views.has_view(dev_view):
 		_on_preset(dev_view)
 		var root := _tree.get_root()
 		if root != null and root.get_child_count() > 0:
@@ -106,6 +112,31 @@ func on_show() -> void:
 		Actions.open_contract_dialog(self, _records[0]["uid"])
 	if OS.get_environment("SQUAD_DEV_BIDS") != "":
 		Actions.open_offers_dialog(self)
+	if OS.get_environment("SQUAD_DEV_VIEWEDITOR") != "":
+		_open_view_editor()
+	if OS.get_environment("SQUAD_DEV_EDITDRIVE") != "":
+		# Drive the REAL editor UI: select Spe in the available list, press
+		# Add, press Save & Apply — the live table must gain the column and
+		# the General button must carry the modified marker.
+		_on_preset("General")
+		var dlg := _open_view_editor()
+		await get_tree().process_frame
+		var ils := dlg.find_children("", "ItemList", true, false)
+		var avail_il: ItemList = ils[0]
+		for i in avail_il.item_count:
+			if str(avail_il.get_item_metadata(i)) == "spe":
+				avail_il.select(i)
+		for b in dlg.find_children("", "Button", true, false):
+			if (b as Button).text == "Add  >":
+				(b as Button).pressed.emit()
+		dlg.get_ok_button().pressed.emit()
+	if OS.get_environment("SQUAD_DEV_SCROLLX") != "":
+		# Prove the rightmost columns are reachable: scroll fully right.
+		for i in 4:
+			await get_tree().process_frame
+		for c in _tree.get_children(true):
+			if c is HScrollBar:
+				(c as HScrollBar).value = (c as HScrollBar).max_value
 
 
 func _on_date_changed(_d: String) -> void:
@@ -140,29 +171,27 @@ func _build_layout() -> void:
 	_header_info.clip_text = true
 	_header_info.mouse_filter = Control.MOUSE_FILTER_STOP
 	title_box.add_child(_header_info)
-	_chips_box = HBoxContainer.new()
-	_chips_box.add_theme_constant_override("separation", 8)
+	# Chips flow (and wrap) instead of clipping: at 1600x900 the rightmost
+	# chip (BALANCE) must stay on screen whatever the wage/mood strings do.
+	_chips_box = HFlowContainer.new()
+	_chips_box.add_theme_constant_override("h_separation", 8)
+	_chips_box.add_theme_constant_override("v_separation", 4)
+	_chips_box.alignment = FlowContainer.ALIGNMENT_END
+	_chips_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_chips_box.size_flags_stretch_ratio = 1.6
 	head.add_child(_chips_box)
+
+	# --- views row (presets + custom views + editor; wraps, never clips)
+	_views_bar = HFlowContainer.new()
+	_views_bar.add_theme_constant_override("h_separation", 6)
+	_views_bar.add_theme_constant_override("v_separation", 4)
+	_table_view.add_child(_views_bar)
+	_rebuild_views_bar()
 
 	# --- toolbar
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 6)
 	_table_view.add_child(bar)
-	var view_lbl := Label.new()
-	view_lbl.text = "View:"
-	view_lbl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
-	bar.add_child(view_lbl)
-	for preset in PRESETS:
-		var b := Button.new()
-		b.text = preset
-		b.toggle_mode = true
-		b.button_pressed = preset == _view
-		b.pressed.connect(_on_preset.bind(preset))
-		bar.add_child(b)
-		_preset_buttons[preset] = b
-	var sp2 := Control.new()
-	sp2.custom_minimum_size = Vector2(18, 0)
-	bar.add_child(sp2)
 	var search := LineEdit.new()
 	search.placeholder_text = "Filter name / species / type..."
 	search.custom_minimum_size = Vector2(240, 0)
@@ -183,6 +212,8 @@ func _build_layout() -> void:
 	hint.text = "Sort: click a column · profile: double-click · actions: right-click"
 	hint.add_theme_font_size_override("font_size", 12)
 	hint.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	hint.clip_text = true
+	hint.tooltip_text = hint.text
 	bar.add_child(hint)
 
 	# --- table
@@ -192,7 +223,10 @@ func _build_layout() -> void:
 	_tree.select_mode = Tree.SELECT_ROW
 	_tree.column_titles_visible = true
 	_tree.allow_reselect = true
-	_tree.scroll_horizontal_enabled = false
+	# Never lose columns to the viewport: widths scale down responsively first
+	# (_apply_column_widths) and horizontal scrolling picks up beyond that.
+	_tree.scroll_horizontal_enabled = true
+	_tree.resized.connect(_apply_column_widths)
 	var hover := StyleBoxFlat.new()
 	hover.bg_color = Color(UI.COL_ACCENT, 0.10)
 	_tree.add_theme_stylebox_override("hovered", hover)
@@ -204,12 +238,24 @@ func _build_layout() -> void:
 	_tree.item_mouse_selected.connect(_on_item_mouse_selected)
 	_table_view.add_child(_tree)
 
-	# --- footer selection strip
+	# --- footer selection strip. Stats live in a flow that WRAPS when the
+	# strip is dense (a wide footer must never inflate the layout's minimum
+	# width and push table columns / header chips off a 1600x900 screen);
+	# action buttons stay pinned on the right.
 	_footer = PanelContainer.new()
 	_footer.custom_minimum_size = Vector2(0, 64)
-	_footer_box = HBoxContainer.new()
-	_footer_box.add_theme_constant_override("separation", 16)
-	_footer.add_child(_footer_box)
+	var footer_row := HBoxContainer.new()
+	footer_row.add_theme_constant_override("separation", 12)
+	_footer.add_child(footer_row)
+	_footer_stats = HFlowContainer.new()
+	_footer_stats.add_theme_constant_override("h_separation", 16)
+	_footer_stats.add_theme_constant_override("v_separation", 4)
+	_footer_stats.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer_row.add_child(_footer_stats)
+	_footer_actions = HBoxContainer.new()
+	_footer_actions.add_theme_constant_override("separation", 6)
+	_footer_actions.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	footer_row.add_child(_footer_actions)
 	_table_view.add_child(_footer)
 
 	# --- profile (hidden until opened)
@@ -404,50 +450,7 @@ func _chip(label: String, value: String, col: Color) -> Control:
 # ------------------------------------------------------------------ columns
 
 func _col_def(id: String) -> Dictionary:
-	match id:
-		"pick": return {"title": "Picked", "w": 84, "expand": false, "num": false}
-		"avail": return {"title": "Avail", "w": 76, "expand": false, "num": false}
-		"item": return {"title": "Held Item", "w": 100, "expand": false, "num": false}
-		"role": return {"title": "Role", "w": 100, "expand": false, "num": false}
-		"name": return {"title": "Name", "w": 140, "expand": true, "num": false}
-		"species": return {"title": "Species", "w": 108, "expand": true, "num": false}
-		"type": return {"title": "Type", "w": 96, "expand": false, "num": false}
-		"lv": return {"title": "Lv", "w": 40, "expand": false, "num": true}
-		"cur": return {"title": "Ability", "w": 84, "expand": false, "num": true}
-		"pot": return {"title": "Potential", "w": 84, "expand": false, "num": true}
-		"rec": return {"title": "Coach Call", "w": 98, "expand": false, "num": false}
-		"age": return {"title": "Age", "w": 56, "expand": false, "num": true}
-		"cond": return {"title": "Cond", "w": 56, "expand": false, "num": true}
-		"fit": return {"title": "Fit", "w": 52, "expand": false, "num": true}
-		"morale": return {"title": "Morale", "w": 86, "expand": false, "num": false}
-		"happy": return {"title": "Happiness", "w": 90, "expand": false, "num": false}
-		"pers": return {"title": "Personality", "w": 110, "expand": false, "num": false}
-		"sstat": return {"title": "Status", "w": 96, "expand": false, "num": false}
-		"concern": return {"title": "Main Concern", "w": 128, "expand": true, "num": false}
-		"promise": return {"title": "Promise", "w": 96, "expand": false, "num": false}
-		"hp": return {"title": "HP", "w": 50, "expand": false, "num": true}
-		"atk": return {"title": "Atk", "w": 50, "expand": false, "num": true}
-		"def": return {"title": "Def", "w": 50, "expand": false, "num": true}
-		"spa": return {"title": "SpA", "w": 50, "expand": false, "num": true}
-		"spd": return {"title": "SpD", "w": 50, "expand": false, "num": true}
-		"spe": return {"title": "Spe", "w": 50, "expand": false, "num": true}
-		"tot": return {"title": "Tot", "w": 56, "expand": false, "num": true}
-		"dev": return {"title": "Dev", "w": 52, "expand": false, "num": true}
-		"apps": return {"title": "Apps", "w": 52, "expand": false, "num": true}
-		"wins": return {"title": "Won", "w": 50, "expand": false, "num": true}
-		"kos": return {"title": "KOs", "w": 48, "expand": false, "num": true}
-		"dmg": return {"title": "Dmg", "w": 56, "expand": false, "num": true}
-		"taken": return {"title": "Tkn", "w": 56, "expand": false, "num": true}
-		"faints": return {"title": "Fnt", "w": 44, "expand": false, "num": true}
-		"rat": return {"title": "Av Rat", "w": 60, "expand": false, "num": true}
-		"salary": return {"title": "Salary", "w": 88, "expand": false, "num": true}
-		"wage_pct": return {"title": "Wage %", "w": 64, "expand": false, "num": true}
-		"expiry": return {"title": "Expires", "w": 96, "expand": false, "num": true}
-		"days_left": return {"title": "Days", "w": 54, "expand": false, "num": true}
-		"value": return {"title": "Value", "w": 88, "expand": false, "num": true}
-		"demand": return {"title": "Wants", "w": 100, "expand": false, "num": true}
-		"status": return {"title": "Status", "w": 92, "expand": false, "num": false}
-	return {"title": id, "w": 60, "expand": false, "num": false}
+	return Views.col_def(id)
 
 
 func _cell_text(rec: Dictionary, id: String) -> String:
@@ -526,6 +529,20 @@ func _status_text(rec: Dictionary) -> String:
 	if rec["talks_locked"]:
 		parts.append("Talks off")
 	return " · ".join(PackedStringArray(parts)) if not parts.is_empty() else "-"
+
+
+func _status_tip(rec: Dictionary) -> String:
+	var lines: Array = []
+	if rec["bids"] > 0:
+		lines.append("%d active transfer bid%s awaiting your response (respond from the footer or right-click)." %
+			[rec["bids"], "s" if rec["bids"] > 1 else ""])
+	if rec["listed"]:
+		lines.append("Transfer listed at %s." % UI.money(rec["ask"]))
+	if rec["talks_locked"]:
+		lines.append("Contract talks broke down — locked until %s." %
+			Season.pretty_date(_svc.talks_locked_until(rec["uid"])))
+	return "\n".join(PackedStringArray(lines)) if not lines.is_empty() \
+		else "No live transfer/contract state: no bids, not listed, talks open."
 
 
 const PROMISE_SHORT := {"battles": "Battles", "new_deal": "New deal", "unlist": "Unlist"}
@@ -618,7 +635,8 @@ func _sort_value(rec: Dictionary, id: String) -> Variant:
 # ------------------------------------------------------------------ table build
 
 func _rebuild_table() -> void:
-	var cols: Array = PRESETS[_view]
+	var cols: Array = Views.columns(_view)
+	_active_cols = cols
 	_tree.clear()
 	_tree.columns = cols.size()
 	for i in cols.size():
@@ -628,10 +646,10 @@ func _rebuild_table() -> void:
 			arrow = "  v" if _sort_desc else "  ^"
 		_tree.set_column_title(i, def["title"] + arrow)
 		_tree.set_column_expand(i, def["expand"])
-		_tree.set_column_custom_minimum_width(i, def["w"])
 		_tree.set_column_title_alignment(i,
 			HORIZONTAL_ALIGNMENT_RIGHT if def["num"] else HORIZONTAL_ALIGNMENT_LEFT)
 		_tree.set_column_clip_content(i, true)
+	_apply_column_widths()
 
 	var rows := _records.filter(_passes_filter)
 	var key := _sort_key
@@ -711,6 +729,9 @@ func _rebuild_table() -> void:
 		var promise_col := cols.find("promise")
 		if promise_col >= 0:
 			it.set_tooltip_text(promise_col, _promise_tip(rec["promise"]))
+		var status_col := cols.find("status")
+		if status_col >= 0:
+			it.set_tooltip_text(status_col, _status_tip(rec))
 		var pick_col := cols.find("pick")
 		if pick_col >= 0:
 			var pick: Dictionary = rec["pick"]
@@ -753,20 +774,82 @@ func _passes_filter(rec: Dictionary) -> bool:
 	return false
 
 
-func _on_preset(preset: String) -> void:
-	_view = preset
-	for p in _preset_buttons:
-		_preset_buttons[p].button_pressed = p == preset
-	if not PRESETS[preset].has(_sort_key):
+func _on_preset(view_name: String) -> void:
+	if not Views.has_view(view_name):
+		view_name = "General"
+	_view = view_name
+	Views.set_active(view_name)
+	for p in _view_buttons:
+		(_view_buttons[p] as Button).button_pressed = p == view_name
+	if not Views.columns(view_name).has(_sort_key):
 		_sort_key = "lv"
 		_sort_desc = true
 	_rebuild_table()
 
 
+## Responsive widths: shrink columns (to a floor) when the view is wider than
+## the tree, so a dense view fits at 1600x900; anything beyond the floor is
+## reachable via the tree's horizontal scrollbar. Re-runs on every resize.
+func _apply_column_widths() -> void:
+	if _tree == null or _tree.columns != _active_cols.size() or _active_cols.is_empty():
+		return
+	var total := 0
+	for id in _active_cols:
+		total += int(_col_def(id)["w"])
+	var avail := _tree.size.x - 14.0   # leave room for the vertical scrollbar
+	var scale := 1.0
+	if avail > 0.0 and float(total) > avail:
+		scale = maxf(avail / float(total), 0.86)
+	for i in _active_cols.size():
+		_tree.set_column_custom_minimum_width(i,
+			int(floor(float(_col_def(_active_cols[i])["w"]) * scale)))
+
+
+func _rebuild_views_bar() -> void:
+	for c in _views_bar.get_children():
+		c.queue_free()
+	_view_buttons.clear()
+	var view_lbl := Label.new()
+	view_lbl.text = "View:"
+	view_lbl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	_views_bar.add_child(view_lbl)
+	for vn in Views.view_names():
+		var b := Button.new()
+		b.text = str(vn) + ("*" if Views.is_modified(vn) else "")
+		b.toggle_mode = true
+		b.button_pressed = vn == _view
+		if Views.is_preset(vn):
+			b.tooltip_text = ("Preset view (carrying your edits — Columns... to change or reset)"
+				if Views.is_modified(vn) else "Preset view — an editable starting point (Columns...)")
+		else:
+			b.tooltip_text = "Your custom view — saved in this career's save file"
+			b.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.35))
+		b.pressed.connect(_on_preset.bind(str(vn)))
+		_views_bar.add_child(b)
+		_view_buttons[str(vn)] = b
+	var edit_b := Button.new()
+	edit_b.text = "Columns..."
+	edit_b.tooltip_text = ("Customize this view: add, remove and reorder columns,\n" +
+		"save it over '%s' or as a new view. Saved views live in the career save.") % _view
+	edit_b.pressed.connect(_open_view_editor)
+	_views_bar.add_child(edit_b)
+
+
+func _open_view_editor() -> AcceptDialog:
+	return ViewEditor.open(self, _view, func(shown: String) -> void:
+		_view = shown
+		Views.set_active(shown)
+		if not Views.columns(shown).has(_sort_key):
+			_sort_key = "lv"
+			_sort_desc = true
+		_rebuild_views_bar()
+		_rebuild_table())
+
+
 func _on_column_clicked(column: int, mouse_button_index: int) -> void:
 	if mouse_button_index != MOUSE_BUTTON_LEFT:
 		return
-	var cols: Array = PRESETS[_view]
+	var cols: Array = _active_cols
 	if column < 0 or column >= cols.size():
 		return
 	var id: String = cols[column]
@@ -807,7 +890,9 @@ func _on_item_mouse_selected(_pos: Vector2, mouse_button_index: int) -> void:
 
 
 func _update_footer() -> void:
-	for c in _footer_box.get_children():
+	for c in _footer_stats.get_children():
+		c.queue_free()
+	for c in _footer_actions.get_children():
 		c.queue_free()
 	var rec := _selected_record()
 	if rec.is_empty():
@@ -815,15 +900,15 @@ func _update_footer() -> void:
 		l.text = "Select a Pokemon for a quick summary, double-click to open its full profile."
 		l.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		_footer_box.add_child(l)
+		_footer_stats.add_child(l)
 		return
 	var mono := UI.monogram(rec["name"], rec["types"], 44, 18)
 	mono.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_footer_box.add_child(mono)
+	_footer_stats.add_child(mono)
 	var idbox := VBoxContainer.new()
 	idbox.add_theme_constant_override("separation", 2)
 	idbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_footer_box.add_child(idbox)
+	_footer_stats.add_child(idbox)
 	var nm := Label.new()
 	nm.text = "%s  ·  Lv %d %s" % [rec["name"], rec["lv"], rec["species"]]
 	nm.add_theme_font_size_override("font_size", 16)
@@ -840,48 +925,45 @@ func _update_footer() -> void:
 		("Starter %d" % int(pick["rank"])) if pick["kind"] == "starter" else str(pick["text"]).replace("S", "Sub "),
 		UI.COL_ACCENT.lightened(0.2) if pick["kind"] == "starter" else UI.COL_TEXT_DIM)
 	sel_stat.tooltip_text = str(pick["tip"])
-	_footer_box.add_child(sel_stat)
+	_footer_stats.add_child(sel_stat)
 	var item_stat := _footer_stat("HELD ITEM",
 		rec["item_name"] if rec["item_name"] != "" else "None",
 		UI.rarity_color(str((rec["item"] as Dictionary).get("rarity", ""))) if rec["item_name"] != "" else UI.COL_TEXT_DIM)
 	item_stat.tooltip_text = ("%s\nManage from the Items screen." % (rec["item"] as Dictionary).get("desc", "")) \
 		if rec["item_name"] != "" else "No held item — equip one from the Items screen."
-	_footer_box.add_child(item_stat)
+	_footer_stats.add_child(item_stat)
 	if not (rec["flags"] as Array).is_empty():
 		var av_stat := _footer_stat("AVAILABILITY", Selection.flags_text(rec["flags"]),
 			Selection.worst_color(rec["flags"]))
 		av_stat.tooltip_text = Selection.flags_tip(rec["flags"])
-		_footer_box.add_child(av_stat)
+		_footer_stats.add_child(av_stat)
 	var rep: Dictionary = rec["report"]
-	_footer_box.add_child(_footer_stars("ABILITY", Ability.stars_icon(rec["cur"], -1.0, Ability.COL_STARS_NOW, 12),
+	_footer_stats.add_child(_footer_stars("ABILITY", Ability.stars_icon(rec["cur"], -1.0, Ability.COL_STARS_NOW, 12),
 		Ability.ability_word(rec["cur"])))
-	_footer_box.add_child(_footer_stars("POTENTIAL",
+	_footer_stats.add_child(_footer_stars("POTENTIAL",
 		Ability.stars_icon(float(rep["pot_lo"]), float(rep["pot_hi"]), Ability.COL_STARS_POT, 12),
 		"%s conf." % rep["confidence"]))
-	_footer_box.add_child(_footer_stat("COACH CALL", rec["rec"], rep["verdict_color"]))
+	_footer_stats.add_child(_footer_stat("COACH CALL", rec["rec"], rep["verdict_color"]))
 	var h: Dictionary = rec["happy"]
 	var happy_stat := _footer_stat("HAPPINESS", str(h["word"]), h["color"])
 	happy_stat.tooltip_text = Personality.factors_tip(h)
-	_footer_box.add_child(happy_stat)
+	_footer_stats.add_child(happy_stat)
 	if rec["concern"] != "" and int(rec["happy_score"]) < 55:
 		var concern_stat := _footer_stat("TOP CONCERN", rec["concern"], UI.COL_WARN)
 		concern_stat.tooltip_text = "\n".join((h["concerns"] as Array).map(func(c):
 			return "%s — %s" % [str(c["short"]), str(c["detail"])]))
-		_footer_box.add_child(concern_stat)
+		_footer_stats.add_child(concern_stat)
 	if (rec["flags"] as Array).is_empty():
-		_footer_box.add_child(_footer_stat("COND / FIT", "%d%% / %d%%" % [rec["cond"], rec["fit"]],
+		_footer_stats.add_child(_footer_stat("COND / FIT", "%d%% / %d%%" % [rec["cond"], rec["fit"]],
 			UI.pct_color(mini(rec["cond"], rec["fit"]))))
-	_footer_box.add_child(_footer_stat("SEASON",
+	_footer_stats.add_child(_footer_stat("SEASON",
 		"%d apps · %d KOs · av %s" % [rec["apps"], rec["kos"],
 			("%.2f" % rec["rat"]) if rec["apps"] > 0 else "-"],
 		UI.rating_color(rec["rat"]) if rec["apps"] > 0 else UI.COL_TEXT))
 	if rec["listed"]:
-		_footer_box.add_child(_footer_stat("TRANSFER",
+		_footer_stats.add_child(_footer_stat("TRANSFER",
 			"Listed at %s" % UI.money(rec["ask"]), UI.COL_BAD))
 
-	var sp := Control.new()
-	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_footer_box.add_child(sp)
 	var uid: String = rec["uid"]
 	if rec["bids"] > 0:
 		var bids_b := Button.new()
@@ -889,7 +971,7 @@ func _update_footer() -> void:
 		bids_b.add_theme_color_override("font_color", UI.COL_WARN)
 		bids_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		bids_b.pressed.connect(func() -> void: Actions.open_offers_dialog(self, uid))
-		_footer_box.add_child(bids_b)
+		_footer_actions.add_child(bids_b)
 	var contract_b := Button.new()
 	contract_b.text = "Contract..."
 	contract_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -897,7 +979,7 @@ func _update_footer() -> void:
 	contract_b.tooltip_text = "Open contract renewal talks" if not rec["talks_locked"] \
 		else "Talks broke down recently — locked until %s" % Season.pretty_date(_svc.talks_locked_until(uid))
 	contract_b.pressed.connect(func() -> void: Actions.open_contract_dialog(self, uid))
-	_footer_box.add_child(contract_b)
+	_footer_actions.add_child(contract_b)
 	var list_b := Button.new()
 	list_b.text = "Unlist" if rec["listed"] else "Transfer List"
 	list_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -908,20 +990,20 @@ func _update_footer() -> void:
 				Actions.notice(self, "Transfer list", err)
 		else:
 			Actions.open_list_dialog(self, uid))
-	_footer_box.add_child(list_b)
+	_footer_actions.add_child(list_b)
 	var actions_b := Button.new()
 	actions_b.text = "Actions..."
 	actions_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	actions_b.pressed.connect(func() -> void:
 		Actions.open_menu(self, uid, get_global_mouse_position() - Vector2(160, 240),
 			func(u: String) -> void: _open_profile(u)))
-	_footer_box.add_child(actions_b)
+	_footer_actions.add_child(actions_b)
 	_profile_btn = Button.new()
 	_profile_btn.text = "Profile"
 	_profile_btn.tooltip_text = "Open the full profile (or double-click the row)"
 	_profile_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_profile_btn.pressed.connect(_open_selected_profile)
-	_footer_box.add_child(_profile_btn)
+	_footer_actions.add_child(_profile_btn)
 
 
 func _footer_stars(label: String, tex: ImageTexture, sub: String) -> Control:

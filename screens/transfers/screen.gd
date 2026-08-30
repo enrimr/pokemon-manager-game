@@ -6,7 +6,8 @@ extends Control
 
 const Market := preload("res://screens/transfers/market.gd")
 
-const POOL_LABELS := ["All pools", "Club Pokémon", "Free agents", "Prospects", "Shortlisted", "Transfer-listed"]
+const POOL_LABELS := ["All pools", "Club Pokémon", "Free agents", "Prospects", "Shortlisted", "Transfer-listed", "Overseas leagues", "Domestic only"]
+const STAGE_SHORT := ["—", "Rumour", "Initial", "Partial", "Detailed", "FULL"]
 const PRICE_LABELS := ["Any value", "Under 100K", "Under 250K", "Under 500K", "Under 1M"]
 const PRICE_CAPS := [0, 100000, 250000, 500000, 1000000]
 const STAT_KEYS := ["hp", "atk", "def", "spa", "spd", "spe"]
@@ -277,7 +278,7 @@ func _make_shortlist_card(t: Dictionary) -> PanelContainer:
 	head.add_child(_dlabel("★ " + market.display_name(inst), Color.WHITE, 14))
 	var where: String
 	match String(t["pool"]):
-		"club": where = String(GameState.club(t["club_id"])["short"])
+		"club": where = String(market.club_of(t["club_id"])["short"])
 		"fa": where = "Free agent"
 		_: where = "Prospect"
 	head.add_child(_dlabel("Lv %d · %s · %s" % [int(inst["level"]), where, market.region_of(inst)], ThemeBuilder.COL_TEXT_DIM, 11))
@@ -306,7 +307,9 @@ func _make_shortlist_card(t: Dictionary) -> PanelContainer:
 		tags.append([("DoF negotiating — " if bool(offer.get("dof", false)) else "In talks — ") + _stage_text(offer), ThemeBuilder.COL_WARN])
 	var assign: Dictionary = market.assignment_for_target(uid)
 	if not assign.is_empty():
-		tags.append(["%s scouting (%dd left)" % [String(assign["scout"]), int(assign["days_left"])], ThemeBuilder.COL_TEXT_DIM])
+		var eta: int = market.assignment_eta(assign)
+		tags.append(["%s scouting — %s%s" % [String(assign["scout"]), String(market.knowledge_stage(uid)["name"]),
+			(" · full report ~%dd" % eta) if eta > 0 else ""], ThemeBuilder.COL_TEXT_DIM])
 	for tg in tags:
 		vb.add_child(_dlabel("· " + tg[0], tg[1], 11, true))
 
@@ -393,7 +396,7 @@ func _refresh_agents_col() -> void:
 		vb.add_child(head)
 		head.add_child(_dlabel(market.display_name(inst), Color.WHITE, 14))
 		if String(a["kind"]) == "club":
-			head.add_child(_dlabel("wants out of %s" % String(GameState.club(t["club_id"])["short"]), ThemeBuilder.COL_ACCENT, 11))
+			head.add_child(_dlabel("wants out of %s" % String(market.club_of(t["club_id"])["short"]), ThemeBuilder.COL_ACCENT, 11))
 		else:
 			head.add_child(_dlabel("free agent", ThemeBuilder.COL_GOOD, 11))
 		vb.add_child(_dlabel("Agent: %s" % String(a["pitch"]), ThemeBuilder.COL_TEXT_DIM, 11, true))
@@ -574,8 +577,8 @@ func _build_search_tab() -> void:
 	_tree.hide_root = true
 	_tree.select_mode = Tree.SELECT_ROW
 	_tree.columns = 14
-	var titles := ["Name", "Type", "Club", "Age", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "Value", "Wage", "Know"]
-	var widths := [130, 84, 44, 40, 34, 56, 56, 56, 56, 56, 56, 100, 92, 44]
+	var titles := ["Name", "Type", "Club", "Age", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "Value", "Wage", "Knowledge"]
+	var widths := [118, 72, 42, 40, 32, 52, 52, 52, 52, 52, 52, 92, 78, 106]
 	_tree.set_column_titles_visible(true)
 	for i in 14:
 		_tree.set_column_title(i, titles[i])
@@ -628,6 +631,10 @@ func _filtered_targets() -> Array:
 			continue
 		if _pool_filter == 5 and not market.is_listed(String(inst["uid"])):
 			continue
+		if _pool_filter == 6 and not market.is_ext_uid(String(inst["uid"])):
+			continue
+		if _pool_filter == 7 and market.is_ext_uid(String(inst["uid"])):
+			continue
 		if int(inst["level"]) < _min_level:
 			continue
 		if _search_text != "" and not market.display_name(inst).to_lower().contains(_search_text.to_lower()):
@@ -670,7 +677,7 @@ func _club_short(t: Dictionary) -> String:
 		return "FA"
 	if t["pool"] == "prospect":
 		return "YTH"
-	return String(GameState.club(t["club_id"])["short"])
+	return String(market.club_of(t["club_id"])["short"])
 
 
 func _refresh_search() -> void:
@@ -730,13 +737,18 @@ func _refresh_search() -> void:
 			wage_txt = market.fmt_money(int(inst["contract"]["salary"]))
 		it.set_text(12, wage_txt)
 		it.set_custom_color(12, ThemeBuilder.COL_TEXT_DIM)
-		it.set_text(13, "%d%%" % int(know))
+		var st_i: int = int(market.stage_for(know)["idx"])
+		it.set_text(13, "%s %d%%" % [STAGE_SHORT[st_i], int(know)] if know > 0.0 else "—")
+		it.set_tooltip_text(13, "Knowledge stage: %s — unlocks %s" % [
+			String(market.stage_for(know)["name"]), String(market.stage_for(know)["unlocks"])])
 		it.set_custom_color(13, ThemeBuilder.COL_GOOD if know >= 100.0 else (ThemeBuilder.COL_WARN if know > 0 else ThemeBuilder.COL_TEXT_DIM))
 		for c in range(3, 14):
 			it.set_text_alignment(c, HORIZONTAL_ALIGNMENT_RIGHT)
 		if uid == _selected_uid:
 			it.select(0)
-	_count_label.text = "%d targets on the market" % rows.size()
+	var n_ext: int = rows.filter(func(t): return market.is_ext_uid(String(t["inst"]["uid"]))).size()
+	_count_label.text = "%d targets (%d overseas/youth pools) · %d fully scouted" % [
+		rows.size(), n_ext, market.full_report_count()]
 
 
 # ------------------------------------------------------------ detail panel
@@ -795,7 +807,7 @@ func _refresh_detail() -> void:
 	nv.add_child(_dlabel(market.display_name(inst), Color.WHITE, 18))
 	var where: String
 	match String(t["pool"]):
-		"club": where = "%s  ·  contracted to %s" % [GameState.club(t["club_id"])["name"], inst["contract"]["expiry"]]
+		"club": where = "%s  ·  contracted to %s" % [market.club_of(t["club_id"])["name"], inst["contract"]["expiry"]]
 		"fa": where = "Free agent — signs on wages alone"
 		_: where = "Youth prospect — development compensation applies"
 	nv.add_child(_dlabel(where, ThemeBuilder.COL_TEXT_DIM, 12, true))
@@ -842,18 +854,18 @@ func _refresh_detail() -> void:
 		_detail.add_child(_dlabel("Condition %d%%  ·  Fitness %d%%  ·  genetics unknown" % [
 			int(inst["condition"]), int(inst["fitness"])], ThemeBuilder.COL_TEXT_DIM, 12, true))
 
-	# moves
-	if know >= 60.0:
+	# moves — unlock at the "Part scouted" stage
+	if know >= 50.0:
 		_detail.add_child(_dlabel("Moves: " + ", ".join(inst["moves"]), ThemeBuilder.COL_TEXT, 13, true))
 	else:
-		_detail.add_child(_dlabel("Move set unknown — scout to reveal.", ThemeBuilder.COL_TEXT_DIM, 13))
+		_detail.add_child(_dlabel("Move set unknown — reach Part scouted (50%) to reveal.", ThemeBuilder.COL_TEXT_DIM, 13))
 
 	_detail.add_child(HSeparator.new())
 
 	# money block
 	if t["pool"] == "club":
 		_detail.add_child(_dlabel("Est. value: " + market.masked_money(uid, "val", market.value_of(inst)), ThemeBuilder.COL_TEXT, 13))
-		var imp: float = market.importance_of(inst, GameState.club(t["club_id"]))
+		var imp: float = market.importance_of(inst, market.club_of(t["club_id"]))
 		var imp_txt := "key battler" if imp >= 1.5 else ("first-team regular" if imp >= 1.3 else ("squad member" if imp >= 1.1 else "fringe battler"))
 		_detail.add_child(_dlabel("Status at club: %s" % imp_txt, ThemeBuilder.COL_TEXT_DIM, 12))
 	elif t["pool"] == "prospect":
@@ -866,7 +878,8 @@ func _refresh_detail() -> void:
 		(market.fmt_money(int(inst["contract"]["salary"])) if know >= 100.0 else market.masked_money(uid, "wage", int(inst["contract"]["salary"]))),
 		("" if know >= 100.0 else " (est.)")], ThemeBuilder.COL_TEXT, 13))
 
-	# knowledge bar
+	# knowledge bar + stage ladder
+	var stg: Dictionary = market.stage_for(know)
 	var krow := HBoxContainer.new()
 	krow.add_theme_constant_override("separation", 8)
 	_detail.add_child(krow)
@@ -878,13 +891,27 @@ func _refresh_detail() -> void:
 	pb.custom_minimum_size = Vector2(140, 12)
 	pb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	krow.add_child(pb)
-	krow.add_child(_dlabel("%d%%" % int(know), ThemeBuilder.COL_GOOD if know >= 100.0 else ThemeBuilder.COL_TEXT_DIM, 12))
+	krow.add_child(_dlabel("%d%% · %s" % [int(know), String(stg["name"])],
+		ThemeBuilder.COL_GOOD if know >= 100.0 else (ThemeBuilder.COL_WARN if know > 0 else ThemeBuilder.COL_TEXT_DIM), 12))
+	if know < 100.0:
+		var nxt: Dictionary = market.STAGES[mini(int(stg["idx"]) + 1, market.STAGES.size() - 1)]
+		_detail.add_child(_dlabel("Next stage at %d%%: %s — unlocks %s." % [
+			int(nxt["min"]), String(nxt["name"]), String(nxt["unlocks"])], ThemeBuilder.COL_TEXT_DIM, 11, true))
+	if market.is_ext_uid(uid):
+		_detail.add_child(_dlabel("%s target — %s. Overseas business is permanent-transfer only (no loans), and scouts need the boat: travel costs real days." % [
+			market.region_of(inst), ("plays for " + String(market.club_of(t["club_id"]).get("league", "an overseas league"))) if t["pool"] == "club" else "regional youth intake"],
+			ThemeBuilder.COL_ACCENT, 11, true))
 
 	# report teaser
 	if market.reports.has(uid):
 		var r: Dictionary = market.reports[uid]
-		_detail.add_child(_dlabel("Scout report (%s): Ability %s  Potential %s — see Scouting tab." % [
-			r["scout"], _stars(float(r["ability_stars"])), _stars(float(r["potential_stars"]))], ThemeBuilder.COL_GOOD, 12, true))
+		if String(r.get("stage", "full")) == "interim":
+			_detail.add_child(_dlabel("Interim report (%s): Ability %s to %s — bands narrow as scouting continues. See Scouting tab." % [
+				r["scout"], _stars(float(r.get("ability_lo", r["ability_stars"]))),
+				_stars(float(r.get("ability_hi", r["ability_stars"])))], ThemeBuilder.COL_WARN, 12, true))
+		else:
+			_detail.add_child(_dlabel("Scout report (%s): Ability %s  Potential %s — see Scouting tab." % [
+				r["scout"], _stars(float(r["ability_stars"])), _stars(float(r["potential_stars"]))], ThemeBuilder.COL_GOOD, 12, true))
 
 	# pipeline intel: listings, agents, rumours
 	if market.is_listed(uid):
@@ -904,7 +931,12 @@ func _refresh_detail() -> void:
 
 	var assign: Dictionary = market.assignment_for_target(uid)
 	if not assign.is_empty():
-		_detail.add_child(_dlabel("%s is scouting this target (%d days left)." % [assign["scout"], int(assign["days_left"])], ThemeBuilder.COL_WARN, 12, true))
+		var eta2: int = market.assignment_eta(assign)
+		var trav: int = int(assign.get("travel_left", 0))
+		_detail.add_child(_dlabel("%s is on this target%s — full report in ~%d day%s." % [
+			assign["scout"],
+			(" (in transit, %dd to arrive)" % trav) if trav > 0 else "",
+			maxi(1, eta2), "" if eta2 == 1 else "s"], ThemeBuilder.COL_WARN, 12, true))
 
 	_detail.add_child(HSeparator.new())
 
@@ -1044,7 +1076,9 @@ func _refresh_scouting() -> void:
 			int(s["ratings"]["judging_ability"]), int(s["ratings"]["judging_potential"])],
 			ThemeBuilder.COL_TEXT_DIM, 12, true))
 		var wage_txt: String = ("  ·  %s/wk" % market.fmt_money(int(s["wage"]))) if s.has("wage") else ""
-		vb.add_child(_dlabel("Home network: %s%s" % [market.scout_region(s), wage_txt], ThemeBuilder.COL_TEXT, 12, true))
+		var loc: String = market.scout_location(s)
+		var loc_txt: String = "" if loc == market.scout_region(s) else "  ·  currently in %s" % loc
+		vb.add_child(_dlabel("Home network: %s%s%s" % [market.scout_region(s), wage_txt, loc_txt], ThemeBuilder.COL_TEXT, 12, true))
 		var a: Dictionary = market.assignment_for_scout(s["name"])
 		var btns := HBoxContainer.new()
 		btns.add_theme_constant_override("separation", 6)
@@ -1062,12 +1096,22 @@ func _refresh_scouting() -> void:
 				btns.add_child(xb)
 		else:
 			var status: String
+			var trav: int = int(a.get("travel_left", 0))
 			if a["kind"] == "target":
 				var tt: Dictionary = market.find_target(a["uid"])
 				var nm: String = "target" if tt.is_empty() else market.display_name(tt["inst"])
-				status = "Watching %s — report in %d day%s" % [nm, int(a["days_left"]), "" if int(a["days_left"]) == 1 else "s"]
+				if trav > 0:
+					status = "En route to %s (%dd) — then watching %s" % [String(a.get("region", "?")), trav, nm]
+				else:
+					var eta: int = market.assignment_eta(a)
+					status = "Watching %s — %d%% known, full report ~%dd" % [
+						nm, int(market.knowledge_of(String(a["uid"]))), maxi(1, eta)]
 			else:
-				status = "Focus: %s — building knowledge daily" % String(a["focus_type"]).capitalize()
+				if trav > 0:
+					status = "Travelling to %s (%dd) for the %s sweep" % [String(a.get("region", "?")), trav, String(a["focus_type"])]
+				else:
+					status = "Focus: %s — sweeping %d targets/day (caps at %d%%)" % [
+						String(a["focus_type"]).capitalize(), market.FOCUS_TARGETS_PER_DAY, int(market.FOCUS_KNOW_CAP)]
 			vb.add_child(_dlabel(status, ThemeBuilder.COL_WARN, 12, true))
 			var rb := Button.new()
 			rb.text = "Recall"
@@ -1087,19 +1131,29 @@ func _refresh_scouting() -> void:
 		if a["kind"] == "target":
 			var tt2: Dictionary = market.find_target(a["uid"])
 			var nm2: String = "(unavailable)" if tt2.is_empty() else market.display_name(tt2["inst"])
+			var know2: float = market.knowledge_of(String(a["uid"]))
+			var stage2: Dictionary = market.stage_for(know2)
 			vb2.add_child(_dlabel(nm2, Color.WHITE, 14))
-			vb2.add_child(_dlabel("%s · started %s" % [a["scout"], Season.pretty_date(a["started"])], ThemeBuilder.COL_TEXT_DIM, 12, true))
+			vb2.add_child(_dlabel("%s · %s · started %s" % [a["scout"], String(a.get("region", "")),
+				Season.pretty_date(a["started"])], ThemeBuilder.COL_TEXT_DIM, 12, true))
+			var trav2: int = int(a.get("travel_left", 0))
+			if trav2 > 0:
+				vb2.add_child(_dlabel("IN TRANSIT — %d day%s until they reach %s" % [
+					trav2, "" if trav2 == 1 else "s", String(a.get("region", "the patch"))], ThemeBuilder.COL_WARN, 12, true))
 			var pb := ProgressBar.new()
-			pb.max_value = int(a["days_total"])
-			pb.value = int(a["days_total"]) - int(a["days_left"])
+			pb.max_value = 100
+			pb.value = know2
 			pb.show_percentage = false
 			pb.custom_minimum_size.y = 10
 			vb2.add_child(pb)
-			vb2.add_child(_dlabel("Report due %s" % Season.pretty_date(Season.date_add(GameState.current_date, int(a["days_left"]))), ThemeBuilder.COL_WARN, 12))
+			var eta3: int = market.assignment_eta(a)
+			vb2.add_child(_dlabel("%d%% — %s · full report ~%s" % [int(know2), String(stage2["name"]),
+				Season.pretty_date(Season.date_add(GameState.current_date, maxi(1, eta3)))], ThemeBuilder.COL_WARN, 12, true))
 		else:
 			vb2.add_child(_dlabel("Focus: %s" % String(a["focus_type"]).capitalize(), Color.WHITE, 14))
 			vb2.add_child(_dlabel("%s · rolling assignment since %s" % [a["scout"], Season.pretty_date(a["started"])], ThemeBuilder.COL_TEXT_DIM, 12))
-			vb2.add_child(_dlabel("Raises knowledge on matching targets every day; files full reports as they complete.", ThemeBuilder.COL_TEXT_DIM, 11, true))
+			vb2.add_child(_dlabel("Sweeps %d matching targets a day up to %d%% knowledge (interim reports only) — a dedicated watch is needed for the full book." % [
+				market.FOCUS_TARGETS_PER_DAY, int(market.FOCUS_KNOW_CAP)], ThemeBuilder.COL_TEXT_DIM, 11, true))
 		_assign_list.add_child(card2)
 	if market.assignments.is_empty():
 		_assign_list.add_child(_dlabel("No scouts in the field.\nSelect a target in Search and press Send Scout, or set a type focus.", ThemeBuilder.COL_TEXT_DIM, 14, true))
@@ -1113,8 +1167,15 @@ func _refresh_scouting() -> void:
 	var rlist: Array = market.reports.values()
 	rlist.sort_custom(func(a2, b2): return String(a2["date"]) > String(b2["date"]))
 	for r in rlist:
-		var idx := _report_list.add_item("%s  ·  Ability %s  Pot %s  ·  %s" % [
-			r["name"], _stars(float(r["ability_stars"])), _stars(float(r["potential_stars"])), Season.pretty_date(r["date"])])
+		var row_txt: String
+		if String(r.get("stage", "full")) == "interim":
+			row_txt = "[interim] %s  ·  Ability %s to %s  ·  %s" % [
+				r["name"], _stars(float(r.get("ability_lo", r["ability_stars"]))),
+				_stars(float(r.get("ability_hi", r["ability_stars"]))), Season.pretty_date(r["date"])]
+		else:
+			row_txt = "%s  ·  Ability %s  Pot %s  ·  %s" % [
+				r["name"], _stars(float(r["ability_stars"])), _stars(float(r["potential_stars"])), Season.pretty_date(r["date"])]
+		var idx := _report_list.add_item(row_txt)
 		_report_list.set_item_metadata(idx, r["uid"])
 		if String(r["uid"]) == sel_uid:
 			_report_list.select(idx)
@@ -1197,10 +1258,18 @@ func _show_report(uid: String) -> void:
 		return
 	var r: Dictionary = market.reports[uid]
 	var types_txt := " / ".join(r["types"].map(func(x): return String(x).capitalize()))
+	var interim: bool = String(r.get("stage", "full")) == "interim"
 	var s := "[b][font_size=20]%s[/font_size][/b]   [color=#8b91a8]Lv %d · %s[/color]\n" % [r["name"], int(r["level"]), types_txt]
-	s += "[color=#8b91a8]Filed by %s on %s[/color]\n\n" % [r["scout"], Season.pretty_date(r["date"])]
-	s += "[b]Current ability[/b]   [color=#e0b050]%s[/color]\n" % _stars(float(r["ability_stars"]))
-	s += "[b]Potential[/b]           [color=#e0b050]%s[/color]\n\n" % _stars(float(r["potential_stars"]))
+	s += "[color=#8b91a8]Filed by %s on %s[/color]\n" % [r["scout"], Season.pretty_date(r["date"])]
+	if interim:
+		s += "[color=#e0b050][b]INTERIM REPORT[/b] — %d%% scouted. Star ratings are a RANGE; keep the scout on the watch to narrow it.[/color]\n\n" % int(float(r.get("knowledge", 50.0)))
+		s += "[b]Current ability[/b]   [color=#e0b050]%s — %s[/color]\n" % [
+			_stars(float(r.get("ability_lo", r["ability_stars"]))), _stars(float(r.get("ability_hi", r["ability_stars"])))]
+		s += "[b]Potential[/b]           [color=#e0b050]%s — %s[/color]\n\n" % [
+			_stars(float(r.get("potential_lo", r["potential_stars"]))), _stars(float(r.get("potential_hi", r["potential_stars"])))]
+	else:
+		s += "\n[b]Current ability[/b]   [color=#e0b050]%s[/color]\n" % _stars(float(r["ability_stars"]))
+		s += "[b]Potential[/b]           [color=#e0b050]%s[/color]\n\n" % _stars(float(r["potential_stars"]))
 	s += "[b]Strengths[/b]\n"
 	for p in r["pros"]:
 		s += "[color=#57c979]  +  %s[/color]\n" % p
@@ -1441,6 +1510,9 @@ func _short_club_name(full: String) -> String:
 	for c in GameState.world["clubs"]:
 		if String(c["name"]) == full:
 			return String(c["short"])
+	for c in market.ext_clubs():
+		if String(c["name"]) == full:
+			return String(c["short"])
 	if full == "Free agency":
 		return "Free agent"
 	return full
@@ -1455,9 +1527,9 @@ func _make_out_card(o: Dictionary, live: bool) -> PanelContainer:
 	vb.add_child(head)
 	var who: String
 	if o["kind"] == "buy":
-		who = "%s  ·  from %s" % [String(o["name"]), GameState.club(o["club_id"])["short"]]
+		who = "%s  ·  from %s" % [String(o["name"]), market.club_of(o["club_id"])["short"]]
 	elif o["kind"] == "loan":
-		who = "%s  ·  loan from %s" % [String(o["name"]), GameState.club(o["club_id"])["short"]]
+		who = "%s  ·  loan from %s" % [String(o["name"]), market.club_of(o["club_id"])["short"]]
 	elif o["kind"] == "prospect":
 		who = "%s  ·  youth prospect" % String(o["name"])
 	else:
@@ -1471,7 +1543,7 @@ func _make_out_card(o: Dictionary, live: bool) -> PanelContainer:
 	if live and not rv.is_empty():
 		vb.add_child(_dlabel("RIVAL BID: %s have ~%s on the table — %s decide by %s. Beat it or lose the deal." % [
 			String(rv["club"]), market.fmt_money(int(rv["value"])),
-			GameState.club(String(o["club_id"]))["short"], Season.pretty_date(String(rv["decides_on"]))],
+			market.club_of(String(o["club_id"]))["short"], Season.pretty_date(String(rv["decides_on"]))],
 			ThemeBuilder.COL_BAD, 12, true))
 	# our current terms on the table
 	var terms := ""
@@ -1669,7 +1741,7 @@ func _open_offer_sheet(uid: String, offer_id: int = -1) -> void:
 	dlg.add_child(vb)
 
 	vb.add_child(_dlabel("Selling club: %s   ·   their likely valuation: %s" % [
-		GameState.club(t["club_id"])["name"],
+		market.club_of(t["club_id"])["name"],
 		market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))], ThemeBuilder.COL_TEXT_DIM, 13, true))
 	vb.add_child(_dlabel("Transfer budget: %s   ·   wage room: %s/wk" % [
 		market.fmt_money_full(maxi(0, market.spendable_budget())), market.fmt_money(market.wage_room())],
@@ -1899,10 +1971,14 @@ func _open_scout_dialog(uid: String) -> void:
 	vb.add_child(_dlabel("Target: %s" % ("" if t.is_empty() else market.display_name(t["inst"])), ThemeBuilder.COL_TEXT, 14))
 	var opt := OptionButton.new()
 	var treg: String = "" if t.is_empty() else market.region_of(t["inst"])
+	if not t.is_empty():
+		vb.add_child(_dlabel("Region: %s · a full report takes real days — travel first, then fieldwork; home-patch scouts read faster and truer." % treg,
+			ThemeBuilder.COL_TEXT_DIM, 11, true))
 	for s in idle:
 		var home: String = " · home patch" if market.scout_region(s) == treg else ""
-		opt.add_item("%s (JA %d · %d days%s)" % [s["name"], int(s["ratings"]["judging_ability"]),
-			market.scout_days_for(s, uid), home])
+		var trav: int = market.travel_days(market.scout_location(s), treg)
+		opt.add_item("%s (JA %d · ~%d days to full%s%s)" % [s["name"], int(s["ratings"]["judging_ability"]),
+			market.scout_days_for(s, uid), (" · %dd travel" % trav) if trav > 0 else "", home])
 	vb.add_child(opt)
 	dlg.add_child(vb)
 	dlg.get_ok_button().text = "Send"
@@ -1919,7 +1995,8 @@ func _open_focus_dialog(scout_name: String) -> void:
 	dlg.title = "Scouting focus — %s" % scout_name
 	var vb := VBoxContainer.new()
 	vb.add_theme_constant_override("separation", 6)
-	var expl := _dlabel("The scout will build knowledge across all matching targets, filing full reports as they complete.", ThemeBuilder.COL_TEXT_DIM, 12, true)
+	var expl := _dlabel("A focus is a broad sweep: %d matching targets a day gain knowledge, capped at %d%% (interim intel only). Region focuses require travelling there. Use a dedicated target watch for a full report." % [
+		market.FOCUS_TARGETS_PER_DAY, int(market.FOCUS_KNOW_CAP)], ThemeBuilder.COL_TEXT_DIM, 12, true)
 	expl.custom_minimum_size.x = 360
 	vb.add_child(expl)
 	var opt := OptionButton.new()
@@ -1982,3 +2059,5 @@ func _refresh_header() -> void:
 	_header_stat("Pushed to us", "%d recs · %d agents" % [n_recs, n_agents],
 		ThemeBuilder.COL_ACCENT if (n_recs + n_agents) > 0 else ThemeBuilder.COL_TEXT)
 	_header_stat("Shortlist", "%d targets" % market.shortlist_targets().size())
+	_header_stat("Market", "%d targets · %d full books" % [market.all_targets().size(), market.full_report_count()],
+		ThemeBuilder.COL_TEXT_DIM)

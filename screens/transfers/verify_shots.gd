@@ -5,7 +5,7 @@ extends Node
 ## Tabs: 0 Recruitment hub · 1 Search · 2 Scouting · 3 Transfer Centre
 
 const Market := preload("res://screens/transfers/market.gd")
-const OUT := "artifacts/transfers/w2_fix"
+const OUT := "artifacts/transfers/w3_fix"
 const SETTLE := 12
 
 var _shell: Control
@@ -38,18 +38,26 @@ func _run() -> void:
 
 	# --- play the market: build the full recruitment pipeline ---
 	var scouts: Array = m.player_scouts()
-	var targets: Array = m.all_targets().filter(func(t): return t["pool"] == "club")
+	var targets: Array = m.all_targets().filter(func(t):
+		return t["pool"] == "club" and not m.is_ext_uid(String(t["inst"]["uid"])))
 	targets.sort_custom(func(a, b): return m.value_of(a["inst"]) > m.value_of(b["inst"]))
+	var ext_targets: Array = m.all_targets().filter(func(t):
+		return t["pool"] == "club" and m.is_ext_uid(String(t["inst"]["uid"])))
+	ext_targets.sort_custom(func(a, b): return m.value_of(a["inst"]) > m.value_of(b["inst"]))
 	var star: Dictionary = targets[0]
 	var mid: Dictionary = targets[8]
+	var ext_star: Dictionary = ext_targets[0]
 	m.assign_scout_to_target(scouts[0]["name"], star["inst"]["uid"])
 	if scouts.size() > 1:
 		m.assign_scout_to_focus(scouts[1]["name"], "Coastal Circuit")
-	# hire a dedicated scout from the monthly market
+	# hire a dedicated scout from the monthly market and ship them overseas —
+	# travel days + staged knowledge on the Scouting tab
 	var pool_h: Array = m.scout_market()
 	pool_h.sort_custom(func(a, b): return int(a["wage"]) < int(b["wage"]))
 	if not pool_h.is_empty():
 		m.hire_scout(String(pool_h[0]["name"]))
+		m.assign_scout_to_target(String(pool_h[0]["name"]), String(ext_star["inst"]["uid"]))
+	m.toggle_shortlist(String(ext_star["inst"]["uid"]))
 	# shortlist a spread of targets — the board the pipeline reports on
 	m.toggle_shortlist(star["inst"]["uid"])
 	m.toggle_shortlist(targets[3]["inst"]["uid"])
@@ -68,7 +76,7 @@ func _run() -> void:
 		"years": 3, "bonus": 2000, "status": "First team"})
 	# a loan bid for a fringe battler with an option to buy
 	for t in targets:
-		var c: Dictionary = GameState.club(t["club_id"])
+		var c: Dictionary = m.club_of(t["club_id"])
 		if c["squad"].size() > 9 and m.importance_of(t["inst"], c) < 1.15 and m.offer_for_target(t["inst"]["uid"]).is_empty():
 			m.make_loan_offer(t["inst"]["uid"], 100, m.ask_price(t["inst"], t["club_id"]))
 			break
@@ -104,6 +112,16 @@ func _run() -> void:
 	screen._refresh_all()
 	await _settle()
 	await _shot(out_dir, "03_search_lived_in")
+
+	# search filtered to the overseas leagues, an island target selected
+	screen._selected_uid = String(ext_star["inst"]["uid"])
+	screen._pool_filter = 6
+	screen._refresh_search()
+	screen._refresh_detail()
+	await _settle()
+	await _shot(out_dir, "03b_search_overseas")
+	screen._pool_filter = 0
+	screen._refresh_search()
 
 	screen._tabs.current_tab = 2
 	await _settle()

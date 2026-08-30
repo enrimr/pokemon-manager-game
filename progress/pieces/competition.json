@@ -1,10 +1,10 @@
 {
  "piece": "competition",
  "fm_reference": "FM24 League/Competition screens: table, fixtures & results, cup bracket, season stats",
- "status": "capped",
- "round": 2,
- "verdict": "fm wins (narrowly)",
- "biggest_gap": "Data integrity of replay-derived match data: match reports and all season stats are reconstructed by re-simulating fixtures against the CURRENT squad state (pick_team/make_battler read today's levels/condition/items), so replays drift from the recorded results - in the live save 3 of 32 played fixtures (9%) replay to a different score, including cup tie C101 where the detail panel shows the recorded 2-1 winner losing both battles 0-2 directly under the 2-1 header. FM24's competition data is a single source of truth; fix by persisting the fixture detail dict at play time for instant sims (as interactive matches already do).",
+ "status": "passed",
+ "round": 3,
+ "verdict": "ours wins",
+ "biggest_gap": null,
  "history": [
   {
    "round": 1,
@@ -37,7 +37,13 @@
    "phase": "wave2",
    "winner": "fm",
    "gap": "Data integrity of replay-derived match data: fixture_detail() re-simulates with the current squad state, so ~9% of played fixtures (3/32 in the live save) show match reports contradicting the recorded score - cup tie C101 renders a 2-1 header over two battles won by the losing club, and season stats/POTM are credited from those contradicted replays. Persist detail at play time for instant sims like interactive matches already do."
+  },
+  {
+   "round": 1,
+   "phase": "final",
+   "winner": "ours",
+   "gap": null
   }
  ],
- "updated": "2026-08-30 07:04"
+ "updated": "2026-08-30 07:27"
 }

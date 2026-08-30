@@ -191,11 +191,17 @@ static func pick_team(club: Dictionary) -> Array:
 
 
 ## Instant fixture result: best-of-3 6v6 battles. Returns
-## {score_home, score_away, battles: [winner_side, ...], turns: [...]}
+## {score_home, score_away, battles: [winner_side, ...], turns: [...],
+##  detail: <fixture_detail-format dict>}
+## The `detail` key (additive) is the per-Pokemon match report captured AT PLAY
+## TIME — callers persist it on the fixture (f["detail"]) so match reports and
+## season stats never need a drift-prone replay against later squad state.
 static func simulate_fixture(home_club: Dictionary, away_club: Dictionary, match_seed: int) -> Dictionary:
 	var wins := [0, 0]
 	var battles: Array = []
 	var turns: Array = []
+	var detail_battles: Array = []
+	var players: Dictionary = {}
 	for i in 3:
 		if wins[0] == 2 or wins[1] == 2:
 			break
@@ -203,14 +209,19 @@ static func simulate_fixture(home_club: Dictionary, away_club: Dictionary, match
 		var team_a := pick_team(away_club)
 		if team_h.is_empty() or team_a.is_empty():
 			push_error("simulate_fixture: empty team for %s vs %s" % [home_club["name"], away_club["name"]])
-			return {"score_home": 2, "score_away": 0, "battles": [], "turns": []}
+			return {"score_home": 2, "score_away": 0, "battles": [], "turns": [],
+				"detail": {"score_home": 2, "score_away": 0, "battles": [], "players": {}}}
 		var eng := BattleEngine.new(team_h, team_a, match_seed + i * 7919)
 		eng.run_to_end()
 		var w := eng.winner()
 		wins[w] += 1
 		battles.append(w)
 		turns.append(eng.turn)
-	return {"score_home": wins[0], "score_away": wins[1], "battles": battles, "turns": turns}
+		detail_battles.append({"winner": w, "turns": eng.turn})
+		_tally_battle(eng.events, [team_h, team_a], w, players)
+	return {"score_home": wins[0], "score_away": wins[1], "battles": battles, "turns": turns,
+		"detail": {"score_home": wins[0], "score_away": wins[1],
+			"battles": detail_battles, "players": players}}
 
 
 # =================================================================== competition extensions
@@ -363,13 +374,19 @@ static func _check_career_cache() -> void:
 		_pos_hist_cache.clear()
 
 
-## Replays a played fixture with the real engine (same seed formula GameState
-## uses, so identical outcome) and returns per-Pokemon match stats. Cached.
-## Returns {} for unplayed fixtures.
+## Per-Pokemon match report for a played fixture. SINGLE SOURCE OF TRUTH:
+## the detail dict persisted on the fixture at play time (f["detail"] — written
+## by GameState._play_fixture for instant sims, by the match screen for
+## interactive matches and by the tactics director for plan sims). This
+## function NEVER re-simulates in a way that can contradict the recorded score:
+## legacy fixtures without a stored detail are reconciled once (see
+## _reconcile_detail) and the result is persisted, so it is stable across
+## boots and saves. Returns {} for unplayed fixtures.
 ## { "score_home", "score_away",
 ##   "battles": [ {"winner": 0|1, "turns": int} ],
 ##   "players": { uid: {name, species, side, battles, wins, kos, dmg, taken,
-##                      faints, rating_sum} } }
+##                      faints, rating_sum} },
+##   "no_report": true  (only on legacy stubs — score recorded, no battle data) }
 static func fixture_detail(f: Dictionary) -> Dictionary:
 	if not f.get("played", false):
 		return {}
@@ -377,17 +394,48 @@ static func fixture_detail(f: Dictionary) -> Dictionary:
 	var fid: String = str(f["id"])
 	if _detail_cache.has(fid):
 		return _detail_cache[fid]
-	# Fixtures resolved outside the neutral instant sim (interactive matches,
-	# tactics-plan sims) record their REAL detail on the fixture — prefer it,
-	# otherwise the replay below could contradict the recorded scoreline.
 	var stored: Variant = f.get("detail")
-	if stored is Dictionary and stored.has("players") and stored.has("battles"):
-		_detail_cache[fid] = stored
-		return stored
+	if _detail_is_valid(stored, f):
+		var norm := _normalize_detail(stored)
+		f["detail"] = norm
+		_detail_cache[fid] = norm
+		return norm
+	# Legacy save (fixture played before details were persisted) or corrupt
+	# detail: reconcile once and persist the outcome on the fixture.
+	var detail := _reconcile_detail(f)
+	if detail.is_empty():
+		return {}
+	f["detail"] = detail
+	_detail_cache[fid] = detail
+	return detail
+
+
+## A stored detail is usable iff it has the report keys AND its score agrees
+## with the fixture's recorded score (guards against corrupt/stale data).
+static func _detail_is_valid(stored: Variant, f: Dictionary) -> bool:
+	if not (stored is Dictionary):
+		return false
+	if not (stored.has("players") and stored.has("battles")
+			and stored.has("score_home") and stored.has("score_away")):
+		return false
+	return int(stored["score_home"]) == int(f["score_home"]) \
+		and int(stored["score_away"]) == int(f["score_away"])
+
+
+## Repair path for fixtures played before details were persisted at play time.
+## Replays with the original per-fixture seed: if the replay reproduces the
+## recorded score (squad state unchanged since play), adopt it as the report.
+## If it contradicts the recorded score (squads drifted), the true battle data
+## is unrecoverable — return a score-only stub so the report can never
+## contradict the recorded result and stats ignore it. Never returns a detail
+## whose score disagrees with the fixture.
+static func _reconcile_detail(f: Dictionary) -> Dictionary:
+	var stub := {"score_home": int(f["score_home"]), "score_away": int(f["score_away"]),
+		"battles": [], "players": {}, "no_report": true}
 	var home: Dictionary = GameState.club(f["home"])
 	var away: Dictionary = GameState.club(f["away"])
 	if home.is_empty() or away.is_empty():
-		return {}
+		return stub
 	var seed_v := fixture_seed(f, GameState.career_seed)
 	var wins := [0, 0]
 	var battles: Array = []
@@ -398,17 +446,66 @@ static func fixture_detail(f: Dictionary) -> Dictionary:
 		var team_h := pick_team(home)
 		var team_a := pick_team(away)
 		if team_h.is_empty() or team_a.is_empty():
-			return {}
+			return stub
 		var eng := BattleEngine.new(team_h, team_a, seed_v + i * 7919)
 		eng.run_to_end()
 		var w := maxi(eng.winner(), 0)
 		wins[w] += 1
 		battles.append({"winner": w, "turns": eng.turn})
 		_tally_battle(eng.events, [team_h, team_a], w, players)
-	var detail := {"score_home": wins[0], "score_away": wins[1],
+	if wins[0] != int(f["score_home"]) or wins[1] != int(f["score_away"]):
+		return stub   # replay drifted from the recorded result — clear, don't lie
+	return {"score_home": wins[0], "score_away": wins[1],
 		"battles": battles, "players": players}
-	_detail_cache[fid] = detail
-	return detail
+
+
+## Migration/repair for existing saves: give every played fixture a persisted,
+## score-consistent detail (adopting a faithful replay where possible, a
+## score-only stub where not). Idempotent. Returns
+## {"checked": n, "adopted": n, "cleared": n} — callers save if adopted+cleared > 0.
+static func reconcile_fixture_details(fixtures: Array) -> Dictionary:
+	_check_career_cache()
+	var out := {"checked": 0, "adopted": 0, "cleared": 0}
+	for f in fixtures:
+		if not f.get("played", false):
+			continue
+		out["checked"] += 1
+		if _detail_is_valid(f.get("detail"), f):
+			continue
+		var detail := _reconcile_detail(f)
+		if detail.is_empty():
+			continue
+		f["detail"] = detail
+		_detail_cache[str(f["id"])] = detail
+		if detail.get("no_report", false):
+			out["cleared"] += 1
+		else:
+			out["adopted"] += 1
+	return out
+
+
+## Cast a detail's numerics back to int/float after a JSON save round-trip
+## (JSON loads every number as float) so consumers get stable types.
+static func _normalize_detail(d: Dictionary) -> Dictionary:
+	var out := {"score_home": int(d["score_home"]), "score_away": int(d["score_away"])}
+	if d.get("no_report", false):
+		out["no_report"] = true
+	var battles: Array = []
+	for b in d["battles"]:
+		battles.append({"winner": int(b["winner"]), "turns": int(b["turns"])})
+	out["battles"] = battles
+	var players := {}
+	for uid in d["players"]:
+		var p: Dictionary = (d["players"][uid] as Dictionary).duplicate()
+		for k in ["level", "side", "battles", "wins", "kos", "dmg", "taken",
+				"faints", "hits", "misses", "crits", "se"]:
+			if p.has(k):
+				p[k] = int(p[k])
+		if p.has("rating_sum"):
+			p["rating_sum"] = float(p["rating_sum"])
+		players[str(uid)] = p
+	out["players"] = players
+	return out
 
 
 ## Parse one battle's event log into per-uid stats, merged into `out`.

@@ -1,10 +1,10 @@
 {
  "piece": "squad",
  "fm_reference": "FM24 Squad screen + Player Profile",
- "status": "capped",
- "round": 2,
- "verdict": "fm wins (very narrow)",
- "biggest_gap": "Fixed, non-customizable table views that overflow the viewport: the five hard-coded presets cannot be edited, reordered or saved, and at the native 1600x900 the rightmost columns (Status/Value) and the BALANCE header chip are clipped off-screen with horizontal scrolling disabled (screen.gd line 195), so live data (bids, listed state) is literally unreachable — FM24's editable, saveable column views never lose data to the viewport.",
+ "status": "passed",
+ "round": 3,
+ "verdict": "ours wins",
+ "biggest_gap": "",
  "history": [
   {
    "round": 1,
@@ -14,17 +14,17 @@
   {
    "round": 2,
    "winner": "fm",
-   "gap": "No historical dimension anywhere: profile and table show only current-season snapshots; FM24's profile has career history \u2014 season-by-season stats, transfer/contract history, attribute progression \u2014 that makes a player a trajectory rather than a snapshot."
+   "gap": "No historical dimension anywhere: profile and table show only current-season snapshots; FM24's profile has career history — season-by-season stats, transfer/contract history, attribute progression — that makes a player a trajectory rather than a snapshot."
   },
   {
    "round": 3,
    "winner": "fm",
-   "gap": "No at-a-glance ability/potential rating layer (FM's coach-report stars) on the squad table or profile header \u2014 judging who to keep, sell or develop requires parsing raw stats and a buried IV%."
+   "gap": "No at-a-glance ability/potential rating layer (FM's coach-report stars) on the squad table or profile header — judging who to keep, sell or develop requires parsing raw stats and a buried IV%."
   },
   {
    "round": 4,
    "winner": "fm",
-   "gap": "No selection/availability layer on the squad table (starting-six membership, availability/status icons, lineup link) \u2014 the one FM squad-screen job the screen still cannot do."
+   "gap": "No selection/availability layer on the squad table (starting-six membership, availability/status icons, lineup link) — the one FM squad-screen job the screen still cannot do."
   },
   {
    "round": 1,
@@ -38,7 +38,7 @@
    "phase": "wave2",
    "winner": "fm",
    "gap": "No qualitative personality/happiness layer: morale is an opaque 0-100 word with no reasons, concerns, expectations or promises anywhere on the squad table or profile, while FM24 surrounds every number with personality traits, squad-status expectations and explained happiness that actually drive keep/sell/renew decisions.",
-   "note": "Everything else verified REAL end-to-end with fresh eyes: 4 dense table presets with live season stats (apps/KOs/dmg/ratings accumulate over 40 simmed days), sortable columns + filter + right-click menus; multi-round contract talks with budget guards and walk-away locks (dialog verified live); transfer listing generated genuine AI bids that expire and can be accepted for real squad+finance mutations (offers dialog verified via driver); profile has attributes with IV/squad-rank, compare-with deltas, matchups, moves, form log, percentile coach report tied to named staff judging stats; History tab has season stats, attribute progression, value sparklines, transfer/contract/dev logs. Cross-screen coherence strong (tactic roles in Picked column, held items link to Items, training-focus bridge, inbox messages for every action, matchday redirect). Verdict is NARROW \u2014 FM edge only on the qualitative context layer plus secondaries: no customizable/saveable column views (4 fixed presets), contract talks lack clause depth (appearance/win bonuses, promises, agent flavour), career records start at takeover (no pre-career/cross-club history), and commercial-grade art polish is out of reach of the no-copyrighted-art constraint."
+   "note": "Everything else verified REAL end-to-end with fresh eyes: 4 dense table presets with live season stats (apps/KOs/dmg/ratings accumulate over 40 simmed days), sortable columns + filter + right-click menus; multi-round contract talks with budget guards and walk-away locks (dialog verified live); transfer listing generated genuine AI bids that expire and can be accepted for real squad+finance mutations (offers dialog verified via driver); profile has attributes with IV/squad-rank, compare-with deltas, matchups, moves, form log, percentile coach report tied to named staff judging stats; History tab has season stats, attribute progression, value sparklines, transfer/contract/dev logs. Cross-screen coherence strong (tactic roles in Picked column, held items link to Items, training-focus bridge, inbox messages for every action, matchday redirect). Verdict is NARROW — FM edge only on the qualitative context layer plus secondaries: no customizable/saveable column views (4 fixed presets), contract talks lack clause depth (appearance/win bonuses, promises, agent flavour), career records start at takeover (no pre-career/cross-club history), and commercial-grade art polish is out of reach of the no-copyrighted-art constraint."
   },
   {
    "round": 2,
@@ -53,7 +53,22 @@
    "winner": "fm",
    "gap": "Fixed, non-customizable table views that overflow the viewport: five hard-coded presets, no column editor or saved views, and at 1600x900 the rightmost columns (Status/Value) plus the BALANCE chip clip off-screen with horizontal scrolling disabled — live data (bids, listed state) becomes unreachable, where FM24's editable views never lose data to the viewport.",
    "note": "Round-1 wave2 gap (personality/happiness) verified CLOSED with fresh eyes: Happiness preset shows archetypes, squad-status tiers, explained concerns and promises; morale tooltips are a dated mood ledger; profile Personality & Happiness panel has factor bars, concern rows with resolve buttons, Make A Promise. Everything verified REAL end-to-end: SMOKE OK first try; 12 screenshots (5 presets, profile overview/history/compare, actions menu, 3-round contract dialog with live demand derived from form, bids dialog, 45-day advance) all live GameState — after advancing 45 days the History tab populated with 8 snapshots, IV progression (+3/+4 arrows), stat/value sparklines, LISTED transfer event and training dev log; matchday takeover, inbox 22->67, coherent header ticker. FM edge is now execution-margin only: (1) THE gap above; (2) commercial art identity — monogram initials vs faces/kits, truncated cells in Happiness view ('Temperamen...', 'Squad Battl...'); (3) contract talks lack clause depth (appearance/win bonuses, release clauses, agent fees); (4) career records begin at takeover — no pre-club career history, so History is thin early. This is the closest round yet; the product is a real management sim, not a mock."
+  },
+  {
+   "round": 3,
+   "phase": "wave2 (custom views fix)",
+   "winner": "",
+   "gap": "",
+   "note": "Round-2 wave2 gap closed, both halves. (1) Real column editor: new views.gd (single source of truth for 42 column defs incl. previously-unused Species; view state persisted INSIDE the save at world.meta.squad_views) + view_editor.gd (dual-list Customize View dialog: category-grouped available columns with search+tooltips, ordered current list, Add/Remove/Move Up/Move Down, double-click shortcuts, rename field, Save & Apply, Save As New View, Reset To Default for presets, Delete for custom views, validation with inline errors, Name column locked, 3-26 col + 8 view limits). The 5 presets are editable starting points (edits stored as overrides, button shows 'General*', Reset restores factory); custom views get accent-colored toggle buttons; active view also persists. SQUAD VIEWS SELFTEST OK (24 checks incl. save->wipe->load roundtrip of custom view, column order, preset override and active view; rename/reset/delete lifecycle; guard rails). (2) No data loss at 1600x900: root cause found — the footer selection strip's HBox min width (~1700px with a row selected) inflated the whole layout, pushing BALANCE chip and Status column off-screen; footer stats now wrap in an HFlowContainer with action buttons pinned right; header chips wrap in an HFlowContainer; tree h-scroll enabled with responsive column-width scaling (shrink to 0.86 floor, then scrollbar); Status cell gained a full tooltip. Verified live at 1600x900 with 8 screenshots: General+Contracts with selected row show BALANCE chip and Status column fully on-screen; 24-col custom 'Scout Board' created through the real API, shown with h-scrollbar, scrolled fully right (Expires/Wants/Value/Status readable), and restored on a cold restart with no env flags (loaded purely from save.json); editor screenshot; editor DRIVEN via its real ItemList+buttons (select Spe -> Add -> Save & Apply) producing live Spe column + General* marker. SMOKE OK; actions/history/mind selftests still OK; profile regression screenshot clean."
+  }
+,
+  {
+   "round": 1,
+   "phase": "final",
+   "winner": "ours",
+   "gap": "",
+   "note": "Blind final verification with fresh eyes; both halves of the named gap independently confirmed CLOSED. (1) Column editor is real, not mocked: views.gd holds 42 column defs in 7 categories and persists overrides/custom/order/active inside the career save (world.meta.squad_views); Customize View dialog verified visually (categorized+searchable available list, ordered view list, Add/Remove/Move Up/Down, Reset To Default, Save As New View, rename, '17 of 26 columns (min 3)' counter) and DRIVEN through its real ItemList+buttons (Spe added to General -> live Spe column + 'General*' modified marker). Fresh headless roundtrip driver (33 assertions, RT DRIVER OK): create/rename/delete/cap-at-8/dup-name/min-cols/Name-locked guards all enforced; custom view, preset override AND active view survive save->wipe->load byte-equal, and again after 30 simulated days. (2) Zero data loss at 1600x900: BALANCE chip fully visible in every shot (chips flow-wrap); Battle Stats' 21 columns fit via responsive width scaling with rightmost Av Rat data readable; a deliberately wide 24-col custom view shows a working h-scrollbar and, scrolled fully right, Expires/Wants/Value/Status all readable; live 'Listed' state renders in the reachable Status column (SQUAD_DEV_LIST). SMOKE OK first try. Note: a mid-run career reset was traced to CONCURRENT transfers selftest/coverage drivers racing user://save.json (their SaveGuard backup/restore), not to the squad code — the controlled roundtrip is unambiguous. Remaining FM edges are niceties, not data loss: no drag-and-drop header reordering or column-width dragging (dialog-only editing), no view import/export/sharing, and FM's raw column catalog is larger. Verdict: ours — the area now does FM24's essential job (editable, saveable, persistent views with no viewport data loss) on top of previously verified live sim data, at higher visual coherence than the game's scale demands."
   }
  ],
- "updated": "2026-08-30 06:57"
+ "updated": "2026-08-30 07:41"
 }

@@ -35,7 +35,7 @@ static func instance() -> RefCounted:
 # ------------------------------------------------------------------ state
 
 var knowledge: Dictionary = {}      # uid -> float 0..100 scouting knowledge
-var assignments: Array = []         # [{scout, kind:"target"|"focus", uid, focus_type, days_left, days_total, started}]
+var assignments: Array = []         # [{scout, kind:"target"|"focus", uid, focus_type, region, travel_left, started}]
 var reports: Dictionary = {}        # uid -> report dict
 var offers_out: Array = []          # our bids / loan offers / contract offers (structured)
 var offers_in: Array = []           # AI bids for our squad (structured)
@@ -58,6 +58,16 @@ var dof: Dictionary = {}            # Director of Battling delegation flags (see
 var dof_log: Array = []             # DoF activity feed, newest first [{date, text}]
 var seeded_window: String = ""      # open-date of the window whose rumours were seeded
 
+# --- external world (overseas leagues + regional prospect pools) ---
+# The full rosters are regenerated deterministically from the career seed on
+# demand; only the uids that LEFT the external world are persisted.
+var ext_removed: Dictionary = {}    # uid -> true (signed/hijacked out of the ext world)
+var scout_loc: Dictionary = {}      # scout name -> region they are currently in
+var _ext_clubs: Array = []          # cached virtual clubs [{id,name,short,reputation,finances,squad,region,league}]
+var _ext_prospects: Array = []      # cached prospect insts (carry a "region" field)
+var _ext_index: Dictionary = {}     # uid -> {"inst":.., "club_id":.., "pool":..}
+var _ext_built_seed: int = -2
+
 const DOF_DEFAULTS := {"handle_bids": false, "pursue_shortlist": false, "auto_scout": false, "max_over_pct": 10}
 const LISTING_DISCOUNT := 0.65      # transfer-listed players go for 65% of the normal ask
 const AGENT_GREASE := 0.88          # agent-touted deals: the seller's threshold drops to 88%
@@ -66,13 +76,68 @@ const MAX_HIRED_SCOUTS := 4
 # Scouting regions: every species belongs to one (by primary type). A scout has
 # a home region — they work faster there, and a region focus builds a knowledge
 # network across it. This is the FM regional-scouting model in Indigo colours.
+# The two overseas regions have no type mapping: only externally-generated
+# targets (overseas leagues + their prospect pools) live there.
 const REGIONS := {
 	"Verdant Interior": ["grass", "bug", "poison"],
 	"Coastal Circuit": ["water", "ice"],
 	"Volcanic Belt": ["fire", "rock", "ground"],
 	"Storm Plateau": ["electric", "flying", "dragon"],
 	"Old Capital": ["normal", "psychic", "ghost", "fighting"],
+	"Sevii Islands": [],
+	"Orange Archipelago": [],
 }
+const OVERSEAS_REGIONS := ["Sevii Islands", "Orange Archipelago"]
+
+# ---- the staged-knowledge economy -----------------------------------------
+# Knowledge is a 0..100 ladder climbed in real days, not a binary unlock.
+# Each stage unlocks more of the truth; uncertainty bands narrow continuously.
+const STAGES := [
+	{"min": 0.0, "name": "Untracked", "unlocks": "name and level only"},
+	{"min": 1.0, "name": "Rumour", "unlocks": "wide value + attribute bands"},
+	{"min": 25.0, "name": "Initial assessment", "unlocks": "bands tighten, region intel"},
+	{"min": 50.0, "name": "Part scouted", "unlocks": "move set + interim report (star bands)"},
+	{"min": 75.0, "name": "Detailed", "unlocks": "tight bands, reliable wage read"},
+	{"min": 100.0, "name": "Full report", "unlocks": "exact attributes, IVs, final stars"},
+]
+const FOCUS_KNOW_CAP := 60.0        # a focus sweep can never produce a full book
+const FOCUS_TARGETS_PER_DAY := 3    # breadth throttle: a sweep touches 3 targets a day
+const INTERIM_AT := 50.0            # crossing this files a preliminary report
+
+# Travel: scouts are physically somewhere. Crossing the map costs real days
+# before any knowledge flows; the overseas leagues are a boat ride away.
+const TRAVEL_DOMESTIC := 2
+const TRAVEL_OVERSEAS := 5
+const TRAVEL_BETWEEN_OVERSEAS := 4
+
+# Overseas leagues: 2 x 8 clubs whose battlers are transfer-eligible (no
+# loans across the water). Generated deterministically from the career seed
+# on demand — only departures (ext_removed) are persisted, so saves stay light.
+const EXT_LEAGUES := [
+	{
+		"name": "Sevii Island League", "prefix": "xsev", "region": "Sevii Islands",
+		"clubs": [
+			["Knot Island Krakens", "KNO"], ["Boon Island Boatmen", "BOO"],
+			["Kin Island Kestrels", "KIN"], ["Floe Island Frostbites", "FLO"],
+			["Chrono Island Watchers", "CHR"], ["Fortune Island Fates", "FTN"],
+			["Quest Island Pilgrims", "QUE"], ["Navel Rock Navigators", "NAV"],
+		],
+	},
+	{
+		"name": "Orange Archipelago League", "prefix": "xora", "region": "Orange Archipelago",
+		"clubs": [
+			["Mikan Mariners", "MIK"], ["Sunburst Athletic", "SUN"],
+			["Trovita Tridents", "TRO"], ["Kumquat Kings", "KUM"],
+			["Pummelo Stadium", "PUM"], ["Tangelo Bay", "TGB"],
+			["Mandarin North", "MDN"], ["Valencia Isle", "VLC"],
+		],
+	},
+]
+const EXT_SQUAD_SIZE := 13
+# Regional prospect pools: every region runs a youth intake, generated the
+# same deterministic way. Domestic pools are bigger than the island ones.
+const EXT_PROSPECTS_DOMESTIC := 34
+const EXT_PROSPECTS_OVERSEAS := 24
 
 const SCOUT_FIRST := ["Marta", "Kenji", "Rosa", "Dario", "Yuki", "Petra", "Silas", "Noor",
 	"Ivo", "Carmen", "Talia", "Bruno", "Sachi", "Olek", "Ines", "Ramon", "Freya", "Goro"]
@@ -100,7 +165,7 @@ func _init() -> void:
 
 func save_state() -> void:
 	var data := {
-		"version": 4,
+		"version": 5,
 		"career_seed": GameState.career_seed,
 		"as_of": GameState.current_date,
 		"knowledge": knowledge,
@@ -124,6 +189,8 @@ func save_state() -> void:
 		"dof": dof,
 		"dof_log": dof_log,
 		"seeded_window": seeded_window,
+		"ext_removed": ext_removed,
+		"scout_loc": scout_loc,
 	}
 	var f := FileAccess.open(STATE_PATH, FileAccess.WRITE)
 	if f != null:
@@ -136,7 +203,7 @@ func _load_state() -> void:
 		return
 	var f := FileAccess.open(STATE_PATH, FileAccess.READ)
 	var data: Variant = JSON.parse_string(f.get_as_text())
-	if data == null or typeof(data) != TYPE_DICTIONARY or not (int(data.get("version", 0)) in [1, 2, 3, 4]):
+	if data == null or typeof(data) != TYPE_DICTIONARY or not (int(data.get("version", 0)) in [1, 2, 3, 4, 5]):
 		return
 	# Reject state from a different / newer career (new career resets the calendar).
 	if int(data.get("career_seed", -1)) != GameState.career_seed:
@@ -168,8 +235,25 @@ func _load_state() -> void:
 			dof[k] = saved_dof[k]
 	dof_log = data.get("dof_log", [])
 	seeded_window = String(data.get("seeded_window", ""))
+	ext_removed = data.get("ext_removed", {}) if typeof(data.get("ext_removed")) == TYPE_DICTIONARY else {}
+	scout_loc = data.get("scout_loc", {}) if typeof(data.get("scout_loc")) == TYPE_DICTIONARY else {}
 	if int(data.get("version", 0)) == 1:
 		_migrate_v1_offers()
+	if int(data.get("version", 0)) <= 4:
+		_migrate_v4_assignments()
+
+
+func _migrate_v4_assignments() -> void:
+	# Pre-v5 target assignments were a fixed countdown to a 100% unlock; lift
+	# them into the staged model (already-arrived, progress rides `knowledge`).
+	for a in assignments:
+		if not a.has("travel_left"):
+			a["travel_left"] = 0
+		if not a.has("region"):
+			var t := find_target(String(a.get("uid", "")))
+			a["region"] = region_of(t["inst"]) if not t.is_empty() else ""
+		a.erase("days_left")
+		a.erase("days_total")
 
 
 func _migrate_v1_offers() -> void:
@@ -214,6 +298,9 @@ func _reset_state() -> void:
 	dof = DOF_DEFAULTS.duplicate()
 	dof_log = []
 	seeded_window = ""
+	ext_removed = {}
+	scout_loc = {}
+	_ext_built_seed = -2
 
 
 func _on_career_started() -> void:
@@ -222,10 +309,158 @@ func _on_career_started() -> void:
 	market_updated.emit()
 
 
+# ------------------------------------------------------------------ external world
+# The domestic league alone is ~260 targets — a fortnight of scouting. The
+# external world (2 overseas leagues + 7 regional prospect pools) pushes the
+# scoutable universe to ~700, regenerated deterministically from the career
+# seed so only DEPARTURES are ever saved.
+
+func is_ext_uid(uid: String) -> bool:
+	return uid.begins_with("x")
+
+
+func is_ext_club(club_id: String) -> bool:
+	return club_id.begins_with("x")
+
+
+func _ensure_ext_world() -> void:
+	if _ext_built_seed == GameState.career_seed:
+		return
+	_ext_built_seed = GameState.career_seed
+	_ext_clubs = []
+	_ext_prospects = []
+	_ext_index = {}
+	var rng := RandomNumberGenerator.new()
+	rng.seed = GameState.career_seed ^ 0x5EA5C0DE
+	# species tiers by BST (no Mewtwo/Mew/Ditto), mirroring the domestic gen
+	var usable: Array = DataStore.pokemon.filter(func(p): return not (int(p["id"]) in [150, 151, 132]))
+	usable = usable.duplicate()
+	usable.sort_custom(func(a, b):
+		var sa := 0
+		for k in a["base"]:
+			sa += int(a["base"][k])
+		var sb := 0
+		for k in b["base"]:
+			sb += int(b["base"][k])
+		return sa < sb)
+	# --- overseas leagues
+	for lg in EXT_LEAGUES:
+		var n := 0
+		for cdef in lg["clubs"]:
+			n += 1
+			var cid: String = "%sc%d" % [String(lg["prefix"]), n]
+			var rep := 5 + int(rng.randi() % 10)
+			var lo := mini(usable.size() - 40, maxi(0, (rep - 5) * 9))
+			var pool: Array = usable.slice(lo, lo + 70)
+			var squad: Array = []
+			for s in EXT_SQUAD_SIZE:
+				var sp: Dictionary = pool[rng.randi() % pool.size()]
+				squad.append(_make_ext_instance(rng, sp, 20 + rep, mini(58, 30 + rep * 2),
+					String(lg["region"]), "%sm%d_%d" % [String(lg["prefix"]), n, s]))
+			_ext_clubs.append({
+				"id": cid, "name": String(cdef[0]), "short": String(cdef[1]),
+				"reputation": rep, "region": String(lg["region"]), "league": String(lg["name"]),
+				"finances": {"balance": (150 + int(rng.randi() % 700)) * 1000 + rep * 40000},
+				"squad": squad, "staff": [],
+			})
+	# --- regional prospect pools (youth intakes everywhere, FM-style)
+	var ri := 0
+	for reg in REGIONS:
+		ri += 1
+		var count: int = EXT_PROSPECTS_OVERSEAS if reg in OVERSEAS_REGIONS else EXT_PROSPECTS_DOMESTIC
+		var reg_pool: Array = usable
+		if not REGIONS[reg].is_empty():
+			reg_pool = usable.filter(func(p): return String(p["types"][0]) in REGIONS[reg])
+			if reg_pool.is_empty():
+				reg_pool = usable
+		for k in count:
+			var sp2: Dictionary = reg_pool[rng.randi() % reg_pool.size()]
+			var inst := _make_ext_instance(rng, sp2, 5, 20, String(reg), "xyth%d_%d" % [ri, k])
+			inst["potential"] = 6 + int(rng.randi() % 15)
+			inst["scouted_pct"] = 0
+			inst["age_months"] = 12 + int(rng.randi() % 34)
+			inst["contract"]["salary"] = maxi(50, int(float(inst["contract"]["salary"]) * 0.35))
+			_ext_prospects.append(inst)
+	# strip anything that already left the external world, then index
+	for c in _ext_clubs:
+		c["squad"] = c["squad"].filter(func(i): return not ext_removed.has(String(i["uid"])))
+		for inst in c["squad"]:
+			_ext_index[String(inst["uid"])] = {"inst": inst, "club_id": String(c["id"]), "pool": "club"}
+	_ext_prospects = _ext_prospects.filter(func(i): return not ext_removed.has(String(i["uid"])))
+	for inst in _ext_prospects:
+		_ext_index[String(inst["uid"])] = {"inst": inst, "club_id": "", "pool": "prospect"}
+
+
+func _make_ext_instance(rng: RandomNumberGenerator, sp: Dictionary, lvl_lo: int, lvl_hi: int,
+		region: String, uid: String) -> Dictionary:
+	var level := lvl_lo + int(rng.randi() % maxi(1, lvl_hi - lvl_lo + 1))
+	var ivs := {}
+	for k in ["hp", "atk", "def", "spa", "spd", "spe"]:
+		ivs[k] = int(rng.randi() % 16)
+	var learn: Array = sp["learnset"].duplicate()
+	var moves: Array = []
+	while moves.size() < mini(4, learn.size()) and not learn.is_empty():
+		moves.append(learn.pop_at(rng.randi() % learn.size()))
+	var b := 0
+	for k in sp["base"]:
+		b += int(sp["base"][k])
+	var salary := int(float(b * 2 + level * 40) * (0.75 + rng.randf() * 0.4))
+	var exp_m := 10 + int(rng.randi() % 37)
+	var yr := 2026 + int(float(7 + exp_m) / 12.0)
+	var mo := (7 + exp_m) % 12 + 1
+	return {
+		"uid": uid, "species_id": int(sp["id"]), "species": String(sp["name"]),
+		"nickname": null, "level": level, "ivs": ivs, "moves": moves,
+		"held_item": null, "condition": 70 + int(rng.randi() % 31),
+		"fitness": 75 + int(rng.randi() % 26), "morale": 50 + int(rng.randi() % 46),
+		"age_months": 12 + int(rng.randi() % 109), "region": region,
+		"contract": {"salary": salary, "expiry": "%04d-%02d-30" % [yr, mo]},
+	}
+
+
+func ext_clubs() -> Array:
+	_ensure_ext_world()
+	return _ext_clubs
+
+
+func _remove_ext(uid: String) -> void:
+	## A battler leaves the external world for good (signed by us, or poached
+	## into the domestic league). Only this delta is persisted.
+	ext_removed[uid] = true
+	var e: Dictionary = _ext_index.get(uid, {})
+	if e.is_empty():
+		return
+	if String(e["club_id"]) != "":
+		for c in _ext_clubs:
+			if String(c["id"]) == String(e["club_id"]):
+				c["squad"].erase(e["inst"])
+	else:
+		_ext_prospects.erase(e["inst"])
+	_ext_index.erase(uid)
+
+
+func club_of(club_id: String) -> Dictionary:
+	## GameState.club plus the virtual overseas clubs. Use this anywhere a
+	## club_id might belong to the external world.
+	if is_ext_club(club_id):
+		_ensure_ext_world()
+		for c in _ext_clubs:
+			if String(c["id"]) == club_id:
+				return c
+		return {}
+	return GameState.club(club_id)
+
+
 # ------------------------------------------------------------------ world queries
 
 func find_target(uid: String) -> Dictionary:
 	## Returns {inst, club_id ("" if unattached), pool: "club"|"fa"|"prospect"|"mine"} or {}.
+	if is_ext_uid(uid):
+		_ensure_ext_world()
+		var e: Dictionary = _ext_index.get(uid, {})
+		if not e.is_empty():
+			return {"inst": e["inst"], "club_id": e["club_id"], "pool": e["pool"]}
+		# fall through: an ext-born battler may since have joined a domestic club
 	for c in GameState.world["clubs"]:
 		for inst in c["squad"]:
 			if inst["uid"] == uid:
@@ -241,7 +476,9 @@ func find_target(uid: String) -> Dictionary:
 
 
 func all_targets() -> Array:
-	## Everything on the market: other clubs' squads + free agents + prospects.
+	## Everything on the market: other clubs' squads + free agents + prospects
+	## + the whole external world (overseas leagues, regional prospect pools).
+	_ensure_ext_world()
 	var out: Array = []
 	for c in GameState.world["clubs"]:
 		if GameState.is_player_club(c["id"]):
@@ -251,6 +488,11 @@ func all_targets() -> Array:
 	for inst in GameState.world["free_agents"]:
 		out.append({"inst": inst, "club_id": "", "pool": "fa"})
 	for inst in GameState.world["prospects"]:
+		out.append({"inst": inst, "club_id": "", "pool": "prospect"})
+	for c in _ext_clubs:
+		for inst in c["squad"]:
+			out.append({"inst": inst, "club_id": c["id"], "pool": "club"})
+	for inst in _ext_prospects:
 		out.append({"inst": inst, "club_id": "", "pool": "prospect"})
 	return out
 
@@ -320,7 +562,7 @@ func importance_of(inst: Dictionary, club: Dictionary) -> float:
 func ask_price(inst: Dictionary, club_id: String) -> int:
 	if club_id == "":
 		return 0
-	var v := value_of(inst) * importance_of(inst, GameState.club(club_id))
+	var v := value_of(inst) * importance_of(inst, club_of(club_id))
 	if is_listed(String(inst["uid"])):
 		v *= LISTING_DISCOUNT   # club wants them gone — the rumour mill told you first
 	return int(round(v / 1000.0)) * 1000
@@ -646,7 +888,7 @@ func offer_hint(uid: String, pkg: Dictionary) -> String:
 	var t := find_target(uid)
 	if t.is_empty() or t["pool"] != "club":
 		return ""
-	var seller: Dictionary = GameState.club(t["club_id"])
+	var seller: Dictionary = club_of(t["club_id"])
 	var pc: Dictionary = GameState.player_club()
 	var rep_factor := 1.0 + float(int(seller["reputation"]) - int(pc["reputation"])) * 0.015
 	var base := float(ask_price(t["inst"], t["club_id"])) * rep_factor
@@ -672,8 +914,10 @@ func loan_hint(uid: String) -> String:
 	var t := find_target(uid)
 	if t.is_empty() or t["pool"] != "club":
 		return ""
-	var imp := importance_of(t["inst"], GameState.club(t["club_id"]))
-	if imp >= 1.5 or GameState.club(t["club_id"])["squad"].size() <= 8:
+	if is_ext_club(String(t["club_id"])):
+		return "Negotiators: overseas clubs will not loan battlers abroad — a permanent deal is the only route."
+	var imp := importance_of(t["inst"], club_of(t["club_id"]))
+	if imp >= 1.5 or club_of(t["club_id"])["squad"].size() <= 8:
 		return "Negotiators: a key battler — they will NOT loan them out."
 	if imp >= 1.3:
 		return "Negotiators: first-team regular — a loan needs 100% wages and a big option to buy."
@@ -720,11 +964,14 @@ func incoming_installments() -> int:
 # ------------------------------------------------------------------ knowledge / masking
 
 func knowledge_of(uid: String) -> float:
+	var k := float(knowledge.get(uid, -1.0))
+	if k >= 100.0:
+		return 100.0
 	var t := find_target(uid)
 	if not t.is_empty() and t["pool"] == "mine":
 		return 100.0
-	if knowledge.has(uid):
-		return float(knowledge[uid])
+	if k >= 0.0:
+		return k
 	if not t.is_empty() and t["inst"].has("scouted_pct"):
 		return float(t["inst"]["scouted_pct"])
 	return 0.0
@@ -821,7 +1068,23 @@ func assignment_for_target(uid: String) -> Dictionary:
 	return {}
 
 
+func assignment_eta(a: Dictionary) -> int:
+	## Estimated days (travel + fieldwork) until this target watch files its
+	## full report. -1 for focus assignments / dead targets.
+	if String(a.get("kind", "")) != "target":
+		return -1
+	var scout := _scout_by_name(String(a["scout"]))
+	var t := find_target(String(a.get("uid", "")))
+	if scout.is_empty() or t.is_empty():
+		return -1
+	var work := int(ceil((100.0 - knowledge_of(String(a["uid"]))) / scout_daily_rate(scout, region_of(t["inst"]))))
+	return int(a.get("travel_left", 0)) + maxi(0, work)
+
+
 func region_of(inst: Dictionary) -> String:
+	# External-world targets carry their region; domestic ones map by primary type.
+	if inst.has("region"):
+		return String(inst["region"])
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 	var t0 := String(sp["types"][0])
 	for r in REGIONS:
@@ -830,25 +1093,65 @@ func region_of(inst: Dictionary) -> String:
 	return "Old Capital"
 
 
+func is_domestic_region(region: String) -> bool:
+	return not (region in OVERSEAS_REGIONS)
+
+
+func travel_days(from_region: String, to_region: String) -> int:
+	## Real days in transit before a scout can work the new patch.
+	if from_region == to_region or from_region == "" or to_region == "":
+		return 0
+	if is_domestic_region(from_region) and is_domestic_region(to_region):
+		return TRAVEL_DOMESTIC
+	if not is_domestic_region(from_region) and not is_domestic_region(to_region):
+		return TRAVEL_BETWEEN_OVERSEAS
+	return TRAVEL_OVERSEAS
+
+
+func scout_location(scout: Dictionary) -> String:
+	## Where the scout physically is right now (home region until they move).
+	return String(scout_loc.get(String(scout["name"]), scout_region(scout)))
+
+
 func scout_region(scout: Dictionary) -> String:
 	## A scout's home network. Hired scouts carry it; legacy coach-scouts get a
-	## deterministic one so the region system covers everybody.
+	## deterministic DOMESTIC one so the region system covers everybody.
 	if scout.has("region"):
 		return String(scout["region"])
-	var names: Array = REGIONS.keys()
+	var names: Array = REGIONS.keys().filter(func(r): return is_domestic_region(String(r)))
 	return names[absi(String(scout["name"]).hash() + GameState.career_seed) % names.size()]
 
 
+func scout_familiarity(scout: Dictionary, region: String) -> float:
+	## Speed/accuracy multiplier for THIS scout working THIS region.
+	## Home network 1.3x; another domestic patch baseline; overseas cold 0.7x.
+	if scout_region(scout) == region:
+		return 1.3
+	if region in OVERSEAS_REGIONS:
+		return 0.7
+	return 1.0
+
+
+func scout_daily_rate(scout: Dictionary, region: String) -> float:
+	## Knowledge points gained per working day on a dedicated target watch.
+	## Even an elite scout on home turf needs ~9-10 days for a full book;
+	## a journeyman working cold overseas needs three weeks plus the boat.
+	var ja := int(scout["ratings"]["judging_ability"])
+	return (2.5 + float(ja) * 0.32) * scout_familiarity(scout, region)
+
+
 func scout_days_for(scout: Dictionary, uid: String = "") -> int:
-	var days := clampi(13 - int(scout["ratings"]["judging_ability"]) / 2, 4, 12)
+	## Estimated TOTAL days (travel + fieldwork) to take this target from
+	## current knowledge to a full report.
+	var region := scout_location(scout)
+	var know := 0.0
 	if uid != "":
 		var t := find_target(uid)
 		if not t.is_empty():
-			if region_of(t["inst"]) == scout_region(scout):
-				days = maxi(3, days - 3)   # home network: contacts everywhere
-			else:
-				days += 2                  # working cold, off their patch
-	return days
+			region = region_of(t["inst"])
+			know = knowledge_of(uid)
+	var work := int(ceil((100.0 - know) / scout_daily_rate(scout, region)))
+	return travel_days(scout_location(scout), region) + maxi(1, work)
 
 
 func assign_scout_to_target(scout_name: String, uid: String) -> String:
@@ -862,10 +1165,11 @@ func assign_scout_to_target(scout_name: String, uid: String) -> String:
 		return "Invalid scouting target."
 	if knowledge_of(uid) >= 100.0:
 		return "%s is already fully scouted." % display_name(t["inst"])
-	var days := scout_days_for(scout, uid)
+	var reg := region_of(t["inst"])
 	assignments.append({
 		"scout": scout_name, "kind": "target", "uid": uid, "focus_type": "",
-		"days_left": days, "days_total": days, "started": GameState.current_date,
+		"region": reg, "travel_left": travel_days(scout_location(scout), reg),
+		"started": GameState.current_date,
 	})
 	save_state()
 	market_updated.emit()
@@ -878,9 +1182,14 @@ func assign_scout_to_focus(scout_name: String, focus_type: String) -> String:
 		return "No such scout."
 	if not assignment_for_scout(scout_name).is_empty():
 		return "%s is already on assignment — recall them first." % scout_name
+	# Region focuses require presence: the scout travels there first.
+	var dest := ""
+	if REGIONS.has(focus_type):
+		dest = focus_type
 	assignments.append({
 		"scout": scout_name, "kind": "focus", "uid": "", "focus_type": focus_type,
-		"days_left": -1, "days_total": -1, "started": GameState.current_date,
+		"region": dest, "travel_left": travel_days(scout_location(scout), dest) if dest != "" else 0,
+		"started": GameState.current_date,
 	})
 	save_state()
 	market_updated.emit()
@@ -900,44 +1209,95 @@ func _scout_by_name(n: String) -> Dictionary:
 	return {}
 
 
-func _tick_scouting(rng: RandomNumberGenerator) -> void:
+func knowledge_stage(uid: String) -> Dictionary:
+	return stage_for(knowledge_of(uid))
+
+
+func stage_for(know: float) -> Dictionary:
+	## The knowledge stage a 0..100 value sits in: {idx, name, unlocks, min}.
+	var best := 0
+	for i in STAGES.size():
+		if know >= float(STAGES[i]["min"]):
+			best = i
+	var s: Dictionary = STAGES[best].duplicate()
+	s["idx"] = best
+	return s
+
+
+func full_report_count() -> int:
+	var n := 0
+	for uid in knowledge:
+		if float(knowledge[uid]) >= 100.0:
+			n += 1
+	return n
+
+
+func _bump_knowledge(uid: String, gain: float, scout_name: String, from_focus: bool) -> void:
+	## The single choke point every knowledge gain flows through. Fires the
+	## stage transitions: interim report at 50, full report + unlock at 100.
+	var before := knowledge_of(uid)
+	var cap := FOCUS_KNOW_CAP if from_focus else 100.0
+	if before >= cap:
+		return
+	var now := minf(cap, before + gain)
+	knowledge[uid] = now
+	if before < INTERIM_AT and now >= INTERIM_AT:
+		_generate_report(uid, scout_name, false)
+		var t := find_target(uid)
+		if not t.is_empty():
+			GameState.add_inbox_message(GameState.current_date,
+				"Interim scout report: %s (part scouted)" % display_name(t["inst"]),
+				"%s has filed a preliminary assessment of %s — move set confirmed, star ratings given as a RANGE that narrows with more time in the field. Full attributes still need a completed watch. See Transfers > Scouting." % [
+					scout_name, display_name(t["inst"])])
+	if before < 100.0 and now >= 100.0:
+		_generate_report(uid, scout_name, true)
+
+
+func _tick_scouting(_rng: RandomNumberGenerator) -> void:
 	var done: Array = []
 	for a in assignments:
+		var scout := _scout_by_name(String(a["scout"]))
+		if scout.is_empty():
+			done.append(a)   # scout left the club — assignment dies
+			continue
+		# travel first: no knowledge flows while the scout is in transit
+		if int(a.get("travel_left", 0)) > 0:
+			a["travel_left"] = int(a["travel_left"]) - 1
+			if int(a["travel_left"]) <= 0 and String(a.get("region", "")) != "":
+				scout_loc[String(scout["name"])] = String(a["region"])
+			continue
 		if a["kind"] == "target":
-			a["days_left"] = int(a["days_left"]) - 1
-			if int(a["days_left"]) <= 0:
-				var uid: String = a["uid"]
-				knowledge[uid] = 100.0
-				_generate_report(uid, a["scout"])
+			var uid: String = a["uid"]
+			var t := find_target(uid)
+			if t.is_empty() or t["pool"] == "mine":
 				done.append(a)
+				GameState.add_inbox_message(GameState.current_date,
+					"Scouting mission over: target unavailable",
+					"%s's watch has ended — the target is no longer on the market." % String(a["scout"]))
+				continue
+			var reg := region_of(t["inst"])
+			_bump_knowledge(uid, scout_daily_rate(scout, reg), String(a["scout"]), false)
+			if knowledge_of(uid) >= 100.0:
+				done.append(a)
+				GameState.add_inbox_message(GameState.current_date,
+					"Full scout report: %s" % display_name(t["inst"]),
+					"%s has completed the watch on %s. Exact attributes, genetics and final star ratings are unlocked in Transfers." % [
+						String(a["scout"]), display_name(t["inst"])])
 		else:
-			# Region/type focus: build knowledge on matching targets each day.
-			var scout := _scout_by_name(a["scout"])
-			var ja := 12 if scout.is_empty() else int(scout["ratings"]["judging_ability"])
-			var pool := all_targets().filter(func(t):
-				return knowledge_of(t["inst"]["uid"]) < 100.0 and _matches_focus(t["inst"], a["focus_type"]))
+			# Region/type focus: a broad sweep. Builds knowledge on a few
+			# matching targets a day, but can NEVER take anyone past the
+			# focus cap — depth demands a dedicated target watch.
+			var pool := all_targets().filter(func(t2):
+				return knowledge_of(t2["inst"]["uid"]) < FOCUS_KNOW_CAP and _matches_focus(t2["inst"], a["focus_type"]))
 			pool.sort_custom(func(x, y):
 				return knowledge_of(x["inst"]["uid"]) > knowledge_of(y["inst"]["uid"]))
-			for i in mini(2, pool.size()):
-				var uid2: String = pool[i]["inst"]["uid"]
-				var gain := float(ja) * (0.9 + rng.randf() * 0.6)
-				# Home-region network: knowledge flows in much faster.
-				if not scout.is_empty() and region_of(pool[i]["inst"]) == scout_region(scout):
-					gain *= 1.5
-				knowledge[uid2] = minf(100.0, knowledge_of(uid2) + gain)
-				if knowledge[uid2] >= 100.0:
-					_generate_report(uid2, a["scout"])
-					GameState.add_inbox_message(GameState.current_date,
-						"Scouting: report filed on %s" % display_name(pool[i]["inst"]),
-						"%s (focus: %s) has completed a full assessment of %s. The report is available in the Transfers > Scouting tab." % [
-							a["scout"], a["focus_type"], display_name(pool[i]["inst"])])
+			for i in mini(FOCUS_TARGETS_PER_DAY, pool.size()):
+				var inst2: Dictionary = pool[i]["inst"]
+				var gain := (1.2 + float(int(scout["ratings"]["judging_ability"])) * 0.14) \
+					* scout_familiarity(scout, region_of(inst2))
+				_bump_knowledge(String(inst2["uid"]), gain, String(a["scout"]), true)
 	for a in done:
 		assignments.erase(a)
-		var t := find_target(a["uid"])
-		var nm := "the target" if t.is_empty() else display_name(t["inst"])
-		GameState.add_inbox_message(GameState.current_date,
-			"Scout report ready: %s" % nm,
-			"%s has returned with a full report on %s. Exact attributes are now unlocked in Transfers." % [a["scout"], nm])
 
 
 func _matches_focus(inst: Dictionary, focus_type: String) -> bool:
@@ -956,7 +1316,7 @@ func _matches_focus(inst: Dictionary, focus_type: String) -> bool:
 	return focus_type in sp["types"]
 
 
-func _generate_report(uid: String, scout_name: String) -> void:
+func _generate_report(uid: String, scout_name: String, final: bool = true) -> void:
 	var t := find_target(uid)
 	if t.is_empty():
 		return
@@ -989,12 +1349,15 @@ func _generate_report(uid: String, scout_name: String) -> void:
 	var keys := ["atk", "spa", "spe", "def", "spd", "hp"]
 	var ranked := keys.duplicate()
 	ranked.sort_custom(func(a, b): return int(stats[a]) > int(stats[b]))
-	pros.append("Standout %s (%d) for its level" % [names[ranked[0]], stats[ranked[0]]])
+	# Interim reports quote the CURRENT uncertainty band, never the exact figure.
+	var sv := func(k: String) -> String:
+		return str(int(stats[k])) if final else masked_int(uid, k, int(stats[k]))
+	pros.append("Standout %s (%s) for its level" % [names[ranked[0]], sv.call(ranked[0])])
 	if int(stats[ranked[1]]) > 60:
-		pros.append("Strong secondary %s (%d)" % [names[ranked[1]], stats[ranked[1]]])
+		pros.append("Strong secondary %s (%s)" % [names[ranked[1]], sv.call(ranked[1])])
 	if int(stats["spe"]) >= int(stats[ranked[1]]):
 		pros.append("Wins the speed tie in most match-ups")
-	if iv_total(inst) >= 60:
+	if final and iv_total(inst) >= 60:
 		pros.append("Excellent underlying genetics (IV %d/90)" % iv_total(inst))
 	if float(inst["age_months"]) / 12.0 < 3.0:
 		pros.append("Young — years of development ahead")
@@ -1005,11 +1368,13 @@ func _generate_report(uid: String, scout_name: String) -> void:
 			cats[mv["category"]] = true
 	if cats.size() >= 2:
 		pros.append("Versatile move set (%s)" % ", ".join(inst["moves"]))
-	cons.append("Weak %s (%d) is exploitable" % [names[ranked[5]], stats[ranked[5]]])
+	cons.append("Weak %s (%s) is exploitable" % [names[ranked[5]], sv.call(ranked[5])])
 	if int(stats[ranked[4]]) < 45:
-		cons.append("Below-par %s (%d) too" % [names[ranked[4]], stats[ranked[4]]])
-	if iv_total(inst) < 35:
+		cons.append("Below-par %s (%s) too" % [names[ranked[4]], sv.call(ranked[4])])
+	if final and iv_total(inst) < 35:
 		cons.append("Modest genetics (IV %d/90) cap its ceiling" % iv_total(inst))
+	if not final:
+		cons.append("Genetics unread — a full watch is needed to grade the IVs")
 	if float(inst["age_months"]) / 12.0 > 8.0:
 		cons.append("Ageing — resale value will only fall")
 	if int(inst["condition"]) < 70:
@@ -1029,14 +1394,30 @@ func _generate_report(uid: String, scout_name: String) -> void:
 	else:
 		verdict = "Not recommended — below the level we need."
 
+	# Uncertainty bands: an interim report gives star RANGES, not points.
+	# Band width shrinks with knowledge and with the scout's skill; working an
+	# unfamiliar region widens the read further. Fully-scouted = exact.
+	var know := knowledge_of(uid)
+	var fam := 1.0 if scout.is_empty() else scout_familiarity(scout, region_of(inst))
+	var band := 0.0
+	if not final:
+		band = (0.5 + (100.0 - know) / 100.0 * 1.3 + float(20 - ja) * 0.04) / fam
+		verdict = "PRELIMINARY (%d%% scouted) — the bands below narrow as the watch continues. %s" % [int(know), verdict]
+
 	reports[uid] = {
 		"uid": uid, "date": GameState.current_date, "scout": scout_name,
 		"name": display_name(inst), "species": inst["species"],
 		"types": sp["types"], "level": int(inst["level"]),
 		"ability_stars": snappedf(ability, 0.5), "potential_stars": snappedf(pot, 0.5),
+		"ability_lo": snappedf(clampf(ability - band, 0.5, 5.0), 0.5),
+		"ability_hi": snappedf(clampf(ability + band, 0.5, 5.0), 0.5),
+		"potential_lo": snappedf(clampf(pot - band * 1.2, 0.5, 5.0), 0.5),
+		"potential_hi": snappedf(clampf(pot + band * 1.2, 0.5, 5.0), 0.5),
+		"stage": "full" if final else "interim", "knowledge": know,
 		"pros": pros, "cons": cons, "verdict": verdict,
 	}
-	_maybe_recommend(uid, scout_name)
+	if final:
+		_maybe_recommend(uid, scout_name)
 
 
 func _maybe_recommend(uid: String, scout_name: String) -> void:
@@ -1106,7 +1487,7 @@ func make_offer(uid: String, pkg: Dictionary) -> String:
 		return err
 	var o := _new_offer(uid, t, "buy")
 	o["package"] = _norm_package(pkg)
-	o["log"].append(_log_line("Offered %s to %s." % [describe_package(o["package"]), GameState.club(t["club_id"])["name"]]))
+	o["log"].append(_log_line("Offered %s to %s." % [describe_package(o["package"]), club_of(t["club_id"])["name"]]))
 	offers_out.append(o)
 	if is_deadline_day():
 		_respond_now(o)
@@ -1119,6 +1500,8 @@ func make_loan_offer(uid: String, wage_split: int, option_fee: int) -> String:
 	var t := find_target(uid)
 	if t.is_empty() or t["pool"] != "club":
 		return "That target cannot be taken on loan."
+	if is_ext_club(String(t["club_id"])):
+		return "Overseas clubs will not loan battlers abroad — only a permanent transfer can bring them over."
 	if not window_open():
 		return market_locked_reason()
 	if not offer_for_target(uid).is_empty():
@@ -1129,7 +1512,7 @@ func make_loan_offer(uid: String, wage_split: int, option_fee: int) -> String:
 		return "Covering %d%% of their wages breaks our wage budget (room: %s/wk)." % [wage_split, fmt_money(wage_room())]
 	var o := _new_offer(uid, t, "loan")
 	o["loan_terms"] = {"wage_split": wage_split, "option_fee": maxi(0, option_fee)}
-	o["log"].append(_log_line("Loan proposed to %s — %s." % [GameState.club(t["club_id"])["short"], describe_loan(o["loan_terms"])]))
+	o["log"].append(_log_line("Loan proposed to %s — %s." % [club_of(t["club_id"])["short"], describe_loan(o["loan_terms"])]))
 	offers_out.append(o)
 	if is_deadline_day():
 		_respond_now(o)
@@ -1186,7 +1569,7 @@ func revise_offer(offer_id: int, pkg: Dictionary) -> String:
 	var t := find_target(String(o["uid"]))
 	if t.is_empty():
 		return "Target no longer available."
-	var seller: Dictionary = GameState.club(String(o["club_id"]))
+	var seller: Dictionary = club_of(String(o["club_id"]))
 	var new_pkg := _norm_package(pkg)
 	if package_value(new_pkg, t["inst"], seller) <= package_value(o["package"], t["inst"], seller):
 		return "The revised package must improve on the last one (in their eyes)."
@@ -1379,7 +1762,7 @@ func _tick_offers_out(rng: RandomNumberGenerator) -> void:
 
 func _respond_to_package(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) -> void:
 	var inst: Dictionary = t["inst"]
-	var seller: Dictionary = GameState.club(o["club_id"])
+	var seller: Dictionary = club_of(o["club_id"])
 	var pc: Dictionary = GameState.player_club()
 	# Won't sell below a working squad.
 	if seller["squad"].size() <= 7:
@@ -1465,7 +1848,7 @@ func _build_counter_packages(o: Dictionary, inst: Dictionary, seller: Dictionary
 
 func _respond_to_loan(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) -> void:
 	var inst: Dictionary = t["inst"]
-	var seller: Dictionary = GameState.club(o["club_id"])
+	var seller: Dictionary = club_of(o["club_id"])
 	var imp := importance_of(inst, seller)
 	if imp >= 1.5 or seller["squad"].size() <= 8:
 		o["stage"] = "rejected"
@@ -1592,8 +1975,11 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 	# Move the instance to our squad.
 	match String(o["kind"]):
 		"buy":
-			var seller: Dictionary = GameState.club(o["club_id"])
-			seller["squad"].erase(inst)
+			var seller: Dictionary = club_of(o["club_id"])
+			if is_ext_club(String(o["club_id"])):
+				_remove_ext(String(inst["uid"]))
+			else:
+				seller["squad"].erase(inst)
 			seller["finances"]["balance"] = int(seller["finances"]["balance"]) + upfront
 			# Any existing sell-on clause held by a third party pays out of the seller's fee.
 			_pay_sell_on(inst, package_total(pkg), seller)
@@ -1607,7 +1993,10 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 		"fa":
 			GameState.world["free_agents"].erase(inst)
 		"prospect":
-			GameState.world["prospects"].erase(inst)
+			if is_ext_uid(String(inst["uid"])):
+				_remove_ext(String(inst["uid"]))
+			else:
+				GameState.world["prospects"].erase(inst)
 	inst.erase("scouted_pct")
 	inst["contract"]["salary"] = int(con.get("wage", 0))
 	inst["contract"]["expiry"] = "%d-06-30" % (int(GameState.current_date.substr(0, 4)) + clampi(int(con.get("years", 3)), 1, 4))
@@ -1619,7 +2008,7 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 	shortlist.erase(String(inst["uid"]))
 	o["stage"] = "completed"
 	o["log"].append(_log_line("Deal done. %s joins %s." % [o["name"], pc["short"]]))
-	var from_name: String = "Free agency" if o["club_id"] == "" else String(GameState.club(o["club_id"])["name"])
+	var from_name: String = "Free agency" if o["club_id"] == "" else String(club_of(o["club_id"])["name"])
 	var terms := describe_package(pkg) + " · " + describe_contract(con)
 	_log_deal(o["name"], from_name, pc["name"], package_total(pkg), int(con.get("wage", 0)),
 		"buy" if o["kind"] == "buy" else "fa_in", terms)
@@ -1667,8 +2056,9 @@ func _pay_sell_on(inst: Dictionary, fee: int, seller: Dictionary) -> void:
 				"Our %d%% sell-on clause on %s has paid out %s from their %s move." % [
 					int(so.get("pct", 0)), display_name(inst), fmt_money(cut), fmt_money(fee)])
 		else:
-			var owner: Dictionary = GameState.club(owner_id)
-			owner["finances"]["balance"] = int(owner["finances"]["balance"]) + cut
+			var owner: Dictionary = club_of(owner_id)
+			if not owner.is_empty():
+				owner["finances"]["balance"] = int(owner["finances"]["balance"]) + cut
 	inst.erase("sell_on")
 
 
@@ -1739,7 +2129,7 @@ func _tick_payments() -> void:
 	for p in due:
 		payments.erase(p)
 		var amount := int(p["amount"])
-		var other: Dictionary = GameState.club(String(p["club_id"])) if String(p["club_id"]) != "" else {}
+		var other: Dictionary = club_of(String(p["club_id"])) if String(p["club_id"]) != "" else {}
 		if String(p["dir"]) == "out":
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - amount
 			_adjust_player_budget(-amount)
@@ -1794,7 +2184,7 @@ func _tick_rivals(rng: RandomNumberGenerator) -> void:
 
 func _spawn_rival(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) -> void:
 	var inst: Dictionary = t["inst"]
-	var seller: Dictionary = GameState.club(String(o["club_id"]))
+	var seller: Dictionary = club_of(String(o["club_id"]))
 	var val := ask_price(inst, String(o["club_id"]))
 	var rivals: Array = GameState.world["clubs"].filter(func(c):
 		return not GameState.is_player_club(c["id"]) and String(c["id"]) != String(o["club_id"]) \
@@ -1819,7 +2209,7 @@ func _spawn_rival(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) -> v
 
 func _resolve_rival(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) -> void:
 	var inst: Dictionary = t["inst"]
-	var seller: Dictionary = GameState.club(String(o["club_id"]))
+	var seller: Dictionary = club_of(String(o["club_id"]))
 	var rv: Dictionary = o["rival"]
 	var rival_club: Dictionary = GameState.club(String(rv["club_id"]))
 	var our_pv := package_value(o["package"], inst, seller)
@@ -1844,10 +2234,13 @@ func _resolve_rival(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) ->
 
 func _hijack_deal(o: Dictionary, t: Dictionary, rv: Dictionary) -> void:
 	var inst: Dictionary = t["inst"]
-	var seller: Dictionary = GameState.club(String(o["club_id"]))
+	var seller: Dictionary = club_of(String(o["club_id"]))
 	var buyer: Dictionary = GameState.club(String(rv["club_id"]))
 	var fee := mini(int(rv["value"]), int(buyer["finances"]["balance"]))
-	seller["squad"].erase(inst)
+	if is_ext_club(String(o["club_id"])):
+		_remove_ext(String(inst["uid"]))   # poached out of the external world for good
+	else:
+		seller["squad"].erase(inst)
 	buyer["squad"].append(inst)
 	buyer["finances"]["balance"] = int(buyer["finances"]["balance"]) - fee
 	seller["finances"]["balance"] = int(seller["finances"]["balance"]) + fee
@@ -2363,7 +2756,7 @@ func _tick_agents(rng: RandomNumberGenerator) -> void:
 				return false
 			if not offer_for_target(t["inst"]["uid"]).is_empty():
 				return false
-			var c: Dictionary = GameState.club(t["club_id"])
+			var c: Dictionary = club_of(t["club_id"])
 			return c["squad"].size() > 8 and importance_of(t["inst"], c) < 1.35)
 		pool = pool.filter(func(t): return ask_price(t["inst"], t["club_id"]) <= int(float(spendable_budget()) * 1.6))
 		if pool.is_empty():
@@ -2377,7 +2770,7 @@ func _tick_agents(rng: RandomNumberGenerator) -> void:
 			"\"He has told %s he wants a new challenge. They will not stand in his way at the right price.\"",
 			"\"The relationship with %s has run its course. You will not get better access than this.\"",
 		]
-		var pitch: String = String(pitches[rng.randi() % pitches.size()]) % String(GameState.club(t["club_id"])["short"])
+		var pitch: String = String(pitches[rng.randi() % pitches.size()]) % String(club_of(t["club_id"])["short"])
 		agent_offers.push_front({
 			"id": _next_id, "uid": uid, "kind": "club", "date": GameState.current_date,
 			"expires": _offer_expiry(7), "ask": guide, "pitch": pitch, "status": "open",
@@ -2386,10 +2779,10 @@ func _tick_agents(rng: RandomNumberGenerator) -> void:
 		var sl := shortlisted(uid)
 		GameState.add_inbox_message(GameState.current_date,
 			"%sAgent offer: %s available from %s" % ["SHORTLIST ALERT — " if sl else "",
-				display_name(inst), String(GameState.club(t["club_id"])["short"])],
+				display_name(inst), String(club_of(t["club_id"])["short"])],
 			"%s's agent has offered him to %s. %s A deal near %s should do it while the offer stands (until %s) — the agent's pressure softens %s at the table. See Transfers > Recruitment." % [
 				display_name(inst), pc["name"], pitch, fmt_money(guide),
-				Season.pretty_date(_offer_expiry(7)), String(GameState.club(t["club_id"])["short"])])
+				Season.pretty_date(_offer_expiry(7)), String(club_of(t["club_id"])["short"])])
 	else:
 		var fas: Array = GameState.world["free_agents"].filter(func(i):
 			return agent_offer_for(String(i["uid"])).is_empty() and offer_for_target(String(i["uid"])).is_empty())
@@ -2634,8 +3027,9 @@ func scout_market() -> Array:
 		var rng := RandomNumberGenerator.new()
 		rng.seed = GameState.career_seed ^ mkey.hash()
 		var regions: Array = REGIONS.keys()
+		var offset := int(rng.randi() % regions.size())
 		var used := {}
-		for i in 5:
+		for i in 6:
 			var nm := ""
 			for attempt in 20:
 				nm = "%s %s" % [SCOUT_FIRST[rng.randi() % SCOUT_FIRST.size()], SCOUT_LAST[rng.randi() % SCOUT_LAST.size()]]
@@ -2644,9 +3038,11 @@ func scout_market() -> Array:
 			used[nm] = true
 			var ja := 8 + int(rng.randi() % 12)
 			var jp := 6 + int(rng.randi() % 14)
+			var region := String(regions[(i + offset) % regions.size()])
 			var wage := int(round(float((ja * 2 + jp) * 13 + 80 + int(rng.randi() % 90)) / 10.0)) * 10
-			scout_pool.append({"name": nm, "ja": ja, "jp": jp,
-				"region": String(regions[i % regions.size()]), "wage": wage})
+			if region in OVERSEAS_REGIONS:
+				wage += 60   # island natives charge a premium — they unlock a whole market
+			scout_pool.append({"name": nm, "ja": ja, "jp": jp, "region": region, "wage": wage})
 		save_state()
 	return scout_pool.filter(func(s): return _scout_by_name(String(s["name"])).is_empty())
 
@@ -2682,6 +3078,7 @@ func fire_scout(scout_name: String) -> String:
 	for s in pc["staff"]:
 		if String(s["name"]) == scout_name and bool(s.get("hired", false)):
 			recall_scout(scout_name)
+			scout_loc.erase(scout_name)
 			var severance := int(s.get("wage", 0)) * 4
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - severance
 			pc["staff"].erase(s)
@@ -2795,7 +3192,7 @@ func _dof_progress_deals() -> void:
 				if take != "":
 					if accept_package(int(o["id"]), take) == "":
 						_dof_note("Accepted %s's proposal for %s (%s)." % [
-							String(GameState.club(String(o["club_id"]))["short"]), String(o["name"]),
+							String(club_of(String(o["club_id"]))["short"]), String(o["name"]),
 							describe_package(o["package"])])
 				else:
 					withdraw_offer(int(o["id"]))
@@ -2832,7 +3229,7 @@ func _dof_open_deal(_rng: RandomNumberGenerator) -> void:
 				"inst_years": 2, "sell_on": 0}
 			err = make_offer(uid, pkg)
 			opened = "Opened talks with %s for %s — %s." % [
-				String(GameState.club(String(t["club_id"]))["short"]), display_name(t["inst"]), describe_package(_norm_package(pkg))]
+				String(club_of(String(t["club_id"]))["short"]), display_name(t["inst"]), describe_package(_norm_package(pkg))]
 		else:
 			if t["pool"] == "prospect" and not window_open():
 				continue
