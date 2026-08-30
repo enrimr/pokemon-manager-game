@@ -1,1 +1,31 @@
-{"piece":"squad","fm_reference":"","status":"pending","round":0,"verdict":null,"biggest_gap":null,"history":[],"updated":"2026-08-29 22:45"}
+{
+ "piece": "squad",
+ "fm_reference": "FM24 Squad screen + Player Profile",
+ "status": "capped",
+ "round": 4,
+ "verdict": "fm wins",
+ "biggest_gap": "No selection/availability layer on the squad table: FM24's squad screen leads every row with matchday context — who is in the picked lineup, positional/role fit, and availability icons (injured, suspended, exhausted, unhappy) — so the table drives the weekly 'who battles Saturday' decision. Game A's table shows no starting-six membership, no availability flag beyond a raw condition %, and its Status column only covers transfer state; picking a team happens on a disconnected Match screen. Add a 'Picked' / lineup-slot column plus availability icons (low condition/fitness thresholds, status ailments) to the squad table, linked to the matchday lineup.",
+ "history": [
+  {
+   "round": 1,
+   "winner": "fm",
+   "gap": "Squad table and profile are read-only info displays with no player actions (contract renewal, transfer-list, release, training focus), while FM24's equivalents are action hubs via context menus and profile buttons."
+  },
+  {
+   "round": 2,
+   "winner": "fm",
+   "gap": "No historical dimension anywhere: profile and table show only current-season snapshots; FM24's profile has career history — season-by-season stats, transfer/contract history, attribute progression — that makes a player a trajectory rather than a snapshot."
+  },
+  {
+   "round": 3,
+   "winner": "fm",
+   "gap": "No at-a-glance ability/potential rating layer (FM's coach-report stars) on the squad table or profile header — judging who to keep, sell or develop requires parsing raw stats and a buried IV%."
+  },
+  {
+   "round": 4,
+   "winner": "fm",
+   "gap": "No selection/availability layer on the squad table (starting-six membership, availability/status icons, lineup link) — the one FM squad-screen job the screen still cannot do."
+  }
+ ],
+ "updated": "2026-08-30 01:36"
+}

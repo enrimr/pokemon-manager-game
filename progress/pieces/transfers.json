@@ -1,1 +1,26 @@
-{"piece":"transfers","fm_reference":"","status":"pending","round":0,"verdict":null,"biggest_gap":null,"history":[],"updated":"2026-08-29 22:45"}
+{
+ "piece": "transfers",
+ "fm_reference": "FM24 Transfer Centre + Scouting Hub",
+ "status": "passed",
+ "round": 3,
+ "verdict": "ours wins",
+ "biggest_gap": null,
+ "history": [
+  {
+   "round": 1,
+   "winner": "fm",
+   "gap": "One-dimensional negotiations: single-scalar fee + wage spinboxes; no installments, sell-on clauses, loans, contract length or bonuses — the core of FM's deal-structuring loop is absent."
+  },
+  {
+   "round": 2,
+   "winner": "fm",
+   "gap": "No transfer windows or deadline day: the market runs uniformly all year with no time pressure, no rival competition for targets, and no end-of-window drama — the emotional core of FM's Transfer Centre is missing."
+  },
+  {
+   "round": 3,
+   "winner": "ours",
+   "gap": null
+  }
+ ],
+ "updated": "2026-08-30 02:19"
+}

@@ -101,7 +101,9 @@ func step_turn(action_a: Variant = null, action_b: Variant = null) -> Array:
 		return []
 	turn += 1
 	var start := events.size()
-	_emit({"t": "turn_start", "turn": turn})
+	_emit({"t": "turn_start", "turn": turn,
+		"hp_a": _team_hp_frac(0), "hp_b": _team_hp_frac(1),
+		"active_a": active_battler(0)["name"], "active_b": active_battler(1)["name"]})
 	var acts: Array = [
 		action_a if action_a != null else ai_choose_action(0),
 		action_b if action_b != null else ai_choose_action(1),
@@ -162,6 +164,118 @@ func ai_choose_action(side: int) -> Dictionary:
 		if best_bench >= 0:
 			return {"type": "switch", "index": best_bench}
 	return {"type": "move", "index": best_idx}
+
+
+## Touchline-instruction-aware action chooser (used by the match screen).
+## opts: {"aggression": "balanced"|"attacking"|"cautious",
+##        "switching":  "normal"|"stay"|"eager"}
+## Additive API — everything else keeps using ai_choose_action().
+func choose_action_policy(side: int, opts: Dictionary = {}) -> Dictionary:
+	var aggression: String = str(opts.get("aggression", "balanced"))
+	var switching: String = str(opts.get("switching", "normal"))
+	var me: Dictionary = active_battler(side)
+	var foe: Dictionary = active_battler(1 - side)
+	var best_idx := 0
+	var best_score := -1.0
+	for i in me["moves"].size():
+		var mname: String = me["moves"][i]
+		if int(me["pp"].get(mname, 0)) <= 0:
+			continue
+		var score := _move_score(me, foe, mname)
+		var mv: Dictionary = DataStore.move(mname)
+		if not mv.is_empty() and mv["category"] == "status":
+			if aggression == "attacking":
+				score *= 0.35
+			elif aggression == "cautious":
+				score *= 1.5
+		if score > best_score:
+			best_score = score
+			best_idx = i
+	if switching == "stay" or aggression == "attacking":
+		return {"type": "move", "index": best_idx}
+	# Switch consideration, threshold shaped by instructions.
+	var my_threat := _matchup_threat(me, foe)
+	var foe_threat := _matchup_threat(foe, me)
+	var threat_ratio := 2.0
+	var switch_prob := 0.6
+	if aggression == "cautious":
+		threat_ratio = 1.4
+		switch_prob = 0.85
+	if switching == "eager":
+		threat_ratio = minf(threat_ratio, 1.2)
+		switch_prob = 0.95
+	if (my_threat < 12.0 or foe_threat > threat_ratio * maxf(my_threat, 1.0)) and rng.randf() < switch_prob:
+		var best_bench := -1
+		var best_bench_score := _matchup_value(me, foe)
+		if switching == "eager":
+			best_bench_score -= 0.4
+		for i in teams[side].size():
+			if i == active[side] or int(teams[side][i]["hp"]) <= 0:
+				continue
+			var v := _matchup_value(teams[side][i], foe)
+			if v > best_bench_score + 0.5:
+				best_bench_score = v
+				best_bench = i
+		if best_bench >= 0:
+			return {"type": "switch", "index": best_bench}
+	return {"type": "move", "index": best_idx}
+
+
+## Expected-damage preview for UIs (move tooltips in full-control mode).
+## Returns {"eff": float, "stab": bool, "est_frac": float(0..1 of target max hp)}.
+func preview_move(side: int, move_idx: int) -> Dictionary:
+	var me: Dictionary = active_battler(side)
+	var foe: Dictionary = active_battler(1 - side)
+	if move_idx < 0 or move_idx >= me["moves"].size():
+		return {}
+	var mname: String = me["moves"][move_idx]
+	var mv: Dictionary = DataStore.move(mname)
+	if mv.is_empty():
+		return {}
+	var eff: float = DataStore.effectiveness(mv["type"], foe["types"])
+	var stab: bool = me["types"].has(mv["type"])
+	var est := 0.0
+	if mv["category"] != "status":
+		var fixed := _fixed_damage(mv.get("effects", []), me)
+		if fixed > 0:
+			est = float(fixed) if eff > 0.0 else 0.0
+		else:
+			var is_phys: bool = mv["category"] == "phys"
+			var a := _eff_stat(me, "atk" if is_phys else "spa")
+			var d := _eff_stat(foe, "def" if is_phys else "spd")
+			var base: float = (2.0 * float(me["level"]) / 5.0 + 2.0) * float(mv["power"]) * a / maxf(d, 1.0) / 50.0 + 2.0
+			est = base * (1.5 if stab else 1.0) * eff * 0.925
+	return {"eff": eff, "stab": stab, "est_frac": clampf(est / maxf(float(foe["max_hp"]), 1.0), 0.0, 1.0)}
+
+
+# ------------------------------------------------------------------ matchday boot hook
+# The "match" piece (owner of this file) uses the documented GameState hook:
+# auto_sim_player_matches = false + player_match_due. Installing it from the
+# engine's static init guarantees it is active from the very first Continue
+# press, before the Match screen has ever been opened. Headless runs
+# (smoke test, sim_check) are left untouched.
+
+static func _static_init() -> void:
+	if Engine.is_editor_hint():
+		return
+	Callable(BattleEngine, "_install_matchday_hook").call_deferred()
+
+
+static func _install_matchday_hook() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var ml := Engine.get_main_loop()
+	if ml == null or not (ml is SceneTree):
+		return
+	var root: Node = (ml as SceneTree).root
+	if root == null or root.has_node("MatchDirector") or root.get_node_or_null("GameState") == null:
+		return
+	var script: GDScript = load("res://screens/match/match_director.gd")
+	if script == null:
+		return
+	var director: Node = script.new()
+	director.name = "MatchDirector"
+	root.add_child(director)
 
 
 # ------------------------------------------------------------------ internals
@@ -340,13 +454,17 @@ func _do_move(side: int, move_idx: int) -> void:
 		return
 	dmg = maxi(1, dmg)
 	_apply_damage(foe_side, foe, dmg, {"t": "damage", "side": foe_side, "pokemon": foe["name"],
-		"effectiveness": eff, "crit": crit, "move": mname})
+		"effectiveness": eff, "crit": crit, "move": mname, "by": me["name"], "by_side": side})
 	if crit:
 		_hook(side, "A critical hit!")
 	if eff > 1.0:
 		_hook(side, "It's super effective!")
 	elif eff < 1.0:
 		_hook(side, "It's not very effective...")
+	if dmg >= int(foe["max_hp"] * 0.45):
+		_hook(side, "%s is rocked by the sheer force of that %s!" % [foe["name"], mname])
+	elif int(foe["hp"]) > 0 and int(foe["hp"]) <= int(foe["max_hp"] * 0.15):
+		_hook(foe_side, "%s is hanging on by a thread!" % foe["name"])
 
 	# Secondary effects, recoil, drain
 	for f in fx:
@@ -437,6 +555,7 @@ func _apply_status(side: int, b: Dictionary, status: String) -> void:
 
 
 func _apply_damage(side: int, b: Dictionary, dmg: int, event: Dictionary) -> void:
+	event["hp_before"] = int(b["hp"])
 	b["hp"] = maxi(0, int(b["hp"]) - dmg)
 	event["amount"] = dmg
 	event["hp_left"] = b["hp"]

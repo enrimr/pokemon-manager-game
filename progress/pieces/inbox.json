@@ -1,1 +1,31 @@
-{"piece":"inbox","fm_reference":"","status":"pending","round":0,"verdict":null,"biggest_gap":null,"history":[],"updated":"2026-08-29 22:45"}
+{
+ "piece": "inbox",
+ "fm_reference": "FM24 Inbox + Board/Finances",
+ "status": "capped",
+ "round": 4,
+ "verdict": "fm wins",
+ "biggest_gap": "The inbox has no people/media layer: every message is club operations (match reports, cup draws, scout files, offers, money). FM24's inbox is the game's narrative heart because people talk to you through it — player unhappiness and praise, injury news, milestones, monthly awards, press reaction — and many of those items carry a response choice. Game A's operational spine is now verifiably real (offers move money and squad members, the economy debits payroll and credits gates, board grants mutate live budgets), but the world is socially dead. Fix: generate person-driven mail from data the sim already produces — battler milestones (KO counts, ratings streaks from the re-simmed reports), morale/wage complaints keyed to contract and form, monthly league awards from the table — with at least one message type offering a reply that changes something (e.g. promise a new contract, which the transfers/contract system then holds you to).",
+ "history": [
+  {
+   "round": 1,
+   "winner": "fm",
+   "gap": "Inbox transfer offers (and all messages) have no game-state-changing actions; the inbox-generated offer stream is disconnected from the transfers market, making its 'decision required' items hollow."
+  },
+  {
+   "round": 2,
+   "winner": "fm",
+   "gap": "Board & Finances tab is display-only — no board requests whose outcomes mutate real budgets, and no income/expenditure ledger; the inbox decision loop is now real (verified live sale), so the board half is what loses to FM."
+  },
+  {
+   "round": 3,
+   "winner": "fm",
+   "gap": "No operating cash flow: wages never debited and matches earn nothing, so the balance is frozen outside transfers/board grants and the Income & Expenditure ledger stays empty — add monthly payroll and matchday/prize income entries to the existing ledger."
+  },
+  {
+   "round": 4,
+   "winner": "fm",
+   "gap": "No people/media layer in the inbox — the operating economy, board requests and offer decisions are all verifiably live now, but every message is operational; add person-driven mail (milestones, morale, awards, injuries) with at least one respondable message type."
+  }
+ ],
+ "updated": "2026-08-30 02:10"
+}

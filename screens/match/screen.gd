@@ -1,45 +1,118 @@
 extends Control
-## Match screen STUB — owned by the "match" piece (which also owns
-## res://shared/sim/battle_engine.gd). Will become the live match/replay UI
-## driven by BattleEngine.step_turn() and the event log.
+## Match screen — the player match-day flow. Phases:
+##   IDLE (no match due)  ->  PRE (scout + lineup)  ->  LIVE (best-of-3
+##   replayed turn-by-turn with touchline control)  ->  POST (report).
+## Match state lives in MatchRunner (static) so the shell can freely
+## re-instance this screen without losing a match in progress.
+
+const MatchRunner := preload("res://screens/match/match_runner.gd")
+const IdleView := preload("res://screens/match/idle_view.gd")
+const PrematchView := preload("res://screens/match/prematch_view.gd")
+const LiveView := preload("res://screens/match/live_view.gd")
+const PostmatchView := preload("res://screens/match/postmatch_view.gd")
 
 
 func _ready() -> void:
-	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_FULL_RECT)
-	box.add_theme_constant_override("separation", 8)
-	add_child(box)
+	_maybe_setup_demo()
+	_render()
 
-	var title := Label.new()
-	title.text = "Match"
-	title.add_theme_font_size_override("font_size", 26)
-	title.add_theme_color_override("font_color", Color.WHITE)
-	box.add_child(title)
 
-	var hint := Label.new()
-	hint.text = "Stub — the match piece will build the live battle viewer on BattleEngine's step API."
-	hint.add_theme_color_override("font_color", Color("8b91a8"))
-	box.add_child(hint)
-	box.add_child(HSeparator.new())
+func _render() -> void:
+	for c in get_children():
+		c.queue_free()
 
-	var fx: Dictionary = GameState.next_player_fixture()
-	var info := Label.new()
-	if fx.is_empty():
-		info.text = "No upcoming fixture."
+	var runner = MatchRunner.active
+	if runner != null and runner.fixture.get("played", false) and not runner.recorded \
+			and not runner.exhibition:
+		# Fixture got resolved elsewhere (stale runner) — drop it.
+		MatchRunner.clear()
+		runner = null
+	if runner == null:
+		var f: Dictionary = MatchRunner.pending_fixture()
+		if not f.is_empty():
+			runner = MatchRunner.begin(f)
+	if runner == null:
+		add_child(IdleView.new())
+		return
+
+	match runner.phase:
+		MatchRunner.Phase.PRE:
+			var pre: Control = PrematchView.new()
+			pre.setup(runner)
+			pre.start_live.connect(func():
+				runner.confirm_lineup()
+				_render())
+			pre.instant_result.connect(func():
+				runner.instant_result()
+				_render())
+			add_child(pre)
+		MatchRunner.Phase.LIVE:
+			var live: Control = LiveView.new()
+			live.setup(runner)
+			live.request_post.connect(_render)
+			add_child(live)
+		MatchRunner.Phase.POST:
+			var post: Control = PostmatchView.new()
+			post.setup(runner)
+			post.done.connect(_finish)
+			add_child(post)
+
+
+func _finish() -> void:
+	MatchRunner.clear()
+	var shell := _find_shell()
+	if shell != null and shell.screens.has("inbox"):
+		shell.navigate_to("inbox")
 	else:
-		var home: Dictionary = GameState.club(fx["home"])
-		var away: Dictionary = GameState.club(fx["away"])
-		info.text = "Next fixture: %s vs %s  ·  %s  ·  %s round %d" % [
-			home["name"], away["name"], Season.pretty_date(fx["date"]), fx["comp"], fx["round"]]
-	box.add_child(info)
+		_render()
 
-	var last := Label.new()
-	var played := GameState.player_fixtures().filter(func(f): return f["played"])
-	if played.is_empty():
-		last.text = "No matches played yet."
-	else:
-		var f: Dictionary = played.back()
-		last.text = "Last result: %s %d - %d %s" % [
-			GameState.club(f["home"])["name"], f["score_home"],
-			f["score_away"], GameState.club(f["away"])["name"]]
-	box.add_child(last)
+
+func _find_shell() -> Node:
+	var n: Node = get_parent()
+	while n != null:
+		if n.has_method("navigate_to") and "screens" in n:
+			return n
+		n = n.get_parent()
+	return null
+
+
+# ------------------------------------------------------------------ demo hook
+# For screenshot/QA runs only: `--match-demo=pre|live|post` fabricates an
+# exhibition match against the next fixture opponent. Never writes results.
+
+func _maybe_setup_demo() -> void:
+	var kind := ""
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--match-demo="):
+			kind = a.substr(13)
+	if kind == "" or MatchRunner.active != null:
+		return
+	var f: Dictionary = GameState.next_player_fixture()
+	if f.is_empty():
+		return
+	var runner = MatchRunner.begin(f)
+	runner.exhibition = true
+	match kind:
+		"live":
+			runner.confirm_lineup()
+			for i in 140:
+				var e: Dictionary = runner.consume_next()
+				if e.is_empty():
+					break
+		"input":
+			# Exercise touchline policies, then full control (await-input UI).
+			runner.confirm_lineup()
+			runner.set_policy("aggression", "attacking")
+			runner.set_policy("switching", "eager")
+			for i in 30:
+				if runner.consume_next().is_empty():
+					break
+			runner.set_policy("aggression", "balanced")
+			runner.set_policy("full_control", true)
+			for i in 200:
+				if runner.consume_next().is_empty():
+					break
+		"post":
+			runner.instant_result()
+		_:
+			pass  # "pre" — stay in PRE phase

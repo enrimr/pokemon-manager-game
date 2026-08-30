@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://compnavcheck1"]
+
+[ext_resource type="Script" path="res://screens/competition/nav_check.gd" id="1"]
+
+[node name="NavCheck" type="Node"]
+script = ExtResource("1")

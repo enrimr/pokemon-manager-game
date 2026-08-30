@@ -1,1 +1,1 @@
-{"phase":"Foundation","note":"Foundation skeleton complete: data layer (151 mons/136 moves/16-club world), battle engine, season sim, shell + 7 stub screens, smoke test and screenshot harness both verified green.","updated":"2026-08-29 23:35"}
+{"phase":"Wave 1 — Build & Blind Judging","note":"2/8 pieces passed (shell, tactics). NEW USER REQUIREMENTS queued for after Wave 1: playable manual combat (choose moves/switches/items each turn) + full items system (held items, battle consumables, shop/economy).","updated":"2026-08-30 02:20"}

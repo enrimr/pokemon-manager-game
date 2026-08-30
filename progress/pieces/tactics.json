@@ -1,1 +1,21 @@
-{"piece":"tactics","fm_reference":"","status":"pending","round":0,"verdict":null,"biggest_gap":null,"history":[],"updated":"2026-08-29 22:45"}
+{
+ "piece": "tactics",
+ "fm_reference": "FM24 Tactics screen (pitch/formation view, role suitability, team instructions, tactic presets)",
+ "status": "passed",
+ "round": 2,
+ "verdict": "ours wins",
+ "biggest_gap": null,
+ "history": [
+  {
+   "round": 1,
+   "winner": "fm",
+   "gap": "Tactic state is published to GameState.world.meta.tactics but never consumed: Season.pick_team and match_runner.default_six ignore it and no engine code reads the instructions, so the entire screen has no effect on match outcomes."
+  },
+  {
+   "round": 2,
+   "winner": "ours",
+   "gap": null
+  }
+ ],
+ "updated": "2026-08-30 00:59"
+}
