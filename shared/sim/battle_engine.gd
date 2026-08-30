@@ -1655,7 +1655,8 @@ func _end_of_turn_b(side: int, b: Dictionary) -> void:
 		var tick := maxi(1, int(b["max_hp"] / 12.0))
 		b["hp"] = maxi(0, int(b["hp"]) - tick)
 		_emit({"t": "status_tick", "side": side, "pokemon": b["name"],
-			"status": b["status"], "amount": tick, "hp_left": b["hp"]})
+			"status": b["status"], "amount": tick, "hp_left": b["hp"],
+			"hp_before": int(b["hp"]) + tick, "max_hp": b["max_hp"]})
 		if int(b["hp"]) <= 0:
 			_emit({"t": "faint", "side": side, "pokemon": b["name"]})
 			_hook(side, "%s fainted!" % b["name"])

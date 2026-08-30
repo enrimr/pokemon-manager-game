@@ -728,7 +728,8 @@
    "Dig",
    "Bone Club",
    "Quick Attack",
-   "Harden"
+   "Harden",
+   "Sandstorm"
   ],
   "ability": "sand_veil"
  },
@@ -754,7 +755,8 @@
    "Sand Attack",
    "Bone Club",
    "Body Slam",
-   "Harden"
+   "Harden",
+   "Sandstorm"
   ],
   "ability": "sand_veil"
  },
@@ -992,7 +994,8 @@
    "Flame Wheel",
    "Fire Punch",
    "Tackle",
-   "Leer"
+   "Leer",
+   "Sunny Day"
   ],
   "ability": "flash_fire"
  },
@@ -1018,9 +1021,10 @@
    "Fire Spin",
    "Fire Blast",
    "Quick Attack",
-   "Agility"
+   "Agility",
+   "Sunny Day"
   ],
-  "ability": "flash_fire"
+  "ability": "drought"
  },
  {
   "id": 39,
@@ -1155,7 +1159,8 @@
    "Smog",
    "Poison Sting",
    "Quick Attack",
-   "Growl"
+   "Growl",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -1184,7 +1189,8 @@
    "Acid",
    "Smog",
    "Quick Attack",
-   "Light Screen"
+   "Light Screen",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -1213,7 +1219,8 @@
    "Toxic",
    "Sludge",
    "Quick Attack",
-   "Growl"
+   "Growl",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -1355,7 +1362,8 @@
    "Sand Attack",
    "Dig",
    "Slash",
-   "Double Team"
+   "Double Team",
+   "Sandstorm"
   ],
   "ability": "sand_veil"
  },
@@ -1381,7 +1389,8 @@
    "Sand Attack",
    "Earthquake",
    "Quick Attack",
-   "Swords Dance"
+   "Swords Dance",
+   "Sandstorm"
   ],
   "ability": "sand_veil"
  },
@@ -1483,7 +1492,8 @@
    "Bubble Beam",
    "Waterfall",
    "Quick Attack",
-   "Reflect"
+   "Reflect",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -1561,7 +1571,8 @@
    "Fire Spin",
    "Ember",
    "Headbutt",
-   "Reflect"
+   "Reflect",
+   "Sunny Day"
   ],
   "ability": "intimidate"
  },
@@ -1587,7 +1598,8 @@
    "Fire Spin",
    "Fire Blast",
    "Headbutt",
-   "Reflect"
+   "Reflect",
+   "Sunny Day"
   ],
   "ability": "intimidate"
  },
@@ -1639,7 +1651,8 @@
    "Surf",
    "Waterfall",
    "Tackle",
-   "Agility"
+   "Agility",
+   "Rain Dance"
   ],
   "ability": "water_absorb"
  },
@@ -1668,7 +1681,8 @@
    "Karate Chop",
    "Submission",
    "Body Slam",
-   "Swords Dance"
+   "Swords Dance",
+   "Rain Dance"
   ],
   "ability": "water_absorb"
  },
@@ -1851,7 +1865,8 @@
    "Toxic",
    "Poison Sting",
    "Slash",
-   "Agility"
+   "Agility",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -1880,7 +1895,8 @@
    "Sludge",
    "Acid",
    "Quick Attack",
-   "Harden"
+   "Harden",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -1909,7 +1925,8 @@
    "Smog",
    "Poison Sting",
    "Headbutt",
-   "Tail Whip"
+   "Tail Whip",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -1995,7 +2012,8 @@
    "Earthquake",
    "Sand Attack",
    "Quick Attack",
-   "Double Team"
+   "Double Team",
+   "Sandstorm"
   ],
   "ability": "sturdy"
  },
@@ -2023,7 +2041,8 @@
    "Earthquake",
    "Sand Attack",
    "Body Slam",
-   "Growl"
+   "Growl",
+   "Sandstorm"
   ],
   "ability": "sturdy"
  },
@@ -2051,7 +2070,8 @@
    "Bone Club",
    "Sand Attack",
    "Body Slam",
-   "Focus Energy"
+   "Focus Energy",
+   "Sandstorm"
   ],
   "ability": "sturdy"
  },
@@ -2077,7 +2097,8 @@
    "Ember",
    "Fire Punch",
    "Tackle",
-   "Double Team"
+   "Double Team",
+   "Sunny Day"
   ],
   "ability": "flash_fire"
  },
@@ -2103,7 +2124,8 @@
    "Fire Punch",
    "Flamethrower",
    "Headbutt",
-   "Double Team"
+   "Double Team",
+   "Sunny Day"
   ],
   "ability": "flash_fire"
  },
@@ -2572,7 +2594,8 @@
    "Bone Club",
    "Earthquake",
    "Slash",
-   "Tail Whip"
+   "Tail Whip",
+   "Sandstorm"
   ],
   "ability": "sturdy"
  },
@@ -2757,7 +2780,8 @@
    "Psybeam",
    "Confusion",
    "Quick Attack",
-   "Reflect"
+   "Reflect",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -2785,7 +2809,8 @@
    "Confusion",
    "Psybeam",
    "Agility",
-   "Tackle"
+   "Tackle",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -2811,7 +2836,8 @@
    "Sand Attack",
    "Dig",
    "Slash",
-   "Harden"
+   "Harden",
+   "Sandstorm"
   ],
   "ability": "rock_head"
  },
@@ -2837,7 +2863,8 @@
    "Earthquake",
    "Dig",
    "Slash",
-   "Double Team"
+   "Double Team",
+   "Sandstorm"
   ],
   "ability": "rock_head"
  },
@@ -2994,7 +3021,8 @@
    "Rock Throw",
    "Rock Slide",
    "Slash",
-   "Tail Whip"
+   "Tail Whip",
+   "Sandstorm"
   ],
   "ability": "rock_head"
  },
@@ -3022,7 +3050,8 @@
    "Rock Slide",
    "Rock Throw",
    "Tackle",
-   "Light Screen"
+   "Light Screen",
+   "Sandstorm"
   ],
   "ability": "rock_head"
  },
@@ -3073,7 +3102,8 @@
    "Razor Leaf",
    "Petal Dance",
    "Swift",
-   "Harden"
+   "Harden",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -3124,7 +3154,8 @@
    "Waterfall",
    "Hydro Pump",
    "Quick Attack",
-   "Harden"
+   "Harden",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -3150,7 +3181,8 @@
    "Water Gun",
    "Bubble Beam",
    "Quick Attack",
-   "Screech"
+   "Screech",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -3228,7 +3260,8 @@
    "Waterfall",
    "Bubble Beam",
    "Swift",
-   "Agility"
+   "Agility",
+   "Rain Dance"
   ],
   "ability": "natural_cure"
  },
@@ -3257,7 +3290,8 @@
    "Confusion",
    "Recover",
    "Quick Attack",
-   "Leer"
+   "Leer",
+   "Rain Dance"
   ],
   "ability": "natural_cure"
  },
@@ -3497,7 +3531,8 @@
    "Gust",
    "Peck",
    "Slash",
-   "Focus Energy"
+   "Focus Energy",
+   "Rain Dance"
   ],
   "ability": "intimidate"
  },
@@ -3602,7 +3637,8 @@
    "Water Gun",
    "Bubble Beam",
    "Quick Attack",
-   "Harden"
+   "Harden",
+   "Rain Dance"
   ],
   "ability": "water_absorb"
  },
@@ -3707,7 +3743,8 @@
    "Surf",
    "Hydro Pump",
    "Swift",
-   "Reflect"
+   "Reflect",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -3735,7 +3772,8 @@
    "Waterfall",
    "Bubble Beam",
    "Swift",
-   "Agility"
+   "Agility",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -3763,7 +3801,8 @@
    "Bubble Beam",
    "Water Gun",
    "Slash",
-   "Harden"
+   "Harden",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -3791,7 +3830,8 @@
    "Surf",
    "Bubble Beam",
    "Headbutt",
-   "Leer"
+   "Leer",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -4568,7 +4608,8 @@
    "Thunder Wave",
    "Spark",
    "Swift",
-   "Leer"
+   "Leer",
+   "Rain Dance"
   ],
   "ability": "volt_absorb"
  },
@@ -4597,7 +4638,8 @@
    "Spark",
    "Thunder",
    "Swift",
-   "Swords Dance"
+   "Swords Dance",
+   "Rain Dance"
   ],
   "ability": "volt_absorb"
  },
@@ -4887,7 +4929,8 @@
    "Mega Drain",
    "Stun Spore",
    "Swift",
-   "Light Screen"
+   "Light Screen",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -4965,7 +5008,8 @@
    "Rock Slide",
    "Rollout",
    "Slash",
-   "Harden"
+   "Harden",
+   "Sandstorm"
   ],
   "ability": "rock_head"
  },
@@ -4991,9 +5035,10 @@
    "Bubble Beam",
    "Whirlpool",
    "Tackle",
-   "Growl"
+   "Growl",
+   "Rain Dance"
   ],
-  "ability": "water_absorb"
+  "ability": "drizzle"
  },
  {
   "id": 187,
@@ -5020,7 +5065,8 @@
    "Wing Attack",
    "Gust",
    "Quick Attack",
-   "Harden"
+   "Harden",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -5049,7 +5095,8 @@
    "Fly",
    "Drill Peck",
    "Headbutt",
-   "Focus Energy"
+   "Focus Energy",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -5078,7 +5125,8 @@
    "Gust",
    "Drill Peck",
    "Quick Attack",
-   "Agility"
+   "Agility",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -5129,7 +5177,8 @@
    "Petal Dance",
    "Solar Beam",
    "Quick Attack",
-   "Agility"
+   "Agility",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -5155,7 +5204,8 @@
    "Petal Dance",
    "Stun Spore",
    "Swift",
-   "Focus Energy"
+   "Focus Energy",
+   "Sunny Day"
   ],
   "ability": "chlorophyll"
  },
@@ -5213,7 +5263,8 @@
    "Earthquake",
    "Sand Attack",
    "Headbutt",
-   "Double Team"
+   "Double Team",
+   "Rain Dance"
   ],
   "ability": "water_absorb"
  },
@@ -5242,7 +5293,8 @@
    "Bone Club",
    "Mud-Slap",
    "Body Slam",
-   "Growl"
+   "Growl",
+   "Rain Dance"
   ],
   "ability": "water_absorb"
  },
@@ -5351,7 +5403,8 @@
    "Future Sight",
    "Confusion",
    "Tackle",
-   "Focus Energy"
+   "Focus Energy",
+   "Rain Dance"
   ],
   "ability": "own_tempo"
  },
@@ -5592,7 +5645,8 @@
    "Rock Slide",
    "Crunch",
    "Harden",
-   "Screech"
+   "Screech",
+   "Sandstorm"
   ],
   "ability": "sturdy"
  },
@@ -5671,7 +5725,8 @@
    "Toxic",
    "Sludge Bomb",
    "Tackle",
-   "Screech"
+   "Screech",
+   "Rain Dance"
   ],
   "ability": "poison_point"
  },
@@ -5885,7 +5940,8 @@
    "Rock Slide",
    "Rock Throw",
    "Quick Attack",
-   "Screech"
+   "Screech",
+   "Sunny Day"
   ],
   "ability": "rock_head"
  },
@@ -5998,7 +6054,8 @@
    "Water Gun",
    "Surf",
    "Slash",
-   "Double Team"
+   "Double Team",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -6024,7 +6081,8 @@
    "Hydro Pump",
    "Surf",
    "Slash",
-   "Harden"
+   "Harden",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -6078,7 +6136,8 @@
    "Fly",
    "Gust",
    "Swift",
-   "Screech"
+   "Screech",
+   "Rain Dance"
   ],
   "ability": "water_absorb"
  },
@@ -6107,7 +6166,8 @@
    "Fly",
    "Peck",
    "Headbutt",
-   "Harden"
+   "Harden",
+   "Sandstorm"
   ],
   "ability": "sturdy"
  },
@@ -6136,7 +6196,8 @@
    "Fire Punch",
    "Flame Wheel",
    "Swift",
-   "Tail Whip"
+   "Tail Whip",
+   "Sunny Day"
   ],
   "ability": "flash_fire"
  },
@@ -6165,7 +6226,8 @@
    "Ember",
    "Fire Spin",
    "Tackle",
-   "Tail Whip"
+   "Tail Whip",
+   "Sunny Day"
   ],
   "ability": "flash_fire"
  },
@@ -6192,7 +6254,8 @@
    "Twister",
    "Ice Beam",
    "Agility",
-   "Smokescreen"
+   "Smokescreen",
+   "Rain Dance"
   ],
   "ability": "swift_swim"
  },
@@ -6218,7 +6281,8 @@
    "Bone Club",
    "Sand Attack",
    "Quick Attack",
-   "Agility"
+   "Agility",
+   "Sandstorm"
   ],
   "ability": "rock_head"
  },
@@ -6244,7 +6308,8 @@
    "Mud-Slap",
    "Earthquake",
    "Quick Attack",
-   "Focus Energy"
+   "Focus Energy",
+   "Sandstorm"
   ],
   "ability": "rock_head"
  },
@@ -6605,7 +6670,8 @@
    "Earthquake",
    "Mud-Slap",
    "Headbutt",
-   "Swords Dance"
+   "Swords Dance",
+   "Sandstorm"
   ],
   "ability": "guts"
  },
@@ -6634,7 +6700,8 @@
    "Sand Attack",
    "Dig",
    "Quick Attack",
-   "Leer"
+   "Leer",
+   "Sandstorm"
   ],
   "ability": "shed_skin"
  },
@@ -6660,7 +6727,8 @@
    "Rock Slide",
    "Earthquake",
    "Fire Blast",
-   "Scary Face"
+   "Scary Face",
+   "Sandstorm"
   ],
   "ability": "sand_stream"
  },

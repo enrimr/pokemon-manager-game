@@ -215,12 +215,15 @@ func _end_of_season(gs, final_f: Dictionary) -> void:
 
 	rollover_date = Season.date_add(gs.current_date, ROLLOVER_DELAY_DAYS)
 	phase = "offseason"
+	# the calendar jumps to the NEW preseason when the rollover fires — quote
+	# the date the player will actually land on, not the rollover tick itself
+	var new_preseason: String = Season.date_add(str(gs.season_start), 364)
 	gs.add_inbox_message(gs.current_date, "Off-season: Season %d starts %s" % [
-		gs.season_no() + 1, Season.pretty_date(rollover_date)],
-		("The season is complete. The squad gets a short break, then preseason begins "
-		+ "on %s with fresh fixtures for both championships and a new %s draw. "
-		+ "Squads, finances and development all carry over.") % [
-		Season.pretty_date(rollover_date), gs.cup_name()])
+		gs.season_no() + 1, Season.pretty_date(new_preseason)],
+		("The season is complete. The squad gets a break — pressing Continue past %s "
+		+ "fast-forwards to preseason on %s, with fresh fixtures for both championships "
+		+ "and a new %s draw. Squads, finances and development all carry over.") % [
+		Season.pretty_date(rollover_date), Season.pretty_date(new_preseason), gs.cup_name()])
 
 
 func _bump_reputation(gs, club_id: String, delta: int) -> void:
@@ -342,7 +345,7 @@ func _player_danger_fallout(gs, pos: int) -> void:
 		var nickv: Variant = star.get("nickname")
 		var nm := str(nickv) if nickv != null and str(nickv) != "" else str(star["species"])
 		gs.add_inbox_message(gs.current_date, "%s is demanding to leave" % nm,
-			("Your star %s (Lv %d) has no interest in another relegation-fight season and has "
+			("Your star %s (Lv %d) has no interest in another Danger Zone fight and has "
 			+ "asked to move to a stronger club. Morale has collapsed — win the dressing room "
 			+ "back with results, or listen to offers.") % [str(star["species"]), int(star["level"])])
 
@@ -503,5 +506,5 @@ func _send_season_review(gs, e: Dictionary) -> void:
 		body += "\n- Star performer: %s (%.2f avg rating, %d battles)" % [
 			best["name"], float(best["rating"]), int(best["battles"])]
 	body += "\n\nPreseason starts %s. The full honours list lives in Competition > History." \
-		% Season.pretty_date(Season.date_add(gs.current_date, ROLLOVER_DELAY_DAYS))
+		% Season.pretty_date(Season.date_add(str(gs.season_start), 364))
 	gs.add_inbox_message(gs.current_date, "Season %d review: %s" % [gs.season_no(), str(p["name"])], body)

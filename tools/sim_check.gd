@@ -171,9 +171,10 @@ func _run() -> void:
 	_check(int(ab2.active_battler(1)["hp"]) == int(ab2.active_battler(1)["max_hp"])
 		and ab2.events.any(func(ev): return ev["t"] == "ability_triggered" and ev["ability"] == "levitate" and ev["effect"] == "immune"),
 		"Levitate no-sells Earthquake")
-	# Flash Fire: absorbs fire, boosts own fire moves
+	# Flash Fire: absorbs fire, boosts own fire moves (Vulpix — Ninetales
+	# now carries Drought so ability-set weather is reachable in careers)
 	var ab3 := BattleEngine.new([_mkx(66, 50, ["Ember"], "Hardy", null)],
-		[_mkx(38, 50, ["Splash"], "Hardy", null)], 13)
+		[_mkx(37, 50, ["Splash"], "Hardy", null)], 13)
 	ab3.step_turn({"type": "move", "index": 0}, {"type": "move", "index": 0})
 	var nine: Dictionary = ab3.active_battler(1)
 	_check(int(nine["hp"]) == int(nine["max_hp"]) and bool(nine["flash_fire"])

@@ -385,6 +385,14 @@ load-bearing; pre-gen-2 fallbacks ("Hardy", species ability) keep old saves vali
   rock/ground/steel 1/16 per turn (Sand Veil holders exempt) and gives Rock
   types SpD x1.5; hail chips non-ice 1/16. The AI scores weather-boosted
   moves higher and knows when to cast a weather move.
+  **Reachability** (integration patch, `artifacts/playtest2/gen_weather.py`,
+  rerun after `tools/gen_data.py`): ~68 thematic species now have Sunny Day /
+  Rain Dance / Sandstorm in their learnsets (teachable via Move Practice),
+  weather-synergy squad mons (Swift Swim / Chlorophyll / Sand Veil / Rain
+  Dish holders) carry the matching move from world gen, and Politoed is
+  Drizzle / Ninetales is Drought (documented liberty) so ability-set weather
+  exists via evolution. Before the patch only excluded legendaries knew a
+  weather move — the whole system was dead content in careers.
 
 New event types (all with commentary_hook lines alongside):
 

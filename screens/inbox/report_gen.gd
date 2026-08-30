@@ -61,8 +61,23 @@ func render(msg: Dictionary) -> Dictionary:
 				return _board_decision(msg)
 			if uid.begins_with("finrep:"):
 				return _finance_report(msg)
-			return _board_review(msg)
+			# ONLY genuine monthly reviews get the review card — everything else
+			# that fell into the "board" bucket (season-end awards, season
+			# review, off-season note, board ultimatums...) keeps its own body.
+			if uid.begins_with("board:") or str(msg.get("title", "")).begins_with("Board review"):
+				return _board_review(msg)
+			return _season_or_plain(msg)
 	return _plain(msg)
+
+
+## Plain body, plus a History deep link for the season-end mail family.
+func _season_or_plain(msg: Dictionary) -> Dictionary:
+	var out := _plain(msg)
+	var title := str(msg.get("title", ""))
+	if title.begins_with("End-of-Season Awards") or title.begins_with("Off-season:") \
+			or (title.begins_with("Season ") and title.contains("review:")):
+		out["actions"] = [{"label": "Honours & History", "screen": "competition", "tab": "history"}]
+	return out
 
 
 func _plain(msg: Dictionary) -> Dictionary:

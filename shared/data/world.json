@@ -237,7 +237,7 @@
      "moves": [
       "Waterfall",
       "Bubble Beam",
-      "Harden",
+      "Rain Dance",
       "Rock Throw"
      ],
      "held_item": null,
@@ -366,7 +366,7 @@
       "Hydro Pump",
       "Swift",
       "Rock Slide",
-      "Reflect"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 100,
@@ -508,7 +508,7 @@
       "Water Gun",
       "Rock Slide",
       "Slash",
-      "Harden"
+      "Rain Dance"
      ],
      "held_item": "hard_stone",
      "condition": 73,
@@ -635,7 +635,7 @@
      "moves": [
       "Confusion",
       "Quick Attack",
-      "Reflect",
+      "Sunny Day",
       "Psybeam"
      ],
      "held_item": null,
@@ -996,7 +996,7 @@
      "moves": [
       "Solar Beam",
       "Smog",
-      "Light Screen",
+      "Sunny Day",
       "Acid"
      ],
      "held_item": null,
@@ -1029,7 +1029,7 @@
       "Petal Dance",
       "Acid",
       "Sludge",
-      "Harden"
+      "Sunny Day"
      ],
      "held_item": null,
      "condition": 86,
@@ -1686,7 +1686,7 @@
      "moves": [
       "Petal Dance",
       "Sludge",
-      "Harden",
+      "Sunny Day",
       "Vine Whip"
      ],
      "held_item": null,
@@ -1879,7 +1879,7 @@
       "Rock Slide",
       "Rock Throw",
       "Waterfall",
-      "Harden"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 81,
@@ -1909,7 +1909,7 @@
      },
      "moves": [
       "Dig",
-      "Swords Dance",
+      "Sandstorm",
       "Bone Club",
       "Earthquake"
      ],
@@ -2206,7 +2206,7 @@
      },
      "moves": [
       "Acid",
-      "Light Screen",
+      "Sunny Day",
       "Mega Drain",
       "Razor Leaf"
      ],
@@ -2591,7 +2591,7 @@
       "Waterfall",
       "Rock Slide",
       "Rock Throw",
-      "Harden"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 75,
@@ -2767,7 +2767,7 @@
      },
      "moves": [
       "Quick Attack",
-      "Light Screen",
+      "Sunny Day",
       "Mega Drain",
       "Sludge"
      ],
@@ -2801,7 +2801,7 @@
       "Solar Beam",
       "Sludge",
       "Smog",
-      "Light Screen"
+      "Sunny Day"
      ],
      "held_item": null,
      "condition": 83,
@@ -2961,7 +2961,7 @@
       "Rock Slide",
       "Waterfall",
       "Water Gun",
-      "Rock Throw"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 82,
@@ -3022,7 +3022,7 @@
       "spe": 1
      },
      "moves": [
-      "Stun Spore",
+      "Sunny Day",
       "Sleep Powder",
       "Confusion",
       "Psybeam"
@@ -3128,7 +3128,7 @@
      },
      "moves": [
       "Sludge",
-      "Sleep Powder",
+      "Sunny Day",
       "Petal Dance",
       "Quick Attack"
      ],
@@ -3256,7 +3256,7 @@
      },
      "moves": [
       "Razor Leaf",
-      "Harden",
+      "Sunny Day",
       "Solar Beam",
       "Petal Dance"
      ],
@@ -3417,7 +3417,7 @@
      "moves": [
       "Bone Club",
       "Earthquake",
-      "Harden",
+      "Sandstorm",
       "Body Slam"
      ],
      "held_item": null,
@@ -3594,7 +3594,7 @@
      },
      "moves": [
       "Mega Drain",
-      "Sleep Powder",
+      "Sunny Day",
       "Recover",
       "Quick Attack"
      ],
@@ -3788,7 +3788,7 @@
       "Swift",
       "Rock Throw",
       "Surf",
-      "Hydro Pump"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 94,
@@ -3882,7 +3882,7 @@
      },
      "moves": [
       "Petal Dance",
-      "Stun Spore",
+      "Sunny Day",
       "Sludge",
       "Poison Sting"
      ],
@@ -3947,7 +3947,7 @@
      "moves": [
       "Rock Throw",
       "Surf",
-      "Reflect",
+      "Rain Dance",
       "Hydro Pump"
      ],
      "held_item": "sitrus_berry",
@@ -4441,7 +4441,7 @@
       "Bubble Beam",
       "Waterfall",
       "Water Gun",
-      "Harden"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 84,
@@ -4896,7 +4896,7 @@
      "moves": [
       "Mega Drain",
       "Solar Beam",
-      "Growl",
+      "Sunny Day",
       "Sludge"
      ],
      "held_item": null,
@@ -5054,7 +5054,7 @@
       "spe": 2
      },
      "moves": [
-      "Sand Attack",
+      "Sandstorm",
       "Slash",
       "Dig",
       "Double Team"
@@ -5223,7 +5223,7 @@
      },
      "moves": [
       "Surf",
-      "Harden",
+      "Rain Dance",
       "Hydro Pump",
       "Waterfall"
      ],
@@ -5815,7 +5815,7 @@
       "spe": 0
      },
      "moves": [
-      "Toxic",
+      "Sunny Day",
       "Solar Beam",
       "Poison Sting",
       "Quick Attack"
@@ -6154,7 +6154,7 @@
      "moves": [
       "Waterfall",
       "Rock Throw",
-      "Harden",
+      "Rain Dance",
       "Water Gun"
      ],
      "held_item": null,
@@ -6184,7 +6184,7 @@
       "spe": 5
      },
      "moves": [
-      "Sleep Powder",
+      "Sunny Day",
       "Mega Drain",
       "Reflect",
       "Recover"
@@ -6249,7 +6249,7 @@
      },
      "moves": [
       "Mega Drain",
-      "Sleep Powder",
+      "Sunny Day",
       "Psybeam",
       "Quick Attack"
      ],
@@ -6628,7 +6628,7 @@
       "Surf",
       "Water Gun",
       "Bubble Beam",
-      "Double Team"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 77,
@@ -6709,7 +6709,7 @@
      "moves": [
       "Water Gun",
       "Slash",
-      "Harden",
+      "Rain Dance",
       "Waterfall"
      ],
      "held_item": null,
@@ -7244,7 +7244,7 @@
      },
      "moves": [
       "Solar Beam",
-      "Focus Energy",
+      "Sunny Day",
       "Vine Whip",
       "Swift"
      ],
@@ -7803,7 +7803,7 @@
      "moves": [
       "Vine Whip",
       "Solar Beam",
-      "Stun Spore",
+      "Sunny Day",
       "Focus Energy"
      ],
      "held_item": null,
@@ -8138,7 +8138,7 @@
       "spe": 14
      },
      "moves": [
-      "Harden",
+      "Sandstorm",
       "Bone Club",
       "Dig",
       "Quick Attack"
@@ -8205,7 +8205,7 @@
      },
      "moves": [
       "Drill Peck",
-      "Agility",
+      "Sunny Day",
       "Razor Leaf",
       "Synthesis"
      ],
@@ -8696,7 +8696,7 @@
      "moves": [
       "Vine Whip",
       "Petal Dance",
-      "Toxic",
+      "Sunny Day",
       "Agility"
      ],
      "held_item": null,
@@ -8901,7 +8901,7 @@
       "spe": 13
      },
      "moves": [
-      "Agility",
+      "Rain Dance",
       "Ice Beam",
       "Smokescreen",
       "Twister"
@@ -9815,7 +9815,7 @@
       "spe": 8
      },
      "moves": [
-      "Sand Attack",
+      "Sandstorm",
       "Earthquake",
       "Slash",
       "Double Team"
@@ -9850,7 +9850,7 @@
      "moves": [
       "Quick Attack",
       "Peck",
-      "Stun Spore",
+      "Sunny Day",
       "Vine Whip"
      ],
      "held_item": null,
@@ -9997,7 +9997,7 @@
       "Hydro Pump",
       "Surf",
       "Water Gun",
-      "Double Team"
+      "Rain Dance"
      ],
      "held_item": null,
      "condition": 95,
@@ -10095,7 +10095,7 @@
      "moves": [
       "Petal Dance",
       "Quick Attack",
-      "Sleep Powder",
+      "Sunny Day",
       "Agility"
      ],
      "held_item": null,
@@ -10327,7 +10327,7 @@
       "Mega Drain",
       "Solar Beam",
       "Quick Attack",
-      "Sleep Powder"
+      "Sunny Day"
      ],
      "held_item": null,
      "condition": 93,
@@ -10848,7 +10848,7 @@
      },
      "moves": [
       "Waterfall",
-      "Harden",
+      "Rain Dance",
       "Slash",
       "Water Gun"
      ],
@@ -10896,7 +10896,7 @@
      },
      "native_region": "Johto",
      "nature": "Hasty",
-     "ability": "water_absorb"
+     "ability": "drizzle"
     },
     {
      "uid": "pkm0397",
@@ -11131,7 +11131,7 @@
       "Headbutt",
       "Fly",
       "Gust",
-      "Focus Energy"
+      "Sunny Day"
      ],
      "held_item": "sharp_beak",
      "condition": 99,
@@ -11227,7 +11227,7 @@
       "spe": 12
      },
      "moves": [
-      "Focus Energy",
+      "Sunny Day",
       "Petal Dance",
       "Vine Whip",
       "Solar Beam"
@@ -11309,7 +11309,7 @@
      },
      "moves": [
       "Hydro Pump",
-      "Double Team",
+      "Rain Dance",
       "Water Gun",
       "Surf"
      ],
@@ -11711,7 +11711,7 @@
       "spe": 2
      },
      "moves": [
-      "Harden",
+      "Sunny Day",
       "Swift",
       "Petal Dance",
       "Sleep Powder"
@@ -11780,7 +11780,7 @@
       "Quick Attack",
       "Fly",
       "Razor Leaf",
-      "Gust"
+      "Sunny Day"
      ],
      "held_item": "lum_berry",
      "condition": 95,
@@ -11976,7 +11976,7 @@
      },
      "moves": [
       "Solar Beam",
-      "Focus Energy",
+      "Sunny Day",
       "Vine Whip",
       "Stun Spore"
      ],
@@ -12180,7 +12180,7 @@
      },
      "moves": [
       "Surf",
-      "Harden",
+      "Rain Dance",
       "Waterfall",
       "Hydro Pump"
      ],
@@ -12725,7 +12725,7 @@
      },
      "moves": [
       "Quick Attack",
-      "Agility",
+      "Sunny Day",
       "Drill Peck",
       "Solar Beam"
      ],
@@ -12760,7 +12760,7 @@
       "Waterfall",
       "Surf",
       "Quick Attack",
-      "Bubble Beam"
+      "Rain Dance"
      ],
      "held_item": "lum_berry",
      "condition": 97,
@@ -13205,7 +13205,7 @@
     "spe": 9
    },
    "moves": [
-    "Harden",
+    "Rain Dance",
     "Hydro Pump",
     "Water Gun",
     "Surf"
@@ -13270,7 +13270,7 @@
    },
    "moves": [
     "Poison Sting",
-    "Growl",
+    "Sunny Day",
     "Solar Beam",
     "Sleep Powder"
    ],
@@ -13749,7 +13749,7 @@
     "spe": 13
    },
    "moves": [
-    "Swords Dance",
+    "Sandstorm",
     "Quick Attack",
     "Bone Club",
     "Dig"
@@ -13813,7 +13813,7 @@
     "spe": 14
    },
    "moves": [
-    "Sand Attack",
+    "Sandstorm",
     "Earthquake",
     "Slash",
     "Double Team"
@@ -13878,7 +13878,7 @@
    },
    "moves": [
     "Sludge",
-    "Toxic",
+    "Sunny Day",
     "Sleep Powder",
     "Poison Sting"
    ],
@@ -14038,7 +14038,7 @@
    },
    "moves": [
     "Earthquake",
-    "Double Team",
+    "Sandstorm",
     "Dig",
     "Bone Club"
    ],
@@ -14326,7 +14326,7 @@
    },
    "moves": [
     "Poison Sting",
-    "Toxic",
+    "Sunny Day",
     "Mega Drain",
     "Stun Spore"
    ],
@@ -14744,7 +14744,7 @@
     "Surf",
     "Waterfall",
     "Water Gun",
-    "Harden"
+    "Rain Dance"
    ],
    "held_item": null,
    "condition": 74,
@@ -14872,7 +14872,7 @@
     "Rock Throw",
     "Waterfall",
     "Surf",
-    "Swift"
+    "Rain Dance"
    ],
    "held_item": null,
    "condition": 84,
@@ -14934,7 +14934,7 @@
    },
    "moves": [
     "Headbutt",
-    "Tail Whip",
+    "Sunny Day",
     "Toxic",
     "Razor Leaf"
    ],
@@ -15000,7 +15000,7 @@
     "Surf",
     "Waterfall",
     "Bubble Beam",
-    "Quick Attack"
+    "Rain Dance"
    ],
    "held_item": null,
    "condition": 81,
@@ -15064,7 +15064,7 @@
     "Headbutt",
     "Rock Slide",
     "Surf",
-    "Bubble Beam"
+    "Rain Dance"
    ],
    "held_item": null,
    "condition": 96,
@@ -15255,7 +15255,7 @@
    "moves": [
     "Slash",
     "Dig",
-    "Double Team",
+    "Sandstorm",
     "Bone Club"
    ],
    "held_item": null,
@@ -15605,7 +15605,7 @@
     "spe": 4
    },
    "moves": [
-    "Toxic",
+    "Sunny Day",
     "Smog",
     "Poison Sting",
     "Slash"
@@ -15832,7 +15832,7 @@
     "spe": 10
    },
    "moves": [
-    "Stun Spore",
+    "Sunny Day",
     "Swift",
     "Light Screen",
     "Mega Drain"
@@ -16096,7 +16096,7 @@
     "spe": 6
    },
    "moves": [
-    "Stun Spore",
+    "Sunny Day",
     "Petal Dance",
     "Vine Whip",
     "Swift"
@@ -16310,7 +16310,7 @@
    },
    "native_region": "Johto",
    "nature": "Serious",
-   "ability": "water_absorb"
+   "ability": "drizzle"
   },
   {
    "uid": "pkm0473",
@@ -16361,7 +16361,7 @@
    },
    "moves": [
     "Mega Drain",
-    "Stun Spore",
+    "Sunny Day",
     "Light Screen",
     "Solar Beam"
    ],

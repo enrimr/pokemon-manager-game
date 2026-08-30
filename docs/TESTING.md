@@ -43,7 +43,10 @@ Capture everything:
 
 - To test from a fresh career, delete the save first:
   `rm -f "$HOME/Library/Application Support/Godot/app_userdata/Trainer Manager/save.json"`
-- Regenerating data (foundation owner only): `python3 tools/gen_data.py`, then rerun smoke.
+- Regenerating data (foundation owner only): `python3 tools/gen_data.py`, then
+  `python3 artifacts/evolutions/gen_evolutions.py` (evolution chains + stones) and
+  `python3 artifacts/playtest2/gen_weather.py` (weather reachability: weather-move
+  learnsets/instance moves, Drizzle Politoed / Drought Ninetales), then rerun smoke.
 
 ## 3. New-career club picker shots (shell-owned, windowed)
 

@@ -58,6 +58,15 @@ func on_show() -> void:
 	pass
 
 
+func _exit_tree() -> void:
+	# Flush a pending debounced save: leaving the screen inside the 0.6s
+	# window must not drop the edit (world.meta.tactics would stay stale
+	# while the in-place preset mutation already leaked into tactics_state).
+	if _save_timer != null and not _save_timer.is_stopped():
+		_save_timer.stop()
+		_do_save()
+
+
 # ================================================================= data ops
 
 func _preset() -> Dictionary:

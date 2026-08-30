@@ -1,1 +1,5 @@
-{"phase":"Expansión — última pieza","note":"battle-depth, evolutions, academy y surfacing ya vencieron a sus jueces a ciegas. El builder de leagues está cerrando el último gap: Championship Series entre ligas, consecuencias de zona baja, y ROLLOVER de temporada completo (premios, historia, nueva temporada). Después: juez a ciegas, playtest de carrera en Johto e informe final.","updated":"2026-08-30 16:45"}
+{
+ "phase": "Playtest final de la expansión",
+ "note": "Playtest2 COMPLETE: full Johto career driven through real UI (picker->Olivine, tactics, manual league match w/ Rain Dance weather, cup doubles w/ target picker+spread, FA+prospect signings, Kanto scouting through knowledge stages, academy intake+promotion+mentoring, inbox evolution approval, Water Stone Vaporeon, CS+awards+history, season-2 rollover+match, save/load mid-season and post-rollover 18/18). FIXED: weather dead-content (gen_weather.py data patch), tactics debounce edits lost on nav-away, learnset_extra ignored by training, status_tick -1400% commentary, season-end board mails hijacked by board-review card, off-season mail quoting wrong preseason date, cup fixtures unnamed in topbar, 'relegation' leftover. SMOKE OK + all piece drivers green.",
+ "updated": "2026-08-30 19:03"
+}

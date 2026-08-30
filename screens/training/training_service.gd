@@ -998,6 +998,11 @@ func eligible_moves(inst: Dictionary) -> Array:
 	for m in sp.get("learnset", []):
 		if not known.has(m):
 			out.append(m)
+	# evolved mons keep their pre-evolution learnset (evolution service seam:
+	# it merges those moves into inst["learnset_extra"] for training to offer)
+	for m in inst.get("learnset_extra", []):
+		if not known.has(m) and not out.has(m) and not DataStore.move(str(m)).is_empty():
+			out.append(m)
 	return out
 
 

@@ -1783,8 +1783,8 @@ func _days_phrase(days: int) -> String:
 
 
 func _comp_name(f: Dictionary) -> String:
-	if str(f.get("comp", "")) == "cup":
-		return Season.cup_round_name(int(f.get("round", 1)))
+	if str(f.get("comp", "")) == "cup":   # name the competition, not just the round
+		return "%s %s" % [GameState.cup_name(), Season.cup_round_name(int(f.get("round", 1)))]
 	if str(f.get("comp", "")) == "playoff":   # Championship Series (season-end playoff)
 		return "CS %s" % Season.playoff_round_name(int(f.get("round", 1)))
 	return GameState.world["meta"]["league_name"]
