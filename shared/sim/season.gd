@@ -153,6 +153,9 @@ static func compute_table(club_ids: Array, fixtures: Array) -> Array:
 
 
 static func _sort_table_rows(out: Array) -> void:
+	# Final alphabetical tiebreak keeps the order deterministic — Godot's
+	# sort_custom is unstable, so without it fully tied rows (e.g. everyone
+	# on 0 points pre-season) shuffle between calls.
 	out.sort_custom(func(x, y):
 		if x["points"] != y["points"]:
 			return x["points"] > y["points"]
@@ -160,7 +163,14 @@ static func _sort_table_rows(out: Array) -> void:
 		var dy: int = y["bf"] - y["ba"]
 		if dx != dy:
 			return dx > dy
-		return x["bf"] > y["bf"])
+		if x["bf"] != y["bf"]:
+			return x["bf"] > y["bf"]
+		return _club_sort_name(str(x["club_id"])) < _club_sort_name(str(y["club_id"])))
+
+
+static func _club_sort_name(club_id: String) -> String:
+	var c: Dictionary = GameState.club(club_id)
+	return str(c.get("name", club_id))
 
 
 # ------------------------------------------------------------------ match sim
@@ -366,6 +376,13 @@ static func fixture_detail(f: Dictionary) -> Dictionary:
 	var fid: String = str(f["id"])
 	if _detail_cache.has(fid):
 		return _detail_cache[fid]
+	# Fixtures resolved outside the neutral instant sim (interactive matches,
+	# tactics-plan sims) record their REAL detail on the fixture — prefer it,
+	# otherwise the replay below could contradict the recorded scoreline.
+	var stored: Variant = f.get("detail")
+	if stored is Dictionary and stored.has("players") and stored.has("battles"):
+		_detail_cache[fid] = stored
+		return stored
 	var home: Dictionary = GameState.club(f["home"])
 	var away: Dictionary = GameState.club(f["away"])
 	if home.is_empty() or away.is_empty():

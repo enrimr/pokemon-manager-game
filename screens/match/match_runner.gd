@@ -76,6 +76,7 @@ var faint_marks: Array = []       # [{idx(into momentum), side}]
 var key_events: Array = []        # [{battle, turn, text(bbcode)}]
 
 var _stats := {}                  # "0:Name" -> accumulation dict
+var _detail_players := {}         # uid -> Season.fixture_detail-format stats
 var _avg_foe_hp := [1.0, 1.0]     # avg opposing max hp, per side
 var _cur_active_names := ["", ""]
 var _last_damager := ["", ""]     # stats-key of last direct damager of side's active
@@ -518,6 +519,12 @@ func _apply(e: Dictionary) -> void:
 			var w := int(e["winner"])
 			wins[w] += 1
 			battles.append({"winner": w, "turns": int(e.get("turns", turn_now))})
+			# Tally the REAL battle into fixture-detail format so Competition's
+			# match report / season stats show what actually happened here
+			# instead of a neutral replay (see Season.fixture_detail).
+			if engine != null:
+				Season._tally_battle(engine.events,
+					[engine.team_state(0), engine.team_state(1)], w, _detail_players)
 			live_state = LiveState.BATTLE_OVER
 			if series_decided():
 				_finalize_result()
@@ -580,6 +587,8 @@ func _finalize_result() -> void:
 	fixture["played"] = true
 	fixture["score_home"] = wins[0]
 	fixture["score_away"] = wins[1]
+	fixture["detail"] = {"score_home": wins[0], "score_away": wins[1],
+		"battles": battles.duplicate(true), "players": _detail_players}
 	for side in 2:
 		GameState.consume_club_items(str(club_for_side(side)["id"]), used_items[side])
 	GameState._table_dirty = true

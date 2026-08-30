@@ -328,6 +328,7 @@ static func run_fixture(home_club: Dictionary, away_club: Dictionary,
 		our_side: int, tac: Dictionary, match_seed: int) -> Dictionary:
 	var wins := [0, 0]
 	var battles: Array = []
+	var players := {}    # uid -> Season.fixture_detail-format stats
 	var our_faints := 0
 	var their_faints := 0
 	var faint_by := {}   # our battler name -> times it went down
@@ -349,6 +350,7 @@ static func run_fixture(home_club: Dictionary, away_club: Dictionary,
 		var w: int = maxi(eng.winner(), 0)
 		wins[w] += 1
 		battles.append({"winner": w, "turns": eng.turn})
+		Season._tally_battle(eng.events, [team_h, team_a], w, players)
 		for e in eng.events:
 			if str(e.get("t", "")) == "faint":
 				if int(e.get("side", -1)) == our_side:
@@ -358,4 +360,5 @@ static func run_fixture(home_club: Dictionary, away_club: Dictionary,
 				else:
 					their_faints += 1
 	return {"score_home": wins[0], "score_away": wins[1], "battles": battles,
+		"players": players,
 		"our_faints": our_faints, "their_faints": their_faints, "faint_by": faint_by}

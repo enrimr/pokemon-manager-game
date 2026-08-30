@@ -152,7 +152,17 @@ func _ready() -> void:
 	GameState.date_changed.connect(func(_d): _refresh_topbar())
 	GameState.table_updated.connect(_refresh_topbar)
 	GameState.inbox_updated.connect(_refresh_badges)
+	GameState.inventory_changed.connect(_refresh_topbar)
 	GameState.career_started.connect(_on_career_started)
+	# Balance/wages can be mutated by any piece mid-day (transfer fees, board
+	# settlements, shop purchases) — a light poll keeps the top bar honest.
+	var money_sync := Timer.new()
+	money_sync.wait_time = 1.0
+	money_sync.autostart = true
+	money_sync.timeout.connect(func():
+		if not _advancing:
+			_refresh_topbar())
+	add_child(money_sync)
 	_refresh_identity()
 	_refresh_topbar()
 	_refresh_badges()
@@ -1258,7 +1268,7 @@ func _refresh_topbar() -> void:
 	# balance block
 	var cur: String = GameState.world["meta"].get("currency", "P$")
 	_balance_value.text = "%s%s" % [cur, _thousands(int(pc["finances"]["balance"]))]
-	_balance_caption.text = "Balance · wages %s%s/w" % [cur, _thousands(int(pc["finances"]["wage_budget"]))]
+	_balance_caption.text = "Balance · wage budget %s%s/w" % [cur, _thousands(int(pc["finances"]["wage_budget"]))]
 	# next fixture block
 	var nf := GameState.next_player_fixture()
 	if nf.is_empty():

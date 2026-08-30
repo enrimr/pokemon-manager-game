@@ -1,7 +1,7 @@
 {
  "piece": "inbox",
  "fm_reference": "FM24 Inbox + Board/Finances",
- "status": "fixing",
+ "status": "critic",
  "round": 1,
  "verdict": "fm wins",
  "biggest_gap": "The people/media layer is real and state-mutating, but its writing pool is too shallow to survive even one simmed month without verbatim repetition: rival mind-game quote banks hold 3 lines per tone and each press-piece kind has a single prose template, so the identical manager quote ('People keep asking me about PAL. What is there to say? We are the bigger club...') was published three times in six weeks by three different rival managers (mind:L013 13 Aug, mind:L027 27 Aug, CIN 17 Sep). FM24's inbox never shows a verbatim quote repeat inside a month. Fix: expand each tone/kind bank to 8-12 variants, track recently-used lines per career and exclude them from selection, and condition phrasing on the rival manager so two managers never share a word-for-word quote.",
@@ -33,5 +33,5 @@
    "gap": "Verbatim quote repetition within a single simmed month — 3-line mind-game quote banks and single-template press pieces produced the same rival quote three times in six weeks; secondary: promised-battles pledges are never tracked/enforced, and mind-game FACTS blocks show read-time form instead of publication-time form."
   }
  ],
- "updated": "2026-08-30 03:39"
+ "updated": "2026-08-30 04:49"
 }

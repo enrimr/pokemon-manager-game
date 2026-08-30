@@ -1,1 +1,5 @@
-{"phase": "Feature Phase \u2014 Items & Manual Combat", "note": "Items system COMPLETE: items.json (57 items), engine held-item hooks + use_item action + AI item budget (deterministic, sim_check extended), club economy/AI shopping in GameState, Items shop/equip screen live, docs updated. SMOKE OK + screenshot verified. Match builder can now consume use_item (see ARCHITECTURE.md Items section).", "updated": "2026-08-30 03:00"}
+{
+"phase": "Integration Playtest + Inbox Fix",
+"note": "Integration playtest COMPLETE. Played full career loop via real UI: new career -> shop/equip -> manual match (moves/switch/bag item) -> 4 weeks of continues (cup tie, scouting, free-agent signing, offer rejections, mentoring, training presets) -> save/load verified across ALL subsystems -> New Career reset verified. Fixed 7 seams: table tie-order shuffle, next-fixture ignoring cup dates, fixture_detail contradicting real match results (real detail now recorded on fixtures by match/tactics pieces), match idle lineup != tactic lineup, stale topbar balance (now polls), wage-budget mislabel, transfers age format. SMOKE OK.",
+"updated": "2026-08-30 04:49"
+}

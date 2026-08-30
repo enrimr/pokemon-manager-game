@@ -113,8 +113,8 @@ func _build_recent() -> Control:
 	box.add_child(UI.label("Current league position: %d of %d" %
 		[posn, GameState.league_table().size()], 13, UI.COL_TEXT))
 	box.add_child(HSeparator.new())
-	box.add_child(UI.label("YOUR LIKELY SIX", 10, UI.COL_DIM))
-	for b in Season.pick_team(GameState.player_club()):
+	box.add_child(UI.label("YOUR STARTING SIX", 10, UI.COL_DIM))
+	for b in _our_planned_six():
 		var brow := UI.hbox(6)
 		brow.add_child(UI.label("%s" % b["name"], 13, Color.WHITE))
 		brow.add_child(UI.label("Lv%d" % int(b["level"]), 12, UI.COL_DIM))
@@ -126,6 +126,24 @@ func _build_recent() -> Control:
 		box.add_child(brow)
 	box.add_child(UI.spacer_v())
 	return p
+
+
+## Our six in the tactic plan's battle order when a plan exists (the same
+## lineup the Tactics screen and the match runner use); level order otherwise.
+func _our_planned_six() -> Array:
+	var club := GameState.player_club()
+	var tac: Variant = GameState.world.get("meta", {}).get("tactics")
+	if tac is Dictionary and not (tac as Dictionary).get("lineup", []).is_empty() \
+			and ResourceLoader.exists("res://screens/tactics/tactics_logic.gd"):
+		var logic: GDScript = load("res://screens/tactics/tactics_logic.gd")
+		var out: Array = []
+		for inst in logic.lineup_instances(tac, club):
+			var b: Dictionary = DataStore.make_battler(inst)
+			if not b.is_empty():
+				out.append(b)
+		if not out.is_empty():
+			return out
+	return Season.pick_team(club)
 
 
 func _recent_form(club_id: String, n: int) -> Array:

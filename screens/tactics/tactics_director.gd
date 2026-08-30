@@ -174,5 +174,9 @@ static func resolve_with_plan(f: Dictionary, tac: Dictionary) -> Dictionary:
 		return {}
 	f["score_home"] = res["score_home"]
 	f["score_away"] = res["score_away"]
+	# Record the plan-driven detail so Season.fixture_detail (Competition's
+	# match report, season stats) reflects THIS result, not a neutral replay.
+	f["detail"] = {"score_home": res["score_home"], "score_away": res["score_away"],
+		"battles": res.get("battles", []), "players": res.get("players", {})}
 	GameState._table_dirty = true
 	return res

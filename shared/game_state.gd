@@ -145,11 +145,15 @@ func fixtures_on(date: String) -> Array:
 
 
 func next_player_fixture() -> Dictionary:
+	# Earliest by DATE, not array order — cup fixtures are appended after the
+	# league list, so a midweek cup tie can be nearer than the next league round.
 	var pid: String = world["meta"]["player_club_id"]
+	var best: Dictionary = {}
 	for f in fixtures:
 		if not f["played"] and (f["home"] == pid or f["away"] == pid):
-			return f
-	return {}
+			if best.is_empty() or str(f["date"]) < str(best["date"]):
+				best = f
+	return best
 
 
 func player_fixtures() -> Array:

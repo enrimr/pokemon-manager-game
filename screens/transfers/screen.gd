@@ -310,7 +310,7 @@ func _refresh_search() -> void:
 		it.set_custom_color(1, DataStore.type_color(sp["types"][0]))
 		it.set_text(2, _club_short(t))
 		it.set_custom_color(2, ThemeBuilder.COL_TEXT_DIM)
-		it.set_text(3, "%.1f" % (float(inst["age_months"]) / 12.0))
+		it.set_text(3, "%dy %dm" % [int(inst["age_months"]) / 12, int(inst["age_months"]) % 12])
 		it.set_text(4, str(int(inst["level"])))
 		var stats: Dictionary = market.exact_stats(inst)
 		for i in 6:
@@ -421,7 +421,8 @@ func _refresh_detail() -> void:
 		tp.add_theme_stylebox_override("panel", tsb)
 		tp.add_child(tl)
 		trow.add_child(tp)
-	trow.add_child(_dlabel("Lv %d  ·  Age %.1f" % [int(inst["level"]), float(inst["age_months"]) / 12.0], ThemeBuilder.COL_TEXT_DIM, 12))
+	trow.add_child(_dlabel("Lv %d  ·  Age %dy %dm" % [int(inst["level"]),
+		int(inst["age_months"]) / 12, int(inst["age_months"]) % 12], ThemeBuilder.COL_TEXT_DIM, 12))
 
 	_detail.add_child(HSeparator.new())
 
