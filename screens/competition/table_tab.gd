@@ -1,9 +1,11 @@
 extends VBoxContainer
 ## LEAGUE TABLE tab — FM-style standings with zones, form pips, movement
-## arrows, clickable column sorting and Overall / Home / Away / Form splits.
+## arrows, clickable column sorting, Overall / Home / Away / Form splits and
+## a position-over-time graph of the whole league.
 
 const UI := preload("res://screens/competition/ui.gd")
 const TB := preload("res://shared/theme/theme_builder.gd")
+const Charts := preload("res://screens/competition/charts.gd")
 
 const ZONE_TITLE_END := 1     # pos 1: champions
 const ZONE_PROMO_END := 4     # pos 2..4: championship series
@@ -16,10 +18,13 @@ const SPLITS := [
 	["home", "Home"],
 	["away", "Away"],
 	["form", "Form (last 5)"],
+	["graph", "Position Graph"],
 ]
 
 var _tree: Tree
+var _graph   # Charts.PositionChart (untyped: inner-class Control)
 var _footer: Label
+var _hint: Label
 var _split_buttons: Dictionary = {}
 var _mode := "overall"
 var _sort_col := 0        # 0 = league position (default order)
@@ -48,15 +53,16 @@ func _ready() -> void:
 			"home": b.tooltip_text = "Standings counting each club's home matches only"
 			"away": b.tooltip_text = "Standings counting each club's away matches only"
 			"form": b.tooltip_text = "Standings over each club's last 5 played matches"
+			"graph": b.tooltip_text = "Every club's league position after each matchday"
 		b.pressed.connect(_set_mode.bind(entry[0]))
 		bar.add_child(b)
 		_split_buttons[entry[0]] = b
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.add_child(sp)
-	var hint := UI.dim("click a column header to sort · click again to reverse", 11)
-	hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.add_child(hint)
+	_hint = UI.dim("click a column header to sort · click again to reverse", 11)
+	_hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.add_child(_hint)
 	add_child(bar)
 
 	_tree = Tree.new()
@@ -82,6 +88,14 @@ func _ready() -> void:
 			UI.navigate(_tree, item.get_metadata(2)))
 	add_child(_tree)
 
+	_graph = Charts.PositionChart.new()
+	_graph.zone_title_end = ZONE_TITLE_END
+	_graph.zone_promo_end = ZONE_PROMO_END
+	_graph.zone_releg_from = ZONE_RELEG_FROM
+	_graph.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_graph.visible = false
+	add_child(_graph)
+
 	var legend := HBoxContainer.new()
 	legend.add_theme_constant_override("separation", 18)
 	legend.add_child(_legend_entry(Color(0.83, 0.68, 0.21), "Champions"))
@@ -94,6 +108,12 @@ func _ready() -> void:
 	_footer = UI.dim("", 12)
 	legend.add_child(_footer)
 	add_child(legend)
+
+	# Screenshot-harness hook only: pre-select a table split (inert in play).
+	var dev_mode := OS.get_environment("COMP_DEV_TABLE_MODE")
+	for entry in SPLITS:
+		if entry[0] == dev_mode:
+			_mode = dev_mode
 
 
 func _set_mode(mode: String) -> void:
@@ -120,6 +140,14 @@ func refresh() -> void:
 		_split_buttons[k].set_pressed_no_signal(k == _mode)
 		_split_buttons[k].add_theme_color_override("font_color",
 			Color.WHITE if k == _mode else TB.COL_TEXT_DIM)
+	var graph_mode := _mode == "graph"
+	_tree.visible = not graph_mode
+	_graph.visible = graph_mode
+	_hint.text = ("hover a line to pick out a club · zones shaded behind" if graph_mode
+		else "click a column header to sort · click again to reverse")
+	if graph_mode:
+		_refresh_graph()
+		return
 	_refresh_titles()
 
 	_tree.clear()
@@ -222,6 +250,36 @@ func refresh() -> void:
 	else:
 		_footer.text = "%s · after Matchday %d of %d%s · click a club for its profile" % [
 			GameState.world["meta"]["league_name"], completed, total, split_note]
+
+
+## Feed the multi-club position tracker (Season.position_history) and set the
+## footer. Clubs ordered by current position so hover z-order feels natural.
+func _refresh_graph() -> void:
+	var club_ids: Array = GameState.club_ids()
+	var hist: Dictionary = Season.position_history(club_ids, GameState.fixtures)
+	var series: Array = []
+	var table: Array = GameState.league_table()
+	for row in table:
+		var cid: String = str(row["club_id"])
+		var club: Dictionary = GameState.club(cid)
+		series.append({
+			"id": cid,
+			"label": str(club.get("short", cid)),
+			"full": str(club.get("name", cid)),
+			"color": UI.club_color(club).lightened(0.15),
+			"values": hist.get(cid, []),
+			"highlight": GameState.is_player_club(cid),
+		})
+	_graph.set_data(series, club_ids.size())
+	var rounds := 0
+	for s in series:
+		rounds = maxi(rounds, (s["values"] as Array).size())
+	if rounds == 0:
+		_footer.text = "%s · the position graph appears after Matchday 1 completes" % \
+			GameState.world["meta"]["league_name"]
+	else:
+		_footer.text = "%s · league position after each of %d completed matchday%s · your club in accent" % [
+			GameState.world["meta"]["league_name"], rounds, "" if rounds == 1 else "s"]
 
 
 func _refresh_titles() -> void:

@@ -6,7 +6,7 @@ extends Control
 
 const Market := preload("res://screens/transfers/market.gd")
 
-const POOL_LABELS := ["All pools", "Club Pokémon", "Free agents", "Prospects"]
+const POOL_LABELS := ["All pools", "Club Pokémon", "Free agents", "Prospects", "Shortlisted", "Transfer-listed"]
 const PRICE_LABELS := ["Any value", "Under 100K", "Under 250K", "Under 500K", "Under 1M"]
 const PRICE_CAPS := [0, 100000, 250000, 500000, 1000000]
 const STAT_KEYS := ["hp", "atk", "def", "spa", "spd", "spe"]
@@ -40,6 +40,16 @@ var _in_box: VBoxContainer
 var _deals_tree: Tree
 var _centre_budget: HBoxContainer
 var _window_banner: PanelContainer
+# recruitment hub
+var _sl_box: VBoxContainer
+var _rec_box: VBoxContainer
+var _agent_box: VBoxContainer
+var _rumour_box: VBoxContainer
+var _dof_box: VBoxContainer
+var _hub_banner: PanelContainer
+# scouting extras
+var _market_box: VBoxContainer
+var _network_box: VBoxContainer
 
 
 func _ready() -> void:
@@ -52,6 +62,16 @@ func _ready() -> void:
 
 func on_show() -> void:
 	_refresh_all()
+
+
+const TAB_IDS := ["recruitment", "search", "scouting", "centre"]
+
+
+func select_tab(tab_id: String) -> void:
+	## Shell sub-navigation contract (sidebar sub-items / deep links).
+	var i := TAB_IDS.find(tab_id)
+	if i >= 0 and _tabs != null:
+		_tabs.current_tab = i
 
 
 func _on_date(_d: String) -> void:
@@ -86,6 +106,7 @@ func _build_ui() -> void:
 	_tabs = TabContainer.new()
 	_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(_tabs)
+	_build_recruitment_tab()
 	_build_search_tab()
 	_build_scouting_tab()
 	_build_centre_tab()
@@ -105,6 +126,368 @@ func _header_stat(label_txt: String, value_txt: String, col: Color = ThemeBuilde
 	v.add_theme_color_override("font_color", col)
 	vb.add_child(v)
 	_header_stats.add_child(vb)
+
+
+# ------------------------------------------------------------ RECRUITMENT HUB (tab 0)
+# The push side of the market: shortlist board, scout recommendation queue,
+# agent-offered players, the rumour mill and DoF delegation. Between deals this
+# is the page that keeps handing you work — FM's Transfer Centre front page.
+
+func _build_recruitment_tab() -> void:
+	var tab := VBoxContainer.new()
+	tab.name = "Recruitment"
+	tab.add_theme_constant_override("separation", 8)
+	_tabs.add_child(tab)
+
+	_hub_banner = PanelContainer.new()
+	tab.add_child(_hub_banner)
+
+	var body := HBoxContainer.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 10)
+	tab.add_child(body)
+
+	# col 1 — shortlist
+	var col1 := VBoxContainer.new()
+	col1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col1.size_flags_stretch_ratio = 1.15
+	col1.add_theme_constant_override("separation", 6)
+	body.add_child(col1)
+	col1.add_child(_section_title("SHORTLIST — OUR TARGET BOARD"))
+	var sc1 := ScrollContainer.new()
+	sc1.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc1.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	col1.add_child(sc1)
+	_sl_box = VBoxContainer.new()
+	_sl_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sl_box.add_theme_constant_override("separation", 8)
+	sc1.add_child(_sl_box)
+
+	# col 2 — pushed at us: scout recs + agent offers
+	var col2 := VBoxContainer.new()
+	col2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col2.add_theme_constant_override("separation", 6)
+	body.add_child(col2)
+	col2.add_child(_section_title("SCOUT RECOMMENDATIONS"))
+	var sc2 := ScrollContainer.new()
+	sc2.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc2.size_flags_stretch_ratio = 1.1
+	sc2.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	col2.add_child(sc2)
+	_rec_box = VBoxContainer.new()
+	_rec_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rec_box.add_theme_constant_override("separation", 8)
+	sc2.add_child(_rec_box)
+	col2.add_child(_section_title("AGENT-OFFERED PLAYERS"))
+	var sc3 := ScrollContainer.new()
+	sc3.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc3.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	col2.add_child(sc3)
+	_agent_box = VBoxContainer.new()
+	_agent_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_agent_box.add_theme_constant_override("separation", 8)
+	sc3.add_child(_agent_box)
+
+	# col 3 — DoF + rumour mill
+	var col3 := VBoxContainer.new()
+	col3.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col3.add_theme_constant_override("separation", 6)
+	body.add_child(col3)
+	col3.add_child(_section_title("DIRECTOR OF BATTLING — DELEGATION"))
+	var dof_panel := PanelContainer.new()
+	col3.add_child(dof_panel)
+	_dof_box = VBoxContainer.new()
+	_dof_box.add_theme_constant_override("separation", 4)
+	dof_panel.add_child(_dof_box)
+	col3.add_child(_section_title("RUMOUR MILL"))
+	var sc4 := ScrollContainer.new()
+	sc4.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc4.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	col3.add_child(sc4)
+	_rumour_box = VBoxContainer.new()
+	_rumour_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rumour_box.add_theme_constant_override("separation", 4)
+	sc4.add_child(_rumour_box)
+
+
+func _refresh_recruitment() -> void:
+	if _sl_box == null:
+		return
+	_refresh_hub_banner()
+	_refresh_shortlist_col()
+	_refresh_recs_col()
+	_refresh_agents_col()
+	_refresh_dof_panel()
+	_refresh_rumours_col()
+
+
+func _refresh_hub_banner() -> void:
+	_clear(_hub_banner)
+	var sb := StyleBoxFlat.new()
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 6
+	sb.content_margin_bottom = 6
+	sb.bg_color = Color(0.11, 0.13, 0.18)
+	_hub_banner.add_theme_stylebox_override("panel", sb)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 22)
+	_hub_banner.add_child(row)
+	var n_new: int = market.new_recs().size()
+	var n_agents: int = market.open_agent_offers().size()
+	var n_sl: int = market.shortlist_targets().size()
+	var listed_sl: int = market.shortlist_targets().filter(func(t): return market.is_listed(String(t["inst"]["uid"]))).size()
+	var parts: Array = []
+	parts.append("%d target%s shortlisted" % [n_sl, "" if n_sl == 1 else "s"])
+	if listed_sl > 0:
+		parts.append("%d of them TRANSFER-LISTED — bargain window" % listed_sl)
+	parts.append("%d new scout recommendation%s" % [n_new, "" if n_new == 1 else "s"])
+	parts.append("%d agent offer%s open" % [n_agents, "" if n_agents == 1 else "s"])
+	var lead := _dlabel("RECRUITMENT PIPELINE", ThemeBuilder.COL_ACCENT, 14)
+	lead.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(lead)
+	var info := _dlabel("  ·  ".join(parts), ThemeBuilder.COL_TEXT, 13, true)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(info)
+
+
+func _refresh_shortlist_col() -> void:
+	_clear(_sl_box)
+	var targets: Array = market.shortlist_targets()
+	for t in targets:
+		_sl_box.add_child(_make_shortlist_card(t))
+	if targets.is_empty():
+		_sl_box.add_child(_dlabel("The shortlist is empty.\n\nThis is your target board: everything on it gets watched for you — listings, rival interest, agent availability and price drops all raise alerts, scouts can auto-cover it, and the DoF can pursue it.\n\nAdd targets from Search, or accept a scout recommendation.", ThemeBuilder.COL_TEXT_DIM, 13, true))
+
+
+func _make_shortlist_card(t: Dictionary) -> PanelContainer:
+	var card := PanelContainer.new()
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 3)
+	card.add_child(vb)
+	var inst: Dictionary = t["inst"]
+	var uid: String = String(inst["uid"])
+	var know: float = market.knowledge_of(uid)
+
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 8)
+	vb.add_child(head)
+	head.add_child(_dlabel("★ " + market.display_name(inst), Color.WHITE, 14))
+	var where: String
+	match String(t["pool"]):
+		"club": where = String(GameState.club(t["club_id"])["short"])
+		"fa": where = "Free agent"
+		_: where = "Prospect"
+	head.add_child(_dlabel("Lv %d · %s · %s" % [int(inst["level"]), where, market.region_of(inst)], ThemeBuilder.COL_TEXT_DIM, 11))
+
+	var cost_txt: String
+	if t["pool"] == "club":
+		cost_txt = "Ask ~%s" % market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))
+	elif t["pool"] == "prospect":
+		cost_txt = "Comp ~%s" % market.masked_money(uid, "val", int(round(market.value_of(inst) * 0.35 / 1000.0)) * 1000)
+	else:
+		cost_txt = "Free — wages only"
+	vb.add_child(_dlabel("%s  ·  knowledge %d%%" % [cost_txt, int(know)], ThemeBuilder.COL_TEXT, 12))
+
+	# status tags — why this row deserves attention today
+	var tags: Array = []
+	if market.is_listed(uid):
+		tags.append(["TRANSFER-LISTED — ask slashed", ThemeBuilder.COL_GOOD])
+	if not market.agent_offer_for(uid).is_empty():
+		tags.append(["AGENT PUSHING — deal greased", ThemeBuilder.COL_ACCENT])
+	for r in market.rumours_for(uid):
+		if String(r["kind"]) == "interest" and not bool(r.get("dud", false)) and not bool(r.get("came_true", false)):
+			tags.append(["RIVAL RUMOUR: %s" % String(GameState.club(String(r["other_id"]))["short"]), ThemeBuilder.COL_BAD])
+			break
+	var offer: Dictionary = market.offer_for_target(uid)
+	if not offer.is_empty():
+		tags.append([("DoF negotiating — " if bool(offer.get("dof", false)) else "In talks — ") + _stage_text(offer), ThemeBuilder.COL_WARN])
+	var assign: Dictionary = market.assignment_for_target(uid)
+	if not assign.is_empty():
+		tags.append(["%s scouting (%dd left)" % [String(assign["scout"]), int(assign["days_left"])], ThemeBuilder.COL_TEXT_DIM])
+	for tg in tags:
+		vb.add_child(_dlabel("· " + tg[0], tg[1], 11, true))
+
+	var btns := HBoxContainer.new()
+	btns.add_theme_constant_override("separation", 6)
+	vb.add_child(btns)
+	if offer.is_empty():
+		var ob := Button.new()
+		if t["pool"] == "club":
+			ob.text = "Make Offer"
+			ob.disabled = not market.window_open()
+			ob.pressed.connect(func(): _open_offer_sheet(uid))
+		else:
+			ob.text = "Offer Contract"
+			ob.disabled = t["pool"] == "prospect" and not market.window_open()
+			ob.pressed.connect(func(): _open_contract_sheet(uid))
+		btns.add_child(ob)
+	if know < 100.0 and assign.is_empty():
+		var sb2 := Button.new()
+		sb2.text = "Scout"
+		sb2.pressed.connect(func(): _open_scout_dialog(uid))
+		btns.add_child(sb2)
+	var vb2 := Button.new()
+	vb2.text = "View"
+	vb2.pressed.connect(func(): _go_to_target(uid))
+	btns.add_child(vb2)
+	var rb := Button.new()
+	rb.text = "Remove"
+	rb.pressed.connect(func(): _err(market.toggle_shortlist(uid)))
+	btns.add_child(rb)
+	return card
+
+
+func _refresh_recs_col() -> void:
+	_clear(_rec_box)
+	var fresh: Array = market.new_recs()
+	for r in fresh:
+		var card := PanelContainer.new()
+		var vb := VBoxContainer.new()
+		vb.add_theme_constant_override("separation", 3)
+		card.add_child(vb)
+		var t: Dictionary = market.find_target(String(r["uid"]))
+		var head := HBoxContainer.new()
+		head.add_theme_constant_override("separation", 8)
+		vb.add_child(head)
+		head.add_child(_dlabel("(gone)" if t.is_empty() else market.display_name(t["inst"]), Color.WHITE, 14))
+		head.add_child(_dlabel("%s / %s" % [_stars(float(r["ability"])), _stars(float(r["potential"]))], Color(0.88, 0.69, 0.31), 12))
+		vb.add_child(_dlabel(String(r["note"]), ThemeBuilder.COL_TEXT_DIM, 11, true))
+		var btns := HBoxContainer.new()
+		btns.add_theme_constant_override("separation", 6)
+		vb.add_child(btns)
+		var rid := int(r["id"])
+		var ab := Button.new()
+		ab.text = "Shortlist"
+		ab.pressed.connect(func(): _err(market.rec_accept(rid)))
+		btns.add_child(ab)
+		var vbtn := Button.new()
+		vbtn.text = "View"
+		var ruid := String(r["uid"])
+		vbtn.pressed.connect(func(): _go_to_target(ruid))
+		btns.add_child(vbtn)
+		var db := Button.new()
+		db.text = "Pass"
+		db.pressed.connect(func(): market.rec_dismiss(rid))
+		btns.add_child(db)
+		_rec_box.add_child(card)
+	if fresh.is_empty():
+		_rec_box.add_child(_dlabel("No new recommendations.\nScouts push strong finds here as their reports come in — keep someone on a focus assignment and the queue fills itself.", ThemeBuilder.COL_TEXT_DIM, 12, true))
+
+
+func _refresh_agents_col() -> void:
+	_clear(_agent_box)
+	var open: Array = market.open_agent_offers()
+	for a in open:
+		var card := PanelContainer.new()
+		var vb := VBoxContainer.new()
+		vb.add_theme_constant_override("separation", 3)
+		card.add_child(vb)
+		var t: Dictionary = market.find_target(String(a["uid"]))
+		var inst: Dictionary = t["inst"]
+		var uid := String(a["uid"])
+		var head := HBoxContainer.new()
+		head.add_theme_constant_override("separation", 8)
+		vb.add_child(head)
+		head.add_child(_dlabel(market.display_name(inst), Color.WHITE, 14))
+		if String(a["kind"]) == "club":
+			head.add_child(_dlabel("wants out of %s" % String(GameState.club(t["club_id"])["short"]), ThemeBuilder.COL_ACCENT, 11))
+		else:
+			head.add_child(_dlabel("free agent", ThemeBuilder.COL_GOOD, 11))
+		vb.add_child(_dlabel("Agent: %s" % String(a["pitch"]), ThemeBuilder.COL_TEXT_DIM, 11, true))
+		var ask_txt: String = ("Deal near %s — seller softened while this stands" % market.fmt_money(int(a["ask"]))) \
+			if String(a["kind"]) == "club" else ("Signs for ~%s/wk, no fee" % market.fmt_money(int(a["ask"])))
+		vb.add_child(_dlabel("%s  ·  offer stands until %s" % [ask_txt, Season.pretty_date(String(a["expires"]))], ThemeBuilder.COL_WARN, 11, true))
+		var btns := HBoxContainer.new()
+		btns.add_theme_constant_override("separation", 6)
+		vb.add_child(btns)
+		var aid := int(a["id"])
+		if market.offer_for_target(uid).is_empty():
+			var ob := Button.new()
+			ob.text = "Open Talks"
+			if String(a["kind"]) == "club":
+				ob.disabled = not market.window_open()
+				ob.pressed.connect(func(): _open_offer_sheet(uid))
+			else:
+				ob.pressed.connect(func(): _open_contract_sheet(uid))
+			btns.add_child(ob)
+		if not market.shortlisted(uid):
+			var slb := Button.new()
+			slb.text = "Shortlist"
+			slb.pressed.connect(func(): _err(market.toggle_shortlist(uid)))
+			btns.add_child(slb)
+		var db := Button.new()
+		db.text = "Not Interested"
+		db.pressed.connect(func(): market.dismiss_agent_offer(aid))
+		btns.add_child(db)
+		_agent_box.add_child(card)
+	if open.is_empty():
+		_agent_box.add_child(_dlabel("No agents on the phone right now.\nAgents tout unsettled players and free agents here — their deals come pre-greased.", ThemeBuilder.COL_TEXT_DIM, 12, true))
+
+
+func _refresh_dof_panel() -> void:
+	_clear(_dof_box)
+	_dof_box.add_child(_dlabel("Delegate market chores. The DoF acts every day, inside board limits.", ThemeBuilder.COL_TEXT_DIM, 11, true))
+	var opts := [
+		["handle_bids", "Swat lowball bids for our squad"],
+		["pursue_shortlist", "Pursue shortlist targets (open + close deals)"],
+		["auto_scout", "Keep idle scouts on the shortlist"],
+	]
+	for opt in opts:
+		var cb := CheckBox.new()
+		cb.text = opt[1]
+		cb.button_pressed = bool(market.dof.get(opt[0], false))
+		var key := String(opt[0])
+		cb.toggled.connect(func(on: bool): market.set_dof(key, on))
+		_dof_box.add_child(cb)
+	var lim := HBoxContainer.new()
+	lim.add_theme_constant_override("separation", 8)
+	_dof_box.add_child(lim)
+	lim.add_child(_dlabel("Max over valuation:", ThemeBuilder.COL_TEXT_DIM, 11))
+	var spin := SpinBox.new()
+	spin.min_value = 0
+	spin.max_value = 40
+	spin.step = 5
+	spin.value = int(market.dof.get("max_over_pct", 10))
+	spin.custom_minimum_size.x = 70
+	spin.value_changed.connect(func(v: float):
+		market.dof["max_over_pct"] = int(v)
+		market.save_state())
+	lim.add_child(spin)
+	lim.add_child(_dlabel("%", ThemeBuilder.COL_TEXT_DIM, 11))
+	if not market.dof_log.is_empty():
+		_dof_box.add_child(HSeparator.new())
+		for e in market.dof_log.slice(0, 5):
+			_dof_box.add_child(_dlabel("%s — %s" % [String(e["date"]).substr(5), String(e["text"])], ThemeBuilder.COL_TEXT_DIM, 10, true))
+
+
+func _refresh_rumours_col() -> void:
+	_clear(_rumour_box)
+	for r in market.rumours:
+		var col: Color
+		match String(r["strength"]):
+			"Strong": col = ThemeBuilder.COL_WARN
+			"Warm": col = ThemeBuilder.COL_TEXT
+			_: col = ThemeBuilder.COL_TEXT_DIM
+		var suffix := ""
+		if bool(r.get("came_true", false)):
+			suffix = "   ✔ came true"
+		elif bool(r.get("dud", false)):
+			suffix = "   — came to nothing"
+		var line := _dlabel("%s  [%s]  %s%s" % [String(r["date"]).substr(5), String(r["strength"]), String(r["text"]), suffix],
+			ThemeBuilder.COL_GOOD if bool(r.get("came_true", false)) else col, 11, true)
+		_rumour_box.add_child(line)
+	if market.rumours.is_empty():
+		_rumour_box.add_child(_dlabel("The mill is quiet.\nRumours build as the window runs: listings genuinely cut ask prices, interest whispers ripen into real transfers, and links to OUR squad often precede real bids.", ThemeBuilder.COL_TEXT_DIM, 12, true))
+
+
+func _go_to_target(uid: String) -> void:
+	_selected_uid = uid
+	_tabs.current_tab = 1
+	_refresh_search()
+	_refresh_detail()
 
 
 # ------------------------------------------------------------ SEARCH TAB
@@ -241,6 +624,10 @@ func _filtered_targets() -> Array:
 			continue
 		if _pool_filter == 3 and t["pool"] != "prospect":
 			continue
+		if _pool_filter == 4 and not market.shortlisted(String(inst["uid"])):
+			continue
+		if _pool_filter == 5 and not market.is_listed(String(inst["uid"])):
+			continue
 		if int(inst["level"]) < _min_level:
 			continue
 		if _search_text != "" and not market.display_name(inst).to_lower().contains(_search_text.to_lower()):
@@ -303,8 +690,11 @@ func _refresh_search() -> void:
 		var know: float = market.knowledge_of(uid)
 		var it := _tree.create_item(root)
 		it.set_metadata(0, uid)
-		it.set_text(0, market.display_name(inst))
-		it.set_custom_color(0, Color.WHITE if know >= 100.0 else ThemeBuilder.COL_TEXT)
+		var name_txt: String = market.display_name(inst)
+		if market.shortlisted(uid):
+			name_txt = "★ " + name_txt
+		it.set_text(0, name_txt)
+		it.set_custom_color(0, Color(0.88, 0.69, 0.31) if market.shortlisted(uid) else (Color.WHITE if know >= 100.0 else ThemeBuilder.COL_TEXT))
 		var types_txt := " / ".join(sp["types"].map(func(x): return String(x).capitalize()))
 		it.set_text(1, types_txt)
 		it.set_custom_color(1, DataStore.type_color(sp["types"][0]))
@@ -321,12 +711,18 @@ func _refresh_search() -> void:
 		var val_txt: String
 		if t["pool"] == "club":
 			val_txt = market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))
+			if market.is_listed(uid):
+				val_txt += " ▼"
 		elif t["pool"] == "prospect":
 			val_txt = market.masked_money(uid, "val", market.value_of(inst))
 		else:
 			val_txt = "Free"
 		it.set_text(11, val_txt)
-		it.set_custom_color(11, ThemeBuilder.COL_WARN if t["pool"] == "club" else ThemeBuilder.COL_GOOD)
+		if market.is_listed(uid):
+			it.set_custom_color(11, ThemeBuilder.COL_GOOD)
+			it.set_tooltip_text(11, "Transfer-listed — ask price slashed while the listing stands")
+		else:
+			it.set_custom_color(11, ThemeBuilder.COL_WARN if t["pool"] == "club" else ThemeBuilder.COL_GOOD)
 		var wage_txt: String
 		if know < 100.0:
 			wage_txt = market.masked_money(uid, "wage", int(inst["contract"]["salary"]))
@@ -490,6 +886,17 @@ func _refresh_detail() -> void:
 		_detail.add_child(_dlabel("Scout report (%s): Ability %s  Potential %s — see Scouting tab." % [
 			r["scout"], _stars(float(r["ability_stars"])), _stars(float(r["potential_stars"]))], ThemeBuilder.COL_GOOD, 12, true))
 
+	# pipeline intel: listings, agents, rumours
+	if market.is_listed(uid):
+		_detail.add_child(_dlabel("TRANSFER-LISTED — their club wants them gone; the ask price above is already slashed.", ThemeBuilder.COL_GOOD, 12, true))
+	var ag: Dictionary = market.agent_offer_for(uid)
+	if not ag.is_empty():
+		_detail.add_child(_dlabel("AGENT PUSHING — %s (deal greased until %s)" % [String(ag["pitch"]), Season.pretty_date(String(ag["expires"]))], ThemeBuilder.COL_ACCENT, 12, true))
+	for r in market.rumours_for(uid):
+		if String(r["kind"]) == "interest" and not bool(r.get("dud", false)) and not bool(r.get("came_true", false)):
+			_detail.add_child(_dlabel("RUMOUR: %s" % String(r["text"]), ThemeBuilder.COL_BAD, 12, true))
+			break
+
 	# offer state
 	var offer: Dictionary = market.offer_for_target(uid)
 	if not offer.is_empty():
@@ -505,6 +912,10 @@ func _refresh_detail() -> void:
 	var brow := HBoxContainer.new()
 	brow.add_theme_constant_override("separation", 8)
 	_detail.add_child(brow)
+	var sl_btn := Button.new()
+	sl_btn.text = "Unshortlist" if market.shortlisted(uid) else "☆ Shortlist"
+	sl_btn.pressed.connect(func(): _err(market.toggle_shortlist(uid)))
+	brow.add_child(sl_btn)
 	var scout_btn := Button.new()
 	scout_btn.text = "Send Scout"
 	scout_btn.disabled = know >= 100.0 or not assign.is_empty()
@@ -539,24 +950,34 @@ func _build_scouting_tab() -> void:
 	tab.add_theme_constant_override("separation", 10)
 	_tabs.add_child(tab)
 
-	# scouts column
+	# scouts column (team + hiring market)
 	var col1 := VBoxContainer.new()
-	col1.custom_minimum_size.x = 330
+	col1.custom_minimum_size.x = 340
 	col1.add_theme_constant_override("separation", 6)
 	tab.add_child(col1)
 	col1.add_child(_section_title("SCOUTING TEAM"))
 	var sc1 := ScrollContainer.new()
 	sc1.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc1.size_flags_stretch_ratio = 1.2
 	sc1.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	col1.add_child(sc1)
 	_scout_cards = VBoxContainer.new()
 	_scout_cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scout_cards.add_theme_constant_override("separation", 8)
 	sc1.add_child(_scout_cards)
+	col1.add_child(_section_title("SCOUT MARKET — HIRE THIS MONTH"))
+	var scm := ScrollContainer.new()
+	scm.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scm.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	col1.add_child(scm)
+	_market_box = VBoxContainer.new()
+	_market_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_market_box.add_theme_constant_override("separation", 6)
+	scm.add_child(_market_box)
 
-	# assignments column
+	# assignments + network column
 	var col2 := VBoxContainer.new()
-	col2.custom_minimum_size.x = 330
+	col2.custom_minimum_size.x = 340
 	col2.add_theme_constant_override("separation", 6)
 	tab.add_child(col2)
 	col2.add_child(_section_title("ASSIGNMENTS IN PROGRESS"))
@@ -568,6 +989,12 @@ func _build_scouting_tab() -> void:
 	_assign_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_assign_list.add_theme_constant_override("separation", 8)
 	sc2.add_child(_assign_list)
+	col2.add_child(_section_title("REGIONAL NETWORK — MARKET KNOWLEDGE"))
+	var np := PanelContainer.new()
+	col2.add_child(np)
+	_network_box = VBoxContainer.new()
+	_network_box.add_theme_constant_override("separation", 3)
+	np.add_child(_network_box)
 
 	# reports column
 	var col3 := VBoxContainer.new()
@@ -616,6 +1043,8 @@ func _refresh_scouting() -> void:
 		vb.add_child(_dlabel("Judging Ability %d/20  ·  Judging Potential %d/20" % [
 			int(s["ratings"]["judging_ability"]), int(s["ratings"]["judging_potential"])],
 			ThemeBuilder.COL_TEXT_DIM, 12, true))
+		var wage_txt: String = ("  ·  %s/wk" % market.fmt_money(int(s["wage"]))) if s.has("wage") else ""
+		vb.add_child(_dlabel("Home network: %s%s" % [market.scout_region(s), wage_txt], ThemeBuilder.COL_TEXT, 12, true))
 		var a: Dictionary = market.assignment_for_scout(s["name"])
 		var btns := HBoxContainer.new()
 		btns.add_theme_constant_override("separation", 6)
@@ -625,6 +1054,12 @@ func _refresh_scouting() -> void:
 			fb.text = "Set Focus"
 			fb.pressed.connect(func(): _open_focus_dialog(s["name"]))
 			btns.add_child(fb)
+			if bool(s.get("hired", false)):
+				var xb := Button.new()
+				xb.text = "Release"
+				var sn := String(s["name"])
+				xb.pressed.connect(func(): _err(market.fire_scout(sn)))
+				btns.add_child(xb)
 		else:
 			var status: String
 			if a["kind"] == "target":
@@ -690,6 +1125,66 @@ func _refresh_scouting() -> void:
 		_show_report(String(rlist[0]["uid"]))
 	elif sel_uid != "":
 		_show_report(sel_uid)
+
+	_refresh_scout_market()
+	_refresh_network()
+
+
+func _refresh_scout_market() -> void:
+	_clear(_market_box)
+	var cands: Array = market.scout_market()
+	var slots: int = market.MAX_HIRED_SCOUTS - market.hired_scouts().size()
+	_market_box.add_child(_dlabel("Dedicated scouts for hire (%d/%d slots free). New candidates monthly. Wages come off the wage budget." % [
+		slots, market.MAX_HIRED_SCOUTS], ThemeBuilder.COL_TEXT_DIM, 11, true))
+	for c in cands:
+		var card := PanelContainer.new()
+		var vb := VBoxContainer.new()
+		vb.add_theme_constant_override("separation", 2)
+		card.add_child(vb)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		vb.add_child(row)
+		row.add_child(_dlabel(String(c["name"]), Color.WHITE, 13))
+		var sp := Control.new()
+		sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(sp)
+		row.add_child(_dlabel("%s/wk" % market.fmt_money(int(c["wage"])), ThemeBuilder.COL_WARN, 12))
+		vb.add_child(_dlabel("JA %d · JP %d  ·  network: %s" % [int(c["ja"]), int(c["jp"]), String(c["region"])],
+			ThemeBuilder.COL_TEXT_DIM, 11, true))
+		var hb := Button.new()
+		hb.text = "Hire"
+		hb.disabled = slots <= 0
+		var cn := String(c["name"])
+		hb.pressed.connect(func(): _err(market.hire_scout(cn)))
+		vb.add_child(hb)
+		_market_box.add_child(card)
+	if cands.is_empty():
+		_market_box.add_child(_dlabel("No candidates left this month — the pool refreshes on the 1st.", ThemeBuilder.COL_TEXT_DIM, 12, true))
+
+
+func _refresh_network() -> void:
+	_clear(_network_box)
+	var cov: Dictionary = market.region_coverage()
+	for r in cov:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		_network_box.add_child(row)
+		var nm := _dlabel(String(r), ThemeBuilder.COL_TEXT, 11)
+		nm.custom_minimum_size.x = 116
+		row.add_child(nm)
+		var pb := ProgressBar.new()
+		pb.max_value = 100
+		pb.value = float(cov[r]["know"])
+		pb.show_percentage = false
+		pb.custom_minimum_size = Vector2(90, 10)
+		pb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		pb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(pb)
+		row.add_child(_dlabel("%d%%" % int(cov[r]["know"]), ThemeBuilder.COL_TEXT_DIM, 11))
+		var ns := int(cov[r]["scouts"])
+		row.add_child(_dlabel("%d scout%s" % [ns, "" if ns == 1 else "s"],
+			ThemeBuilder.COL_GOOD if ns > 0 else ThemeBuilder.COL_TEXT_DIM, 11))
+	_network_box.add_child(_dlabel("Scouts work faster on their home patch; region focuses build knowledge across it.", ThemeBuilder.COL_TEXT_DIM, 10, true))
 
 
 func _on_report_selected(idx: int) -> void:
@@ -875,7 +1370,8 @@ func _refresh_centre() -> void:
 	_clear(_centre_budget)
 	var pc: Dictionary = GameState.player_club()
 	var bill: int = market.wage_bill(pc)
-	_centre_budget.add_child(_dlabel("Transfer budget:  %s" % market.fmt_money_full(int(pc["finances"]["balance"])), ThemeBuilder.COL_GOOD, 15))
+	_centre_budget.add_child(_dlabel("Transfer budget:  %s" % market.fmt_money_full(maxi(0, market.spendable_budget())), ThemeBuilder.COL_GOOD, 15))
+	_centre_budget.add_child(_dlabel("Bank balance:  %s" % market.fmt_money_full(int(pc["finances"]["balance"])), ThemeBuilder.COL_TEXT_DIM, 15))
 	_centre_budget.add_child(_dlabel("Wage bill:  %s / %s per wk" % [
 		market.fmt_money_full(bill), market.fmt_money_full(int(pc["finances"]["wage_budget"]))],
 		ThemeBuilder.COL_TEXT, 15))
@@ -1162,7 +1658,6 @@ func _open_offer_sheet(uid: String, offer_id: int = -1) -> void:
 	if t.is_empty() or t["pool"] != "club":
 		return
 	var inst: Dictionary = t["inst"]
-	var pc: Dictionary = GameState.player_club()
 	var existing: Dictionary = market._offer_out(offer_id) if offer_id >= 0 else {}
 	var locked_kind := "" if existing.is_empty() else String(existing["kind"])
 
@@ -1176,8 +1671,8 @@ func _open_offer_sheet(uid: String, offer_id: int = -1) -> void:
 	vb.add_child(_dlabel("Selling club: %s   ·   their likely valuation: %s" % [
 		GameState.club(t["club_id"])["name"],
 		market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))], ThemeBuilder.COL_TEXT_DIM, 13, true))
-	vb.add_child(_dlabel("Our balance: %s   ·   wage room: %s/wk" % [
-		market.fmt_money_full(int(pc["finances"]["balance"])), market.fmt_money(market.wage_room())],
+	vb.add_child(_dlabel("Transfer budget: %s   ·   wage room: %s/wk" % [
+		market.fmt_money_full(maxi(0, market.spendable_budget())), market.fmt_money(market.wage_room())],
 		ThemeBuilder.COL_TEXT_DIM, 13))
 	var dd: int = market.days_to_deadline()
 	if dd == 0:
@@ -1200,11 +1695,11 @@ func _open_offer_sheet(uid: String, offer_id: int = -1) -> void:
 	pgrid.add_theme_constant_override("h_separation", 16)
 	pgrid.add_theme_constant_override("v_separation", 4)
 	vb.add_child(pgrid)
-	var pre: Dictionary = market.blank_package(mini(int(pc["finances"]["balance"]), market.value_of(inst)))
+	var pre: Dictionary = market.blank_package(mini(maxi(0, market.spendable_budget()), market.value_of(inst)))
 	if not existing.is_empty() and existing["kind"] == "buy":
 		pre = existing["ask_package"] if not existing.get("ask_package", {}).is_empty() else existing["package"]
 	var up_spin := _sheet_spin(0, 10000000, 1000, int(pre.get("upfront", 0)))
-	_sheet_row(pgrid, "Up-front fee", up_spin, "cash now, from our balance")
+	_sheet_row(pgrid, "Up-front fee", up_spin, "cash now, from our transfer budget")
 	var inst_spin := _sheet_spin(0, 10000000, 1000, int(pre.get("inst_amount", 0)))
 	_sheet_row(pgrid, "Installments (total)", inst_spin, "paid yearly — they discount deferred money")
 	var years_opt := OptionButton.new()
@@ -1305,8 +1800,8 @@ func _open_contract_sheet(uid: String, offer_id: int = -1) -> void:
 	if t["pool"] == "prospect":
 		vb.add_child(_dlabel("Development compensation due: %s" % market.fmt_money(int(round(market.value_of(inst) * 0.35 / 1000.0)) * 1000),
 			ThemeBuilder.COL_WARN, 13))
-	vb.add_child(_dlabel("Our wage room: %s/wk   ·   balance: %s" % [
-		market.fmt_money(market.wage_room()), market.fmt_money(int(GameState.player_club()["finances"]["balance"]))],
+	vb.add_child(_dlabel("Our wage room: %s/wk   ·   transfer budget: %s" % [
+		market.fmt_money(market.wage_room()), market.fmt_money(maxi(0, market.spendable_budget()))],
 		ThemeBuilder.COL_TEXT_DIM, 13))
 	vb.add_child(HSeparator.new())
 
@@ -1403,8 +1898,11 @@ func _open_scout_dialog(uid: String) -> void:
 	var t: Dictionary = market.find_target(uid)
 	vb.add_child(_dlabel("Target: %s" % ("" if t.is_empty() else market.display_name(t["inst"])), ThemeBuilder.COL_TEXT, 14))
 	var opt := OptionButton.new()
+	var treg: String = "" if t.is_empty() else market.region_of(t["inst"])
 	for s in idle:
-		opt.add_item("%s (JA %d · %d days)" % [s["name"], int(s["ratings"]["judging_ability"]), market.scout_days_for(s)])
+		var home: String = " · home patch" if market.scout_region(s) == treg else ""
+		opt.add_item("%s (JA %d · %d days%s)" % [s["name"], int(s["ratings"]["judging_ability"]),
+			market.scout_days_for(s, uid), home])
 	vb.add_child(opt)
 	dlg.add_child(vb)
 	dlg.get_ok_button().text = "Send"
@@ -1425,7 +1923,9 @@ func _open_focus_dialog(scout_name: String) -> void:
 	expl.custom_minimum_size.x = 360
 	vb.add_child(expl)
 	var opt := OptionButton.new()
-	var choices: Array = ["Any", "Prospects", "Free agents"]
+	var choices: Array = ["Any", "Prospects", "Free agents", "Shortlist"]
+	for rg in market.REGIONS:
+		choices.append(String(rg))
 	for ty in DataStore.types:
 		choices.append(String(ty))
 	for c in choices:
@@ -1447,6 +1947,7 @@ func _refresh_all() -> void:
 	if not is_inside_tree():
 		return
 	_refresh_header()
+	_refresh_recruitment()
 	_refresh_search()
 	_refresh_detail()
 	_refresh_scouting()
@@ -1468,8 +1969,7 @@ func _refresh_header() -> void:
 	else:
 		var nw: Dictionary = market.next_window()
 		_header_stat("Window CLOSED", "opens %s (%dd)" % [Season.pretty_date(String(nw["open"])), market.days_to_open()], ThemeBuilder.COL_TEXT_DIM)
-	var pc: Dictionary = GameState.player_club()
-	_header_stat("Transfer budget", market.fmt_money(int(pc["finances"]["balance"])), ThemeBuilder.COL_GOOD)
+	_header_stat("Transfer budget", market.fmt_money(maxi(0, market.spendable_budget())), ThemeBuilder.COL_GOOD)
 	var room: int = market.wage_room()
 	_header_stat("Wage room", market.fmt_money(room) + "/wk", ThemeBuilder.COL_GOOD if room > 0 else ThemeBuilder.COL_BAD)
 	var live_out: int = market.offers_out.filter(func(o): return not (String(o["stage"]) in market.DEAD_STAGES)).size()
@@ -1477,4 +1977,8 @@ func _refresh_header() -> void:
 	_header_stat("Active offers", "%d out · %d in" % [live_out, live_in],
 		ThemeBuilder.COL_WARN if (live_out + live_in) > 0 else ThemeBuilder.COL_TEXT)
 	_header_stat("Scouts in field", "%d / %d" % [market.assignments.size(), market.player_scouts().size()])
-	_header_stat("Reports filed", str(market.reports.size()))
+	var n_recs: int = market.new_recs().size()
+	var n_agents: int = market.open_agent_offers().size()
+	_header_stat("Pushed to us", "%d recs · %d agents" % [n_recs, n_agents],
+		ThemeBuilder.COL_ACCENT if (n_recs + n_agents) > 0 else ThemeBuilder.COL_TEXT)
+	_header_stat("Shortlist", "%d targets" % market.shortlist_targets().size())

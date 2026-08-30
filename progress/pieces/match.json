@@ -15,7 +15,13 @@
    "round": 1,
    "winner": "ours",
    "gap": "Prior gap closed: the live view now has an animated arena stage (type-ringed medallions with HP arcs, lunges, projectiles, floating damage numbers, faint/switch/item animations) synced to the event stream. Manual play verified end-to-end via UI button presses: move, switch and item each executed and confirmed in the engine log. Both mandatory failing conditions pass."
+  },
+  {
+   "round": 1,
+   "phase": "wave2",
+   "winner": "ours",
+   "gap": "Both mandatory conditions verified live by an independent driver (artifacts/match/drive1): turn 1 offered 4 moves + 5 switches + item use simultaneously; a move, a switch and an X Attack were each executed through the real action-bar buttons/popup (items spent 0->1, bag x3->x2, engine + commentary + post-match report all agree), and the animated stage rendered lunges/projectiles/switch slides/item flourishes mid-battle. Result flowed to inbox/table/next-fixture. Secondary polish defect to fix: the commentary column overflows the right viewport edge and clips text mid-word whenever the action bar is hidden during replay (shots 03/05/06/07); also the top-bar cash figure lags the items-screen club balance after in-session purchases (shell-side)."
   }
  ],
- "updated": "2026-08-30 03:45"
+ "updated": "2026-08-30 06:28"
 }

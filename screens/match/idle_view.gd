@@ -110,8 +110,13 @@ func _build_recent() -> Control:
 		box.add_child(row)
 	box.add_child(HSeparator.new())
 	var posn := GameState.player_table_position()
-	box.add_child(UI.label("Current league position: %d of %d" %
-		[posn, GameState.league_table().size()], 13, UI.COL_TEXT))
+	var played0 := true
+	for r in GameState.league_table():
+		if GameState.is_player_club(r["club_id"]):
+			played0 = int(r.get("played", 0)) == 0
+	box.add_child(UI.label(("Current league position: — (season not started)" if played0
+		else "Current league position: %d of %d" % [posn, GameState.league_table().size()]),
+		13, UI.COL_TEXT))
 	box.add_child(HSeparator.new())
 	box.add_child(UI.label("YOUR STARTING SIX", 10, UI.COL_DIM))
 	for b in _our_planned_six():

@@ -2,6 +2,9 @@ extends Node
 ## Headless end-to-end check of the season + battle engines.
 ## Run: godot --headless --path . res://tools/sim_check.tscn
 ## Prints "SIM CHECK OK" and exits 0 on success; exits 1 on any failure.
+## The player's real user://save.json is backed up and restored around the run.
+
+const SaveGuard := preload("res://tools/save_guard.gd")
 
 var _fail := false
 
@@ -21,6 +24,7 @@ func _check(cond: bool, what: String) -> void:
 
 func _run() -> void:
 	print("=== sim_check: battle engine determinism ===")
+	SaveGuard.backup()   # never clobber the player's real career
 	GameState.delete_save()
 	GameState.new_career(424242)
 
@@ -185,6 +189,7 @@ func _run() -> void:
 	_check(_inv_norm(GameState.player_inventory()) == inv_before_save,
 		"loaded item inventory matches")
 	GameState.delete_save()
+	SaveGuard.restore()   # hand the player's real save back
 
 	if _fail:
 		printerr("SIM CHECK FAILED")

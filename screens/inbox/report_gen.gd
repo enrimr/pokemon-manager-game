@@ -624,6 +624,8 @@ func _board_preseason(msg: Dictionary) -> Dictionary:
 	bb += "[color=#%s]● Cup:[/color] [color=#%s][b]%s[/b][/color]\n\n" % [C_DIM, C_WHITE, news.cup_expectation_text().capitalize()]
 	bb += "[color=#%s][b]RESOURCES[/b][/color]\n" % C_DIM
 	bb += "[color=#%s]● Bank balance:[/color] [color=#%s][b]%s[/b][/color]\n" % [C_DIM, C_WHITE, news.money(fin["balance"])]
+	bb += "[color=#%s]● Transfer budget:[/color] [color=#%s][b]%s[/b][/color] [color=#%s](released by the board for fees and equipment)[/color]\n" % \
+		[C_DIM, C_WHITE, news.money(maxi(0, int(fin.get("transfer_budget", 0)))), C_DIM]
 	bb += "[color=#%s]● Wage budget:[/color] [color=#%s][b]%s / month[/b][/color] [color=#%s](current bill %s)[/color]\n\n" % \
 		[C_DIM, C_WHITE, news.money(fin["wage_budget"]), C_DIM, news.money(fin["wage_bill"])]
 	bb += "[color=#%s]The board will formally review progress at the start of each month. Expected league position based on club stature: [b]%s[/b].[/color]" % \
@@ -645,8 +647,12 @@ func _board_review(msg: Dictionary) -> Dictionary:
 	bb += "[color=#%s][b]CONFIDENCE[/b][/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%d%%)[/color]\n" % \
 		[C_DIM, conf["color"].to_html(false), str(conf["word"]).to_upper(), C_DIM, int(conf["score"])]
 	bb += "[color=#%s]%s[/color]\n\n" % [C_WHITE, conf["statement"]]
-	bb += "[color=#%s][b]LEAGUE[/b][/color]  [color=#%s]Currently [b]%s[/b] — the board expected around [b]%s[/b].[/color]\n" % \
-		[C_DIM, C_WHITE, _ordinal(conf["pos"]), _ordinal(conf["expected"])]
+	if int(conf["played"]) == 0:
+		bb += "[color=#%s][b]LEAGUE[/b][/color]  [color=#%s]No league matches played yet — the board expects around [b]%s[/b] once the season is under way.[/color]\n" % \
+			[C_DIM, C_WHITE, _ordinal(conf["expected"])]
+	else:
+		bb += "[color=#%s][b]LEAGUE[/b][/color]  [color=#%s]Currently [b]%s[/b] — the board expected around [b]%s[/b].[/color]\n" % \
+			[C_DIM, C_WHITE, _ordinal(conf["pos"]), _ordinal(conf["expected"])]
 	if not form.is_empty():
 		bb += "[color=#%s][b]FORM[/b][/color]  " % C_DIM
 		for r in form:
@@ -654,8 +660,9 @@ func _board_review(msg: Dictionary) -> Dictionary:
 		bb += "  [color=#%s](%d of last %d won)[/color]\n" % [C_DIM, wins, form.size()]
 	bb += "[color=#%s][b]CUP[/b][/color]  [color=#%s]%s[/color]\n\n" % [C_DIM, C_WHITE, news.cup_status()["text"]]
 	var over: bool = int(fin["wage_bill"]) > int(fin["wage_budget"])
-	bb += "[color=#%s][b]FINANCES[/b][/color]  [color=#%s]Balance [b]%s[/b] · wage bill [b]%s[/b] of the %s budget[/color] [color=#%s]%s[/color]" % \
-		[C_DIM, C_WHITE, news.money(fin["balance"]), news.money(fin["wage_bill"]),
+	bb += "[color=#%s][b]FINANCES[/b][/color]  [color=#%s]Balance [b]%s[/b] · transfer budget [b]%s[/b] · wage bill [b]%s[/b] of the %s budget[/color] [color=#%s]%s[/color]" % \
+		[C_DIM, C_WHITE, news.money(fin["balance"]), news.money(maxi(0, int(fin.get("transfer_budget", 0)))),
+		news.money(fin["wage_bill"]),
 		news.money(fin["wage_budget"]), C_BAD if over else C_GOOD,
 		"(OVER BUDGET)" if over else "(within budget)"]
 	return {"bbcode": bb,

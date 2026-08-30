@@ -43,7 +43,47 @@ var deals: Array = []               # completed deals, newest first
 var payments: Array = []            # scheduled installments [{due, amount, club_id, dir:"out"|"in", name}]
 var last_tick: String = ""
 var last_window_key: String = "closed"  # open-date of the window we last saw open ("" = between windows)
+var offer_recent: Dictionary = {}   # unsolicited-bid cool-downs: "uid:x"/"club:y"/"any" -> last bid date
 var _next_id: int = 1
+
+# --- recruitment pipeline (the PUSH side of the market) ---
+var shortlist: Array = []           # uids, in priority order (top = highest)
+var recs: Array = []                # scout recommendation queue [{id, uid, scout, date, ability, potential, note, status:"new"|"accepted"|"dismissed"}]
+var agent_offers: Array = []        # players touted TO us by agents [{id, uid, kind:"fa"|"club", date, expires, ask, pitch, status:"open"|"expired"|"dismissed"}]
+var rumours: Array = []             # rumour mill, newest first [{id, date, kind, uid, club_id, other_id, strength, text, came_true, due}]
+var listed: Dictionary = {}         # uid -> until-date: transfer-listed by their club (ask price slashed)
+var scout_pool: Array = []          # hireable scouts this month [{name, ja, jp, region, wage}]
+var scout_pool_month: String = ""
+var dof: Dictionary = {}            # Director of Battling delegation flags (see DOF_DEFAULTS)
+var dof_log: Array = []             # DoF activity feed, newest first [{date, text}]
+var seeded_window: String = ""      # open-date of the window whose rumours were seeded
+
+const DOF_DEFAULTS := {"handle_bids": false, "pursue_shortlist": false, "auto_scout": false, "max_over_pct": 10}
+const LISTING_DISCOUNT := 0.65      # transfer-listed players go for 65% of the normal ask
+const AGENT_GREASE := 0.88          # agent-touted deals: the seller's threshold drops to 88%
+const MAX_HIRED_SCOUTS := 4
+
+# Scouting regions: every species belongs to one (by primary type). A scout has
+# a home region — they work faster there, and a region focus builds a knowledge
+# network across it. This is the FM regional-scouting model in Indigo colours.
+const REGIONS := {
+	"Verdant Interior": ["grass", "bug", "poison"],
+	"Coastal Circuit": ["water", "ice"],
+	"Volcanic Belt": ["fire", "rock", "ground"],
+	"Storm Plateau": ["electric", "flying", "dragon"],
+	"Old Capital": ["normal", "psychic", "ghost", "fighting"],
+}
+
+const SCOUT_FIRST := ["Marta", "Kenji", "Rosa", "Dario", "Yuki", "Petra", "Silas", "Noor",
+	"Ivo", "Carmen", "Talia", "Bruno", "Sachi", "Olek", "Ines", "Ramon", "Freya", "Goro"]
+const SCOUT_LAST := ["Okabe", "Ferreira", "Lindqvist", "Marchetti", "Sunada", "Volkov",
+	"Reyes", "Ashford", "Kimura", "Duarte", "Novak", "Grieve", "Tanaka", "Bellamy"]
+
+# Pacing of unsolicited incoming bids (days). Deadline pressure halves them.
+const COOLDOWN_ANY := 4             # league-wide: at most one cold bid every N days
+const COOLDOWN_MON := 14            # per squad member
+const COOLDOWN_CLUB := 10           # per bidding club
+const BIG_BID_FACTOR := 1.2         # bid >= 120% of our valuation = board-urgent
 
 # Terminal negotiation stages (an offer in one of these is dead).
 const DEAD_STAGES := ["completed", "rejected", "withdrawn", "collapsed", "hijacked"]
@@ -53,13 +93,14 @@ func _init() -> void:
 	GameState.date_changed.connect(_on_date_changed)
 	GameState.career_started.connect(_on_career_started)
 	_load_state()
+	_seed_window_rumours()
 
 
 # ------------------------------------------------------------------ persistence
 
 func save_state() -> void:
 	var data := {
-		"version": 3,
+		"version": 4,
 		"career_seed": GameState.career_seed,
 		"as_of": GameState.current_date,
 		"knowledge": knowledge,
@@ -71,7 +112,18 @@ func save_state() -> void:
 		"payments": payments,
 		"last_tick": last_tick,
 		"last_window_key": last_window_key,
+		"offer_recent": offer_recent,
 		"next_id": _next_id,
+		"shortlist": shortlist,
+		"recs": recs,
+		"agent_offers": agent_offers,
+		"rumours": rumours,
+		"listed": listed,
+		"scout_pool": scout_pool,
+		"scout_pool_month": scout_pool_month,
+		"dof": dof,
+		"dof_log": dof_log,
+		"seeded_window": seeded_window,
 	}
 	var f := FileAccess.open(STATE_PATH, FileAccess.WRITE)
 	if f != null:
@@ -84,7 +136,7 @@ func _load_state() -> void:
 		return
 	var f := FileAccess.open(STATE_PATH, FileAccess.READ)
 	var data: Variant = JSON.parse_string(f.get_as_text())
-	if data == null or typeof(data) != TYPE_DICTIONARY or not (int(data.get("version", 0)) in [1, 2, 3]):
+	if data == null or typeof(data) != TYPE_DICTIONARY or not (int(data.get("version", 0)) in [1, 2, 3, 4]):
 		return
 	# Reject state from a different / newer career (new career resets the calendar).
 	if int(data.get("career_seed", -1)) != GameState.career_seed:
@@ -100,7 +152,22 @@ func _load_state() -> void:
 	payments = data.get("payments", [])
 	last_tick = String(data.get("last_tick", ""))
 	last_window_key = String(data.get("last_window_key", "closed"))
+	offer_recent = data.get("offer_recent", {}) if typeof(data.get("offer_recent")) == TYPE_DICTIONARY else {}
 	_next_id = int(data.get("next_id", 1))
+	shortlist = data.get("shortlist", [])
+	recs = data.get("recs", [])
+	agent_offers = data.get("agent_offers", [])
+	rumours = data.get("rumours", [])
+	listed = data.get("listed", {}) if typeof(data.get("listed")) == TYPE_DICTIONARY else {}
+	scout_pool = data.get("scout_pool", [])
+	scout_pool_month = String(data.get("scout_pool_month", ""))
+	dof = DOF_DEFAULTS.duplicate()
+	var saved_dof: Variant = data.get("dof", {})
+	if typeof(saved_dof) == TYPE_DICTIONARY:
+		for k in saved_dof:
+			dof[k] = saved_dof[k]
+	dof_log = data.get("dof_log", [])
+	seeded_window = String(data.get("seeded_window", ""))
 	if int(data.get("version", 0)) == 1:
 		_migrate_v1_offers()
 
@@ -135,11 +202,23 @@ func _reset_state() -> void:
 	payments = []
 	last_tick = ""
 	last_window_key = "closed"
+	offer_recent = {}
 	_next_id = 1
+	shortlist = []
+	recs = []
+	agent_offers = []
+	rumours = []
+	listed = {}
+	scout_pool = []
+	scout_pool_month = ""
+	dof = DOF_DEFAULTS.duplicate()
+	dof_log = []
+	seeded_window = ""
 
 
 func _on_career_started() -> void:
 	_load_state()
+	_seed_window_rumours()
 	market_updated.emit()
 
 
@@ -241,7 +320,14 @@ func importance_of(inst: Dictionary, club: Dictionary) -> float:
 func ask_price(inst: Dictionary, club_id: String) -> int:
 	if club_id == "":
 		return 0
-	return int(round(value_of(inst) * importance_of(inst, GameState.club(club_id)) / 1000.0)) * 1000
+	var v := value_of(inst) * importance_of(inst, GameState.club(club_id))
+	if is_listed(String(inst["uid"])):
+		v *= LISTING_DISCOUNT   # club wants them gone — the rumour mill told you first
+	return int(round(v / 1000.0)) * 1000
+
+
+func is_listed(uid: String) -> bool:
+	return listed.has(uid) and String(listed[uid]) >= GameState.current_date
 
 
 func wage_bill(club: Dictionary) -> int:
@@ -252,12 +338,28 @@ func wage_bill(club: Dictionary) -> int:
 			s += int(round(float(sal) * float(inst["loan"].get("wage_split", 100)) / 100.0))
 		else:
 			s += sal
+	for st in club["staff"]:
+		s += int(st.get("wage", 0))   # hired scouts draw from the same wage budget
 	return s
 
 
 func wage_room() -> int:
 	var pc: Dictionary = GameState.player_club()
 	return int(pc["finances"]["wage_budget"]) - wage_bill(pc)
+
+
+## What the manager may actually put into a deal right now: the board's
+## transfer budget, never more than the cash physically in the bank.
+func spendable_budget() -> int:
+	var fin: Dictionary = GameState.player_club()["finances"]
+	return mini(int(fin["balance"]), int(fin.get("transfer_budget", int(fin["balance"]))))
+
+
+## Mirror a player-club cash move into the board's transfer budget:
+## fees/bonuses paid reduce it, sales/sell-ons/installments received top it
+## back up (capped at the bank balance inside GameState).
+func _adjust_player_budget(delta: int) -> void:
+	GameState.adjust_transfer_budget(GameState.world["meta"]["player_club_id"], delta)
 
 
 # ------------------------------------------------------------------ transfer windows
@@ -398,6 +500,7 @@ func _tick_windows() -> void:
 			"%s OPEN — deadline day %s" % [String(w["name"]).to_upper(), Season.pretty_date(String(w["close"]))],
 			"The %s is open. Club-to-club transfers, loans and prospect signings are live until %s (%d days). The market always heats up toward the deadline — move early or scramble late." % [
 				String(w["name"]), Season.pretty_date(String(w["close"])), days_to_deadline()])
+		_seed_window_rumours()
 	else:
 		_close_window(old_key)
 
@@ -547,6 +650,8 @@ func offer_hint(uid: String, pkg: Dictionary) -> String:
 	var pc: Dictionary = GameState.player_club()
 	var rep_factor := 1.0 + float(int(seller["reputation"]) - int(pc["reputation"])) * 0.015
 	var base := float(ask_price(t["inst"], t["club_id"])) * rep_factor
+	if not agent_offer_for(uid).is_empty():
+		base *= AGENT_GREASE   # the agent has done half the negotiating already
 	var know := knowledge_of(uid)
 	if know < 50.0:
 		# blurred read on their valuation
@@ -716,8 +821,34 @@ func assignment_for_target(uid: String) -> Dictionary:
 	return {}
 
 
-func scout_days_for(scout: Dictionary) -> int:
-	return clampi(13 - int(scout["ratings"]["judging_ability"]) / 2, 4, 12)
+func region_of(inst: Dictionary) -> String:
+	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
+	var t0 := String(sp["types"][0])
+	for r in REGIONS:
+		if t0 in REGIONS[r]:
+			return r
+	return "Old Capital"
+
+
+func scout_region(scout: Dictionary) -> String:
+	## A scout's home network. Hired scouts carry it; legacy coach-scouts get a
+	## deterministic one so the region system covers everybody.
+	if scout.has("region"):
+		return String(scout["region"])
+	var names: Array = REGIONS.keys()
+	return names[absi(String(scout["name"]).hash() + GameState.career_seed) % names.size()]
+
+
+func scout_days_for(scout: Dictionary, uid: String = "") -> int:
+	var days := clampi(13 - int(scout["ratings"]["judging_ability"]) / 2, 4, 12)
+	if uid != "":
+		var t := find_target(uid)
+		if not t.is_empty():
+			if region_of(t["inst"]) == scout_region(scout):
+				days = maxi(3, days - 3)   # home network: contacts everywhere
+			else:
+				days += 2                  # working cold, off their patch
+	return days
 
 
 func assign_scout_to_target(scout_name: String, uid: String) -> String:
@@ -731,7 +862,7 @@ func assign_scout_to_target(scout_name: String, uid: String) -> String:
 		return "Invalid scouting target."
 	if knowledge_of(uid) >= 100.0:
 		return "%s is already fully scouted." % display_name(t["inst"])
-	var days := scout_days_for(scout)
+	var days := scout_days_for(scout, uid)
 	assignments.append({
 		"scout": scout_name, "kind": "target", "uid": uid, "focus_type": "",
 		"days_left": days, "days_total": days, "started": GameState.current_date,
@@ -790,6 +921,9 @@ func _tick_scouting(rng: RandomNumberGenerator) -> void:
 			for i in mini(2, pool.size()):
 				var uid2: String = pool[i]["inst"]["uid"]
 				var gain := float(ja) * (0.9 + rng.randf() * 0.6)
+				# Home-region network: knowledge flows in much faster.
+				if not scout.is_empty() and region_of(pool[i]["inst"]) == scout_region(scout):
+					gain *= 1.5
 				knowledge[uid2] = minf(100.0, knowledge_of(uid2) + gain)
 				if knowledge[uid2] >= 100.0:
 					_generate_report(uid2, a["scout"])
@@ -814,6 +948,10 @@ func _matches_focus(inst: Dictionary, focus_type: String) -> bool:
 	if focus_type == "Free agents":
 		var t := find_target(inst["uid"])
 		return not t.is_empty() and t["pool"] == "fa"
+	if focus_type == "Shortlist":
+		return String(inst["uid"]) in shortlist
+	if REGIONS.has(focus_type):
+		return region_of(inst) == focus_type
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 	return focus_type in sp["types"]
 
@@ -898,6 +1036,51 @@ func _generate_report(uid: String, scout_name: String) -> void:
 		"ability_stars": snappedf(ability, 0.5), "potential_stars": snappedf(pot, 0.5),
 		"pros": pros, "cons": cons, "verdict": verdict,
 	}
+	_maybe_recommend(uid, scout_name)
+
+
+func _maybe_recommend(uid: String, scout_name: String) -> void:
+	## Scouts PUSH: a strong report lands in the recommendation queue, waiting
+	## for the manager to shortlist or dismiss — the FM recruitment-meeting loop.
+	var r: Dictionary = reports.get(uid, {})
+	if r.is_empty():
+		return
+	var ab := float(r["ability_stars"])
+	var pot := float(r["potential_stars"])
+	if ab < 3.0 and pot < 3.5:
+		return
+	if uid in shortlist:
+		return
+	for rc in recs:
+		if String(rc["uid"]) == uid and String(rc["status"]) == "new":
+			return
+	var note: String
+	if ab >= 4.0:
+		note = "%s: \"A genuine difference-maker — take this to the board.\"" % scout_name
+	elif ab >= 3.0:
+		note = "%s: \"Would improve our first team today.\"" % scout_name
+	else:
+		note = "%s: \"One for the future — the ceiling is %s.\"" % [scout_name, _star_txt(pot)]
+	recs.push_front({
+		"id": _next_id, "uid": uid, "scout": scout_name, "date": GameState.current_date,
+		"ability": ab, "potential": pot, "note": note, "status": "new",
+	})
+	_next_id += 1
+	if recs.size() > 30:
+		recs.resize(30)
+	GameState.add_inbox_message(GameState.current_date,
+		"Scout recommendation: %s (%s / %s)" % [String(r["name"]), _star_txt(ab), _star_txt(pot)],
+		"%s Review the recommendation queue in Transfers > Recruitment — shortlist them or pass." % note)
+
+
+func _star_txt(v: float) -> String:
+	var full := int(v)
+	var s := ""
+	for i in full:
+		s += "★"
+	if v - float(full) >= 0.45:
+		s += "½"
+	return s
 
 
 # ------------------------------------------------------------------ outgoing offers (buying)
@@ -973,8 +1156,8 @@ func _new_offer(uid: String, t: Dictionary, kind: String) -> Dictionary:
 func _validate_package(pkg: Dictionary) -> String:
 	var pc: Dictionary = GameState.player_club()
 	var up := int(pkg.get("upfront", 0))
-	if up > int(pc["finances"]["balance"]):
-		return "Up-front fee exceeds our transfer balance (%s)." % fmt_money(int(pc["finances"]["balance"]))
+	if up > spendable_budget():
+		return "Up-front fee exceeds our transfer budget (%s released by the board)." % fmt_money(spendable_budget())
 	if package_total(pkg) < 1000 and int(pkg.get("sell_on", 0)) <= 0:
 		return "Offer something — minimum package is %s." % fmt_money(1000)
 	if int(pkg.get("sell_on", 0)) < 0 or int(pkg.get("sell_on", 0)) > 50:
@@ -1072,9 +1255,8 @@ func accept_package(offer_id: int, which: String = "ask") -> String:
 	var pkg: Dictionary = o["alt_package"] if which == "alt" else o["ask_package"]
 	if pkg.is_empty():
 		return "That proposal is not on the table."
-	var pc: Dictionary = GameState.player_club()
-	if int(pkg.get("upfront", 0)) > int(pc["finances"]["balance"]):
-		return "We cannot afford the up-front part of that package (%s)." % fmt_money(int(pkg.get("upfront", 0)))
+	if int(pkg.get("upfront", 0)) > spendable_budget():
+		return "Our transfer budget cannot cover the up-front part of that package (%s)." % fmt_money(int(pkg.get("upfront", 0)))
 	o["package"] = pkg.duplicate()
 	o["binding"] = true
 	o["stage"] = "bid_pending"
@@ -1098,10 +1280,9 @@ func offer_contract(offer_id: int, con: Dictionary) -> String:
 	var bonus := int(con.get("bonus", 0))
 	if wage > wage_room():
 		return "That wage breaks our wage budget (room: %s/wk)." % fmt_money(wage_room())
-	var pc: Dictionary = GameState.player_club()
 	var cash_needed := bonus + int(o["package"].get("upfront", 0))
-	if cash_needed > int(pc["finances"]["balance"]):
-		return "Signing bonus plus the up-front fee exceeds our balance."
+	if cash_needed > spendable_budget():
+		return "Signing bonus plus the up-front fee exceeds our transfer budget (%s)." % fmt_money(spendable_budget())
 	if wage < 50:
 		return "Offer a serious wage."
 	o["contract"] = {
@@ -1142,8 +1323,9 @@ func sign_free_agent(uid: String, con: Dictionary) -> String:
 		fee = int(round(value_of(t["inst"]) * 0.35 / 1000.0)) * 1000
 	var wage := int(con.get("wage", 0))
 	var bonus := maxi(0, int(con.get("bonus", 0)))
-	if fee + bonus > int(GameState.player_club()["finances"]["balance"]):
-		return "Compensation plus signing bonus (%s) exceeds our balance." % fmt_money(fee + bonus)
+	if fee + bonus > spendable_budget():
+		return "Compensation plus signing bonus (%s) exceeds our transfer budget (%s)." % [
+			fmt_money(fee + bonus), fmt_money(spendable_budget())]
 	if wage > wage_room():
 		return "That wage breaks our wage budget (room: %s/wk)." % fmt_money(wage_room())
 	if wage < 50:
@@ -1209,6 +1391,10 @@ func _respond_to_package(o: Dictionary, t: Dictionary, rng: RandomNumberGenerato
 	var rep_factor := 1.0 + float(int(seller["reputation"]) - int(pc["reputation"])) * 0.015
 	var mood := 0.97 + rng.randf() * 0.15 - float(int(o["rounds"])) * 0.03
 	var threshold := int(float(ask_price(inst, o["club_id"])) * rep_factor * maxf(0.85, mood))
+	# An agent touting the player to US greases the deal: the client is pushing
+	# to join, so the seller's resolve softens.
+	if not agent_offer_for(String(o["uid"])).is_empty():
+		threshold = int(float(threshold) * AGENT_GREASE)
 	# A live rival bid props the seller's price up — beat it or lose the race.
 	var rv: Dictionary = o.get("rival", {})
 	if not rv.is_empty():
@@ -1386,6 +1572,7 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 			"wage_split": split, "option_fee": int(lt.get("option_fee", 0)), "warned": false}
 		pc["squad"].append(inst)
 		knowledge[inst["uid"]] = 100.0
+		shortlist.erase(String(inst["uid"]))
 		o["stage"] = "completed"
 		o["log"].append(_log_line("Loan agreed. %s joins %s until %s." % [o["name"], pc["short"], Season.pretty_date(inst["loan"]["until"])]))
 		_log_deal(o["name"], owner["name"], pc["name"], 0, extra_wage, "loan", describe_loan(lt))
@@ -1397,9 +1584,9 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 		GameState.save_game()
 		return
 
-	if upfront + bonus > int(pc["finances"]["balance"]) or int(con.get("wage", 0)) > wage_room():
+	if upfront + bonus > spendable_budget() or int(con.get("wage", 0)) > wage_room():
 		o["stage"] = "collapsed"
-		o["log"].append(_log_line("Deal collapsed — budget no longer covers the terms."))
+		o["log"].append(_log_line("Deal collapsed — the transfer or wage budget no longer covers the terms."))
 		return
 
 	# Move the instance to our squad.
@@ -1427,7 +1614,9 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 	inst["squad_status"] = String(con.get("status", "First team"))
 	pc["squad"].append(inst)
 	pc["finances"]["balance"] = int(pc["finances"]["balance"]) - upfront - bonus
+	_adjust_player_budget(-(upfront + bonus))
 	knowledge[inst["uid"]] = 100.0
+	shortlist.erase(String(inst["uid"]))
 	o["stage"] = "completed"
 	o["log"].append(_log_line("Deal done. %s joins %s." % [o["name"], pc["short"]]))
 	var from_name: String = "Free agency" if o["club_id"] == "" else String(GameState.club(o["club_id"])["name"])
@@ -1467,9 +1656,12 @@ func _pay_sell_on(inst: Dictionary, fee: int, seller: Dictionary) -> void:
 	var cut := int(round(float(fee) * float(so.get("pct", 0)) / 100.0))
 	if cut > 0:
 		seller["finances"]["balance"] = int(seller["finances"]["balance"]) - cut
+		if GameState.is_player_club(String(seller["id"])):
+			_adjust_player_budget(-cut)
 		if GameState.is_player_club(owner_id):
 			var pc: Dictionary = GameState.player_club()
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) + cut
+			_adjust_player_budget(cut)
 			GameState.add_inbox_message(GameState.current_date,
 				"Sell-on clause pays out: %s (%s)" % [display_name(inst), fmt_money(cut)],
 				"Our %d%% sell-on clause on %s has paid out %s from their %s move." % [
@@ -1493,11 +1685,12 @@ func exercise_loan_option(uid: String) -> String:
 			var fee := int(inst["loan"].get("option_fee", 0))
 			if fee <= 0:
 				return "No option to buy in this loan."
-			if fee > int(pc["finances"]["balance"]):
-				return "We cannot afford the option fee (%s)." % fmt_money(fee)
+			if fee > spendable_budget():
+				return "Our transfer budget cannot cover the option fee (%s)." % fmt_money(fee)
 			var owner_id := String(inst["loan"]["owner"])
 			var owner: Dictionary = GameState.club(owner_id)
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - fee
+			_adjust_player_budget(-fee)
 			owner["finances"]["balance"] = int(owner["finances"]["balance"]) + fee
 			inst.erase("loan")
 			inst["contract"]["expiry"] = "%d-06-30" % (int(GameState.current_date.substr(0, 4)) + 2)
@@ -1549,6 +1742,7 @@ func _tick_payments() -> void:
 		var other: Dictionary = GameState.club(String(p["club_id"])) if String(p["club_id"]) != "" else {}
 		if String(p["dir"]) == "out":
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - amount
+			_adjust_player_budget(-amount)
 			if not other.is_empty():
 				other["finances"]["balance"] = int(other["finances"]["balance"]) + amount
 			GameState.add_inbox_message(GameState.current_date, "Installment paid: %s (%s)" % [String(p["name"]), fmt_money(amount)],
@@ -1557,6 +1751,7 @@ func _tick_payments() -> void:
 					(" to %s" % other["name"]) if not other.is_empty() else ""])
 		else:
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) + amount
+			_adjust_player_budget(amount)
 			if not other.is_empty():
 				other["finances"]["balance"] = int(other["finances"]["balance"]) - amount
 			GameState.add_inbox_message(GameState.current_date, "Installment received: %s (%s)" % [String(p["name"]), fmt_money(amount)],
@@ -1705,6 +1900,7 @@ func counter_offer_in(offer_id: int, ask: int, ask_sell_on: int = 0) -> String:
 		return "Sell-on demand must be between 0% and 50%."
 	o["ask"] = ask
 	o["ask_sell_on"] = ask_sell_on
+	o["routine"] = false   # the manager engaged — follow-ups deserve attention
 	o["stage"] = "counter_pending"
 	o["respond_on"] = Season.date_add(GameState.current_date, _response_delay(int(o["id"])))
 	var txt := "We demanded %s" % fmt_money(ask)
@@ -1745,6 +1941,7 @@ func _complete_sale(o: Dictionary) -> String:
 	pc["squad"].erase(inst)
 	buyer["squad"].append(inst)
 	pc["finances"]["balance"] = int(pc["finances"]["balance"]) + upfront
+	_adjust_player_budget(upfront)   # sales feed the board's transfer kitty
 	buyer["finances"]["balance"] = int(buyer["finances"]["balance"]) - upfront
 	# Sell-on we owe a third party pays out of the total fee.
 	_pay_sell_on(inst, total_fee, pc)
@@ -1824,6 +2021,38 @@ func _respond_counter_in(o: Dictionary, rng: RandomNumberGenerator) -> void:
 				o["name"], buyer["name"]])
 
 
+# --- unsolicited-bid pacing ------------------------------------------------
+# FM clubs don't phone every other day. Cool-downs (per mon, per bidding
+# club, league-wide) gate cold bids; deadline pressure halves them so the
+# window run-in still feels alive. Routine bids arrive as non-urgent mail;
+# only genuinely big money (see bid_is_big) stops the Continue loop.
+
+func offer_cooldown_ok(uid: String, club_id: String) -> bool:
+	var scale := 0.5 if days_to_deadline() >= 0 and days_to_deadline() <= 2 else 1.0
+	var gates := [["any", int(COOLDOWN_ANY * scale)],
+		["uid:%s" % uid, int(COOLDOWN_MON * scale)],
+		["club:%s" % club_id, int(COOLDOWN_CLUB * scale)]]
+	for g in gates:
+		var last := str(offer_recent.get(g[0], ""))
+		if last != "" and Season.days_between(last, GameState.current_date) < int(g[1]):
+			return false
+	return true
+
+
+func note_unsolicited_offer(uid: String, club_id: String) -> void:
+	offer_recent["any"] = GameState.current_date
+	offer_recent["uid:%s" % uid] = GameState.current_date
+	offer_recent["club:%s" % club_id] = GameState.current_date
+
+
+## A bid big enough that the manager must hear about it IMMEDIATELY:
+## well above our valuation, or any deadline-day panic money.
+func bid_is_big(inst: Dictionary, total: int) -> bool:
+	if days_to_deadline() >= 0 and days_to_deadline() <= 1:
+		return true
+	return total >= int(float(value_of(inst)) * BIG_BID_FACTOR)
+
+
 func _offer_expiry(days: int) -> String:
 	## Incoming bids never outlive the window: on deadline day they expire tonight.
 	var exp := Season.date_add(GameState.current_date, days)
@@ -1842,8 +2071,12 @@ func _tick_offers_in(rng: RandomNumberGenerator) -> void:
 		elif o["stage"] == "open" and String(o.get("expires_on", "9999")) <= GameState.current_date:
 			o["stage"] = "expired"
 			o["log"].append(_log_line("Offer expired."))
+	# Rumoured bids for OUR squad land first — the mill predicts the phone call.
+	if _resolve_our_player_rumours(rng):
+		return
 	# New incoming bids only arrive while the window is open — and pour in near
-	# the deadline (panic buys can go well above our valuation).
+	# the deadline (panic buys can go well above our valuation). Cool-downs
+	# per mon / per club / league-wide keep the phone from ringing daily.
 	var factor := deadline_factor()
 	if factor <= 0.0 or pc["squad"].size() <= 6:
 		return
@@ -1860,6 +2093,8 @@ func _tick_offers_in(rng: RandomNumberGenerator) -> void:
 				return not GameState.is_player_club(c["id"]) and int(c["finances"]["balance"]) > int(float(value_of(inst)) * 0.7))
 			if not clubs.is_empty():
 				var buyer2: Dictionary = clubs[rng.randi() % clubs.size()]
+				if not offer_cooldown_ok(str(inst["uid"]), str(buyer2["id"])):
+					return
 				# Panic bids on deadline day run 100-135% of value; normal bids 75-115%.
 				var mult := (1.0 + rng.randf() * 0.35) if panic else (0.75 + rng.randf() * 0.4)
 				var bid := int(round(float(value_of(inst)) * mult / 1000.0)) * 1000
@@ -1870,21 +2105,33 @@ func _tick_offers_in(rng: RandomNumberGenerator) -> void:
 					var up := int(round(float(bid) * (0.55 + rng.randf() * 0.25) / 1000.0)) * 1000
 					pkg = {"upfront": up, "inst_amount": bid - up, "inst_years": 1 + (rng.randi() % 2), "sell_on": 0}
 				var expires := _offer_expiry(6)
+				var big := bid_is_big(inst, package_total(pkg))
 				offers_in.append({
 					"id": _next_id, "uid": inst["uid"], "club_id": buyer2["id"],
 					"package": pkg, "ask": 0, "ask_sell_on": 0, "stage": "open", "name": display_name(inst),
-					"respond_on": "", "expires_on": expires,
+					"respond_on": "", "expires_on": expires, "routine": not big,
 					"log": [_log_line("%s bid %s.%s" % [buyer2["short"], describe_package(pkg),
 						" DEADLINE-DAY BID — decide today." if panic else ""])],
 				})
 				_next_id += 1
-				GameState.add_inbox_message(GameState.current_date,
-					"%s: %s bid %s for %s" % ["DEADLINE-DAY OFFER" if panic else "Transfer offer",
-						buyer2["short"], fmt_money(package_total(pkg)), display_name(inst)],
-					"%s have offered %s for %s (our valuation: %s). Accept, reject or negotiate — you can demand more cash and a sell-on clause — before %s.%s" % [
-						buyer2["name"], describe_package(pkg), display_name(inst),
-						fmt_money(value_of(inst)), Season.pretty_date(expires),
-						" The window shuts tonight: this bid dies at midnight." if panic else ""])
+				note_unsolicited_offer(str(inst["uid"]), str(buyer2["id"]))
+				if big:
+					GameState.add_inbox_message(GameState.current_date,
+						"%s: %s bid %s for %s" % ["DEADLINE-DAY OFFER" if panic else "Transfer offer",
+							buyer2["short"], fmt_money(package_total(pkg)), display_name(inst)],
+						"%s have offered %s for %s (our valuation: %s). Accept, reject or negotiate — you can demand more cash and a sell-on clause — before %s.%s" % [
+							buyer2["name"], describe_package(pkg), display_name(inst),
+							fmt_money(value_of(inst)), Season.pretty_date(expires),
+							" The window shuts tonight: this bid dies at midnight." if panic else ""])
+				else:
+					# Routine interest: logged and waiting in the Transfer Centre,
+					# but it does not stop the manager's week.
+					GameState.add_inbox_message(GameState.current_date,
+						"Transfer interest: %s bid %s for %s" % [
+							buyer2["short"], fmt_money(package_total(pkg)), display_name(inst)],
+						"%s have lodged an offer of %s for %s (our valuation: %s). Nothing that demands an immediate answer — it sits in the Transfer Centre until %s if you want to deal." % [
+							buyer2["name"], describe_package(pkg), display_name(inst),
+							fmt_money(value_of(inst)), Season.pretty_date(expires)])
 
 
 # ------------------------------------------------------------------ AI <-> AI market activity
@@ -1917,6 +2164,12 @@ func _tick_ai_market(rng: RandomNumberGenerator) -> void:
 
 
 func _ai_club_deal(rng: RandomNumberGenerator) -> void:
+	# A ripe interest rumour comes true first — the mill is foreshadowing, not noise.
+	var rum := _ripe_interest_rumour()
+	if not rum.is_empty():
+		if rng.randf() < float(RUMOUR_TRUTH.get(String(rum["strength"]), 0.5)) and _complete_rumoured_deal(rum, rng):
+			return
+		rum["dud"] = true
 	var clubs: Array = GameState.world["clubs"].filter(func(c): return not GameState.is_player_club(c["id"]))
 	var buyer: Dictionary = clubs[rng.randi() % clubs.size()]
 	var sellers: Array = clubs.filter(func(c): return c["id"] != buyer["id"] and c["squad"].size() > 9)
@@ -1928,6 +2181,10 @@ func _ai_club_deal(rng: RandomNumberGenerator) -> void:
 	sellable = sellable.slice(4)  # keep their stars at home
 	if sellable.is_empty():
 		return
+	# Transfer-listed battlers are the ones actually in the shop window.
+	var on_list: Array = sellable.filter(func(i): return is_listed(String(i["uid"])))
+	if not on_list.is_empty() and rng.randf() < 0.6:
+		sellable = on_list
 	var inst: Dictionary = sellable[rng.randi() % sellable.size()]
 	# Deadline-day fees run hot.
 	var mult := (0.95 + rng.randf() * 0.35) if days_to_deadline() <= 1 else (0.85 + rng.randf() * 0.3)
@@ -1943,6 +2200,7 @@ func _ai_club_deal(rng: RandomNumberGenerator) -> void:
 	var tag := " (deadline day)" if is_deadline_day() else ""
 	_log_deal(display_name(inst), seller["name"], buyer["name"], fee,
 		int(inst["contract"]["salary"]), "ai", fmt_money(fee) + " cash" + tag)
+	_alert_shortlist_sold(inst, buyer)
 	if fee >= 250000 or is_deadline_day():
 		GameState.add_inbox_message(GameState.current_date,
 			"%s: %s sign %s" % ["Deadline-day move" if is_deadline_day() else "Market news",
@@ -1950,6 +2208,648 @@ func _ai_club_deal(rng: RandomNumberGenerator) -> void:
 			"%s have paid %s a fee of %s for %s (Lv %d)%s. One to watch when we face them." % [
 				buyer["name"], seller["name"], fmt_money(fee), display_name(inst), int(inst["level"]),
 				" as the window slams shut" if is_deadline_day() else ""])
+
+
+func _complete_rumoured_deal(rum: Dictionary, rng: RandomNumberGenerator) -> bool:
+	## Executes the transfer an interest rumour foreshadowed. False if the world
+	## moved on (target sold, buyer broke) — the rumour then dies a dud.
+	var t := find_target(String(rum["uid"]))
+	if t.is_empty() or t["pool"] != "club" or String(t["club_id"]) != String(rum["club_id"]):
+		return false
+	var seller: Dictionary = GameState.club(String(rum["club_id"]))
+	var buyer: Dictionary = GameState.club(String(rum["other_id"]))
+	if buyer.is_empty() or seller["squad"].size() <= 9:
+		return false
+	var inst: Dictionary = t["inst"]
+	# Don't gazump the manager silently: live player negotiations go through the rival system instead.
+	if not offer_for_target(String(inst["uid"])).is_empty():
+		return false
+	var fee := int(round(float(ask_price(inst, String(seller["id"]))) * (0.9 + rng.randf() * 0.2) / 1000.0)) * 1000
+	if fee > int(float(buyer["finances"]["balance"]) * 0.6):
+		return false
+	seller["squad"].erase(inst)
+	buyer["squad"].append(inst)
+	buyer["finances"]["balance"] = int(buyer["finances"]["balance"]) - fee
+	seller["finances"]["balance"] = int(seller["finances"]["balance"]) + fee
+	_pay_sell_on(inst, fee, seller)
+	rum["came_true"] = true
+	_log_deal(display_name(inst), seller["name"], buyer["name"], fee,
+		int(inst["contract"]["salary"]), "ai", fmt_money(fee) + " cash — as rumoured")
+	_alert_shortlist_sold(inst, buyer)
+	GameState.add_inbox_message(GameState.current_date,
+		"Rumour confirmed: %s sign %s" % [buyer["short"], display_name(inst)],
+		"The paper talk was right — %s have completed a %s deal for %s from %s." % [
+			buyer["name"], fmt_money(fee), display_name(inst), seller["name"]])
+	return true
+
+
+func _alert_shortlist_sold(inst: Dictionary, buyer: Dictionary) -> void:
+	if not shortlisted(String(inst["uid"])):
+		return
+	GameState.add_inbox_message(GameState.current_date,
+		"SHORTLIST: we lost %s to %s" % [display_name(inst), String(buyer["short"])],
+		"Our shortlisted target %s has signed for %s while we sat on our hands. The shortlist only works if we act on the alerts." % [
+			display_name(inst), String(buyer["name"])])
+
+
+# ------------------------------------------------------------------ shortlist
+# The manager's target board. Everything in the pipeline pushes INTO it
+# (scout recommendations, agent offers) and everything watching the market
+# reports ON it (rumours, listings, rival interest, DoF delegation).
+
+func shortlisted(uid: String) -> bool:
+	return uid in shortlist
+
+
+func toggle_shortlist(uid: String) -> String:
+	if uid in shortlist:
+		shortlist.erase(uid)
+	else:
+		var t := find_target(uid)
+		if t.is_empty() or t["pool"] == "mine":
+			return "Only market targets can be shortlisted."
+		if shortlist.size() >= 12:
+			return "Shortlist is full (12) — remove a target first."
+		shortlist.append(uid)
+	save_state()
+	market_updated.emit()
+	return ""
+
+
+func shortlist_targets() -> Array:
+	## Live target dicts, pruning anything that left the market (sold to us, etc.).
+	var out: Array = []
+	var stale: Array = []
+	for uid in shortlist:
+		var t := find_target(String(uid))
+		if t.is_empty() or t["pool"] == "mine":
+			stale.append(uid)
+		else:
+			out.append(t)
+	for uid in stale:
+		shortlist.erase(uid)
+	return out
+
+
+# ------------------------------------------------------------------ scout recommendation queue
+
+func new_recs() -> Array:
+	return recs.filter(func(r): return String(r["status"]) == "new" and not find_target(String(r["uid"])).is_empty())
+
+
+func rec_accept(rec_id: int) -> String:
+	for r in recs:
+		if int(r["id"]) == rec_id and String(r["status"]) == "new":
+			r["status"] = "accepted"
+			var err := toggle_shortlist(String(r["uid"]))
+			if err != "":
+				r["status"] = "new"
+				return err
+			return ""
+	return "Recommendation no longer available."
+
+
+func rec_dismiss(rec_id: int) -> void:
+	for r in recs:
+		if int(r["id"]) == rec_id:
+			r["status"] = "dismissed"
+	save_state()
+	market_updated.emit()
+
+
+# ------------------------------------------------------------------ agent-offered players
+# Agents phone the club to tout clients: free agents hawking for a contract,
+# and contracted players whose agent says they want OUT — those deals come
+# pre-greased (the selling club's resolve is softened while the offer stands).
+
+func open_agent_offers() -> Array:
+	return agent_offers.filter(func(a):
+		return String(a["status"]) == "open" and String(a["expires"]) >= GameState.current_date \
+			and not find_target(String(a["uid"])).is_empty())
+
+
+func agent_offer_for(uid: String) -> Dictionary:
+	for a in open_agent_offers():
+		if String(a["uid"]) == uid:
+			return a
+	return {}
+
+
+func dismiss_agent_offer(agent_id: int) -> void:
+	for a in agent_offers:
+		if int(a["id"]) == agent_id:
+			a["status"] = "dismissed"
+	save_state()
+	market_updated.emit()
+
+
+func _tick_agents(rng: RandomNumberGenerator) -> void:
+	for a in agent_offers:
+		if String(a["status"]) == "open" and String(a["expires"]) < GameState.current_date:
+			a["status"] = "expired"
+	if agent_offers.size() > 24:
+		agent_offers.resize(24)
+	if open_agent_offers().size() >= 5:
+		return
+	var factor := deadline_factor()
+	var chance := 0.05 + 0.06 * factor if factor > 0.0 else 0.05
+	if rng.randf() >= chance:
+		return
+	var want_club := factor > 0.0 and rng.randf() < 0.6
+	var pc: Dictionary = GameState.player_club()
+	if want_club:
+		var pool := all_targets().filter(func(t):
+			if t["pool"] != "club" or not agent_offer_for(t["inst"]["uid"]).is_empty():
+				return false
+			if not offer_for_target(t["inst"]["uid"]).is_empty():
+				return false
+			var c: Dictionary = GameState.club(t["club_id"])
+			return c["squad"].size() > 8 and importance_of(t["inst"], c) < 1.35)
+		pool = pool.filter(func(t): return ask_price(t["inst"], t["club_id"]) <= int(float(spendable_budget()) * 1.6))
+		if pool.is_empty():
+			return
+		var t: Dictionary = pool[rng.randi() % pool.size()]
+		var inst: Dictionary = t["inst"]
+		var uid := String(inst["uid"])
+		var guide := int(round(float(ask_price(inst, t["club_id"])) * AGENT_GREASE / 1000.0)) * 1000
+		var pitches := [
+			"\"My client feels he has taken %s as far as he can. Move now and this is a smooth deal.\"",
+			"\"He has told %s he wants a new challenge. They will not stand in his way at the right price.\"",
+			"\"The relationship with %s has run its course. You will not get better access than this.\"",
+		]
+		var pitch: String = String(pitches[rng.randi() % pitches.size()]) % String(GameState.club(t["club_id"])["short"])
+		agent_offers.push_front({
+			"id": _next_id, "uid": uid, "kind": "club", "date": GameState.current_date,
+			"expires": _offer_expiry(7), "ask": guide, "pitch": pitch, "status": "open",
+		})
+		_next_id += 1
+		var sl := shortlisted(uid)
+		GameState.add_inbox_message(GameState.current_date,
+			"%sAgent offer: %s available from %s" % ["SHORTLIST ALERT — " if sl else "",
+				display_name(inst), String(GameState.club(t["club_id"])["short"])],
+			"%s's agent has offered him to %s. %s A deal near %s should do it while the offer stands (until %s) — the agent's pressure softens %s at the table. See Transfers > Recruitment." % [
+				display_name(inst), pc["name"], pitch, fmt_money(guide),
+				Season.pretty_date(_offer_expiry(7)), String(GameState.club(t["club_id"])["short"])])
+	else:
+		var fas: Array = GameState.world["free_agents"].filter(func(i):
+			return agent_offer_for(String(i["uid"])).is_empty() and offer_for_target(String(i["uid"])).is_empty())
+		if fas.is_empty():
+			return
+		fas.sort_custom(func(a, b): return value_of(a) > value_of(b))
+		var inst2: Dictionary = fas[rng.randi() % mini(8, fas.size())]
+		var uid2 := String(inst2["uid"])
+		var wage_guide := int(round(float(inst2["contract"]["salary"]) * (0.95 + rng.randf() * 0.2) / 10.0)) * 10
+		agent_offers.push_front({
+			"id": _next_id, "uid": uid2, "kind": "fa", "date": GameState.current_date,
+			"expires": Season.date_add(GameState.current_date, 10),
+			"ask": wage_guide, "pitch": "\"He is training alone and hungry. Around %s/wk signs him this week.\"" % fmt_money(wage_guide),
+			"status": "open",
+		})
+		_next_id += 1
+		GameState.add_inbox_message(GameState.current_date,
+			"Agent touting a free agent: %s" % display_name(inst2),
+			"An agent has offered free agent %s (Lv %d) to us directly — around %s/wk gets it done. No fee, signable any time. See Transfers > Recruitment." % [
+				display_name(inst2), int(inst2["level"]), fmt_money(wage_guide)])
+
+
+# ------------------------------------------------------------------ rumour mill
+# The league's gossip layer. Rumours are not set dressing: listings genuinely
+# slash ask prices, interest rumours ripen into real AI-to-AI transfers, and
+# "preparing a bid" whispers about OUR squad turn into actual incoming offers.
+
+const RUMOUR_STRENGTHS := ["Whisper", "Warm", "Strong"]
+const RUMOUR_TRUTH := {"Whisper": 0.3, "Warm": 0.55, "Strong": 0.8}
+
+
+func rumours_for(uid: String) -> Array:
+	return rumours.filter(func(r): return String(r.get("uid", "")) == uid)
+
+
+func _add_rumour(kind: String, uid: String, club_id: String, other_id: String,
+		strength: String, text: String, due: String = "") -> Dictionary:
+	var r := {
+		"id": _next_id, "date": GameState.current_date, "kind": kind, "uid": uid,
+		"club_id": club_id, "other_id": other_id, "strength": strength,
+		"text": text, "came_true": false, "dud": false, "due": due,
+	}
+	_next_id += 1
+	rumours.push_front(r)
+	if rumours.size() > 40:
+		rumours.resize(40)
+	return r
+
+
+func _tick_rumours(rng: RandomNumberGenerator) -> void:
+	# purge expired listings
+	for uid in listed.keys():
+		if String(listed[uid]) < GameState.current_date:
+			listed.erase(uid)
+	var factor := deadline_factor()
+	var chance := 0.85 if factor >= 2.0 else (0.5 if factor > 0.0 else 0.14)
+	if rng.randf() >= chance:
+		return
+	if factor <= 0.0:
+		_rumour_interest(rng)   # between windows: only next-window whispers
+		return
+	var roll := rng.randf()
+	if roll < 0.40:
+		_rumour_interest(rng)
+	elif roll < 0.62:
+		_rumour_listing(rng)
+	elif roll < 0.84:
+		_rumour_our_player(rng)
+	else:
+		_rumour_war_chest(rng)
+
+
+func _rumour_listing(rng: RandomNumberGenerator) -> void:
+	## A club transfer-lists a fringe battler — TRUE by construction: the ask
+	## price is slashed while the listing stands.
+	var clubs: Array = GameState.world["clubs"].filter(func(c):
+		return not GameState.is_player_club(c["id"]) and c["squad"].size() > 9)
+	if clubs.is_empty():
+		return
+	var club: Dictionary = clubs[rng.randi() % clubs.size()]
+	var fringe: Array = club["squad"].filter(func(i):
+		return importance_of(i, club) < 1.15 and not is_listed(String(i["uid"])))
+	if fringe.is_empty():
+		return
+	var inst: Dictionary = fringe[rng.randi() % fringe.size()]
+	var uid := String(inst["uid"])
+	listed[uid] = Season.date_add(GameState.current_date, 28)
+	var new_ask := ask_price(inst, String(club["id"]))
+	var r := _add_rumour("listing", uid, String(club["id"]), "", "Strong",
+		"%s have made %s (Lv %d) available for transfer — around %s would do it." % [
+			String(club["short"]), display_name(inst), int(inst["level"]), fmt_money(new_ask)])
+	r["came_true"] = true
+	if shortlisted(uid):
+		GameState.add_inbox_message(GameState.current_date,
+			"SHORTLIST ALERT: %s transfer-listed by %s" % [display_name(inst), String(club["short"])],
+			"Our shortlisted target %s has been made available — %s's ask drops to about %s while the listing stands. Move before a rival does." % [
+				display_name(inst), String(club["name"]), fmt_money(new_ask)])
+
+
+func _rumour_interest(rng: RandomNumberGenerator) -> void:
+	## Club A eyeing a battler at club B. Ripens into a REAL AI deal via
+	## _ai_club_deal — strong rumours usually come true.
+	var clubs: Array = GameState.world["clubs"].filter(func(c): return not GameState.is_player_club(c["id"]))
+	var seller: Dictionary = clubs[rng.randi() % clubs.size()]
+	if seller["squad"].size() <= 9:
+		return
+	var buyers: Array = clubs.filter(func(c): return String(c["id"]) != String(seller["id"]))
+	var buyer: Dictionary = buyers[rng.randi() % buyers.size()]
+	var pool: Array = seller["squad"].filter(func(i): return importance_of(i, seller) < 1.35)
+	if pool.is_empty():
+		return
+	var inst: Dictionary = pool[rng.randi() % pool.size()]
+	var uid := String(inst["uid"])
+	var strength: String = RUMOUR_STRENGTHS[rng.randi() % 3]
+	var verbs := {"Whisper": "are said to be monitoring", "Warm": "are weighing a move for", "Strong": "are preparing a bid for"}
+	_add_rumour("interest", uid, String(seller["id"]), String(buyer["id"]), strength,
+		"%s %s %s (%s)." % [String(buyer["short"]), verbs[strength], display_name(inst), String(seller["short"])],
+		Season.date_add(GameState.current_date, 2 + int(rng.randi() % 5)))
+	if shortlisted(uid):
+		GameState.add_inbox_message(GameState.current_date,
+			"SHORTLIST ALERT: %s circling %s" % [String(buyer["short"]), display_name(inst)],
+			"The rumour mill says %s %s our shortlisted target %s. If we want him, the safe move is to bid before they do." % [
+				String(buyer["name"]), verbs[strength], display_name(inst)])
+
+
+func _rumour_our_player(rng: RandomNumberGenerator) -> void:
+	## A rival is preparing a bid for OUR squad — often followed by the real thing.
+	var pc: Dictionary = GameState.player_club()
+	if pc["squad"].size() <= 6:
+		return
+	var pool: Array = pc["squad"].filter(func(i): return not i.has("loan"))
+	if pool.is_empty():
+		return
+	pool.sort_custom(func(a, b): return value_of(a) > value_of(b))
+	var inst: Dictionary = pool[rng.randi() % mini(5, pool.size())]
+	var uid := String(inst["uid"])
+	for r0 in rumours:
+		if String(r0.get("kind", "")) == "our_player" and String(r0.get("uid", "")) == uid \
+				and not bool(r0.get("came_true", false)) and not bool(r0.get("dud", false)):
+			return
+	var buyers: Array = GameState.world["clubs"].filter(func(c):
+		return not GameState.is_player_club(c["id"]) and int(c["finances"]["balance"]) > int(float(value_of(inst)) * 0.8))
+	if buyers.is_empty():
+		return
+	var buyer: Dictionary = buyers[rng.randi() % buyers.size()]
+	var strength: String = RUMOUR_STRENGTHS[rng.randi() % 3]
+	_add_rumour("our_player", uid, String(pc["id"]), String(buyer["id"]), strength,
+		"%s are rumoured to be readying an offer for OUR %s." % [String(buyer["short"]), display_name(inst)],
+		Season.date_add(GameState.current_date, 2 + int(rng.randi() % 4)))
+	GameState.add_inbox_message(GameState.current_date,
+		"Paper talk: %s linked with our %s" % [String(buyer["short"]), display_name(inst)],
+		"The rumour mill has %s preparing a bid for %s. Nothing official yet — but if you would sell, decide your price now; if not, brace for the phone call." % [
+			String(buyer["name"]), display_name(inst)])
+
+
+func _rumour_war_chest(rng: RandomNumberGenerator) -> void:
+	var clubs: Array = GameState.world["clubs"].filter(func(c): return not GameState.is_player_club(c["id"]))
+	var club: Dictionary = clubs[rng.randi() % clubs.size()]
+	_add_rumour("war_chest", "", String(club["id"]), "", "Whisper",
+		"%s's board is said to have released a war chest — expect them to be busy this window." % String(club["short"]))
+
+
+func _seed_window_rumours() -> void:
+	## The moment a window opens the mill starts grinding, so the Recruitment
+	## hub is never dead on day one. Guarded per window.
+	var w := current_window()
+	if w.is_empty() or seeded_window == String(w["open"]):
+		return
+	seeded_window = String(w["open"])
+	var rng := RandomNumberGenerator.new()
+	rng.seed = GameState.career_seed ^ ("seed|" + seeded_window).hash()
+	_rumour_listing(rng)
+	_rumour_listing(rng)
+	_rumour_interest(rng)
+	_rumour_war_chest(rng)
+
+
+func _resolve_our_player_rumours(rng: RandomNumberGenerator) -> bool:
+	## Ripe "preparing a bid for OUR player" rumours become real incoming offers.
+	## Returns true if a bid landed today (the cold-bid generator then stands down).
+	for r in rumours:
+		if String(r.get("kind", "")) != "our_player" or bool(r.get("came_true", false)) or bool(r.get("dud", false)):
+			continue
+		if String(r.get("due", "9999")) > GameState.current_date:
+			continue
+		if not window_open():
+			r["dud"] = true
+			continue
+		var t := find_target(String(r["uid"]))
+		var buyer: Dictionary = GameState.club(String(r["other_id"]))
+		if t.is_empty() or t["pool"] != "mine" or buyer.is_empty() \
+				or not offer_for_target(String(r["uid"])).is_empty() \
+				or rng.randf() >= float(RUMOUR_TRUTH.get(String(r["strength"]), 0.5)):
+			r["dud"] = true
+			continue
+		var inst: Dictionary = t["inst"]
+		var bid := int(round(float(value_of(inst)) * (0.85 + rng.randf() * 0.35) / 1000.0)) * 1000
+		bid = mini(bid, int(buyer["finances"]["balance"]))
+		if bid < 1000:
+			r["dud"] = true
+			continue
+		r["came_true"] = true
+		var pkg := blank_package(bid)
+		var expires := _offer_expiry(6)
+		var big := bid_is_big(inst, bid)
+		offers_in.append({
+			"id": _next_id, "uid": inst["uid"], "club_id": buyer["id"],
+			"package": pkg, "ask": 0, "ask_sell_on": 0, "stage": "open", "name": display_name(inst),
+			"respond_on": "", "expires_on": expires, "routine": not big,
+			"log": [_log_line("%s bid %s — just as the rumour mill predicted." % [buyer["short"], fmt_money(bid)])],
+		})
+		_next_id += 1
+		note_unsolicited_offer(String(inst["uid"]), String(buyer["id"]))
+		GameState.add_inbox_message(GameState.current_date,
+			"The rumours were true: %s bid %s for %s" % [buyer["short"], fmt_money(bid), display_name(inst)],
+			"%s have followed up the paper talk with a real offer of %s for %s (our valuation: %s). It waits in the Transfer Centre until %s." % [
+				buyer["name"], fmt_money(bid), display_name(inst), fmt_money(value_of(inst)), Season.pretty_date(expires)])
+		return true
+	return false
+
+
+func _ripe_interest_rumour() -> Dictionary:
+	for r in rumours:
+		if String(r.get("kind", "")) == "interest" and not bool(r.get("came_true", false)) \
+				and not bool(r.get("dud", false)) and String(r.get("due", "9999")) <= GameState.current_date:
+			return r
+	return {}
+
+
+# ------------------------------------------------------------------ scout market (hiring a network)
+
+func hired_scouts() -> Array:
+	return GameState.player_club()["staff"].filter(func(s): return bool(s.get("hired", false)))
+
+
+func scout_market() -> Array:
+	## This month's hireable dedicated scouts (deterministic per career+month).
+	var mkey := GameState.current_date.substr(0, 7)
+	if scout_pool_month != mkey:
+		scout_pool_month = mkey
+		scout_pool = []
+		var rng := RandomNumberGenerator.new()
+		rng.seed = GameState.career_seed ^ mkey.hash()
+		var regions: Array = REGIONS.keys()
+		var used := {}
+		for i in 5:
+			var nm := ""
+			for attempt in 20:
+				nm = "%s %s" % [SCOUT_FIRST[rng.randi() % SCOUT_FIRST.size()], SCOUT_LAST[rng.randi() % SCOUT_LAST.size()]]
+				if not used.has(nm) and _scout_by_name(nm).is_empty():
+					break
+			used[nm] = true
+			var ja := 8 + int(rng.randi() % 12)
+			var jp := 6 + int(rng.randi() % 14)
+			var wage := int(round(float((ja * 2 + jp) * 13 + 80 + int(rng.randi() % 90)) / 10.0)) * 10
+			scout_pool.append({"name": nm, "ja": ja, "jp": jp,
+				"region": String(regions[i % regions.size()]), "wage": wage})
+		save_state()
+	return scout_pool.filter(func(s): return _scout_by_name(String(s["name"])).is_empty())
+
+
+func hire_scout(scout_name: String) -> String:
+	var cand: Dictionary = {}
+	for s in scout_market():
+		if String(s["name"]) == scout_name:
+			cand = s
+			break
+	if cand.is_empty():
+		return "That scout is no longer on the market."
+	if hired_scouts().size() >= MAX_HIRED_SCOUTS:
+		return "Scouting department is full (%d hired scouts). Release one first." % MAX_HIRED_SCOUTS
+	if int(cand["wage"]) > wage_room():
+		return "Their %s/wk wage breaks our wage budget (room: %s/wk)." % [fmt_money(int(cand["wage"])), fmt_money(wage_room())]
+	GameState.player_club()["staff"].append({
+		"name": scout_name, "role": "scout", "hired": true,
+		"wage": int(cand["wage"]), "region": String(cand["region"]),
+		"ratings": {"judging_ability": int(cand["ja"]), "judging_potential": int(cand["jp"])},
+	})
+	GameState.add_inbox_message(GameState.current_date, "Scout hired: %s (%s)" % [scout_name, String(cand["region"])],
+		"%s joins our scouting department on %s/wk. Home network: %s — assignments there run days faster and region focuses build knowledge across the whole patch." % [
+			scout_name, fmt_money(int(cand["wage"])), String(cand["region"])])
+	GameState.save_game()
+	save_state()
+	market_updated.emit()
+	return ""
+
+
+func fire_scout(scout_name: String) -> String:
+	var pc: Dictionary = GameState.player_club()
+	for s in pc["staff"]:
+		if String(s["name"]) == scout_name and bool(s.get("hired", false)):
+			recall_scout(scout_name)
+			var severance := int(s.get("wage", 0)) * 4
+			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - severance
+			pc["staff"].erase(s)
+			GameState.add_inbox_message(GameState.current_date, "Scout released: %s" % scout_name,
+				"%s has left the scouting department (severance: %s)." % [scout_name, fmt_money(severance)])
+			GameState.save_game()
+			save_state()
+			market_updated.emit()
+			return ""
+	return "Only hired scouts can be released — club coaches stay."
+
+
+func region_coverage() -> Dictionary:
+	## Per-region market knowledge — the "how good is my network here" board.
+	var acc := {}
+	for r in REGIONS:
+		acc[r] = {"know": 0.0, "targets": 0, "scouts": 0}
+	for t in all_targets():
+		var r2 := region_of(t["inst"])
+		acc[r2]["know"] += knowledge_of(String(t["inst"]["uid"]))
+		acc[r2]["targets"] += 1
+	for s in player_scouts():
+		acc[scout_region(s)]["scouts"] += 1
+	for r3 in acc:
+		if int(acc[r3]["targets"]) > 0:
+			acc[r3]["know"] = acc[r3]["know"] / float(acc[r3]["targets"])
+	return acc
+
+
+# ------------------------------------------------------------------ Director of Battling (delegation)
+# FM's DoF: tick the boxes and the club works the market without you —
+# lowball bids get swatted, idle scouts chase the shortlist, and the DoF
+# opens, negotiates and closes shortlist deals inside sane limits.
+
+func set_dof(key: String, value: Variant) -> void:
+	dof[key] = value
+	save_state()
+	market_updated.emit()
+
+
+func _dof_note(text: String) -> void:
+	dof_log.push_front({"date": GameState.current_date, "text": text})
+	if dof_log.size() > 24:
+		dof_log.resize(24)
+
+
+func _tick_dof(rng: RandomNumberGenerator) -> void:
+	if bool(dof.get("auto_scout", false)):
+		_dof_auto_scout()
+	if bool(dof.get("handle_bids", false)):
+		_dof_handle_bids()
+	if bool(dof.get("pursue_shortlist", false)):
+		_dof_progress_deals()
+		if window_open():
+			_dof_open_deal(rng)
+
+
+func _dof_auto_scout() -> void:
+	for t in shortlist_targets():
+		var uid := String(t["inst"]["uid"])
+		if knowledge_of(uid) >= 100.0 or not assignment_for_target(uid).is_empty():
+			continue
+		var idle: Array = player_scouts().filter(func(s): return assignment_for_scout(String(s["name"])).is_empty())
+		if idle.is_empty():
+			return
+		var reg := region_of(t["inst"])
+		idle.sort_custom(func(a, b):
+			if (scout_region(a) == reg) != (scout_region(b) == reg):
+				return scout_region(a) == reg
+			return int(a["ratings"]["judging_ability"]) > int(b["ratings"]["judging_ability"]))
+		if assign_scout_to_target(String(idle[0]["name"]), uid) == "":
+			_dof_note("Sent %s to scout shortlisted %s." % [String(idle[0]["name"]), display_name(t["inst"])])
+
+
+func _dof_handle_bids() -> void:
+	for o in offers_in:
+		if String(o["stage"]) != "open" or not bool(o.get("routine", false)):
+			continue
+		var t := find_target(String(o["uid"]))
+		if t.is_empty() or t["pool"] != "mine":
+			continue
+		if package_total(o["package"]) < int(float(value_of(t["inst"])) * 0.92):
+			o["stage"] = "rejected"
+			o["log"].append(_log_line("DoF rejected the bid — below our valuation."))
+			_dof_note("Rejected %s's %s bid for %s (valuation %s)." % [
+				String(GameState.club(String(o["club_id"]))["short"]), fmt_money(package_total(o["package"])),
+				String(o["name"]), fmt_money(value_of(t["inst"]))])
+
+
+func _dof_live_deals() -> Array:
+	return offers_out.filter(func(o): return bool(o.get("dof", false)) and not (String(o["stage"]) in DEAD_STAGES))
+
+
+func _dof_progress_deals() -> void:
+	var limit_mult := 1.0 + float(int(dof.get("max_over_pct", 10))) / 100.0
+	for o in _dof_live_deals():
+		var t := find_target(String(o["uid"]))
+		if t.is_empty():
+			continue
+		var cap := int(float(value_of(t["inst"])) * limit_mult)
+		match String(o["stage"]):
+			"countered":
+				if o["kind"] != "buy":
+					continue
+				var take := ""
+				var alt: Dictionary = o.get("alt_package", {})
+				if not alt.is_empty() and package_total(alt) <= cap and int(alt.get("upfront", 0)) <= spendable_budget():
+					take = "alt"
+				elif package_total(o.get("ask_package", {})) <= cap and int(o["ask_package"].get("upfront", 0)) <= spendable_budget():
+					take = "ask"
+				if take != "":
+					if accept_package(int(o["id"]), take) == "":
+						_dof_note("Accepted %s's proposal for %s (%s)." % [
+							String(GameState.club(String(o["club_id"]))["short"]), String(o["name"]),
+							describe_package(o["package"])])
+				else:
+					withdraw_offer(int(o["id"]))
+					_dof_note("Walked away from %s — their demands broke the board's limit (%s)." % [String(o["name"]), fmt_money(cap)])
+			"fee_agreed", "wage_countered":
+				var demand: Dictionary = o.get("contract_demand", {})
+				var wage := int(demand.get("wage", 0))
+				if wage <= 0:
+					continue
+				if wage <= wage_room():
+					if offer_contract(int(o["id"]), {"wage": wage, "years": int(demand.get("years", 3)),
+							"bonus": 0, "status": String(demand.get("status", "First team"))}) == "":
+						_dof_note("Offered %s the %s/wk terms his camp asked for." % [String(o["name"]), fmt_money(wage)])
+				else:
+					withdraw_offer(int(o["id"]))
+					_dof_note("Pulled out of the %s deal — his %s/wk demand breaks the wage budget." % [String(o["name"]), fmt_money(wage)])
+
+
+func _dof_open_deal(_rng: RandomNumberGenerator) -> void:
+	if _dof_live_deals().size() >= 2:
+		return
+	for t in shortlist_targets():
+		var uid := String(t["inst"]["uid"])
+		if not offer_for_target(uid).is_empty():
+			continue
+		var err := ""
+		var opened := ""
+		if t["pool"] == "club":
+			var ask := ask_price(t["inst"], String(t["club_id"]))
+			if int(float(ask) * 0.7) > spendable_budget():
+				continue
+			var up := mini(int(round(float(ask) * 0.68 / 1000.0)) * 1000, spendable_budget())
+			var pkg := {"upfront": up, "inst_amount": int(round(float(ask) * 0.27 / 1000.0)) * 1000,
+				"inst_years": 2, "sell_on": 0}
+			err = make_offer(uid, pkg)
+			opened = "Opened talks with %s for %s — %s." % [
+				String(GameState.club(String(t["club_id"]))["short"]), display_name(t["inst"]), describe_package(_norm_package(pkg))]
+		else:
+			if t["pool"] == "prospect" and not window_open():
+				continue
+			var wage := int(round(float(t["inst"]["contract"]["salary"]) * 1.2 / 10.0)) * 10
+			if wage > wage_room():
+				continue
+			err = sign_free_agent(uid, {"wage": wage, "years": 3, "bonus": 0, "status": "Rotation"})
+			opened = "Opened contract talks with %s (%s/wk)." % [display_name(t["inst"]), fmt_money(wage)]
+		if err == "":
+			var o := offer_for_target(uid)
+			if not o.is_empty():
+				o["dof"] = true
+			_dof_note(opened)
+			GameState.add_inbox_message(GameState.current_date, "DoF: talks opened for %s" % display_name(t["inst"]),
+				"%s Your Director of Battling is handling the negotiation — limits: %d%% over valuation, board budgets. Watch it in the Transfer Centre or take over any time." % [
+					opened, int(dof.get("max_over_pct", 10))])
+			return
 
 
 # ------------------------------------------------------------------ daily tick
@@ -1968,6 +2868,9 @@ func _on_date_changed(date: String) -> void:
 	_tick_loans()
 	_tick_payments()
 	_tick_ai_market(rng)
+	_tick_agents(rng)
+	_tick_rumours(rng)
+	_tick_dof(rng)
 	save_state()
 	market_updated.emit()
 

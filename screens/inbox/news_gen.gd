@@ -111,7 +111,7 @@ func enrich_existing() -> void:
 
 ## Titles produced by the transfers piece's market via add_inbox_message.
 func _is_market_title(title: String) -> bool:
-	for p in ["Transfer offer:", "Improved bid:", "Fee agreed:", "Bid rejected:",
+	for p in ["Transfer offer:", "Transfer interest:", "Improved bid:", "Fee agreed:", "Bid rejected:",
 		"Counter offer:", "Signing completed:", "Sale completed:", "Contract talks:",
 		"Talks collapse:", "Deal collapsed:", "Market news:"]:
 		if title.begins_with(p):
@@ -184,7 +184,9 @@ func generate() -> void:
 			_gen_scout_report(have, date, d, 0)
 			if d == 0:
 				_gen_scout_report(have, date, d, 1)
-		if d % 5 == 2 or d == 0:
+		# unsolicited interest is paced: roughly every week and a half, and
+		# further gated by the market's per-mon/per-club cool-downs below
+		if d % 9 == 2 or d == 0:
 			_gen_transfer_interest(have, date, d)
 	_gen_prematch(have)
 	_gen_cup_first_round(have)
@@ -268,6 +270,9 @@ func _gen_transfer_interest(have: Dictionary, date: String, day: int) -> void:
 	var target: Dictionary = squad[rng.randi_range(0, mini(5, squad.size() - 1))]
 	var others: Array = GameState.world["clubs"].filter(func(c): return not GameState.is_player_club(c["id"]))
 	var bidder: Dictionary = others[rng.randi_range(0, others.size() - 1)]
+	# honour the market's cool-downs — a club that bid last week doesn't call again
+	if mkt.has_method("offer_cooldown_ok") and not mkt.offer_cooldown_ok(str(target["uid"]), str(bidder["id"])):
+		return
 	var fee := int(round(float(mkt.value_of(target)) * (0.8 + rng.randf() * 0.45) / 1000.0)) * 1000
 	fee = mini(fee, int(bidder["finances"]["balance"]))
 	if fee < 1000:
@@ -275,13 +280,23 @@ func _gen_transfer_interest(have: Dictionary, date: String, day: int) -> void:
 	var oid := _register_market_offer(target, bidder["id"], fee, date, deadline)
 	if oid < 0:
 		return
-	_add(have, uid, date,
-		"Transfer offer: %s bid %s for %s" % [bidder["name"], money(fee), display_name(target)],
-		"%s have submitted a formal offer for %s. The offer expires on %s." %
-			[bidder["name"], display_name(target), Season.pretty_date(deadline)],
-		{"cat": "transfer", "sender": bidder["name"], "bidder": bidder["id"],
-			"target_uid": target["uid"], "fee": fee, "deadline": deadline,
-			"offer_id": oid, "urgent": true})
+	var big: bool = not bool(offer_by_id(oid).get("routine", false))
+	if big:
+		_add(have, uid, date,
+			"Transfer offer: %s bid %s for %s" % [bidder["name"], money(fee), display_name(target)],
+			"%s have submitted a formal offer for %s. The offer expires on %s." %
+				[bidder["name"], display_name(target), Season.pretty_date(deadline)],
+			{"cat": "transfer", "sender": bidder["name"], "bidder": bidder["id"],
+				"target_uid": target["uid"], "fee": fee, "deadline": deadline,
+				"offer_id": oid, "urgent": true})
+	else:
+		_add(have, uid, date,
+			"Transfer interest: %s bid %s for %s" % [bidder["name"], money(fee), display_name(target)],
+			"%s have lodged an offer for %s — around our valuation, nothing that demands an immediate answer. It waits in the Transfer Centre until %s." %
+				[bidder["name"], display_name(target), Season.pretty_date(deadline)],
+			{"cat": "transfer", "sender": bidder["name"], "bidder": bidder["id"],
+				"target_uid": target["uid"], "fee": fee, "deadline": deadline,
+				"offer_id": oid, "urgent": false})
 
 
 ## Append a well-formed offer to the market ledger (same schema the market's
@@ -307,6 +322,13 @@ func _register_market_offer(target: Dictionary, bidder_id: String, fee: int, dat
 	# v2 markets deal in structured packages; keep "bid" too for older schemas
 	if mkt.has_method("blank_package"):
 		offer["package"] = mkt.blank_package(fee)
+	# pacing metadata: routine (near-valuation) bids don't interrupt the week
+	if mkt.has_method("bid_is_big"):
+		var t: Dictionary = mkt.find_target(str(target["uid"]))
+		if not t.is_empty():
+			offer["routine"] = not mkt.bid_is_big(t["inst"], fee)
+	if mkt.has_method("note_unsolicited_offer"):
+		mkt.note_unsolicited_offer(str(target["uid"]), bidder_id)
 	mkt.offers_in.append(offer)
 	mkt.save_state()
 	mkt.market_updated.emit()
@@ -374,7 +396,8 @@ func _adopt_offer_message(o: Dictionary) -> Dictionary:
 		var title := str(m.get("title", ""))
 		if not title.contains(nm):
 			continue
-		if title.begins_with("Transfer offer:") or title.begins_with("Improved bid:") \
+		if title.begins_with("Transfer offer:") or title.begins_with("Transfer interest:") \
+			or title.begins_with("Improved bid:") \
 			or (title.contains(" agree ") and title.contains(" for ")):
 			m["offer_id"] = int(o["id"])
 			m["cat"] = "transfer"
@@ -408,7 +431,10 @@ func _create_offer_message(o: Dictionary) -> Dictionary:
 
 
 func _refresh_offer_msg(m: Dictionary, o: Dictionary) -> void:
-	m["urgent"] = offer_actionable(o)
+	# Routine (near/below-valuation) bids never stop the manager's week; a
+	# deal the manager engaged with ("agreed" after our counter) always does.
+	m["urgent"] = offer_actionable(o) \
+		and (str(o["stage"]) == "agreed" or not bool(o.get("routine", false)))
 	m["stage"] = str(o["stage"])
 	if o.has("expires_on") and str(o["expires_on"]) != "":
 		m["deadline"] = str(o["expires_on"])
@@ -611,6 +637,7 @@ func finance_summary() -> Dictionary:
 	for c in GameState.world["clubs"]:
 		max_bal = maxi(max_bal, int(c["finances"]["balance"]))
 	return {"balance": balance, "wage_budget": budget, "wage_bill": bill,
+		"transfer_budget": int(pc["finances"].get("transfer_budget", 0)),
 		"earners": earners, "initial_balance": initial,
 		"transfer_spend": spend, "league_avg_balance": avg,
 		"league_max_balance": max_bal, "squad_size": pc["squad"].size()}

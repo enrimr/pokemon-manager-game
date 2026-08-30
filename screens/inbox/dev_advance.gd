@@ -13,6 +13,7 @@ func _run() -> void:
 		push_error("dev_advance: GameState autoload missing")
 		quit(1)
 		return
+	(load("res://tools/save_guard.gd") as GDScript).preserve_player_save()
 	var days := 55
 	var args := OS.get_cmdline_user_args()
 	if args.size() > 0 and args[0].is_valid_int():

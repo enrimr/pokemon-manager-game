@@ -157,7 +157,8 @@ func _title_race_card() -> PanelContainer:
 	if not prow.is_empty():
 		var gap_p := leader_pts - int(prow["points"])
 		body.add_child(HSeparator.new())
-		body.add_child(UI.kv_row("Your position", _ord(ppos), TB.COL_ACCENT.lightened(0.35)))
+		body.add_child(UI.kv_row("Your position",
+			"—" if int(prow.get("played", 0)) == 0 else _ord(ppos), TB.COL_ACCENT.lightened(0.35)))
 		body.add_child(UI.kv_row("Gap to top", "%d pt%s" % [gap_p, "" if gap_p == 1 else "s"],
 			UI.COL_WIN if gap_p == 0 else TB.COL_TEXT))
 	return card

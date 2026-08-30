@@ -6,6 +6,7 @@ extends VBoxContainer
 
 const UI := preload("res://screens/competition/ui.gd")
 const TB := preload("res://shared/theme/theme_builder.gd")
+const Charts := preload("res://screens/competition/charts.gd")
 
 var _ctx: Dictionary = {}
 
@@ -241,6 +242,32 @@ func _club_season_card(club: Dictionary, pos: int, row: Dictionary, fixtures: Ar
 		UI.COL_WIN if diff > 0 else (UI.COL_LOSS if diff < 0 else TB.COL_TEXT)))
 	body.add_child(UI.kv_row("Points", str(int(row.get("points", 0))), Color.WHITE))
 	body.add_child(UI.kv_row("Cup", _cup_status(cid, fixtures)))
+	# position-over-time sparkline (full graph: League Table ▸ Position Graph)
+	var hist: Dictionary = Season.position_history(GameState.club_ids(), fixtures)
+	var vals: Array = hist.get(cid, [])
+	if vals.size() >= 2:
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", 8)
+		var cap := UI.dim("Position trend", 12)
+		cap.custom_minimum_size.x = 96
+		cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		h.add_child(cap)
+		var spark = Charts.Sparkline.new()
+		spark.invert = true   # position: 1 at the top
+		spark.v_min = 1.0
+		spark.v_max = float(GameState.club_ids().size())
+		spark.color = UI.club_color(club)
+		spark.custom_minimum_size = Vector2(0, 26)
+		spark.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var labels: Array = []
+		for i in vals.size():
+			labels.append("After MD %d" % (i + 1))
+		spark.set_data(vals, labels)
+		h.add_child(spark)
+		var trend := UI.dim("%s → %s" % [_ord(int(vals[0])), _ord(int(vals[vals.size() - 1]))], 11)
+		trend.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		h.add_child(trend)
+		body.add_child(h)
 	# top performers, cross-linked
 	var stats := Season.season_player_stats(fixtures)
 	var best_rat := {}
@@ -376,7 +403,7 @@ func _build_pokemon(uid: String) -> void:
 		c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	left.add_child(attr_row)
 	left.add_child(_condition_card(inst))
-	right.add_child(_pokemon_season_card(stats))
+	right.add_child(_pokemon_season_card(uid, club, stats))
 	right.add_child(_match_log_card(uid, club))
 
 
@@ -568,7 +595,7 @@ func _condition_card(inst: Dictionary) -> PanelContainer:
 	return card
 
 
-func _pokemon_season_card(stats: Dictionary) -> PanelContainer:
+func _pokemon_season_card(uid: String, club: Dictionary, stats: Dictionary) -> PanelContainer:
 	var card := UI.card("Season %s" % GameState.season_start.split("-")[0])
 	var body := UI.card_body(card)
 	if stats.is_empty():
@@ -581,6 +608,8 @@ func _pokemon_season_card(stats: Dictionary) -> PanelContainer:
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 24)
 	grid.add_theme_constant_override("v_separation", 4)
+	var hits := int(stats.get("hits", 0))
+	var misses := int(stats.get("misses", 0))
 	for pair in [
 		["Battle apps", str(apps)],
 		["Battles won", "%d (%d%%)" % [wins, int(round(100.0 * wins / maxi(apps, 1)))]],
@@ -590,13 +619,105 @@ func _pokemon_season_card(stats: Dictionary) -> PanelContainer:
 		["Damage taken", str(int(stats["taken"]))],
 		["Times fainted", str(int(stats["faints"]))],
 		["Avg rating", "%.2f" % rat],
+		["Accuracy", "%d%% (%d of %d)" % [roundi(100.0 * hits / maxf(hits + misses, 1.0)),
+			hits, hits + misses]],
+		["Super-effective", "%d hits (%d%%)" % [int(stats.get("se", 0)),
+			roundi(100.0 * float(stats.get("se", 0)) / maxf(hits, 1.0))]],
 	]:
 		var row := UI.kv_row(str(pair[0]), str(pair[1]),
 			_rating_color(rat) if pair[0] == "Avg rating" else TB.COL_TEXT)
 		row.custom_minimum_size.x = 190
 		grid.add_child(row)
 	body.add_child(grid)
+
+	# rating trend sparkline over the match log (dashed line = 6.8 par)
+	if not club.is_empty():
+		var log := Season.pokemon_match_log(uid, str(club["id"]), GameState.fixtures)
+		if log.size() >= 2:
+			var h := HBoxContainer.new()
+			h.add_theme_constant_override("separation", 8)
+			var cap := UI.dim("Rating trend", 12)
+			cap.custom_minimum_size.x = 96
+			cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			h.add_child(cap)
+			var spark = Charts.Sparkline.new()
+			spark.ref_value = 6.8
+			spark.v_min = 4.5
+			spark.v_max = 10.0
+			spark.color = _rating_color(rat)
+			spark.custom_minimum_size = Vector2(0, 26)
+			spark.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var vals: Array = []
+			var labels: Array = []
+			for e in log:
+				vals.append(float(e["rating"]))
+				var opp := GameState.club(str(e["opp"]))
+				labels.append("%s %s" % [UI.short_date(str(e["date"])), opp.get("short", "?")])
+			spark.set_data(vals, labels)
+			h.add_child(spark)
+			body.add_child(h)
+
+	# league percentile context (FM Data-Hub-style pizza slice, as bars)
+	var pct := _pokemon_percentiles(uid)
+	if not pct.is_empty():
+		body.add_child(UI.vspace(2))
+		body.add_child(UI.dim("VS THE LEAGUE · percentile among all Pokémon with an appearance", 10))
+		for entry in [["rating", "Avg rating"], ["ko_app", "KOs / app"],
+				["dmg_app", "Damage / app"], ["surv", "Survival %"], ["acc", "Accuracy"]]:
+			if not pct.has(entry[0]):
+				continue
+			var p: float = float(pct[entry[0]])
+			var h := HBoxContainer.new()
+			h.add_theme_constant_override("separation", 8)
+			var lab := UI.dim(str(entry[1]), 11)
+			lab.custom_minimum_size.x = 96
+			h.add_child(lab)
+			var bar = Charts.PercentileBar.new()
+			bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			bar.set_pct(p)
+			h.add_child(bar)
+			var v := UI.label(Charts.ordinal(roundi(p * 100.0)), 11, Charts.pct_color(p))
+			v.custom_minimum_size.x = 34
+			v.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			h.add_child(v)
+			body.add_child(h)
 	return card
+
+
+## This Pokémon's league percentile (0..1) for key per-appearance rates,
+## computed over every Pokémon with at least one appearance this season.
+func _pokemon_percentiles(uid: String) -> Dictionary:
+	var stats: Dictionary = Season.season_player_stats(GameState.fixtures)
+	if not stats.has(uid):
+		return {}
+	var derive := func(s: Dictionary) -> Dictionary:
+		var apps := maxi(int(s.get("battles", 0)), 1)
+		var hits := int(s.get("hits", 0))
+		return {
+			"rating": float(s.get("rating_sum", 0.0)) / apps,
+			"ko_app": float(s.get("kos", 0)) / apps,
+			"dmg_app": float(s.get("dmg", 0)) / apps,
+			"surv": float(apps - int(s.get("faints", 0))) / apps,
+			"acc": float(hits) / maxf(float(hits + int(s.get("misses", 0))), 1.0),
+		}
+	var pop: Array = []
+	for k in stats:
+		if int(stats[k].get("battles", 0)) > 0:
+			pop.append(derive.call(stats[k]))
+	if pop.size() < 2:
+		return {}
+	var mine: Dictionary = derive.call(stats[uid])
+	var out := {}
+	for key in mine:
+		var below := 0
+		var equal := -1   # exclude self from the tie count
+		for row in pop:
+			if float(row[key]) < float(mine[key]):
+				below += 1
+			elif is_equal_approx(float(row[key]), float(mine[key])):
+				equal += 1
+		out[key] = clampf((float(below) + float(equal) * 0.5) / float(pop.size() - 1), 0.0, 1.0)
+	return out
 
 
 func _match_log_card(uid: String, club: Dictionary) -> PanelContainer:

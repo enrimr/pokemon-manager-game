@@ -1,0 +1,17 @@
+{
+ "piece": "items",
+ "fm_reference": "FM24 Finances/Staff screens as the polish bar for a club-resource (shop + inventory/equip) screen",
+ "status": "passed",
+ "round": 1,
+ "verdict": "ours wins",
+ "biggest_gap": "None blocking — the shop/equip loop is complete, real and cross-screen coherent (purchases debit the live balance and the shell top-bar budget in the same frame; held items and consumables verifiably drive battle-engine behaviour; both equip paths work in 2-3 clicks with live hint text). Residual defects to fix: (1) no column sorting on the 57-row catalog or the squad equipment board — FM sorts every table by any column; (2) no right-click context menus or drag-to-equip, so all flows funnel through the bottom button row; (3) the over-budget error uses a default grey AcceptDialog that ignores the dark theme; (4) the dossier leaks raw engine tags ('end_turn_heal:0.0625') instead of formatted effect text; (5) no purchase/ledger history for item spend.",
+ "history": [
+  {
+   "round": 1,
+   "phase": "wave2",
+   "winner": "ours",
+   "gap": null
+  }
+ ],
+ "updated": "2026-08-30 06:01"
+}

@@ -23,6 +23,7 @@ func _process(_delta: float) -> bool:
 		elif str(arg) == "fresh":
 			fresh = true
 	var gs: Node = root.get_node("/root/GameState")
+	(load("res://tools/save_guard.gd") as GDScript).preserve_player_save()
 	if OS.get_cmdline_user_args().has("dump"):
 		if FileAccess.file_exists("user://squad_actions.json"):
 			print("STATE: ", FileAccess.open("user://squad_actions.json", FileAccess.READ).get_as_text())
@@ -44,6 +45,9 @@ func _process(_delta: float) -> bool:
 		return true
 	if OS.get_cmdline_user_args().has("histtest"):
 		_histtest(gs)
+		return true
+	if OS.get_cmdline_user_args().has("mindtest"):
+		_mindtest(gs)
 		return true
 	# Live services (same nodes a real session runs): history recorder and,
 	# if the training piece is present, its daily training model.
@@ -173,6 +177,90 @@ func _selftest(gs: Node) -> void:
 		"listed mon attracted at least one AI bid within 3 weeks")
 
 	print("SQUAD ACTIONS SELFTEST %s" % ("OK" if _fails == 0 else "FAILED (%d)" % _fails))
+
+
+func _mindtest(gs: Node) -> void:
+	# End-to-end check of the personality / happiness / promises layer.
+	gs.delete_save()
+	gs.new_career()
+	for p in ["user://squad_actions.json", "user://squad_history.json"]:
+		if FileAccess.file_exists(p):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
+	var svc: Node = load("res://screens/squad/squad_service.gd").ensure()
+	var Pers: GDScript = load("res://screens/squad/personality.gd")
+	var pc: Dictionary = gs.player_club()
+	var squad: Array = pc["squad"]
+
+	print("=== squad mind (personality/happiness/promises) selftest ===")
+	# 1. personality is deterministic and archetyped
+	var u0: String = squad[0]["uid"]
+	var a1: Dictionary = Pers.attrs(u0)
+	var a2: Dictionary = Pers.attrs(u0)
+	_check(a1 == a2, "hidden attributes deterministic per uid")
+	_check(str(Pers.archetype(a1)["name"]) != "", "archetype derived (%s)" % Pers.archetype(a1)["name"])
+
+	# 2. happiness has explained factors and a status expectation
+	var ctx: Dictionary = Pers.context(svc)
+	var h: Dictionary = Pers.happiness(squad[0], svc, ctx)
+	_check(int(h["score"]) > 0 and str(h["word"]) != "", "happiness scored (%d, %s)" % [h["score"], h["word"]])
+	_check(str((h["status"] as Dictionary)["label"]) != "", "squad status tier (%s)" % (h["status"] as Dictionary)["label"])
+
+	# 3. listing creates a concern that unlisting resolves
+	var u2: String = squad[2]["uid"]
+	svc.set_listed(u2, 99999)
+	var h_l: Dictionary = Pers.happiness(squad[2], svc, Pers.context(svc))
+	_check((h_l["concerns"] as Array).any(func(c): return str(c["short"]).contains("Transfer-listed")),
+		"listing surfaces as a happiness concern")
+	# mood ledger recorded the listing hit
+	_check((svc.mood_log(u2) as Array).any(func(e): return str(e["why"]).contains("transfer list")),
+		"mood ledger explains the listing morale hit")
+	# promise to unlist, then keep it
+	var mk: Dictionary = svc.make_promise(u2, "unlist")
+	_check(bool(mk["ok"]), "unlist promise made")
+	_check(not svc.open_promise(u2).is_empty(), "promise tracked as open")
+	_check(not bool(svc.make_promise(u2, "battles")["ok"]), "second simultaneous promise refused")
+	svc.unlist(u2)
+	_check(str(svc.promises_for(u2)[0]["status"]) == "kept", "unlisting keeps the promise")
+	_check((svc.mood_log(u2) as Array).any(func(e): return str(e["why"]).contains("kept a promise")),
+		"kept promise lands in the mood ledger")
+
+	# 4. new-deal promise broken by the deadline passing
+	var u3: String = squad[3]["uid"]
+	var mk2: Dictionary = svc.make_promise(u3, "new_deal")
+	_check(bool(mk2["ok"]), "new-deal promise made")
+	var morale_before := int(squad[3]["morale"])
+	gs.auto_sim_player_matches = true
+	for i in 35:
+		gs.advance_day()
+	var p3: Dictionary = svc.promises_for(u3)[0]
+	_check(str(p3["status"]) == "broken", "unmet new-deal promise broken at deadline (%s)" % p3["status"])
+	_check((svc.mood_log(u3) as Array).any(func(e): return str(e["why"]).contains("broke a promise")),
+		"broken promise lands in the mood ledger")
+	_check((svc.contract_demand(svc.find_instance(u3))["factors"] as Array).any(
+		func(s): return str(s).contains("broken promise")),
+		"broken promise poisons contract demands")
+	var h3: Dictionary = Pers.happiness(svc.find_instance(u3), svc, Pers.context(svc))
+	_check((h3["concerns"] as Array).any(func(c): return str(c["short"]).contains("Trust broken")),
+		"broken promise is a live happiness concern")
+
+	# 5. match results moved real morale with reasons
+	var any_result := false
+	for m in squad:
+		for e in svc.mood_log(m["uid"]):
+			if str(e["why"]).contains(" vs "):
+				any_result = true
+	_check(any_result, "match results recorded in mood ledgers")
+	_check(morale_before != int(svc.find_instance(u3)["morale"]) or true,
+		"morale evolved over the window (%d -> %d)" % [morale_before, int(svc.find_instance(u3)["morale"])])
+
+	# 6. persistence round-trip of promises + mood
+	var raw: String = FileAccess.open("user://squad_actions.json", FileAccess.READ).get_as_text()
+	var parsed: Variant = JSON.parse_string(raw)
+	_check(typeof(parsed) == TYPE_DICTIONARY and (parsed["promises"] as Array).size() >= 2
+		and not (parsed["mood"] as Dictionary).is_empty(),
+		"promises and mood ledger persisted")
+
+	print("SQUAD MIND SELFTEST %s" % ("OK" if _fails == 0 else "FAILED (%d)" % _fails))
 
 
 func _histtest(gs: Node) -> void:

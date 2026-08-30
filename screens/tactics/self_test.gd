@@ -88,6 +88,85 @@ func _run_consumption_checks(p: Dictionary) -> void:
 		"active plan published for the director to consume")
 
 
+## THE SEAM CHECK: world.meta is the single source of truth, so loading an
+## OLDER save must bring back that save's plan everywhere — the engine
+## (meta.tactics), the tactics screen (meta.tactics_state) and the squad
+## screen's Selection tab all read the same loaded data; a stale sidecar
+## from a later session can never shadow it.
+func _run_save_load_checks() -> void:
+	print("=== tactics self_test: save / load-older-save coherence ===")
+	var Selection: GDScript = load("res://screens/squad/selection.gd")
+	var state: Dictionary = Logic.load_state()
+	var p := Logic.active_preset(state)
+
+	# plan A: distinctive marker, saved
+	p["instructions"]["aggression"] = 1
+	Logic.save_state(state)          # persists world.meta.tactics_state + plan
+	var older := FileAccess.get_file_as_string("user://save.json")
+	_check(older != "", "older save captured")
+
+	# plan B: the career moves on, tactic changes, saved again
+	var l0 = p["lineup"][0]
+	var l1 = p["lineup"][1]
+	p["lineup"][0] = l1
+	p["lineup"][1] = l0
+	p["instructions"]["aggression"] = 3
+	Logic.save_state(state)
+	_check(int(GameState.world["meta"]["tactics"]["instructions"]["aggression"]) == 3,
+		"plan B live before rollback")
+
+	# a stale sidecar from an even newer session lies in wait
+	var side := FileAccess.open(Logic.TACTICS_PATH, FileAccess.WRITE)
+	side.store_string(JSON.stringify({"version": 1, "active": "Ghost",
+		"presets": [{"name": "Ghost", "lineup": [], "bench": [], "roles": {},
+			"instructions": {"aggression": 4}}]}))
+	side = null
+
+	# roll back to the older save
+	var f := FileAccess.open("user://save.json", FileAccess.WRITE)
+	f.store_string(older)
+	f = null
+	_check(GameState.load_game(), "older save loads")
+	var meta_tac: Dictionary = GameState.world["meta"].get("tactics", {})
+	_check(int(meta_tac.get("instructions", {}).get("aggression", -1)) == 1,
+		"engine plan (meta.tactics) is the OLDER save's plan A")
+	_check(str(meta_tac["lineup"][0]) == str(l0),
+		"older save's lineup order restored")
+	var reloaded := Logic.load_state()
+	_check(str(reloaded["active"]) != "Ghost"
+		and int(Logic.active_preset(reloaded)["instructions"]["aggression"]) == 1,
+		"tactics screen state comes from the save, not the stale sidecar")
+	var sel: Dictionary = Selection.selection()
+	_check(str(sel["source"]) == "tactic", "squad Selection reads a tactic")
+	var sel_first := ""
+	for u in sel["slot"]:
+		if int(sel["slot"][u]) == 1:
+			sel_first = str(u)
+	_check(sel_first == str(meta_tac["lineup"][0]),
+		"squad Selection slot 1 == engine plan slot 1 (same source)")
+	Logic.remove_legacy_sidecar()
+
+
+# ------------------------------------------------------------- save guard
+
+var _save_backup := ""
+var _had_save := false
+
+
+func _backup_save() -> void:
+	_had_save = FileAccess.file_exists("user://save.json")
+	if _had_save:
+		_save_backup = FileAccess.get_file_as_string("user://save.json")
+
+
+func _restore_save() -> void:
+	if _had_save:
+		var f := FileAccess.open("user://save.json", FileAccess.WRITE)
+		f.store_string(_save_backup)
+	elif FileAccess.file_exists("user://save.json"):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path("user://save.json"))
+
+
 func _ready() -> void:
 	_run.call_deferred()
 
@@ -102,9 +181,13 @@ func _check(cond: bool, label: String) -> void:
 
 func _run() -> void:
 	await get_tree().process_frame
-	# Deterministic start: earlier runs leave presets behind in user://tactics.json.
-	if FileAccess.file_exists(Logic.TACTICS_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(Logic.TACTICS_PATH))
+	# Protect the player's real career: everything below mutates + saves.
+	_backup_save()
+	# Deterministic start: wipe any preset state left by earlier runs
+	# (single source of truth lives in world.meta; legacy sidecar removed too).
+	GameState.world["meta"].erase("tactics_state")
+	GameState.world["meta"].erase("tactics")
+	Logic.remove_legacy_sidecar()
 	var scr: Control = load("res://screens/tactics/screen.tscn").instantiate()
 	get_tree().root.add_child(scr)
 	await get_tree().process_frame
@@ -148,22 +231,22 @@ func _run() -> void:
 		var sc: int = Logic.role_score(rid, an)["score"]
 		_check(sc >= 1 and sc <= 99, "role %s score in range (%d)" % [rid, sc])
 
-	# instructions persist
+	# instructions persist — SINGLE SOURCE OF TRUTH: everything in the save
 	p["instructions"]["aggression"] = 4
 	p["instructions"]["protect_lead"] = false
 	scr._do_save()
-	var f := FileAccess.open("user://tactics.json", FileAccess.READ)
-	var disk: Dictionary = JSON.parse_string(f.get_as_text())
-	var dp: Dictionary = Logic.active_preset(disk)
-	_check(int(dp["instructions"]["aggression"]) == 4, "instructions saved to user://tactics.json")
-	_check(dp["lineup"] == p["lineup"], "lineup order saved to disk")
+	_check(not FileAccess.file_exists(Logic.TACTICS_PATH),
+		"legacy sidecar user://tactics.json is retired (not written)")
+	var sf := FileAccess.open("user://save.json", FileAccess.READ)
+	var save: Dictionary = JSON.parse_string(sf.get_as_text())
+	var dp: Dictionary = Logic.active_preset(save["world"]["meta"]["tactics_state"])
+	_check(int(dp["instructions"]["aggression"]) == 4, "instructions saved inside save.json (meta.tactics_state)")
+	_check(dp["lineup"] == p["lineup"], "lineup order saved inside save.json")
 	var gt: Dictionary = GameState.world["meta"]["tactics"]
 	_check(gt["lineup"] == p["lineup"], "lineup published to GameState.world.meta.tactics")
 	_check(gt["roles"][uid] == "wall", "roles published to GameState")
-	var sf := FileAccess.open("user://save.json", FileAccess.READ)
-	var save: Dictionary = JSON.parse_string(sf.get_as_text())
 	_check(save["world"]["meta"]["tactics"]["lineup"] == p["lineup"],
-		"tactics persisted inside save.json")
+		"active plan persisted inside save.json")
 
 	# preset create / rename / switch / delete
 	var before: int = scr._state["presets"].size()
@@ -187,12 +270,10 @@ func _run() -> void:
 	scr._do_save()
 
 	_run_consumption_checks(p)
+	_run_save_load_checks()
 
-	# Leave the user dir the way a fresh career expects it: default plan,
-	# republished, so test edits (hyper-aggression etc.) don't leak into play.
-	if FileAccess.file_exists(Logic.TACTICS_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(Logic.TACTICS_PATH))
-	Logic.save_state(Logic.load_state())
+	# Restore the player's real save so test edits don't leak into play.
+	_restore_save()
 
 	if _fails == 0:
 		print("TACTICS TEST OK")

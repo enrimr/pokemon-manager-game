@@ -1256,8 +1256,7 @@ func _refresh_identity() -> void:
 	_ident_block.tooltip_text = "Open Squad — %s" % pc.get("name", "")
 	_club_name_label.text = str(pc.get("name", "—"))
 	_club_sub_label.text = str(pc.get("manager", ""))
-	var pos := GameState.player_table_position()
-	_club_sub2_label.text = "%s · %s" % [_ordinal(pos), GameState.world["meta"]["league_name"]]
+	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), GameState.world["meta"]["league_name"]]
 
 
 func _refresh_topbar() -> void:
@@ -1265,10 +1264,12 @@ func _refresh_topbar() -> void:
 	# date block
 	_date_value.text = Season.pretty_date(GameState.current_date)
 	_date_caption.text = "%s · Week %d" % [_weekday(GameState.current_date), _season_week()]
-	# balance block
+	# balance block: bank balance headline, board's budget split underneath
 	var cur: String = GameState.world["meta"].get("currency", "P$")
 	_balance_value.text = "%s%s" % [cur, _thousands(int(pc["finances"]["balance"]))]
-	_balance_caption.text = "Balance · wage budget %s%s/w" % [cur, _thousands(int(pc["finances"]["wage_budget"]))]
+	_balance_caption.text = "T. budget %s%s · wages %s%s/w" % [
+		cur, _thousands(maxi(0, int(pc["finances"].get("transfer_budget", 0)))),
+		cur, _thousands(int(pc["finances"]["wage_budget"]))]
 	# next fixture block
 	var nf := GameState.next_player_fixture()
 	if nf.is_empty():
@@ -1283,11 +1284,18 @@ func _refresh_topbar() -> void:
 		_fixture_caption.text = "%s · %s" % [_comp_name(nf), _days_phrase(days)]
 		_fixture_block.tooltip_text = ("Go to matchday vs %s" % opp.get("name", "?")) if days <= 0 \
 			else "Open fixture — %s, %s (%s)" % [opp.get("name", "?"), Season.pretty_date(nf["date"]), _comp_name(nf)]
-	# position line under club name
-	var pos := GameState.player_table_position()
-	_club_sub2_label.text = "%s · %s" % [_ordinal(pos), GameState.world["meta"]["league_name"]]
+	# position line under club name ("—" until a league match is played)
+	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), GameState.world["meta"]["league_name"]]
 	_refresh_continue_label()
 	_refresh_badges()
+
+
+## Pre-season a table position is meaningless (alphabetical) — show "—".
+func _league_pos_text() -> String:
+	for r in GameState.league_table():
+		if GameState.is_player_club(r["club_id"]):
+			return "—" if int(r.get("played", 0)) == 0 else _ordinal(GameState.player_table_position())
+	return "—"
 
 
 func _refresh_continue_label() -> void:

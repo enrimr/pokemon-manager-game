@@ -360,6 +360,7 @@ static func _check_career_cache() -> void:
 		_agg_players.clear()
 		_agg_by_comp.clear()
 		_club_stats_cache.clear()
+		_pos_hist_cache.clear()
 
 
 ## Replays a played fixture with the real engine (same seed formula GameState
@@ -433,7 +434,8 @@ static func _tally_battle(events: Array, teams: Array, winner: int, out: Diction
 					break
 			battle[uid] = {"side": side, "name": src.get("name", pname),
 				"species": src.get("species", pname), "level": int(src.get("level", 0)),
-				"dmg": 0, "taken": 0, "kos": 0, "fainted": false, "in_battle": false}
+				"dmg": 0, "taken": 0, "kos": 0, "fainted": false, "in_battle": false,
+				"hits": 0, "misses": 0, "crits": 0, "se": 0}
 		return battle[uid]
 
 	var last_hitter := [{}, {}]   # victim side -> {"name":..,"side":..}
@@ -453,7 +455,17 @@ static func _tally_battle(events: Array, teams: Array, winner: int, out: Diction
 					var atk: Dictionary = ensure.call(int(e["by_side"]), str(e["by"]))
 					if not atk.is_empty():
 						atk["dmg"] += int(e.get("amount", 0))
+						atk["hits"] += 1
+						if bool(e.get("crit", false)):
+							atk["crits"] += 1
+						if float(e.get("effectiveness", 1.0)) > 1.0:
+							atk["se"] += 1
 					last_hitter[vs] = {"name": str(e["by"]), "side": int(e["by_side"])}
+			"miss":
+				var msr: Dictionary = ensure.call(int(e["side"]), str(e["pokemon"]))
+				if not msr.is_empty():
+					msr["misses"] += 1
+					msr["in_battle"] = true
 			"status_tick":
 				var vict: Dictionary = ensure.call(int(e["side"]), str(e["pokemon"]))
 				if not vict.is_empty():
@@ -484,7 +496,8 @@ static func _tally_battle(events: Array, teams: Array, winner: int, out: Diction
 		if not out.has(uid):
 			out[uid] = {"name": s["name"], "species": s["species"], "level": s["level"],
 				"side": side, "battles": 0, "wins": 0, "kos": 0, "dmg": 0, "taken": 0,
-				"faints": 0, "rating_sum": 0.0}
+				"faints": 0, "rating_sum": 0.0,
+				"hits": 0, "misses": 0, "crits": 0, "se": 0}
 		var agg: Dictionary = out[uid]
 		agg["battles"] += 1
 		agg["wins"] += 1 if won else 0
@@ -493,6 +506,8 @@ static func _tally_battle(events: Array, teams: Array, winner: int, out: Diction
 		agg["taken"] += s["taken"]
 		agg["faints"] += 1 if s["fainted"] else 0
 		agg["rating_sum"] += rating
+		for k in ["hits", "misses", "crits", "se"]:
+			agg[k] += int(s.get(k, 0))
 
 
 # ------------------------------------------------------- season-wide leaders
@@ -539,10 +554,14 @@ static func _merge_player_stats(target: Dictionary, uid: String, p: Dictionary) 
 	if not target.has(uid):
 		target[uid] = {"name": p["name"], "species": p["species"],
 			"level": p["level"], "battles": 0, "wins": 0, "kos": 0, "dmg": 0,
-			"taken": 0, "faints": 0, "rating_sum": 0.0}
+			"taken": 0, "faints": 0, "rating_sum": 0.0,
+			"hits": 0, "misses": 0, "crits": 0, "se": 0}
 	var agg: Dictionary = target[uid]
 	for k in ["battles", "wins", "kos", "dmg", "taken", "faints"]:
 		agg[k] += p[k]
+	# technique tallies: absent from details recorded before this schema — default 0
+	for k in ["hits", "misses", "crits", "se"]:
+		agg[k] += int(p.get(k, 0))
 	agg["rating_sum"] += p["rating_sum"]
 	agg["level"] = maxi(int(agg["level"]), int(p["level"]))
 
@@ -640,6 +659,7 @@ static func season_club_stats(club_ids: Array, fixtures: Array, comp: String = "
 			"hm": 0, "hw": 0, "hl": 0, "am": 0, "aw": 0, "al": 0,
 			"bw": 0, "bl": 0, "hbw": 0, "hbl": 0, "abw": 0, "abl": 0,
 			"legs": 0, "kos": 0, "faints": 0, "dmg": 0, "taken": 0, "turns": 0,
+			"hits": 0, "misses": 0, "crits": 0, "se": 0,
 			"rating_sum": 0.0, "rating_apps": 0,
 			"results": [], "streak": 0, "best_w": 0, "worst_l": 0,
 		}
@@ -689,6 +709,8 @@ static func season_club_stats(club_ids: Array, fixtures: Array, comp: String = "
 				row["faints"] += int(p["faints"])
 				row["dmg"] += int(p["dmg"])
 				row["taken"] += int(p["taken"])
+				for k in ["hits", "misses", "crits", "se"]:
+					row[k] += int(p.get(k, 0))
 				row["rating_sum"] += float(p["rating_sum"])
 				row["rating_apps"] += int(p["battles"])
 			for b in detail["battles"]:
@@ -720,6 +742,37 @@ static func _compute_streaks(row: Dictionary) -> void:
 	row["streak"] = run
 	row["best_w"] = best_w
 	row["worst_l"] = worst_l
+
+
+# ------------------------------------------------------- position over time
+
+static var _pos_hist_cache: Dictionary = {}   # completed_rounds -> {club_id: [pos...]}
+
+
+## League position after each completed matchday (drives the position graph).
+## club_id -> Array of 1-based positions, index 0 = after Matchday 1.
+## {} until the first league round has fully completed. Cached per round count.
+static func position_history(club_ids: Array, fixtures: Array) -> Dictionary:
+	_check_career_cache()
+	var last := latest_completed_league_round(fixtures)
+	if last < 1:
+		return {}
+	if _pos_hist_cache.has(last):
+		return _pos_hist_cache[last]
+	var league: Array = fixtures.filter(func(f):
+		return f["comp"] == "league" and f["played"])
+	var out := {}
+	for id in club_ids:
+		out[id] = []
+	for r in range(1, last + 1):
+		var upto := r
+		var subset: Array = league.filter(func(f): return int(f["round"]) <= upto)
+		var pos := table_positions(compute_table(club_ids, subset))
+		for id in club_ids:
+			out[id].append(int(pos.get(id, 0)))
+	_pos_hist_cache.clear()
+	_pos_hist_cache[last] = out
+	return out
 
 
 ## Winner club id of a played fixture ("" if unplayed).

@@ -1,8 +1,15 @@
 extends RefCounted
 ## Tactics piece — pure logic: preset persistence, role suitability,
 ## type-coverage analysis. No UI in here. Owned by res://screens/tactics/.
+##
+## PERSISTENCE: the single source of truth is GameState.world.meta —
+##   meta["tactics_state"]  full preset state {version, active, presets}
+##   meta["tactics"]        the active plan (wire format, engine-consumed)
+## Both live inside world, so they ride save.json and can never desync from
+## a loaded save. The legacy sidecar user://tactics.json is read ONCE as a
+## migration source for pre-single-source careers, then deleted.
 
-const TACTICS_PATH := "user://tactics.json"
+const TACTICS_PATH := "user://tactics.json"   # legacy sidecar (migration only)
 
 # ------------------------------------------------------------------ roles
 
@@ -234,13 +241,20 @@ static func offense_vs(a: Dictionary, def_type: String) -> Dictionary:
 
 # ------------------------------------------------------------------ persistence
 
+## Load the tactic state from the save (world.meta.tactics_state). Falls back
+## ONCE to the legacy user://tactics.json sidecar for careers saved before the
+## single-source change, then the sidecar is retired. Always returns a state
+## validated against the current squad, and stores it back into world.meta so
+## in-place edits are already part of the world the next save_game persists.
 static func load_state() -> Dictionary:
+	var meta: Dictionary = GameState.world.get("meta", {})
 	var state := {}
-	if FileAccess.file_exists(TACTICS_PATH):
-		var f := FileAccess.open(TACTICS_PATH, FileAccess.READ)
-		var parsed: Variant = JSON.parse_string(f.get_as_text())
-		if typeof(parsed) == TYPE_DICTIONARY and int(parsed.get("version", 0)) == 1:
-			state = parsed
+	var in_save: Variant = meta.get("tactics_state")
+	if typeof(in_save) == TYPE_DICTIONARY and int(in_save.get("version", 0)) == 1 \
+			and typeof(in_save.get("presets")) == TYPE_ARRAY and not (in_save["presets"] as Array).is_empty():
+		state = in_save
+	if state.is_empty():
+		state = _read_legacy_sidecar()
 	if state.is_empty():
 		state = {"version": 1, "active": "", "presets": []}
 	var squad: Array = GameState.player_club().get("squad", [])
@@ -251,14 +265,35 @@ static func load_state() -> Dictionary:
 	var names: Array = state["presets"].map(func(p): return p["name"])
 	if not names.has(state["active"]):
 		state["active"] = names[0]
+	meta["tactics_state"] = state
 	return state
 
 
+## Legacy migration source: pre-single-source careers kept presets in a
+## user:// sidecar. Read it if present; save_state deletes it afterwards.
+static func _read_legacy_sidecar() -> Dictionary:
+	if not FileAccess.file_exists(TACTICS_PATH):
+		return {}
+	var f := FileAccess.open(TACTICS_PATH, FileAccess.READ)
+	if f == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(f.get_as_text())
+	if typeof(parsed) == TYPE_DICTIONARY and int(parsed.get("version", 0)) == 1:
+		return parsed
+	return {}
+
+
 static func save_state(state: Dictionary) -> void:
-	var f := FileAccess.open(TACTICS_PATH, FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify(state))
+	GameState.world["meta"]["tactics_state"] = state
+	remove_legacy_sidecar()
 	apply_to_gamestate(state)
+
+
+## The sidecar is no longer a source of truth — remove it so a stale copy can
+## never shadow what an older save actually contains.
+static func remove_legacy_sidecar() -> void:
+	if FileAccess.file_exists(TACTICS_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(TACTICS_PATH))
 
 
 ## Publish the active tactic into GameState so the match engine / other pieces
@@ -266,6 +301,7 @@ static func save_state(state: Dictionary) -> void:
 ## `persist=false` republishes without touching the save file (boot path).
 static func apply_to_gamestate(state: Dictionary, persist: bool = true) -> void:
 	var p := active_preset(state)
+	GameState.world["meta"]["tactics_state"] = state
 	GameState.world["meta"]["tactics"] = plan_from_preset(p)
 	if persist:
 		GameState.save_game()

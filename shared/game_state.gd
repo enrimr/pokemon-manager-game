@@ -27,6 +27,8 @@ var auto_sim_player_matches := true # match piece can set false and intercept
 var _clubs_by_id: Dictionary = {}
 var _table_cache: Array = []
 var _table_dirty := true
+var _economy: RefCounted = null     # inbox piece's economy.gd, ticked daily
+var _economy_checked := false
 
 
 func _ready() -> void:
@@ -44,6 +46,7 @@ func new_career(seed_value: int = 20260801) -> void:
 	world = JSON.parse_string(f.get_as_text())
 	_index_clubs()
 	_ensure_item_state()
+	_ensure_budget_state()
 	season_start = world["meta"]["season_start"]
 	current_date = season_start
 	fixtures = Season.make_league_fixtures(club_ids(), season_start)
@@ -95,6 +98,7 @@ func load_game() -> bool:
 	inbox = data["inbox"]
 	_index_clubs()
 	_ensure_item_state()
+	_ensure_budget_state()
 	_table_dirty = true
 	career_started.emit()
 	date_changed.emit(current_date)
@@ -173,6 +177,47 @@ func unread_inbox_count() -> int:
 	return inbox.filter(func(m): return not m.get("read", false)).size()
 
 
+# ------------------------------------------------------------------ budgets
+# FM-style board split: the bank balance is the CLUB's money; the board only
+# releases part of it for squad building. finances.transfer_budget is what
+# the manager may spend on fees and items; finances.wage_budget caps weekly
+# wages (both adjustable via the board-request flow in the Inbox piece).
+
+## The board-imposed transfer budget of a club (spendable, may hit 0).
+func transfer_budget(club_id: String) -> int:
+	var c := club(club_id)
+	if c.is_empty():
+		return 0
+	return int(c["finances"].get("transfer_budget", 0))
+
+
+func player_transfer_budget() -> int:
+	return transfer_budget(world["meta"]["player_club_id"])
+
+
+## Move the budget with every fee/purchase (negative delta) or sale/board
+## grant (positive). Budget never exceeds the actual bank balance.
+func adjust_transfer_budget(club_id: String, delta: int) -> void:
+	var c := club(club_id)
+	if c.is_empty():
+		return
+	var fin: Dictionary = c["finances"]
+	fin["transfer_budget"] = mini(int(fin.get("transfer_budget", 0)) + delta, int(fin["balance"]))
+
+
+## Derive the board's initial split for clubs that don't have one yet
+## (new careers and pre-split saves): richer, more reputable boards release
+## a bigger slice of the bank balance for transfers.
+func _ensure_budget_state() -> void:
+	for c in world["clubs"]:
+		var fin: Dictionary = c["finances"]
+		if not fin.has("transfer_budget"):
+			var rep := int(c.get("reputation", 10))
+			var slice := 0.18 + 0.016 * rep      # rep 1..20 -> 20%..50% of the bank
+			var tb := int(round(float(int(fin["balance"])) * slice / 1000.0)) * 1000
+			fin["transfer_budget"] = clampi(tb, 0, int(fin["balance"]))
+
+
 # ------------------------------------------------------------------ items & inventory
 # Per-club item store: club["items"] = {item_id: count}. Held items live on the
 # squad instance's "held_item" slot (null/"" = bare). Item catalog: DataStore.item().
@@ -199,10 +244,12 @@ func buy_item(item_id: String, qty: int = 1) -> String:
 	qty = maxi(1, qty)
 	var cost := int(it["price"]) * qty
 	var fin: Dictionary = player_club()["finances"]
-	if int(fin["balance"]) < cost:
-		return "Not enough funds — %s %d needed, %s %d available." % [
-			world["meta"]["currency"], cost, world["meta"]["currency"], int(fin["balance"])]
+	var spendable := mini(int(fin["balance"]), int(fin.get("transfer_budget", 0)))
+	if spendable < cost:
+		return "Not enough transfer budget — %s %d needed, %s %d released by the board." % [
+			world["meta"]["currency"], cost, world["meta"]["currency"], maxi(0, spendable)]
 	fin["balance"] = int(fin["balance"]) - cost
+	fin["transfer_budget"] = int(fin.get("transfer_budget", 0)) - cost
 	var inv := player_inventory()
 	inv[item_id] = int(inv.get(item_id, 0)) + qty
 	inventory_changed.emit()
@@ -219,7 +266,9 @@ func sell_item(item_id: String, qty: int = 1) -> String:
 	if int(inv[item_id]) <= 0:
 		inv.erase(item_id)
 	var fin: Dictionary = player_club()["finances"]
-	fin["balance"] = int(fin["balance"]) + int(int(DataStore.item(item_id)["price"]) * 0.5) * qty
+	var back := int(int(DataStore.item(item_id)["price"]) * 0.5) * qty
+	fin["balance"] = int(fin["balance"]) + back
+	fin["transfer_budget"] = mini(int(fin.get("transfer_budget", 0)) + back, int(fin["balance"]))
 	inventory_changed.emit()
 	return ""
 
@@ -371,8 +420,29 @@ func advance_day() -> Array:
 		day_events.append({"t": "fixture_played", "fixture": f})
 	_maybe_generate_next_cup_round()
 	_ai_daily_items()
+	_settle_economy()
 	date_changed.emit(current_date)
 	return day_events
+
+
+## Daily economy settlement (gates, travel, payroll, sponsorship, prize
+## money). The model lives in the inbox piece (economy.gd) with its ledger
+## stored in world.meta.economy; ticking it here means pure-sim timelines
+## accrue money without the Inbox screen ever instantiating — the screen
+## just renders the ledger. Duplicate-guarded inside tick(), so the Inbox
+## re-ticking on load is a no-op.
+func _settle_economy() -> void:
+	if _economy == null and not _economy_checked:
+		_economy_checked = true
+		var econ_path := "res://screens/inbox/economy.gd"
+		var news_path := "res://screens/inbox/news_gen.gd"
+		if ResourceLoader.exists(econ_path) and ResourceLoader.exists(news_path):
+			var econ: Variant = load(econ_path)
+			var news: Variant = load(news_path)
+			if econ is GDScript and news is GDScript:
+				_economy = (econ as GDScript).new((news as GDScript).new())
+	if _economy != null:
+		_economy.tick()
 
 
 ## Continue button behaviour: advance until something notable happens

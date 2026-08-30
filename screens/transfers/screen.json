@@ -1,1 +1,7 @@
-{"title": "Transfers", "order": 50, "icon_letter": "$"}
+{"title": "Transfers", "order": 50, "icon_letter": "$",
+ "tabs": [
+  {"id": "recruitment", "title": "Recruitment"},
+  {"id": "search", "title": "Search"},
+  {"id": "scouting", "title": "Scouting"},
+  {"id": "centre", "title": "Transfer Centre"}
+ ]}

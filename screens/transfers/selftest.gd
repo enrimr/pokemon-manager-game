@@ -22,8 +22,12 @@ func _advance(n: int) -> void:
 		GameState.advance_day()
 
 
+const SaveGuard := preload("res://tools/save_guard.gd")
+
+
 func _ready() -> void:
 	await get_tree().process_frame
+	SaveGuard.backup()   # protect the player's real save
 	GameState.delete_save()
 	GameState.auto_sim_player_matches = true
 	GameState.new_career()
@@ -54,13 +58,24 @@ func _ready() -> void:
 	var b: Array = m.masked_bounds(uid, "atk", int(stats["atk"]))
 	_ok(int(b[0]) <= int(stats["atk"]) and int(stats["atk"]) <= int(b[1]), "range contains true value")
 
+	print("=== transfers: board transfer budget ===")
+	var pc0: Dictionary = GameState.player_club()
+	_ok(int(pc0["finances"].get("transfer_budget", -1)) >= 0, "board released a transfer budget")
+	_ok(m.spendable_budget() <= int(pc0["finances"]["balance"]), "spendable budget never exceeds the bank")
+	pc0["finances"]["transfer_budget"] = 1000
+	_ok(m.make_offer(uid, {"upfront": 50000, "inst_amount": 0, "inst_years": 2, "sell_on": 0}) != "",
+		"bid above the board's transfer budget blocked")
+	_ok(GameState.buy_item("leftovers", 999) != "", "item spree above the transfer budget blocked")
+	# release the full bank for the negotiation-mechanics tests below
+	pc0["finances"]["transfer_budget"] = int(pc0["finances"]["balance"])
+
 	print("=== transfers: scouting ===")
 	var scouts: Array = m.player_scouts()
 	_ok(scouts.size() >= 1, "%d staff can scout" % scouts.size())
 	var sname: String = scouts[0]["name"]
 	_ok(m.assign_scout_to_target(sname, uid) == "", "scout assigned to target")
 	_ok(m.assign_scout_to_target(sname, uid) != "", "busy scout cannot be double-assigned")
-	var days: int = m.scout_days_for(scouts[0])
+	var days: int = m.scout_days_for(scouts[0], uid)
 	_advance(days)
 	_ok(m.knowledge_of(uid) >= 100.0, "knowledge unlocked after %d days" % days)
 	_ok(m.reports.has(uid), "written report filed")
@@ -71,6 +86,124 @@ func _ready() -> void:
 	_ok(m.masked_int(uid, "atk", int(stats["atk"])) == str(int(stats["atk"])), "exact stats now shown")
 	if scouts.size() > 1:
 		_ok(m.assign_scout_to_focus(scouts[1]["name"], "water") == "", "second scout set to type focus")
+
+	print("=== transfers: recruitment pipeline ===")
+	# --- shortlist
+	var sl_t: Dictionary = {}
+	for tS in m.all_targets():
+		if tS["pool"] == "club" and String(tS["inst"]["uid"]) != uid and m.offer_for_target(tS["inst"]["uid"]).is_empty():
+			sl_t = tS
+			break
+	var sl_uid: String = sl_t["inst"]["uid"]
+	_ok(m.toggle_shortlist(sl_uid) == "", "target shortlisted")
+	_ok(m.shortlisted(sl_uid), "shortlist remembers the target")
+	_ok(m.shortlist_targets().size() == 1, "shortlist board resolves live targets")
+	# --- rumour mill seeded at window open, listings slash prices
+	_ok(not m.rumours.is_empty(), "rumour mill seeded when the window opened (%d rumours)" % m.rumours.size())
+	var ask_before: int = m.ask_price(sl_t["inst"], sl_t["club_id"])
+	m.listed[sl_uid] = Season.date_add(GameState.current_date, 20)
+	var ask_listed: int = m.ask_price(sl_t["inst"], sl_t["club_id"])
+	_ok(m.is_listed(sl_uid), "transfer-listing recorded")
+	_ok(ask_listed < int(float(ask_before) * 0.75), "listing slashes the ask (%d -> %d)" % [ask_before, ask_listed])
+	m.listed.erase(sl_uid)
+	# --- interest rumour ripens into a REAL AI deal
+	var rum_t: Dictionary = {}
+	for tR in m.all_targets():
+		if tR["pool"] != "club" or String(tR["inst"]["uid"]) in [uid, sl_uid]:
+			continue
+		var cR: Dictionary = GameState.club(tR["club_id"])
+		if cR["squad"].size() > 9 and m.importance_of(tR["inst"], cR) < 1.15:
+			rum_t = tR
+			break
+	var rich0: Dictionary = {}
+	for cB in GameState.world["clubs"]:
+		if not GameState.is_player_club(cB["id"]) and String(cB["id"]) != String(rum_t["club_id"]):
+			if rich0.is_empty() or int(cB["finances"]["balance"]) > int(rich0["finances"]["balance"]):
+				rich0 = cB
+	var rum: Dictionary = m._add_rumour("interest", rum_t["inst"]["uid"], String(rum_t["club_id"]),
+		String(rich0["id"]), "Strong", "test rumour", GameState.current_date)
+	var rngP := RandomNumberGenerator.new()
+	rngP.seed = 777
+	_ok(m._complete_rumoured_deal(rum, rngP), "interest rumour completed as a real transfer")
+	_ok(bool(rum["came_true"]), "rumour marked came-true")
+	_ok(String(m.find_target(rum_t["inst"]["uid"])["club_id"]) == String(rich0["id"]), "rumoured target actually moved clubs")
+	# --- 'preparing a bid for OUR player' rumours become real incoming offers
+	var pcP: Dictionary = GameState.player_club()
+	var ours: Dictionary = pcP["squad"][0]
+	var rum2: Dictionary = m._add_rumour("our_player", ours["uid"], String(pcP["id"]),
+		String(rich0["id"]), "Strong", "test our-player rumour", GameState.current_date)
+	var landed := false
+	for i in 12:
+		rngP.seed = 1000 + i
+		if m._resolve_our_player_rumours(rngP):
+			landed = true
+			break
+		rum2["dud"] = false
+		rum2["came_true"] = false
+	_ok(landed, "our-player rumour turned into a real incoming bid")
+	var rum_bid: Array = m.offers_in.filter(func(o): return String(o["uid"]) == String(ours["uid"]))
+	_ok(not rum_bid.is_empty() and String(rum_bid[0]["club_id"]) == String(rich0["id"]), "the rumoured club made the bid")
+	# --- agent-offered players (push) + deal grease
+	var got_agent := false
+	for i in 300:
+		rngP.seed = 5000 + i
+		m._tick_agents(rngP)
+		if not m.open_agent_offers().is_empty():
+			got_agent = true
+			break
+	_ok(got_agent, "agents tout players at us (%d open)" % m.open_agent_offers().size())
+	if got_agent:
+		var ag: Dictionary = m.open_agent_offers()[0]
+		_ok(not m.agent_offer_for(String(ag["uid"])).is_empty(), "agent offer resolvable by uid")
+		m.dismiss_agent_offer(int(ag["id"]))
+		_ok(m.agent_offer_for(String(ag["uid"])).is_empty(), "dismissed agent offer goes away")
+	# --- scout market: hire + region network
+	var pool_h: Array = m.scout_market()
+	_ok(pool_h.size() >= 4, "monthly scout market has candidates (%d)" % pool_h.size())
+	pool_h.sort_custom(func(a, b): return int(a["wage"]) < int(b["wage"]))
+	var cand: Dictionary = pool_h[0]
+	var n_scouts0: int = m.player_scouts().size()
+	var bill0: int = m.wage_bill(GameState.player_club())
+	_ok(m.hire_scout(String(cand["name"])) == "", "scout hired (%s, %s/wk)" % [cand["name"], cand["wage"]])
+	_ok(m.player_scouts().size() == n_scouts0 + 1, "hired scout joins the scouting team")
+	_ok(m.wage_bill(GameState.player_club()) == bill0 + int(cand["wage"]), "scout wage lands on the wage bill")
+	var hired_s: Dictionary = m._scout_by_name(String(cand["name"]))
+	_ok(m.scout_region(hired_s) == String(cand["region"]), "hired scout carries a home region")
+	var reg_t: String = m.region_of(sl_t["inst"])
+	_ok(m.REGIONS.has(reg_t), "every target maps to a scouting region (%s)" % reg_t)
+	var cov: Dictionary = m.region_coverage()
+	_ok(cov.size() == 5 and int(cov[m.scout_region(hired_s)]["scouts"]) >= 1, "region coverage sees the new scout")
+	_ok(m.fire_scout(String(cand["name"])) == "", "hired scout released")
+	_ok(m.fire_scout(scouts[0]["name"]) != "", "club coaches cannot be released")
+	# --- scout recommendations push into the queue
+	m.reports[sl_uid] = {"uid": sl_uid, "date": GameState.current_date, "scout": sname,
+		"name": m.display_name(sl_t["inst"]), "species": sl_t["inst"]["species"], "types": [],
+		"level": 10, "ability_stars": 4.0, "potential_stars": 4.5, "pros": [], "cons": [], "verdict": "x"}
+	m.shortlist.erase(sl_uid)
+	m._maybe_recommend(sl_uid, sname)
+	_ok(not m.new_recs().is_empty(), "strong report pushed a recommendation")
+	var rec0: Dictionary = m.new_recs()[0]
+	_ok(m.rec_accept(int(rec0["id"])) == "", "recommendation accepted onto the shortlist")
+	_ok(m.shortlisted(sl_uid), "accepted rec is shortlisted")
+	# --- DoF delegation: swats lowballs, pursues the shortlist
+	m.offers_in.append({"id": 99901, "uid": ours["uid"], "club_id": rich0["id"],
+		"package": m.blank_package(1000), "ask": 0, "ask_sell_on": 0, "stage": "open",
+		"name": m.display_name(ours), "respond_on": "", "expires_on": "2099-01-01",
+		"routine": true, "log": []})
+	m.dof["handle_bids"] = true
+	m._dof_handle_bids()
+	var swatted: Array = m.offers_in.filter(func(o): return int(o["id"]) == 99901)
+	_ok(String(swatted[0]["stage"]) == "rejected", "DoF rejected the lowball bid")
+	_ok(not m.dof_log.is_empty(), "DoF logged its action")
+	m.dof["pursue_shortlist"] = true
+	m._dof_open_deal(rngP)
+	var dof_o: Dictionary = m.offer_for_target(sl_uid)
+	_ok(not dof_o.is_empty() and bool(dof_o.get("dof", false)), "DoF opened talks for the shortlisted target")
+	m.withdraw_offer(int(dof_o["id"]))
+	m.dof["handle_bids"] = false
+	m.dof["pursue_shortlist"] = false
+	m.toggle_shortlist(sl_uid)
+	_ok(not m.shortlisted(sl_uid), "shortlist toggle removes")
 
 	print("=== transfers: deal-structure valuation (AI brain) ===")
 	var seller: Dictionary = GameState.club(club_t["club_id"])
@@ -170,7 +303,7 @@ func _ready() -> void:
 			_ok(String(lin["loan"]["owner"]) == String(loan_t["club_id"]), "loan remembers owning club")
 			var bal_l: int = int(pc["finances"]["balance"])
 			var fee2: int = int(lin["loan"]["option_fee"])
-			if fee2 > 0 and fee2 <= bal_l:
+			if fee2 > 0 and fee2 <= m.spendable_budget():
 				_ok(m.exercise_loan_option(luid) == "", "option to buy exercised")
 				_ok(not lin.has("loan"), "loan marker cleared — signed permanently")
 				_ok(int(pc["finances"]["balance"]) == bal_l - fee2, "option fee paid")
@@ -279,10 +412,10 @@ func _ready() -> void:
 		var sc5: Dictionary = GameState.club(t5["club_id"])
 		if int(sc5["reputation"]) <= int(pcC["reputation"]) and sc5["squad"].size() > 7:
 			var ask5: int = m.ask_price(t5["inst"], t5["club_id"])
-			if int(float(ask5) * 0.9) <= int(pcC["finances"]["balance"]):
+			if int(float(ask5) * 0.9) <= m.spendable_budget():
 				oC_t = t5
 				break
-	_ok(not oC_t.is_empty(), "found a late-window target we can afford")
+	_ok(not oC_t.is_empty(), "found a late-window target within the transfer budget")
 	if not oC_t.is_empty():
 		var uidC: String = oC_t["inst"]["uid"]
 		var askC: int = m.ask_price(oC_t["inst"], oC_t["club_id"])
@@ -298,14 +431,31 @@ func _ready() -> void:
 	var know_before: float = m.knowledge_of(uid)
 	var deals_before: int = m.deals.size()
 	var pay_before: int = m.payments.size()
+	if m.shortlist.is_empty():
+		for tZ in m.all_targets():
+			if tZ["pool"] == "club":
+				m.toggle_shortlist(String(tZ["inst"]["uid"]))
+				break
+	m.dof["pursue_shortlist"] = true
+	var sl_before: int = m.shortlist.size()
+	var rum_before: int = m.rumours.size()
+	var rec_before: int = m.recs.size()
+	var agent_before: int = m.agent_offers.size()
 	GameState.save_game()
 	m.save_state()
+	m._load_state()
 	_ok(GameState.load_game(), "load_game succeeds")
 	_ok(m.knowledge_of(uid) == know_before, "scouting knowledge survives load")
 	_ok(m.deals.size() == deals_before, "deals log survives load")
 	_ok(m.payments.size() == pay_before, "installment schedule survives load")
 	_ok(not m.reports.is_empty(), "reports survive load")
+	_ok(m.shortlist.size() == sl_before, "shortlist survives load")
+	_ok(m.rumours.size() == rum_before, "rumour mill survives load")
+	_ok(m.recs.size() == rec_before and m.agent_offers.size() == agent_before, "recs + agent offers survive load")
+	_ok(bool(m.dof.get("pursue_shortlist", false)) and m.dof.has("max_over_pct"), "DoF settings survive load (with defaults merged)")
+	m.dof["pursue_shortlist"] = false
 
+	SaveGuard.restore()
 	if _fail == 0:
 		print("TRANSFERS SELFTEST OK")
 		get_tree().quit(0)

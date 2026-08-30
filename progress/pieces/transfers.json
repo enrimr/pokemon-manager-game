@@ -1,10 +1,10 @@
 {
  "piece": "transfers",
  "fm_reference": "FM24 Transfer Centre + Scouting Hub",
- "status": "passed",
- "round": 3,
- "verdict": "ours wins",
- "biggest_gap": null,
+ "status": "capped",
+ "round": 2,
+ "verdict": "fm wins",
+ "biggest_gap": "Market scale starves the scouting game: one 16-club league with ~266 scoutable targets, where a single scout takes a top target from a masked P$254K-742K range to 100% knowledge and a full report in ~10 days — the discovery/uncertainty engine that makes FM24's global, effectively inexhaustible scouting hub a season-long strategic layer collapses into a two-week checklist here.",
  "history": [
   {
    "round": 1,
@@ -20,7 +20,20 @@
    "round": 3,
    "winner": "ours",
    "gap": null
+  },
+  {
+   "round": 1,
+   "phase": "wave2",
+   "winner": "fm",
+   "gap": "No recruitment pipeline around the deal engine: FM24's hub PUSHES targets at you — shortlists, scout recommendation queues, agent-offered players, transfer rumours, DoF delegation — while this screen is entirely pull-based: a flat 268-row search table and two dual-role coach-scouts, no shortlist, no rumour mill, no scout hiring/network, so between deals the centre is inert."
+  },
+  {
+   "round": 2,
+   "phase": "wave2",
+   "winner": "fm",
+   "gap": "Market scale starves the scouting game: one 16-club league with ~266 scoutable targets, where a single scout takes a top target from a masked P$254K-742K range to 100% knowledge and a full report in ~10 days — the discovery/uncertainty engine that makes FM24's global, effectively inexhaustible scouting hub a season-long strategic layer collapses into a two-week checklist here."
   }
  ],
- "updated": "2026-08-30 02:19"
+ "updated": "2026-08-30 06:59",
+ "fix_note": "Wave2 fix: full push-based recruitment pipeline added — Recruitment hub tab (shortlist board with watch alerts, scout recommendation queue, agent-offered players with mechanically greased deals, rumour mill whose listings slash ask prices and whose rumours ripen into real transfers/bids), scout hiring market + 5-region scouting network (home-patch speed, region focuses, coverage board), and DoF delegation that swats lowballs, auto-scouts and opens/negotiates/closes shortlist deals inside board limits. 120-check selftest, SMOKE OK, screenshots in artifacts/transfers/w2_fix."
 }

@@ -22,6 +22,11 @@ const ID_NICKNAME := 7
 const ID_RELEASE := 8
 const ID_COMPARE := 9
 const ID_FOCUS_BASE := 100
+const ID_PROMISE_BASE := 200
+
+const PROMISE_KINDS := ["battles", "new_deal", "unlist"]
+const PROMISE_MENU := {"battles": "Promise A Run Of Battles...",
+	"new_deal": "Promise A New Deal...", "unlist": "Promise To Take Off The List..."}
 
 
 # ------------------------------------------------------------------ context menu
@@ -62,6 +67,18 @@ static func open_menu(host: Control, uid: String, at_screen_pos: Vector2,
 			menu.set_item_disabled(menu.get_item_index(act_id), true)
 		menu.set_item_text(menu.get_item_index(ID_DISCIPLINE),
 			"Criticise Recent Form (next chat %s)" % Season.pretty_date(svc.interaction_available_on(uid)))
+	menu.add_separator("Promises")
+	var open_p: Dictionary = svc.open_promise(uid)
+	for i in PROMISE_KINDS.size():
+		var kind: String = PROMISE_KINDS[i]
+		if kind == "unlist" and not listed:
+			continue
+		menu.add_item(PROMISE_MENU[kind], ID_PROMISE_BASE + i)
+		if not open_p.is_empty():
+			var mi := menu.get_item_index(ID_PROMISE_BASE + i)
+			menu.set_item_disabled(mi, true)
+			menu.set_item_tooltip(mi, "A promise is already outstanding — deadline %s." %
+				Season.pretty_date(str(open_p["deadline"])))
 	menu.add_separator("Development")
 	var focus_menu := PopupMenu.new()
 	focus_menu.name = "TrainingFocus"
@@ -78,6 +95,9 @@ static func open_menu(host: Control, uid: String, at_screen_pos: Vector2,
 		menu.add_item("Compare With Teammate...", ID_COMPARE)
 
 	var on_id := func(id: int) -> void:
+		if id >= ID_PROMISE_BASE:
+			open_promise_dialog(host, uid, PROMISE_KINDS[id - ID_PROMISE_BASE])
+			return
 		if id >= ID_FOCUS_BASE:
 			svc.set_training_focus(uid, FOCUS_KEYS[id - ID_FOCUS_BASE])
 			return
@@ -131,6 +151,39 @@ static func interact(host: Control, uid: String, is_praise: bool) -> void:
 	var svc: Node = Service.ensure()
 	var res: Dictionary = svc.praise(uid) if is_praise else svc.discipline(uid)
 	notice(host, "Praise" if is_praise else "Criticism", str(res["message"]))
+
+
+## Confirm-and-make a tracked promise (battles / new_deal / unlist).
+static func open_promise_dialog(host: Control, uid: String, kind: String) -> void:
+	var svc: Node = Service.ensure()
+	var inst: Dictionary = svc.find_instance(uid)
+	if inst.is_empty():
+		return
+	var err: String = svc.can_promise(uid, kind)
+	if err != "":
+		notice(host, "Promise", err)
+		return
+	var def: Dictionary = Service.PROMISE_DEFS[kind]
+	var name: String = UI.display_name(inst)
+	var terms: String
+	match kind:
+		"battles": terms = str(def["text"]) % [int(def["target"]), int(def["days"])]
+		_: terms = str(def["text"]) % int(def["days"])
+	var d := ConfirmationDialog.new()
+	d.title = "Make a promise — %s" % name
+	d.dialog_autowrap = true
+	d.min_size = Vector2i(480, 0)
+	d.dialog_text = "Give %s your word: %s.\n\nMorale lifts immediately (+6) and the promise is tracked on this screen with a hard deadline of %s. Keep it and trust deepens across the squad; break it and %s takes a heavy morale hit, contract demands rise for weeks, and the whole squad sees your word devalued." % [
+		name, terms, Season.pretty_date(Season.date_add(GameState.current_date, int(def["days"]))), name]
+	d.get_ok_button().text = "Give Your Word"
+	d.confirmed.connect(func() -> void:
+		var res: Dictionary = svc.make_promise(uid, kind)
+		notice(host, "Promise made" if bool(res["ok"]) else "Promise", str(res["message"]))
+		d.queue_free())
+	d.close_requested.connect(d.queue_free)
+	d.canceled.connect(d.queue_free)
+	host.add_child(d)
+	d.popup_centered()
 
 
 static func _dialog(title: String) -> Array:

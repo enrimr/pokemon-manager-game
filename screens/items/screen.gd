@@ -208,7 +208,7 @@ func _build_ui() -> void:
 	_shop_tree.item_selected.connect(_on_shop_selected)
 	_shop_tree.item_activated.connect(func(): _buy(1))  # double-click = buy 1
 	left.add_child(_shop_tree)
-	left.add_child(_lbl("Double-click a row to buy one. Purchases come out of the club balance.",
+	left.add_child(_lbl("Double-click a row to buy one. Purchases come out of the board's transfer budget.",
 		ThemeBuilder.COL_TEXT_DIM, 11))
 
 	# ------ right: dossier + squad equipment
@@ -349,7 +349,9 @@ func _refresh_header() -> void:
 		if h != null and str(h) != "":
 			equipped += 1
 			eq_value += int(DataStore.item(str(h)).get("price", 0))
-	_header_stat("Club balance", _money(int(pc["finances"]["balance"])), ThemeBuilder.COL_GOOD)
+	_header_stat("Transfer budget", _money(maxi(0, mini(int(pc["finances"]["balance"]),
+		int(pc["finances"].get("transfer_budget", 0))))), ThemeBuilder.COL_GOOD)
+	_header_stat("Club balance", _money(int(pc["finances"]["balance"])), ThemeBuilder.COL_TEXT_DIM)
 	_header_stat("Storeroom", "%d items · %s" % [stocked, _money(value)])
 	_header_stat("Squad equipped", "%d / %d" % [equipped, pc["squad"].size()],
 		ThemeBuilder.COL_GOOD if equipped > 0 else ThemeBuilder.COL_TEXT_DIM)
@@ -472,7 +474,8 @@ func _refresh_detail() -> void:
 	var btns := HBoxContainer.new()
 	btns.add_theme_constant_override("separation", 8)
 	_detail.add_child(btns)
-	var bal := int(GameState.player_club()["finances"]["balance"])
+	var fin: Dictionary = GameState.player_club()["finances"]
+	var bal := mini(int(fin["balance"]), int(fin.get("transfer_budget", 0)))
 	var b1 := Button.new()
 	b1.text = "Buy 1  (%s)" % _money(int(it["price"]))
 	b1.disabled = bal < int(it["price"])

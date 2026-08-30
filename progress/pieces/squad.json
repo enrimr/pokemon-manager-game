@@ -1,10 +1,10 @@
 {
  "piece": "squad",
  "fm_reference": "FM24 Squad screen + Player Profile",
- "status": "passed",
- "round": 1,
- "verdict": "ours wins",
- "biggest_gap": "",
+ "status": "capped",
+ "round": 2,
+ "verdict": "fm wins (very narrow)",
+ "biggest_gap": "Fixed, non-customizable table views that overflow the viewport: the five hard-coded presets cannot be edited, reordered or saved, and at the native 1600x900 the rightmost columns (Status/Value) and the BALANCE header chip are clipped off-screen with horizontal scrolling disabled (screen.gd line 195), so live data (bids, listed state) is literally unreachable — FM24's editable, saveable column views never lose data to the viewport.",
  "history": [
   {
    "round": 1,
@@ -32,7 +32,28 @@
    "winner": "ours",
    "gap": "",
    "note": "Round-4 gap closed and verified live: Picked column (slot + role, bench order S1..Sn) on all four views, bound to the saved tactic in GameState.world.meta.tactics (mutation test: swapping the lineup re-ranked the table instantly) and the same plan demonstrably drives interactive and instant-simmed results via the tactics director. Availability flags (EXH/TRD, UNF/FIT, status ailments, LST, UNH) with severity colors, dot icons and tooltips; PICKED SIX x/6 fit header chip degrades to warn state; footer strip and profile header carry PICKED + AVAILABILITY. Secondary nits: Avail column truncates stacked flags ('TRD U'), no lineup-editing affordance from the squad screen itself (no 'make starter' context action or Tactics shortcut), no expected-recovery estimate on fatigue flags."
+  },
+  {
+   "round": 1,
+   "phase": "wave2",
+   "winner": "fm",
+   "gap": "No qualitative personality/happiness layer: morale is an opaque 0-100 word with no reasons, concerns, expectations or promises anywhere on the squad table or profile, while FM24 surrounds every number with personality traits, squad-status expectations and explained happiness that actually drive keep/sell/renew decisions.",
+   "note": "Everything else verified REAL end-to-end with fresh eyes: 4 dense table presets with live season stats (apps/KOs/dmg/ratings accumulate over 40 simmed days), sortable columns + filter + right-click menus; multi-round contract talks with budget guards and walk-away locks (dialog verified live); transfer listing generated genuine AI bids that expire and can be accepted for real squad+finance mutations (offers dialog verified via driver); profile has attributes with IV/squad-rank, compare-with deltas, matchups, moves, form log, percentile coach report tied to named staff judging stats; History tab has season stats, attribute progression, value sparklines, transfer/contract/dev logs. Cross-screen coherence strong (tactic roles in Picked column, held items link to Items, training-focus bridge, inbox messages for every action, matchday redirect). Verdict is NARROW \u2014 FM edge only on the qualitative context layer plus secondaries: no customizable/saveable column views (4 fixed presets), contract talks lack clause depth (appearance/win bonuses, promises, agent flavour), career records start at takeover (no pre-career/cross-club history), and commercial-grade art polish is out of reach of the no-copyrighted-art constraint."
+  },
+  {
+   "round": 2,
+   "phase": "wave2 (personality/happiness fix)",
+   "winner": "",
+   "gap": "",
+   "note": "Gap closed: full qualitative layer. personality.gd: 4 hidden character attributes (deterministic per career+uid) -> FM archetypes (Model Professional/Fiery/Driven...); squad-status expectation tiers (Star/Important/Youth Prospect/Squad/Backup) from in-squad ability rank; happiness = explained factor ledger (playing time vs status, form, wage-fairness vs squad rank, contract runway, listing, collapsed talks, promises, team position/results, condition, praise/criticism) each with detail sentence, signed weight and resolve action. SquadService: every morale mutation flows through apply_morale into a per-mon mood ledger with dated reasons; match results move real morale (temperament-scaled); morale drifts 1/day toward structural happiness; residual attribution logs out-of-service changes (training load); promises are real state (battles-in-28-days checked vs genuine appearance data, new-deal kept by actual renewals, unlist) with deadlines, kept/broken inbox mail, squad-wide trust fallout and contract-demand poisoning; personality scales praise/criticism, walk-out patience, wage demands, listing/break penalties. UI: new Happiness table preset (Personality/Status/Morale/Happiness/Main Concern/Promise cols, all tooltipped), happiness col on General, morale tooltips = mood ledger everywhere, MOOD header chip w/ unhappy roster, footer HAPPINESS+TOP CONCERN, profile Personality & Happiness panel (archetype, attribute words, expectation, score bar, concern rows with Promise/Unlist/Offer-Deal buttons, promises incl. inbox coach pledges, recent morale events) + archetype and HAPPINESS in profile header; context menu Promises section. Verified: SQUAD MIND SELFTEST OK (19 checks incl. kept/broken promise lifecycle vs real data), actions+history selftests still OK, SMOKE OK, 4 screenshots in artifacts/squad/w2_fix."
+  },
+  {
+   "round": 2,
+   "phase": "wave2",
+   "winner": "fm",
+   "gap": "Fixed, non-customizable table views that overflow the viewport: five hard-coded presets, no column editor or saved views, and at 1600x900 the rightmost columns (Status/Value) plus the BALANCE chip clip off-screen with horizontal scrolling disabled — live data (bids, listed state) becomes unreachable, where FM24's editable views never lose data to the viewport.",
+   "note": "Round-1 wave2 gap (personality/happiness) verified CLOSED with fresh eyes: Happiness preset shows archetypes, squad-status tiers, explained concerns and promises; morale tooltips are a dated mood ledger; profile Personality & Happiness panel has factor bars, concern rows with resolve buttons, Make A Promise. Everything verified REAL end-to-end: SMOKE OK first try; 12 screenshots (5 presets, profile overview/history/compare, actions menu, 3-round contract dialog with live demand derived from form, bids dialog, 45-day advance) all live GameState — after advancing 45 days the History tab populated with 8 snapshots, IV progression (+3/+4 arrows), stat/value sparklines, LISTED transfer event and training dev log; matchday takeover, inbox 22->67, coherent header ticker. FM edge is now execution-margin only: (1) THE gap above; (2) commercial art identity — monogram initials vs faces/kits, truncated cells in Happiness view ('Temperamen...', 'Squad Battl...'); (3) contract talks lack clause depth (appearance/win bonuses, release clauses, agent fees); (4) career records begin at takeover — no pre-club career history, so History is thin early. This is the closest round yet; the product is a real management sim, not a mock."
   }
  ],
- "updated": "2026-08-30 03:33"
+ "updated": "2026-08-30 06:57"
 }

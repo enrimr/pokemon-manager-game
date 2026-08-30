@@ -10,23 +10,28 @@ const Service := preload("res://screens/squad/squad_service.gd")
 const History := preload("res://screens/squad/career_history.gd")
 const Ability := preload("res://screens/squad/ability.gd")
 const Selection := preload("res://screens/squad/selection.gd")
+const Personality := preload("res://screens/squad/personality.gd")
 
 const PRESETS := {
 	"General": ["pick", "name", "avail", "type", "lv", "age", "cur", "pot", "rec",
-		"cond", "morale", "item", "apps", "rat", "salary", "status"],
+		"cond", "morale", "happy", "item", "apps", "rat", "salary", "status"],
 	"Selection": ["pick", "name", "avail", "role", "type", "lv", "cond", "fit", "morale",
 		"item", "apps", "kos", "rat", "value", "status"],
 	"Battle Stats": ["pick", "name", "type", "lv", "cur", "pot", "hp", "atk", "def",
 		"spa", "spd", "spe", "tot", "dev", "apps", "wins", "kos", "dmg", "taken", "faints", "rat"],
 	"Contracts": ["pick", "name", "avail", "age", "lv", "cur", "pot", "rec", "morale",
 		"salary", "wage_pct", "expiry", "days_left", "demand", "value", "status"],
+	"Happiness": ["pick", "name", "pers", "sstat", "morale", "happy",
+		"concern", "promise", "apps", "rat", "salary", "status"],
 }
 
 const VERDICT_RANK := {"Key battler": 5, "First team": 4, "Develop": 3,
 	"Squad depth": 2, "Aging": 1, "Surplus": 0}
+const TIER_RANK := {"star": 5, "important": 4, "prospect": 3, "rotation": 2, "backup": 1}
 
 var _records: Array = []          # one dict per squad instance, precomputed
 var _sel: Dictionary = {}         # matchday selection snapshot (Selection.selection())
+var _pctx: Dictionary = {}        # personality/happiness context (Personality.context())
 var _view: String = "General"
 var _sort_key: String = "pick"
 var _sort_desc := false
@@ -82,6 +87,9 @@ func on_show() -> void:
 	if OS.get_environment("SQUAD_DEV_LIST") != "" and _records.size() > 2 \
 			and not _svc.is_listed(_records[2]["inst"]):
 		_svc.set_listed(_records[2]["uid"], UI.est_value(_records[2]["inst"]))
+	if OS.get_environment("SQUAD_DEV_PROMISE") != "" and not _records.is_empty() \
+			and _svc.open_promise(_records[0]["uid"]).is_empty():
+		_svc.make_promise(_records[0]["uid"], "battles")
 	if OS.get_environment("SQUAD_DEV_PROFILE") != "" and not _records.is_empty():
 		var prof_i := clampi(int(OS.get_environment("SQUAD_DEV_PROFILE")), 0, _records.size() - 1)
 		_open_profile(_records[prof_i]["uid"])
@@ -119,6 +127,7 @@ func _build_layout() -> void:
 	_table_view.add_child(head)
 	var title_box := VBoxContainer.new()
 	title_box.add_theme_constant_override("separation", 0)
+	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title_box)
 	var title := Label.new()
 	title.text = "Squad"
@@ -128,10 +137,9 @@ func _build_layout() -> void:
 	_header_info = Label.new()
 	_header_info.add_theme_font_size_override("font_size", 13)
 	_header_info.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	_header_info.clip_text = true
+	_header_info.mouse_filter = Control.MOUSE_FILTER_STOP
 	title_box.add_child(_header_info)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_child(spacer)
 	_chips_box = HBoxContainer.new()
 	_chips_box.add_theme_constant_override("separation", 8)
 	head.add_child(_chips_box)
@@ -224,6 +232,7 @@ func _refresh() -> void:
 	for inst in club["squad"]:
 		wage_bill += int(inst["contract"]["salary"])
 	_sel = Selection.selection()
+	_pctx = Personality.context(_svc)
 	_records.clear()
 	for inst in club["squad"]:
 		_records.append(_make_record(inst, wage_bill))
@@ -253,7 +262,17 @@ func _make_record(inst: Dictionary, wage_bill: int) -> Dictionary:
 	var flags: Array = Selection.flags(inst)
 	var item_id := str(inst.get("held_item")) if inst.get("held_item") else ""
 	var item: Dictionary = DataStore.item(item_id) if item_id != "" else {}
+	var happy: Dictionary = Personality.happiness(inst, _svc, _pctx)
+	var promise: Dictionary = _svc.open_promise(uid)
+	if promise.is_empty():
+		promise = _svc.recent_promise(uid, "broken", 45)
+	if promise.is_empty():
+		promise = _svc.recent_promise(uid, "kept", 30)
 	return {
+		"happy": happy, "happy_score": int(happy["score"]),
+		"pers": str((happy["arch"] as Dictionary)["name"]),
+		"sstat": happy["status"], "concern": str(happy["top_concern"]),
+		"promise": promise,
 		"pick": pick, "pick_rank": int(pick["rank"]),
 		"flags": flags, "role": str(pick["role"]),
 		"item_id": item_id, "item": item, "item_name": str(item.get("name", "")),
@@ -292,10 +311,15 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 	if pos % 10 == 1 and pos % 100 != 11: suffix = "st"
 	elif pos % 10 == 2 and pos % 100 != 12: suffix = "nd"
 	elif pos % 10 == 3 and pos % 100 != 13: suffix = "rd"
-	_header_info.text = "%s · %s · %d%s in the %s · %s · Tactic: %s%s" % [
-		club["name"], Season.pretty_date(GameState.current_date), pos, suffix,
+	var pos_txt := "%d%s" % [pos, suffix]
+	for r in GameState.league_table():
+		if GameState.is_player_club(r["club_id"]) and int(r.get("played", 0)) == 0:
+			pos_txt = "—"   # pre-season: a table position would be alphabetical noise
+	_header_info.text = "%s · %s · %s in the %s · %s · Tactic: %s%s" % [
+		club["name"], Season.pretty_date(GameState.current_date), pos_txt,
 		GameState.world["meta"]["league_name"], "Manager: %s" % club["manager"],
 		_sel.get("name", "-"), "" if _sel.get("source", "") == "tactic" else " (auto)"]
+	_header_info.tooltip_text = _header_info.text
 	for c in _chips_box.get_children():
 		c.queue_free()
 	var lv_sum := 0
@@ -326,10 +350,27 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 	_chips_box.add_child(_chip("AVG LEVEL", "%.1f" % (float(lv_sum) / n), UI.COL_TEXT))
 	_chips_box.add_child(_chip("AVG COND", "%d%%" % int(float(cond_sum) / n),
 		UI.pct_color(int(float(cond_sum) / n))))
-	_chips_box.add_child(_chip("WAGE BILL", UI.money(wage_bill) + "/wk",
-		UI.COL_WARN if wage_bill > int(club["finances"]["wage_budget"]) else UI.COL_TEXT))
-	_chips_box.add_child(_chip("WAGE BUDGET", UI.money(int(club["finances"]["wage_budget"])) + "/wk", UI.COL_TEXT_DIM))
-	_chips_box.add_child(_chip("BALANCE", UI.money(int(club["finances"]["balance"])), UI.COL_GOOD))
+	var happy_sum := 0
+	var unhappy: Array = []
+	for rec in _records:
+		happy_sum += int(rec["happy_score"])
+		if int(rec["happy_score"]) < 38:
+			unhappy.append("%s — %s" % [rec["name"], rec["concern"] if rec["concern"] != "" else "unhappy"])
+	var mood_avg := int(float(happy_sum) / n)
+	var mood_chip := _chip("MOOD",
+		Personality.happiness_word(mood_avg) + ((" · %d unhappy" % unhappy.size()) if not unhappy.is_empty() else ""),
+		Personality.happiness_color(mood_avg) if unhappy.is_empty() else UI.COL_WARN)
+	mood_chip.tooltip_text = ("Average squad happiness %d/100. Concerns needing attention:\n%s" %
+		[mood_avg, "\n".join(PackedStringArray(unhappy))]) if not unhappy.is_empty() else \
+		"Average squad happiness %d/100 — no one is agitating. The Happiness view shows every factor." % mood_avg
+	_chips_box.add_child(mood_chip)
+	var wages_chip := _chip("WAGES /WK", "%s of %s" % [UI.money(wage_bill),
+		UI.money(int(club["finances"]["wage_budget"]))],
+		UI.COL_WARN if wage_bill > int(club["finances"]["wage_budget"]) else UI.COL_TEXT)
+	wages_chip.tooltip_text = "Weekly wage bill against the wage budget."
+	_chips_box.add_child(wages_chip)
+	_chips_box.add_child(_chip("T. BUDGET", UI.money(maxi(0, int(club["finances"].get("transfer_budget", 0)))), UI.COL_GOOD))
+	_chips_box.add_child(_chip("BALANCE", UI.money(int(club["finances"]["balance"])), UI.COL_TEXT_DIM))
 
 
 func _chip(label: String, value: String, col: Color) -> Control:
@@ -339,8 +380,8 @@ func _chip(label: String, value: String, col: Color) -> Control:
 	sb.border_color = UI.COL_BORDER
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(4)
-	sb.content_margin_left = 10
-	sb.content_margin_right = 10
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
 	sb.content_margin_top = 4
 	sb.content_margin_bottom = 4
 	p.add_theme_stylebox_override("panel", sb)
@@ -354,7 +395,7 @@ func _chip(label: String, value: String, col: Color) -> Control:
 	v.add_child(l1)
 	var l2 := Label.new()
 	l2.text = value
-	l2.add_theme_font_size_override("font_size", 15)
+	l2.add_theme_font_size_override("font_size", 14)
 	l2.add_theme_color_override("font_color", col)
 	v.add_child(l2)
 	return p
@@ -379,6 +420,11 @@ func _col_def(id: String) -> Dictionary:
 		"cond": return {"title": "Cond", "w": 56, "expand": false, "num": true}
 		"fit": return {"title": "Fit", "w": 52, "expand": false, "num": true}
 		"morale": return {"title": "Morale", "w": 86, "expand": false, "num": false}
+		"happy": return {"title": "Happiness", "w": 90, "expand": false, "num": false}
+		"pers": return {"title": "Personality", "w": 110, "expand": false, "num": false}
+		"sstat": return {"title": "Status", "w": 96, "expand": false, "num": false}
+		"concern": return {"title": "Main Concern", "w": 128, "expand": true, "num": false}
+		"promise": return {"title": "Promise", "w": 96, "expand": false, "num": false}
 		"hp": return {"title": "HP", "w": 50, "expand": false, "num": true}
 		"atk": return {"title": "Atk", "w": 50, "expand": false, "num": true}
 		"def": return {"title": "Def", "w": 50, "expand": false, "num": true}
@@ -417,6 +463,10 @@ func _cell_text(rec: Dictionary, id: String) -> String:
 		"cond": return "%d%%" % rec["cond"]
 		"fit": return "%d%%" % rec["fit"]
 		"morale": return UI.morale_word(rec["morale"])
+		"happy": return str((rec["happy"] as Dictionary)["word"])
+		"sstat": return str((rec["sstat"] as Dictionary)["label"])
+		"concern": return rec["concern"] if rec["concern"] != "" else "-"
+		"promise": return _promise_cell(rec["promise"])
 		"rat": return "%.2f" % rec["rat"] if rec["apps"] > 0 else "-"
 		"salary": return UI.money(rec["salary"]) + "/wk"
 		"wage_pct": return "%.1f%%" % rec["wage_pct"]
@@ -444,6 +494,11 @@ func _cell_color(rec: Dictionary, id: String) -> Color:
 		"cond": return UI.pct_color(rec["cond"])
 		"fit": return UI.pct_color(rec["fit"])
 		"morale": return UI.pct_color(rec["morale"])
+		"happy": return (rec["happy"] as Dictionary)["color"]
+		"pers": return UI.COL_TEXT
+		"sstat": return (rec["sstat"] as Dictionary)["color"]
+		"concern": return UI.COL_WARN if rec["concern"] != "" else UI.COL_TEXT_DIM
+		"promise": return _promise_color(rec["promise"])
 		"rat": return UI.rating_color(rec["rat"]) if rec["apps"] > 0 else UI.COL_TEXT_DIM
 		"expiry", "days_left":
 			if rec["days_left"] < 90: return UI.COL_BAD
@@ -473,7 +528,73 @@ func _status_text(rec: Dictionary) -> String:
 	return " · ".join(PackedStringArray(parts)) if not parts.is_empty() else "-"
 
 
+const PROMISE_SHORT := {"battles": "Battles", "new_deal": "New deal", "unlist": "Unlist"}
+
+
+func _promise_cell(p: Dictionary) -> String:
+	if p.is_empty():
+		return "-"
+	var kind := str(PROMISE_SHORT.get(str(p["kind"]), "Promise"))
+	match str(p["status"]):
+		"open": return "%s · %s" % [kind,
+			" ".join(Season.pretty_date(str(p["deadline"])).split(" ").slice(0, 2))]
+		"kept": return "Kept · %s" % kind
+		"broken": return "BROKEN · %s" % kind
+	return "-"
+
+
+func _promise_color(p: Dictionary) -> Color:
+	if p.is_empty():
+		return UI.COL_TEXT_DIM
+	match str(p["status"]):
+		"open": return UI.COL_ACCENT.lightened(0.25)
+		"kept": return UI.COL_GOOD
+		"broken": return UI.COL_BAD
+	return UI.COL_TEXT_DIM
+
+
+func _promise_tip(p: Dictionary) -> String:
+	if p.is_empty():
+		return "No promise outstanding. Make one from the right-click menu — promises are tracked with deadlines and real consequences."
+	match str(p["status"]):
+		"open": return "Your word, given %s: %s Deadline %s — break it and morale, trust and future contract talks all pay." % \
+			[Season.pretty_date(str(p["made_on"])), str(p["text"]), Season.pretty_date(str(p["deadline"]))]
+		"kept": return "Promise kept on %s: %s Trust has deepened." % \
+			[Season.pretty_date(str(p["resolved_on"])), str(p["text"])]
+		"broken": return "Promise BROKEN on %s: %s The distrust lingers for weeks and poisons contract talks." % \
+			[Season.pretty_date(str(p["resolved_on"])), str(p["text"])]
+	return ""
+
+
+## Morale tooltip: the mood ledger — every recent change with its reason.
+func _morale_tip(rec: Dictionary) -> String:
+	var lines: Array = ["Morale %s (%d) — day-to-day mood." % [UI.morale_word(rec["morale"]), rec["morale"]]]
+	var log: Array = _svc.mood_log(rec["uid"])
+	if log.is_empty():
+		lines.append("No recorded morale events yet.")
+	else:
+		lines.append("Recent morale events:")
+		for e in log.slice(0, 7):
+			lines.append("  %s  %+d  %s" % [Season.pretty_date(str(e["d"])), int(e["delta"]), str(e["why"])])
+	var h: Dictionary = rec["happy"]
+	var gap: int = int(h["score"]) - int(rec["morale"])
+	if absi(gap) > 6:
+		lines.append("Drifting %s toward their underlying happiness (%s, %d)." %
+			["up" if gap > 0 else "down", str(h["word"]), int(h["score"])])
+	lines.append("See the Happiness view / profile for the full breakdown.")
+	return "\n".join(PackedStringArray(lines))
+
+
 func _sort_value(rec: Dictionary, id: String) -> Variant:
+	if id == "happy":
+		return rec["happy_score"]
+	if id == "sstat":
+		return TIER_RANK.get(str((rec["sstat"] as Dictionary)["key"]), 0)
+	if id == "concern":
+		var cs: Array = (rec["happy"] as Dictionary)["concerns"]
+		return float(cs[0]["w"]) if not cs.is_empty() else 1.0
+	if id == "promise":
+		return {"open": 3, "broken": 2, "kept": 1}.get(str(rec["promise"].get("status", "")), 0)
 	if id == "pick":
 		return rec["pick_rank"]
 	if id == "avail":
@@ -561,6 +682,35 @@ func _rebuild_table() -> void:
 		var morale_col := cols.find("morale")
 		if morale_col >= 0:
 			it.set_icon(morale_col, UI.dot_icon(UI.pct_color(rec["morale"])))
+			it.set_tooltip_text(morale_col, _morale_tip(rec))
+		var happy_col := cols.find("happy")
+		if happy_col >= 0:
+			var h: Dictionary = rec["happy"]
+			it.set_icon(happy_col, UI.dot_icon(h["color"]))
+			it.set_tooltip_text(happy_col, Personality.factors_tip(h))
+		var pers_col := cols.find("pers")
+		if pers_col >= 0:
+			var hh: Dictionary = rec["happy"]
+			it.set_tooltip_text(pers_col, "%s — %s\nCoach's read: %s." %
+				[(hh["arch"] as Dictionary)["name"], (hh["arch"] as Dictionary)["desc"],
+				Personality.attrs_line(hh["attrs"])])
+		var sstat_col := cols.find("sstat")
+		if sstat_col >= 0:
+			var stt: Dictionary = rec["sstat"]
+			it.set_tooltip_text(sstat_col, "%s (rated %d of %d in the squad). %s" %
+				[stt["label"], int(stt["rank"]), int(stt["n"]), stt["expect"]])
+		var concern_col := cols.find("concern")
+		if concern_col >= 0:
+			var cs: Array = (rec["happy"] as Dictionary)["concerns"]
+			it.set_tooltip_text(concern_col, "\n".join(cs.map(func(c):
+				return "%s — %s" % [str(c["short"]), str(c["detail"])])) if not cs.is_empty()
+				else "No active concerns.")
+			if not cs.is_empty():
+				it.set_icon(concern_col, UI.dot_icon(
+					UI.COL_BAD if float(cs[0]["w"]) <= -8.0 else UI.COL_WARN, 9))
+		var promise_col := cols.find("promise")
+		if promise_col >= 0:
+			it.set_tooltip_text(promise_col, _promise_tip(rec["promise"]))
 		var pick_col := cols.find("pick")
 		if pick_col >= 0:
 			var pick: Dictionary = rec["pick"]
@@ -709,6 +859,15 @@ func _update_footer() -> void:
 		Ability.stars_icon(float(rep["pot_lo"]), float(rep["pot_hi"]), Ability.COL_STARS_POT, 12),
 		"%s conf." % rep["confidence"]))
 	_footer_box.add_child(_footer_stat("COACH CALL", rec["rec"], rep["verdict_color"]))
+	var h: Dictionary = rec["happy"]
+	var happy_stat := _footer_stat("HAPPINESS", str(h["word"]), h["color"])
+	happy_stat.tooltip_text = Personality.factors_tip(h)
+	_footer_box.add_child(happy_stat)
+	if rec["concern"] != "" and int(rec["happy_score"]) < 55:
+		var concern_stat := _footer_stat("TOP CONCERN", rec["concern"], UI.COL_WARN)
+		concern_stat.tooltip_text = "\n".join((h["concerns"] as Array).map(func(c):
+			return "%s — %s" % [str(c["short"]), str(c["detail"])]))
+		_footer_box.add_child(concern_stat)
 	if (rec["flags"] as Array).is_empty():
 		_footer_box.add_child(_footer_stat("COND / FIT", "%d%% / %d%%" % [rec["cond"], rec["fit"]],
 			UI.pct_color(mini(rec["cond"], rec["fit"]))))

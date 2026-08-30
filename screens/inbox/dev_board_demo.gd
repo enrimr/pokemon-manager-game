@@ -16,6 +16,7 @@ func _run() -> void:
 		quit(1)
 		return
 	# load at runtime: with `-s` these compile only after autoloads exist
+	(load("res://tools/save_guard.gd") as GDScript).preserve_player_save()
 	var news: RefCounted = (load("res://screens/inbox/news_gen.gd") as GDScript).new()
 	var board: RefCounted = (load("res://screens/inbox/board_room.gd") as GDScript).new(news)
 	if not board.pending_request().is_empty():

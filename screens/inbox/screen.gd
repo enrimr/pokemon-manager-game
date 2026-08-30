@@ -96,7 +96,7 @@ func _refresh_data() -> void:
 	news.enrich_existing()
 	news.generate()
 	people.generate() # rival mind-games, press pieces, coach notes, awards
-	economy.tick() # settle wages / gates / prize money before the board looks
+	economy.tick() # defensive catch-up (GameState settles daily; this renders the ledger)
 	board.tick()   # answer any board requests whose deliberation is due
 	_suspend = false
 
@@ -913,7 +913,8 @@ func _board_confidence_panel(conf: Dictionary) -> Control:
 	else:
 		league_word = "Failing"
 		league_col = ThemeBuilder.COL_BAD
-	_kv_row(v, "League performance  (%s, expected ~%s)" % [_ord(pos), _ord(e)], league_word, league_col)
+	_kv_row(v, "League performance  (%s, expected ~%s)" %
+		["—" if int(conf["played"]) == 0 else _ord(pos), _ord(e)], league_word, league_col)
 
 	var cs: Dictionary = news.cup_status()
 	var cup_col: Color = ThemeBuilder.COL_GOOD if cs["alive"] else \
@@ -1063,6 +1064,9 @@ func _finances_panel(fin: Dictionary) -> Control:
 	bal_sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(bal_sub)
 	v.add_child(_bar(float(fin["balance"]) / maxf(1.0, float(fin["league_max_balance"])), ThemeBuilder.COL_ACCENT, 10))
+	var tb := maxi(0, mini(int(fin["balance"]), int(fin.get("transfer_budget", 0))))
+	_kv_row(v, "Transfer budget (released by the board)", news.money(tb),
+		ThemeBuilder.COL_GOOD if tb > 0 else ThemeBuilder.COL_WARN)
 
 	v.add_child(HSeparator.new())
 

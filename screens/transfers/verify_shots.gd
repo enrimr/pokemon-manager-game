@@ -2,9 +2,10 @@ extends Node
 ## Builder verification: boots the real shell, plays the market for a while,
 ## then screenshots every transfers tab (windowed run required).
 ##   Godot --path . res://screens/transfers/verify_shots.tscn
+## Tabs: 0 Recruitment hub · 1 Search · 2 Scouting · 3 Transfer Centre
 
 const Market := preload("res://screens/transfers/market.gd")
-const OUT := "artifacts/transfers/build"
+const OUT := "artifacts/transfers/w2_fix"
 const SETTLE := 12
 
 var _shell: Control
@@ -18,7 +19,9 @@ func _run() -> void:
 	var out_dir := ProjectSettings.globalize_path("res://").path_join(OUT)
 	DirAccess.make_dir_recursive_absolute(out_dir)
 
-	# Fresh career + fresh market state.
+	# Fresh career + fresh market state (player's real save parked in a
+	# one-time backup slot first — see tools/save_guard.gd).
+	(load("res://tools/save_guard.gd") as GDScript).preserve_player_save()
 	GameState.delete_save()
 	if FileAccess.file_exists("user://transfers.json"):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path("user://transfers.json"))
@@ -31,9 +34,9 @@ func _run() -> void:
 	await _settle()
 	_shell.navigate_to("transfers")
 	await _settle()
-	await _shot(out_dir, "01_search_fresh")
+	await _shot(out_dir, "01_recruitment_fresh")
 
-	# --- play the market ---
+	# --- play the market: build the full recruitment pipeline ---
 	var scouts: Array = m.player_scouts()
 	var targets: Array = m.all_targets().filter(func(t): return t["pool"] == "club")
 	targets.sort_custom(func(a, b): return m.value_of(a["inst"]) > m.value_of(b["inst"]))
@@ -41,7 +44,21 @@ func _run() -> void:
 	var mid: Dictionary = targets[8]
 	m.assign_scout_to_target(scouts[0]["name"], star["inst"]["uid"])
 	if scouts.size() > 1:
-		m.assign_scout_to_focus(scouts[1]["name"], "water")
+		m.assign_scout_to_focus(scouts[1]["name"], "Coastal Circuit")
+	# hire a dedicated scout from the monthly market
+	var pool_h: Array = m.scout_market()
+	pool_h.sort_custom(func(a, b): return int(a["wage"]) < int(b["wage"]))
+	if not pool_h.is_empty():
+		m.hire_scout(String(pool_h[0]["name"]))
+	# shortlist a spread of targets — the board the pipeline reports on
+	m.toggle_shortlist(star["inst"]["uid"])
+	m.toggle_shortlist(targets[3]["inst"]["uid"])
+	m.toggle_shortlist(targets[12]["inst"]["uid"])
+	var fa0: Dictionary = GameState.free_agents()[4]
+	m.toggle_shortlist(fa0["uid"])
+	# delegate the chores to the DoF
+	m.set_dof("handle_bids", true)
+	m.set_dof("auto_scout", true)
 	# structured lowball: upfront + installments + sell-on, to draw a structured counter
 	var ask8: int = m.ask_price(mid["inst"], mid["club_id"])
 	m.make_offer(mid["inst"]["uid"], {"upfront": int(ask8 * 0.55), "inst_amount": int(ask8 * 0.25),
@@ -64,7 +81,7 @@ func _run() -> void:
 		var ask5: int = m.ask_price(mid2["inst"], mid2["club_id"])
 		m.make_offer(mid2["inst"]["uid"], {"upfront": int(ask5 * 0.65), "inst_amount": int(ask5 * 0.15),
 			"inst_years": 2, "sell_on": 10})
-	for i in 3:
+	for i in 5:
 		GameState.auto_sim_player_matches = true
 		GameState.advance_day()
 	GameState.save_game()
@@ -75,24 +92,31 @@ func _run() -> void:
 	await _settle()
 	var screen: Control = _shell._content.get_children().back()
 
-	# search tab with a scouted target selected
-	screen._selected_uid = star["inst"]["uid"]
+	# the recruitment hub, mid-window: shortlist alive, rumours grinding
+	screen._tabs.current_tab = 0
 	screen._refresh_all()
 	await _settle()
-	await _shot(out_dir, "02_search_lived_in")
+	await _shot(out_dir, "02_recruitment_hub")
 
+	# search tab with a scouted target selected
+	screen._selected_uid = star["inst"]["uid"]
 	screen._tabs.current_tab = 1
+	screen._refresh_all()
 	await _settle()
-	await _shot(out_dir, "03_scouting")
+	await _shot(out_dir, "03_search_lived_in")
 
 	screen._tabs.current_tab = 2
 	await _settle()
-	await _shot(out_dir, "04_transfer_centre")
+	await _shot(out_dir, "04_scouting")
+
+	screen._tabs.current_tab = 3
+	await _settle()
+	await _shot(out_dir, "05_transfer_centre")
 
 	# the structured offer sheet itself (installments / sell-on / loan toggle)
 	screen._open_offer_sheet(star["inst"]["uid"])
 	await _settle()
-	await _shot(out_dir, "05_offer_sheet")
+	await _shot(out_dir, "06_offer_sheet")
 	for c in screen.get_children():
 		if c is ConfirmationDialog:
 			c.hide()
@@ -125,19 +149,26 @@ func _run() -> void:
 			m.save_state()
 	screen = _shell._content.get_children().back()
 	screen._refresh_all()
-	screen._tabs.current_tab = 2
+	screen._tabs.current_tab = 3
 	await _settle()
-	await _shot(out_dir, "06_deadline_runin")
+	await _shot(out_dir, "07_deadline_runin")
 
-	# --- window shut: locked market ---
+	# --- window shut: locked market, rumours still grinding on the hub ---
 	for i in 6:
 		GameState.auto_sim_player_matches = true
 		GameState.advance_day()
 	screen._refresh_all()
-	screen._tabs.current_tab = 2
+	screen._tabs.current_tab = 3
 	await _settle()
-	await _shot(out_dir, "07_window_closed")
+	await _shot(out_dir, "08_window_closed")
+	screen._tabs.current_tab = 0
+	await _settle()
+	await _shot(out_dir, "09_hub_window_closed")
 
+	# leave a CONSISTENT lived-in save (game + market together) for the
+	# shell screenshot harness
+	GameState.save_game()
+	m.save_state()
 	print("VERIFY SHOTS OK")
 	get_tree().quit(0)
 

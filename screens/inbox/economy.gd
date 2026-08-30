@@ -19,11 +19,16 @@ extends RefCounted
 ## living income & expenditure statement. A monthly finance report lands in
 ## the inbox when the books close.
 ##
-## Deterministic (career_seed + fixture id / calendar), duplicate-guarded by
-## fixture id + last settled date, persisted to user://inbox_economy.json
-## (the board_room.gd state pattern), auto-resetting on a new career.
+## SETTLEMENT runs on the daily advance tick (GameState.advance_day calls
+## tick() through its economy hook), so wages/gates/prize money accrue even
+## in pure-sim timelines that never open the Inbox — the Inbox merely renders
+## the ledger. Deterministic (career_seed + fixture id / calendar),
+## duplicate-guarded by fixture id + last settled date. State lives INSIDE
+## the save (world.meta.economy) so balances and ledger can never desync
+## across save/load; the legacy user://inbox_economy.json sidecar is read
+## once as a migration source, then deleted.
 
-const STATE_PATH := "user://inbox_economy.json"
+const STATE_PATH := "user://inbox_economy.json"   # legacy sidecar (migration only)
 
 ## Cup prize money by round (paid to the tie winner).
 const CUP_PRIZE := {1: 12000, 2: 20000, 3: 35000, 4: 75000}
@@ -33,91 +38,86 @@ const MONTH_NAMES := ["", "January", "February", "March", "April", "May", "June"
 
 var news: RefCounted                 # news_gen.gd (money formatting, helpers)
 
-var last_settled := ""               # calendar processed up to this date (inclusive)
-var done_fids: Dictionary = {}       # fixture id -> true (already settled)
-var entries: Array = []              # player-club lines: {date, text, amount, kind}
-
 
 func _init(news_gen: RefCounted) -> void:
 	news = news_gen
-	_load_state()
 
 
 # ------------------------------------------------------------------ persistence
+# The ledger lives in GameState.world.meta.economy:
+#   {last_settled: String, done_fids: {fid: true}, entries: [{date, text, amount, kind}]}
+# It rides save.json with the balances it explains, so multiple economy
+# instances (GameState's daily hook, the Inbox screen) share one truth and
+# loading any save restores a ledger consistent with that save's money.
 
-func save_state() -> void:
-	var f := FileAccess.open(STATE_PATH, FileAccess.WRITE)
-	if f == null:
-		push_error("economy: cannot write %s" % STATE_PATH)
-		return
-	f.store_string(JSON.stringify({
-		"version": 1,
-		"career_seed": GameState.career_seed,
-		"last_settled": last_settled,
-		"done_fids": done_fids,
-		"entries": entries,
-	}))
+func _state() -> Dictionary:
+	var meta: Dictionary = GameState.world["meta"]
+	var st: Variant = meta.get("economy")
+	if typeof(st) == TYPE_DICTIONARY and typeof((st as Dictionary).get("entries")) == TYPE_ARRAY:
+		return st
+	var fresh := _migrate_sidecar()
+	if fresh.is_empty():
+		fresh = {"last_settled": "", "done_fids": {}, "entries": []}
+	meta["economy"] = fresh
+	return fresh
 
 
-func _load_state() -> void:
+## One-time adoption of the legacy user://inbox_economy.json sidecar, for
+## careers whose balances already include its settlements. Rejected if it
+## belongs to another career or claims dates beyond today (stale/rolled back
+## timeline — safer to rebuild than to double-count is impossible either way,
+## since rebuild is what pre-sidecar careers get too).
+func _migrate_sidecar() -> Dictionary:
 	if not FileAccess.file_exists(STATE_PATH):
-		return
+		return {}
 	var f := FileAccess.open(STATE_PATH, FileAccess.READ)
 	var data: Variant = JSON.parse_string(f.get_as_text())
+	f = null
 	if typeof(data) != TYPE_DICTIONARY or int(data.get("version", 0)) != 1:
-		return
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(STATE_PATH))
+		return {}
 	if int(data.get("career_seed", 0)) != GameState.career_seed:
-		return  # different career — start clean
-	last_settled = str(data.get("last_settled", ""))
-	done_fids = data.get("done_fids", {})
-	entries = data.get("entries", [])
-
-
-## Records dated after "today" can only mean the career was restarted with the
-## same seed (same detection board_room.gd uses). Wipe and rebuild from scratch.
-func _guard_career_restart() -> void:
-	var stale := last_settled > GameState.current_date \
-		or entries.any(func(e): return str(e["date"]) > GameState.current_date)
-	if stale:
-		last_settled = ""
-		done_fids = {}
-		entries = []
-		save_state()
+		return {}  # foreign career (e.g. a test run) — leave the file for its owner
+	var last := str(data.get("last_settled", ""))
+	var entries: Array = data.get("entries", []) if typeof(data.get("entries")) == TYPE_ARRAY else []
+	if last > GameState.current_date or entries.any(func(e): return str(e["date"]) > GameState.current_date):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(STATE_PATH))
+		return {}  # sidecar is ahead of this timeline — rebuild deterministically
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(STATE_PATH))
+	return {"last_settled": last,
+		"done_fids": data.get("done_fids", {}) if typeof(data.get("done_fids")) == TYPE_DICTIONARY else {},
+		"entries": entries}
 
 
 # ------------------------------------------------------------------ the tick
 
-## Catch the economy up to today. Called on every date change / screen load;
-## backfills the full season history on first run so an existing career gets
-## a correct retroactive ledger (and the correct bank balance) immediately.
+## Catch the economy up to today. Called from GameState's daily advance hook
+## (and defensively on Inbox screen load); backfills the full season history
+## on first run so an existing career gets a correct retroactive ledger (and
+## the correct bank balance) immediately. Duplicate-guarded, so running it
+## any number of times a day is safe.
 func tick() -> void:
-	_guard_career_restart()
-	if last_settled == "":
-		last_settled = GameState.season_start
-	var changed := false
+	var st := _state()
+	if str(st["last_settled"]) == "":
+		st["last_settled"] = GameState.season_start
 	var positions := _table_positions()
+	var done: Dictionary = st["done_fids"]
 
 	# 1. matchday flows for every settled-but-unprocessed fixture
 	for f in GameState.fixtures:
 		if not f.get("played", false) or str(f["date"]) > GameState.current_date:
 			continue
 		var fid := str(f["id"])
-		if done_fids.has(fid):
+		if done.has(fid):
 			continue
 		_settle_fixture(f, positions)
-		done_fids[fid] = true
-		changed = true
+		done[fid] = true
 
 	# 2. monthly settlements at each month boundary crossed since last tick
-	while last_settled < GameState.current_date:
-		last_settled = Season.date_add(last_settled, 1)
-		changed = true
-		if last_settled.ends_with("-01"):
-			_settle_month(last_settled, positions)
-
-	if changed:
-		save_state()
-		GameState.save_game()
+	while str(st["last_settled"]) < GameState.current_date:
+		st["last_settled"] = Season.date_add(str(st["last_settled"]), 1)
+		if str(st["last_settled"]).ends_with("-01"):
+			_settle_month(str(st["last_settled"]), positions)
 
 
 # ------------------------------------------------------------------ matchdays
@@ -238,12 +238,12 @@ func _send_month_report(boundary: String, month_key: String, mname: String) -> v
 
 ## Player-club operating lines, newest first (merged into board_room's ledger).
 func rows() -> Array:
-	return entries
+	return _state()["entries"]
 
 
 ## All lines of one calendar month ("YYYY-MM"), oldest first.
 func month_rows(month_key: String) -> Array:
-	var out: Array = entries.filter(func(e): return str(e["date"]).begins_with(month_key))
+	var out: Array = rows().filter(func(e): return str(e["date"]).begins_with(month_key))
 	out.sort_custom(func(a, b): return str(a["date"]) < str(b["date"]))
 	return out
 
@@ -264,7 +264,7 @@ func month_totals(month_key: String) -> Dictionary:
 func operating_net(days: int) -> int:
 	var floor_date := Season.date_add(GameState.current_date, -days)
 	var net := 0
-	for e in entries:
+	for e in rows():
 		if str(e["date"]) > floor_date:
 			net += int(e["amount"])
 	return net
@@ -280,7 +280,7 @@ func _move(club: Dictionary, amount: int) -> void:
 
 
 func _record(date: String, text: String, amount: int, kind: String) -> void:
-	entries.push_front({"date": date, "text": text, "amount": amount, "kind": kind})
+	(_state()["entries"] as Array).push_front({"date": date, "text": text, "amount": amount, "kind": kind})
 
 
 func _table_positions() -> Dictionary:

@@ -333,7 +333,11 @@ func _refresh_header() -> void:
 	_hdr_round.text = "%d / %d" % [completed, total]
 
 	var pos := GameState.player_table_position()
-	_hdr_pos.text = _ord(pos)
+	var no_games := true
+	for r in GameState.league_table():
+		if GameState.is_player_club(r["club_id"]):
+			no_games = int(r.get("played", 0)) == 0
+	_hdr_pos.text = "—" if no_games else _ord(pos)
 	_hdr_pos.add_theme_color_override("font_color", TB.COL_ACCENT.lightened(0.35))
 
 	var upcoming: Array = fixtures.filter(func(f): return not f["played"] and f["date"] > GameState.current_date)

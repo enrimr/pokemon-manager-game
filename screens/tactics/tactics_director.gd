@@ -70,12 +70,15 @@ func _on_career_started() -> void:
 	_publish_from_disk_if_needed()
 
 
-## Careers saved before the tactics link existed (or fresh boots) still get
-## their plan: republish user://tactics.json into world.meta without saving.
+## Careers whose save carries a preset state but no published plan (or legacy
+## careers with only the old user://tactics.json sidecar) still get their
+## plan: republish world.meta.tactics_state into world.meta.tactics without
+## saving. Single source of truth stays inside the save.
 func _publish_from_disk_if_needed() -> void:
 	if not active_plan().is_empty():
 		return
-	if not FileAccess.file_exists(Logic.TACTICS_PATH):
+	var has_state: bool = typeof(GameState.world.get("meta", {}).get("tactics_state")) == TYPE_DICTIONARY
+	if not has_state and not FileAccess.file_exists(Logic.TACTICS_PATH):
 		return
 	if GameState.player_club().get("squad", []).is_empty():
 		return

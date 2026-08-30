@@ -1,76 +1,93 @@
 extends VBoxContainer
 ## SEASON STATS tab — FM-style Stats Centre: a full sortable/filterable table
-## of every Pokémon in the competition (selectable stat categories, club and
-## competition filters, name search, clickable column sorting) plus a Leaders
-## board view. All numbers come from deterministic engine replays of the real
-## simulated results (see Season.season_player_stats / fixture_detail).
+## of every Pokémon in the competition (selectable + fully customisable stat
+## column views, league-percentile shading, club and competition filters, name
+## search, clickable column sorting), a Teams mode, a Data Hub view of visual
+## analytics (scatter / bar charts) and a Leaders board. All numbers come from
+## deterministic engine replays of the real simulated results.
 
 const UI := preload("res://screens/competition/ui.gd")
 const TB := preload("res://shared/theme/theme_builder.gd")
+const Charts := preload("res://screens/competition/charts.gd")
 
 # ---- stat column definitions (key -> title/width/format/tooltip)
+# "neg": lower is better (inverts percentile shading).
 const STAT_DEFS := {
-	"apps":    {"title": "Apps",    "w": 52, "fmt": "int", "tip": "Battle appearances (best-of-3 legs played in)"},
+	"apps":    {"title": "Apps",    "w": 52, "fmt": "int", "tip": "Battle appearances (best-of-3 legs played in)", "shade": false},
 	"wins":    {"title": "W",       "w": 42, "fmt": "int", "tip": "Battles won"},
 	"winpct":  {"title": "Win %",   "w": 58, "fmt": "pct", "tip": "Battles won per appearance"},
 	"kos":     {"title": "KOs",     "w": 48, "fmt": "int", "tip": "Opposing Pokémon knocked out"},
 	"ko_app":  {"title": "KO/App",  "w": 62, "fmt": "f2",  "tip": "Knockouts per appearance"},
 	"dmg":     {"title": "Dmg",     "w": 58, "fmt": "int", "tip": "Total damage dealt"},
 	"dmg_app": {"title": "Dmg/App", "w": 68, "fmt": "int", "tip": "Damage dealt per appearance"},
-	"taken":   {"title": "Tkn",     "w": 58, "fmt": "int", "tip": "Total damage taken"},
-	"tkn_app": {"title": "Tkn/App", "w": 66, "fmt": "int", "tip": "Damage taken per appearance"},
-	"faints":  {"title": "Fnt",     "w": 44, "fmt": "int", "tip": "Times fainted"},
+	"taken":   {"title": "Tkn",     "w": 58, "fmt": "int", "tip": "Total damage taken", "neg": true},
+	"tkn_app": {"title": "Tkn/App", "w": 66, "fmt": "int", "tip": "Damage taken per appearance", "neg": true},
+	"faints":  {"title": "Fnt",     "w": 44, "fmt": "int", "tip": "Times fainted", "neg": true},
 	"surv":    {"title": "Surv %",  "w": 58, "fmt": "pct", "tip": "Appearances survived without fainting"},
+	"hits":    {"title": "Hits",    "w": 48, "fmt": "int", "tip": "Damaging moves landed"},
+	"acc":     {"title": "Acc %",   "w": 56, "fmt": "pct", "tip": "Move accuracy: hits landed per attempt"},
+	"crits":   {"title": "Crits",   "w": 48, "fmt": "int", "tip": "Critical hits landed"},
+	"critr":   {"title": "Crit %",  "w": 56, "fmt": "pct", "tip": "Critical hits per hit landed"},
+	"se":      {"title": "SE",      "w": 44, "fmt": "int", "tip": "Super-effective hits landed"},
+	"sepct":   {"title": "SE %",    "w": 52, "fmt": "pct", "tip": "Share of hits that were super-effective (type-matchup exploitation)"},
+	"dph":     {"title": "Dmg/Hit", "w": 62, "fmt": "int", "tip": "Average damage per hit landed"},
 	"rating":  {"title": "Rat",     "w": 52, "fmt": "f2",  "tip": "Average match rating (FM 10-point scale)"},
 }
 
 const CATEGORIES := [
 	["Overview", ["apps", "wins", "winpct", "kos", "dmg", "taken", "faints", "rating"]],
-	["Attacking", ["apps", "kos", "ko_app", "dmg", "dmg_app", "rating"]],
+	["Attacking", ["apps", "kos", "ko_app", "dmg", "dmg_app", "dph", "rating"]],
 	["Defence & Durability", ["apps", "taken", "tkn_app", "faints", "surv", "rating"]],
+	["Technique", ["apps", "hits", "acc", "crits", "critr", "se", "sepct", "dph"]],
 	["Per-Battle Rates", ["apps", "winpct", "ko_app", "dmg_app", "tkn_app", "rating"]],
 	["All Columns", ["apps", "wins", "winpct", "kos", "ko_app", "dmg", "dmg_app",
-		"taken", "tkn_app", "faints", "surv", "rating"]],
+		"taken", "tkn_app", "faints", "surv", "acc", "crits", "se", "dph", "rating"]],
 ]
+const CUSTOM_CAT := "Custom view"
 
 const COMPS := [["all", "League + Cup"], ["league", "League only"], ["cup", "Cup only"]]
 
 # ---- TEAM stat column definitions (Teams mode of the Stats Centre)
 const TEAM_DEFS := {
-	"matches":   {"title": "P",      "w": 40, "fmt": "int",     "tip": "Matches played"},
+	"matches":   {"title": "P",      "w": 40, "fmt": "int",     "tip": "Matches played", "shade": false},
 	"mw":        {"title": "W",      "w": 40, "fmt": "int",     "tip": "Matches won"},
-	"ml":        {"title": "L",      "w": 40, "fmt": "int",     "tip": "Matches lost"},
+	"ml":        {"title": "L",      "w": 40, "fmt": "int",     "tip": "Matches lost", "neg": true},
 	"winpct":    {"title": "Win %",  "w": 56, "fmt": "pct",     "tip": "Match win rate"},
 	"pts":       {"title": "Pts",    "w": 46, "fmt": "int",     "tip": "League points (cup matches award none)"},
 	"bw":        {"title": "BF",     "w": 44, "fmt": "int",     "tip": "Battles (best-of-3 legs) won"},
-	"bl":        {"title": "BA",     "w": 44, "fmt": "int",     "tip": "Battles (best-of-3 legs) lost"},
+	"bl":        {"title": "BA",     "w": 44, "fmt": "int",     "tip": "Battles (best-of-3 legs) lost", "neg": true},
 	"bpct":      {"title": "B-Win %", "w": 62, "fmt": "pct",    "tip": "Battle (leg) win rate"},
 	"bdiff":     {"title": "B+/-",   "w": 52, "fmt": "sign",    "tip": "Battle difference (won minus lost)"},
-	"hrec":      {"title": "Home",   "w": 62, "fmt": "rec_h",   "tip": "Home match record (W-L)"},
+	"hrec":      {"title": "Home",   "w": 62, "fmt": "rec_h",   "tip": "Home match record (W-L)", "shade": false},
 	"hbpct":     {"title": "H B%",   "w": 52, "fmt": "pct",     "tip": "Battle win rate at home"},
-	"arec":      {"title": "Away",   "w": 62, "fmt": "rec_a",   "tip": "Away match record (W-L)"},
+	"arec":      {"title": "Away",   "w": 62, "fmt": "rec_a",   "tip": "Away match record (W-L)", "shade": false},
 	"abpct":     {"title": "A B%",   "w": 52, "fmt": "pct",     "tip": "Battle win rate away"},
-	"venue_gap": {"title": "H-A",    "w": 54, "fmt": "signpct", "tip": "Home advantage: home minus away battle-win %, in points"},
+	"venue_gap": {"title": "H-A",    "w": 54, "fmt": "signpct", "tip": "Home advantage: home minus away battle-win %, in points", "shade": false},
 	"kos":       {"title": "KO+",    "w": 50, "fmt": "int",     "tip": "Opposing Pokémon knocked out (engine replays)"},
-	"faints":    {"title": "KO-",    "w": 50, "fmt": "int",     "tip": "Own Pokémon fainted"},
+	"faints":    {"title": "KO-",    "w": 50, "fmt": "int",     "tip": "Own Pokémon fainted", "neg": true},
 	"kod":       {"title": "KO±",    "w": 52, "fmt": "sign",    "tip": "KO difference (scored minus conceded)"},
 	"dmg_leg":   {"title": "Dmg/B",  "w": 58, "fmt": "int0",    "tip": "Damage dealt per battle"},
-	"tkn_leg":   {"title": "Tkn/B",  "w": 58, "fmt": "int0",    "tip": "Damage taken per battle"},
-	"turns_leg": {"title": "Turns",  "w": 54, "fmt": "f1",      "tip": "Average battle length in turns"},
+	"tkn_leg":   {"title": "Tkn/B",  "w": 58, "fmt": "int0",    "tip": "Damage taken per battle", "neg": true},
+	"turns_leg": {"title": "Turns",  "w": 54, "fmt": "f1",      "tip": "Average battle length in turns", "shade": false},
+	"acc":       {"title": "Acc %",  "w": 56, "fmt": "pct",     "tip": "Team move accuracy: hits landed per attempt"},
+	"crits":     {"title": "Crits",  "w": 50, "fmt": "int",     "tip": "Critical hits landed"},
+	"se":        {"title": "SE",     "w": 44, "fmt": "int",     "tip": "Super-effective hits landed"},
+	"sepct":     {"title": "SE %",   "w": 52, "fmt": "pct",     "tip": "Share of hits that were super-effective (matchup play)"},
 	"avg_rat":   {"title": "Sq Rat", "w": 56, "fmt": "f2",      "tip": "Average match rating across the squad (FM 10-point scale)"},
-	"form":      {"title": "Form",   "w": 86, "fmt": "form",    "tip": "Last five results, oldest first"},
-	"streak":    {"title": "Strk",   "w": 50, "fmt": "streak",  "tip": "Current run (W = winning, L = losing)"},
+	"form":      {"title": "Form",   "w": 86, "fmt": "form",    "tip": "Last five results, oldest first", "shade": false},
+	"streak":    {"title": "Strk",   "w": 50, "fmt": "streak",  "tip": "Current run (W = winning, L = losing)", "shade": false},
 	"best_w":    {"title": "Best",   "w": 48, "fmt": "int",     "tip": "Longest winning run this season"},
-	"worst_l":   {"title": "Worst",  "w": 52, "fmt": "int",     "tip": "Longest losing run this season"},
+	"worst_l":   {"title": "Worst",  "w": 52, "fmt": "int",     "tip": "Longest losing run this season", "neg": true},
 }
 
 const TEAM_CATEGORIES := [
 	["Overview", ["matches", "mw", "ml", "winpct", "pts", "bw", "bl", "bdiff", "bpct", "avg_rat", "streak"]],
 	["Home / Away", ["matches", "winpct", "hrec", "hbpct", "arec", "abpct", "venue_gap"]],
 	["Battles & KOs", ["matches", "bpct", "bdiff", "kos", "faints", "kod", "dmg_leg", "tkn_leg", "turns_leg"]],
+	["Technique", ["matches", "acc", "crits", "se", "sepct", "dmg_leg", "avg_rat"]],
 	["Form & Streaks", ["matches", "winpct", "bpct", "form", "streak", "best_w", "worst_l", "avg_rat"]],
 	["All Columns", ["matches", "mw", "ml", "winpct", "pts", "bpct", "bdiff", "hrec", "hbpct",
-		"arec", "abpct", "kos", "faints", "kod", "avg_rat", "streak"]],
+		"arec", "abpct", "kos", "faints", "kod", "acc", "sepct", "avg_rat", "streak"]],
 ]
 
 var _note: Label
@@ -85,10 +102,13 @@ var _club_sel: OptionButton
 var _comp_sel: OptionButton
 var _search: LineEdit
 var _apps_only: CheckBox
+var _pctl_check: CheckBox
+var _cols_menu: MenuButton
 var _count_lbl: Label
 var _cols: Array = []          # current column keys: ["rank","name","club","type","level", <stat keys>]
 var _sort_key := "rating"
 var _sort_asc := false
+var _custom_keys: Array = ["apps", "winpct", "kos", "ko_app", "acc", "sepct", "surv", "rating"]
 
 # --- Teams mode widgets/state
 var _teams: VBoxContainer
@@ -96,11 +116,22 @@ var _ttree: Tree
 var _tcat_sel: OptionButton
 var _tcomp_sel: OptionButton
 var _tsearch: LineEdit
+var _tpctl_check: CheckBox
+var _tcols_menu: MenuButton
 var _tcount_lbl: Label
 var _tinsights: HBoxContainer
 var _tcols: Array = []
 var _tsort_key := "pts"
 var _tsort_asc := false
+var _tcustom_keys: Array = ["matches", "winpct", "pts", "bpct", "kod", "acc", "sepct", "avg_rat"]
+
+# --- Data Hub widgets (chart Controls from charts.gd, deliberately untyped)
+var _hub: VBoxContainer
+var _hub_scatter
+var _hub_top_rated
+var _hub_kod
+var _hub_venue
+var _hub_note: Label
 
 # --- Leaders widgets
 var _leaders: GridContainer
@@ -114,7 +145,7 @@ func _ready() -> void:
 	head.add_theme_constant_override("separation", 10)
 	var title := UI.label("SEASON STATS", 16, Color.WHITE)
 	head.add_child(title)
-	for entry in [["centre", "Players"], ["teams", "Teams"], ["leaders", "Leaders"]]:
+	for entry in [["centre", "Players"], ["teams", "Teams"], ["hub", "Data Hub"], ["leaders", "Leaders"]]:
 		var b := Button.new()
 		b.text = entry[1]
 		b.toggle_mode = true
@@ -134,10 +165,11 @@ func _ready() -> void:
 
 	_build_centre()
 	_build_teams()
+	_build_hub()
 	_build_leaders()
 	# Screenshot-harness hook only: pre-select a Stats view (inert in play).
 	var dev_view := OS.get_environment("COMP_DEV_STATS_VIEW")
-	if dev_view in ["centre", "teams", "leaders"]:
+	if dev_view in ["centre", "teams", "hub", "leaders"]:
 		_view = dev_view
 	_apply_view()
 
@@ -153,16 +185,24 @@ func _build_centre() -> void:
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 8)
 
-	bar.add_child(_toolbar_cap("CATEGORY"))
+	bar.add_child(_toolbar_cap("VIEW"))
 	_cat_sel = OptionButton.new()
 	for entry in CATEGORIES:
 		_cat_sel.add_item(entry[0])
+	_cat_sel.add_item(CUSTOM_CAT)
 	_cat_sel.select(0)
-	_cat_sel.custom_minimum_size.x = 170
+	_cat_sel.custom_minimum_size.x = 168
 	_cat_sel.focus_mode = Control.FOCUS_NONE
-	_cat_sel.tooltip_text = "Choose which stat columns are shown"
+	_cat_sel.tooltip_text = "Choose which stat columns are shown — or build your own view with Columns"
 	_cat_sel.item_selected.connect(func(_i): _rebuild_table())
 	bar.add_child(_cat_sel)
+
+	_cols_menu = _make_cols_menu(STAT_DEFS, func() -> Array: return _custom_keys,
+		func(keys: Array):
+			_custom_keys = keys
+			_cat_sel.select(CATEGORIES.size())   # switch to the custom view
+			_rebuild_table())
+	bar.add_child(_cols_menu)
 
 	bar.add_child(_toolbar_cap("CLUB"))
 	_club_sel = OptionButton.new()
@@ -175,39 +215,48 @@ func _build_centre() -> void:
 		_club_sel.add_item(str(c["name"]))
 		_club_sel.set_item_metadata(idx, str(c["id"]))
 	_club_sel.select(0)
-	_club_sel.custom_minimum_size.x = 168
+	_club_sel.custom_minimum_size.x = 150
 	_club_sel.focus_mode = Control.FOCUS_NONE
 	_club_sel.tooltip_text = "Filter the table to one club's squad"
 	_club_sel.item_selected.connect(func(_i): _rebuild_table())
 	bar.add_child(_club_sel)
 
-	bar.add_child(_toolbar_cap("COMPETITION"))
+	bar.add_child(_toolbar_cap("COMP"))
 	_comp_sel = OptionButton.new()
 	for entry in COMPS:
 		var idx := _comp_sel.item_count
 		_comp_sel.add_item(entry[1])
 		_comp_sel.set_item_metadata(idx, entry[0])
 	_comp_sel.select(0)
-	_comp_sel.custom_minimum_size.x = 128
+	_comp_sel.custom_minimum_size.x = 118
 	_comp_sel.focus_mode = Control.FOCUS_NONE
 	_comp_sel.tooltip_text = "Count league matches, cup matches, or both"
 	_comp_sel.item_selected.connect(func(_i): _rebuild_table())
 	bar.add_child(_comp_sel)
 
 	_search = LineEdit.new()
-	_search.placeholder_text = "Find Pokémon or species…"
-	_search.custom_minimum_size.x = 190
+	_search.placeholder_text = "Find Pokémon…"
+	_search.custom_minimum_size.x = 148
 	_search.clear_button_enabled = true
 	_search.text_changed.connect(func(_t): _rebuild_table())
 	bar.add_child(_search)
 
 	_apps_only = CheckBox.new()
-	_apps_only.text = "Appearances only"
+	_apps_only.text = "Battled only"
 	_apps_only.focus_mode = Control.FOCUS_NONE
 	_apps_only.add_theme_font_size_override("font_size", 12)
 	_apps_only.tooltip_text = "Hide Pokémon that have not battled yet this season"
 	_apps_only.toggled.connect(func(_on): _rebuild_table())
 	bar.add_child(_apps_only)
+
+	_pctl_check = CheckBox.new()
+	_pctl_check.text = "Percentiles"
+	_pctl_check.button_pressed = true
+	_pctl_check.focus_mode = Control.FOCUS_NONE
+	_pctl_check.add_theme_font_size_override("font_size", 12)
+	_pctl_check.tooltip_text = "Shade every stat cell by its league percentile:\ngreen = upper half, red = lower half, no tint = mid-pack.\nLower-is-better stats (damage taken, faints) are inverted."
+	_pctl_check.toggled.connect(func(_on): _rebuild_table())
+	bar.add_child(_pctl_check)
 
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -227,7 +276,9 @@ func _build_centre() -> void:
 	_centre.add_child(_tree)
 
 	var foot := HBoxContainer.new()
-	foot.add_child(UI.dim("click a column header to sort (click again to reverse) · Pokémon and club names link to profiles · Rat = avg match rating", 11))
+	foot.add_theme_constant_override("separation", 14)
+	foot.add_child(UI.dim("click a header to sort · names link to profiles · Columns ▾ builds a custom view", 11))
+	foot.add_child(_pctl_legend())
 	_centre.add_child(foot)
 
 
@@ -237,8 +288,105 @@ func _toolbar_cap(text: String) -> Label:
 	return l
 
 
+## Percentile shading legend chip row (red -> neutral -> green swatches).
+func _pctl_legend() -> Control:
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 3)
+	h.tooltip_text = "Cell shading = league percentile for that stat\n(computed across every Pokémon with an appearance)"
+	var cap := UI.dim("percentile:", 11)
+	cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(cap)
+	for entry in [[0.02, "low"], [0.5, ""], [0.98, "high"]]:
+		var sq := Panel.new()
+		sq.custom_minimum_size = Vector2(11, 11)
+		sq.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var sb := StyleBoxFlat.new()
+		var t: Color = Charts.pct_tint(float(entry[0]), 0.55)
+		sb.bg_color = t if t.a > 0.0 else TB.COL_PANEL_ALT
+		sb.border_color = TB.COL_BORDER
+		sb.set_border_width_all(1)
+		sq.add_theme_stylebox_override("panel", sb)
+		h.add_child(sq)
+		if str(entry[1]) != "":
+			var l := UI.dim(str(entry[1]), 10)
+			l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			h.add_child(l)
+	return h
+
+
+## Checkable column-picker popup (FM "customise view"). getter returns the
+## current key list; setter receives the updated list.
+func _make_cols_menu(defs: Dictionary, getter: Callable, setter: Callable) -> MenuButton:
+	var mb := MenuButton.new()
+	mb.text = "Columns ▾"
+	mb.focus_mode = Control.FOCUS_NONE
+	mb.custom_minimum_size = Vector2(96, 26)
+	mb.add_theme_font_size_override("font_size", 12)
+	mb.tooltip_text = "Build a custom view: tick exactly the stat columns you want"
+	var pop := mb.get_popup()
+	pop.hide_on_checkable_item_selection = false
+	var keys: Array = defs.keys()
+	mb.about_to_popup.connect(func():
+		pop.clear()
+		var current: Array = getter.call()
+		for i in keys.size():
+			var k: String = keys[i]
+			pop.add_check_item("%s — %s" % [defs[k]["title"], str(defs[k]["tip"]).split("\n")[0]], i)
+			pop.set_item_checked(i, current.has(k)))
+	pop.index_pressed.connect(func(idx: int):
+		var k: String = keys[idx]
+		var current: Array = getter.call().duplicate()
+		if current.has(k):
+			if current.size() > 1:   # never allow an empty view
+				current.erase(k)
+		else:
+			# keep the definition order stable regardless of click order
+			current.append(k)
+			var ordered: Array = []
+			for kk in keys:
+				if current.has(kk):
+					ordered.append(kk)
+			current = ordered
+		pop.set_item_checked(idx, current.has(k))
+		setter.call(current))
+	return mb
+
+
 func _current_cat_keys() -> Array:
+	if _cat_sel.selected >= CATEGORIES.size():
+		return _custom_keys
 	return CATEGORIES[maxi(_cat_sel.selected, 0)][1]
+
+
+## key -> {uid: percentile 0..1} across the whole qualifying population
+## (league-wide context, independent of the club/search filters), ties
+## averaged, "neg" stats inverted so green always means good.
+func _compute_pctls(rows: Array, keys: Array, defs: Dictionary,
+		qualify: Callable, id_key: String) -> Dictionary:
+	var out := {}
+	var pop: Array = rows.filter(qualify)
+	var n := pop.size()
+	if n < 2:
+		return out
+	for key in keys:
+		var d: Dictionary = defs.get(key, {})
+		if not bool(d.get("shade", true)) or str(d.get("fmt", "int")) == "form":
+			continue
+		var vals: Array = []
+		for r in pop:
+			vals.append(float(r[key]))
+		vals.sort()
+		var m := {}
+		for r in pop:
+			var v := float(r[key])
+			var lo := vals.bsearch(v, true)
+			var hi := vals.bsearch(v, false)
+			var p := ((float(lo) + float(hi) - 1.0) / 2.0) / float(n - 1)
+			if bool(d.get("neg", false)):
+				p = 1.0 - p
+			m[str(r[id_key])] = p
+		out[key] = m
+	return out
 
 
 func _on_title_clicked(col: int, mouse_button_index: int) -> void:
@@ -262,6 +410,9 @@ func _rebuild_table() -> void:
 		_sort_asc = false
 	_tree.clear()
 	_tree.columns = _cols.size()
+	# fit-to-width for normal views; allow horizontal scroll only when a very
+	# wide custom / all-columns view genuinely needs it
+	_tree.scroll_horizontal_enabled = _cols.size() > 14
 	for i in _cols.size():
 		var key: String = _cols[i]
 		var title := ""
@@ -296,6 +447,12 @@ func _rebuild_table() -> void:
 	var total := rows.size()
 	var with_apps: int = rows.filter(func(r): return int(r["apps"]) > 0).size()
 
+	# league-wide percentile context (FM Data-Hub-style shading)
+	var pctls: Dictionary = {}
+	if _pctl_check.button_pressed:
+		pctls = _compute_pctls(rows, _current_cat_keys(), STAT_DEFS,
+			func(r): return int(r["apps"]) > 0, "uid")
+
 	var club_filter: String = str(_club_sel.get_selected_metadata())
 	var needle := _search.text.strip_edges().to_lower()
 	var shown: Array = rows.filter(func(r):
@@ -308,7 +465,7 @@ func _rebuild_table() -> void:
 			return false
 		return true)
 	_sort_rows(shown)
-	_count_lbl.text = "%d of %d Pokémon shown · %d have battled" % [shown.size(), total, with_apps]
+	_count_lbl.text = "%d/%d shown · %d battled" % [shown.size(), total, with_apps]
 
 	var root := _tree.create_item()
 	var stat_keys := _current_cat_keys()
@@ -354,9 +511,19 @@ func _rebuild_table() -> void:
 			elif played and key == _sort_key:
 				c = Color.WHITE
 			item.set_custom_color(col, c)
+			if played and pctls.has(key):
+				var p: float = float((pctls[key] as Dictionary).get(str(r["uid"]), 0.5))
+				var tint: Color = Charts.pct_tint(p)
+				if tint.a > 0.0:
+					item.set_custom_bg_color(col, tint)
+				item.set_tooltip_text(col, "%s: %s — %d. percentile league-wide" % [
+					STAT_DEFS[key]["title"], _fmt_stat(key, r), roundi(p * 100.0)])
 
 		if not club.is_empty() and GameState.is_player_club(str(club.get("id", ""))):
-			for c in _tree.columns:
+			# with percentile shading on, keep the "your club" wash off the
+			# stat cells so the percentile tints stay readable
+			var last_col: int = 5 if not pctls.is_empty() else _tree.columns
+			for c in last_col:
 				item.set_custom_bg_color(c, UI.COL_PLAYER_ROW)
 
 
@@ -386,6 +553,9 @@ func _make_row(uid: String, pname: String, species: String, types: Array,
 		level: int, club: Dictionary, s: Dictionary) -> Dictionary:
 	var apps := int(s.get("battles", 0))
 	var d := float(maxi(apps, 1))
+	var hits := int(s.get("hits", 0))
+	var misses := int(s.get("misses", 0))
+	var hd := float(maxi(hits, 1))
 	return {
 		"uid": uid, "name": pname, "species": species, "types": types,
 		"level": level, "club": club,
@@ -400,6 +570,13 @@ func _make_row(uid: String, pname: String, species: String, types: Array,
 		"tkn_app": float(s.get("taken", 0)) / d,
 		"faints": int(s.get("faints", 0)),
 		"surv": 100.0 * float(apps - int(s.get("faints", 0))) / d if apps > 0 else 0.0,
+		"hits": hits,
+		"acc": 100.0 * float(hits) / maxf(float(hits + misses), 1.0),
+		"crits": int(s.get("crits", 0)),
+		"critr": 100.0 * float(s.get("crits", 0)) / hd,
+		"se": int(s.get("se", 0)),
+		"sepct": 100.0 * float(s.get("se", 0)) / hd,
+		"dph": float(s.get("dmg", 0)) / hd,
 		"rating": float(s.get("rating_sum", 0.0)) / d,
 	}
 
@@ -454,16 +631,24 @@ func _build_teams() -> void:
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 8)
 
-	bar.add_child(_toolbar_cap("CATEGORY"))
+	bar.add_child(_toolbar_cap("VIEW"))
 	_tcat_sel = OptionButton.new()
 	for entry in TEAM_CATEGORIES:
 		_tcat_sel.add_item(entry[0])
+	_tcat_sel.add_item(CUSTOM_CAT)
 	_tcat_sel.select(0)
-	_tcat_sel.custom_minimum_size.x = 170
+	_tcat_sel.custom_minimum_size.x = 168
 	_tcat_sel.focus_mode = Control.FOCUS_NONE
-	_tcat_sel.tooltip_text = "Choose which team stat columns are shown"
+	_tcat_sel.tooltip_text = "Choose which team stat columns are shown — or build your own view with Columns"
 	_tcat_sel.item_selected.connect(func(_i): _rebuild_teams())
 	bar.add_child(_tcat_sel)
+
+	_tcols_menu = _make_cols_menu(TEAM_DEFS, func() -> Array: return _tcustom_keys,
+		func(keys: Array):
+			_tcustom_keys = keys
+			_tcat_sel.select(TEAM_CATEGORIES.size())
+			_rebuild_teams_table())
+	bar.add_child(_tcols_menu)
 
 	bar.add_child(_toolbar_cap("COMPETITION"))
 	_tcomp_sel = OptionButton.new()
@@ -484,6 +669,15 @@ func _build_teams() -> void:
 	_tsearch.clear_button_enabled = true
 	_tsearch.text_changed.connect(func(_t): _rebuild_teams_table())
 	bar.add_child(_tsearch)
+
+	_tpctl_check = CheckBox.new()
+	_tpctl_check.text = "Percentiles"
+	_tpctl_check.button_pressed = true
+	_tpctl_check.focus_mode = Control.FOCUS_NONE
+	_tpctl_check.add_theme_font_size_override("font_size", 12)
+	_tpctl_check.tooltip_text = "Shade every stat cell by its league percentile:\ngreen = upper half, red = lower half, no tint = mid-pack.\nLower-is-better stats (battles lost, KOs conceded) are inverted."
+	_tpctl_check.toggled.connect(func(_on): _rebuild_teams_table())
+	bar.add_child(_tpctl_check)
 
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -507,11 +701,15 @@ func _build_teams() -> void:
 	_teams.add_child(_ttree)
 
 	var foot := HBoxContainer.new()
-	foot.add_child(UI.dim("click a column header to sort (click again to reverse) · club names link to profiles · KO± and Sq Rat come from deterministic engine replays", 11))
+	foot.add_theme_constant_override("separation", 14)
+	foot.add_child(UI.dim("click a header to sort · club names link to profiles · KO± / Acc / SE from deterministic engine replays", 11))
+	foot.add_child(_pctl_legend())
 	_teams.add_child(foot)
 
 
 func _team_cat_keys() -> Array:
+	if _tcat_sel.selected >= TEAM_CATEGORIES.size():
+		return _tcustom_keys
 	return TEAM_CATEGORIES[maxi(_tcat_sel.selected, 0)][1]
 
 
@@ -537,10 +735,11 @@ func _rebuild_teams_table() -> void:
 	_tcols.append_array(_team_cat_keys())
 	if not _tcols.has(_tsort_key):
 		var keys := _team_cat_keys()
-		_tsort_key = "pts" if keys.has("pts") else str(keys[1])
+		_tsort_key = "pts" if keys.has("pts") else str(keys[mini(1, keys.size() - 1)])
 		_tsort_asc = false
 	_ttree.clear()
 	_ttree.columns = _tcols.size()
+	_ttree.scroll_horizontal_enabled = _tcols.size() > 16
 	for i in _tcols.size():
 		var key: String = _tcols[i]
 		var col_title := ""
@@ -569,12 +768,17 @@ func _rebuild_teams_table() -> void:
 	var comp: String = str(_tcomp_sel.get_selected_metadata())
 	var rows := _build_team_rows(comp)
 	var with_matches: int = rows.filter(func(r): return int(r["matches"]) > 0).size()
+
+	var pctls: Dictionary = {}
+	if _tpctl_check.button_pressed:
+		pctls = _compute_pctls(rows, _team_cat_keys(), TEAM_DEFS,
+			func(r): return int(r["matches"]) > 0, "cid")
 	var needle := _tsearch.text.strip_edges().to_lower()
 	var shown: Array = rows.filter(func(r):
 		return needle == "" or needle in str(r["name"]).to_lower() \
 			or needle in str(r["short"]).to_lower())
 	_sort_team_rows(shown)
-	_tcount_lbl.text = "%d of %d clubs shown · %d have played" % [shown.size(), rows.size(), with_matches]
+	_tcount_lbl.text = "%d/%d clubs · %d played" % [shown.size(), rows.size(), with_matches]
 
 	var root := _ttree.create_item()
 	var stat_keys := _team_cat_keys()
@@ -598,9 +802,17 @@ func _rebuild_teams_table() -> void:
 			item.set_text(col, _fmt_team(key, r))
 			item.set_text_alignment(col, HORIZONTAL_ALIGNMENT_CENTER)
 			item.set_custom_color(col, _team_cell_color(key, r, played))
+			if played and pctls.has(key):
+				var p: float = float((pctls[key] as Dictionary).get(str(r["cid"]), 0.5))
+				var tint: Color = Charts.pct_tint(p)
+				if tint.a > 0.0:
+					item.set_custom_bg_color(col, tint)
+				item.set_tooltip_text(col, "%s: %s — %d. percentile league-wide" % [
+					TEAM_DEFS[key]["title"], _fmt_team(key, r), roundi(p * 100.0)])
 
 		if GameState.is_player_club(str(r["cid"])):
-			for c in _ttree.columns:
+			var last_col: int = 2 if not pctls.is_empty() else _ttree.columns
+			for c in last_col:
 				item.set_custom_bg_color(c, UI.COL_PLAYER_ROW)
 
 
@@ -638,6 +850,10 @@ func _build_team_rows(comp: String) -> Array:
 			"kod": int(s["kos"]) - int(s["faints"]),
 			"dmg_leg": float(s["dmg"]) / legs, "tkn_leg": float(s["taken"]) / legs,
 			"turns_leg": float(s["turns"]) / legs,
+			"acc": 100.0 * float(s.get("hits", 0)) / maxf(float(int(s.get("hits", 0)) + int(s.get("misses", 0))), 1.0),
+			"crits": int(s.get("crits", 0)),
+			"se": int(s.get("se", 0)),
+			"sepct": 100.0 * float(s.get("se", 0)) / maxf(float(s.get("hits", 0)), 1.0),
 			"avg_rat": float(s["rating_sum"]) / float(maxi(int(s["rating_apps"]), 1)),
 			"form": last5,
 			"form_pts": last5.filter(func(x): return x == "W").size(),
@@ -793,6 +1009,136 @@ func _insight_chip(caption: String, r: Dictionary, detail: String) -> PanelConta
 	return p
 
 
+# =================================================================== Data Hub
+# FM Data Hub: visual analytics computed from the same deterministic replay
+# aggregates — attack/defence scatter, top-rated bars, KO-difference and
+# home-advantage diverging bars. Every mark is hoverable for exact numbers.
+
+func _build_hub() -> void:
+	_hub = VBoxContainer.new()
+	_hub.add_theme_constant_override("separation", 8)
+	_hub.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	add_child(_hub)
+
+	var bar := HBoxContainer.new()
+	bar.add_theme_constant_override("separation", 8)
+	_hub_note = UI.dim("", 11)
+	_hub_note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.add_child(_hub_note)
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.add_child(sp)
+	var hint := UI.dim("hover any mark for exact numbers · position graph: League Table ▸ Position Graph", 11)
+	hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.add_child(hint)
+	_hub.add_child(bar)
+
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_hub.add_child(grid)
+
+	var mk_card := func(title: String, chart: Control, caption: String) -> PanelContainer:
+		var card := UI.card(title)
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		chart.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		chart.custom_minimum_size.y = 220
+		UI.card_body(card).add_child(chart)
+		if caption != "":
+			UI.card_body(card).add_child(UI.dim(caption, 10))
+		return card
+
+	_hub_scatter = Charts.ScatterChart.new()
+	_hub_scatter.x_title = "damage dealt per battle →"
+	_hub_scatter.y_title = "damage taken per battle →"
+	_hub_scatter.quads = ["leaky, low output", "all-out brawlers", "cagey, low output", "complete sides"]
+	grid.add_child(mk_card.call("Attack vs Defence · every club",
+		_hub_scatter, "dashed lines = league average · ring = your club · right & low = complete side"))
+
+	_hub_top_rated = Charts.BarChartH.new()
+	_hub_top_rated.decimals = 2
+	_hub_top_rated.label_w = 128.0
+	grid.add_child(mk_card.call("Top Rated Pokémon · avg match rating (min 3 apps)",
+		_hub_top_rated, "swatch = owning club color"))
+
+	_hub_kod = Charts.BarChartH.new()
+	_hub_kod.label_w = 108.0
+	grid.add_child(mk_card.call("KO Difference · knocked out minus lost",
+		_hub_kod, "green = beats opponents up, red = gets beaten up · swatch = club color"))
+
+	_hub_venue = Charts.BarChartH.new()
+	_hub_venue.label_w = 108.0
+	_hub_venue.suffix = "pp"
+	grid.add_child(mk_card.call("Home Advantage · home minus away battle-win %",
+		_hub_venue, "positive = fortress at home, negative = travels better · swatch = club color"))
+
+
+func _refresh_hub() -> void:
+	var team_rows: Array = _build_team_rows("all").filter(func(r): return int(r["matches"]) > 0)
+	_hub_note.text = "%d clubs with matches played · all marks from deterministic engine replays" % team_rows.size()
+
+	# 1) attack vs defence scatter
+	var pts: Array = []
+	for r in team_rows:
+		if int(r["matches"]) < 1:
+			continue
+		pts.append({
+			"label": str(r["short"]), "x": float(r["dmg_leg"]), "y": float(r["tkn_leg"]),
+			"color": UI.club_color(r["club"]),
+			"highlight": GameState.is_player_club(str(r["cid"])),
+			"tip": "%s\nDamage dealt / battle: %d\nDamage taken / battle: %d\nBattle win rate: %d%%" % [
+				str(r["name"]), roundi(float(r["dmg_leg"])), roundi(float(r["tkn_leg"])),
+				roundi(float(r["bpct"]))],
+		})
+	_hub_scatter.set_data(pts)
+
+	# 2) top rated Pokémon
+	var prows: Array = _build_rows("all").filter(func(r): return int(r["apps"]) >= 3)
+	prows.sort_custom(func(a, b): return float(a["rating"]) > float(b["rating"]))
+	var bars: Array = []
+	for r in prows.slice(0, 10):
+		var club: Dictionary = r["club"]
+		bars.append({
+			"label": str(r["name"]), "value": float(r["rating"]),
+			"color": UI.club_color(club) if not club.is_empty() else TB.COL_ACCENT,
+			"tip": "%s (%s, Lv %d) — %s\nAvg rating %.2f over %d apps · %d KOs" % [
+				str(r["name"]), str(r["species"]), int(r["level"]),
+				str(club.get("name", "unattached")), float(r["rating"]),
+				int(r["apps"]), int(r["kos"])],
+		})
+	_hub_top_rated.set_data(bars)
+
+	# 3) KO difference (diverging)
+	var kod_rows := team_rows.duplicate()
+	kod_rows.sort_custom(func(a, b): return int(a["kod"]) > int(b["kod"]))
+	var kod_bars: Array = []
+	for r in kod_rows:
+		kod_bars.append({
+			"label": str(r["short"]), "value": float(r["kod"]),
+			"color": UI.club_color(r["club"]),
+			"tip": "%s\nKOs scored %d · conceded %d · difference %+d" % [
+				str(r["name"]), int(r["kos"]), int(r["faints"]), int(r["kod"])],
+		})
+	_hub_kod.set_data(kod_bars)
+
+	# 4) home advantage (diverging, needs home+away sample)
+	var venue_rows: Array = team_rows.filter(func(r): return int(r["hm"]) >= 1 and int(r["am"]) >= 1)
+	venue_rows.sort_custom(func(a, b): return float(a["venue_gap"]) > float(b["venue_gap"]))
+	var venue_bars: Array = []
+	for r in venue_rows:
+		venue_bars.append({
+			"label": str(r["short"]), "value": float(r["venue_gap"]),
+			"color": UI.club_color(r["club"]),
+			"tip": "%s\nHome battle-win %d%% (%d-%d) · away %d%% (%d-%d)" % [
+				str(r["name"]), roundi(float(r["hbpct"])), int(r["hw"]), int(r["hl"]),
+				roundi(float(r["abpct"])), int(r["aw"]), int(r["al"])],
+		})
+	_hub_venue.set_data(venue_bars)
+
+
 # ==================================================================== Leaders
 
 func _build_leaders() -> void:
@@ -817,6 +1163,7 @@ func _apply_view() -> void:
 			Color.WHITE if k == _view else TB.COL_TEXT_DIM)
 	_centre.visible = _view == "centre"
 	_teams.visible = _view == "teams"
+	_hub.visible = _view == "hub"
 	_leaders.visible = _view == "leaders"
 
 
@@ -829,6 +1176,8 @@ func refresh() -> void:
 			_rebuild_table()
 		"teams":
 			_rebuild_teams()
+		"hub":
+			_refresh_hub()
 		_:
 			_refresh_leaders(played_n)
 

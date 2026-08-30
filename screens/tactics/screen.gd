@@ -2,8 +2,9 @@ extends Control
 ## Tactics screen — FM-style battle plan board.
 ## Left: starting six + ordered bench with per-slot roles & suitability.
 ## Centre: battle line + offensive/defensive type-coverage matrix.
-## Right: team instructions + role guide. Presets persist to user://tactics.json
-## and the active plan is published into GameState.world.meta.tactics.
+## Right: team instructions + role guide. Presets persist inside the save
+## (world.meta.tactics_state) and the active plan is published into
+## GameState.world.meta.tactics — one source of truth, no sidecar.
 
 const Logic := preload("res://screens/tactics/tactics_logic.gd")
 const SlotRow := preload("res://screens/tactics/slot_row.gd")
@@ -48,7 +49,7 @@ func _ready() -> void:
 	_build_dialogs()
 	_state = Logic.load_state()
 	_refresh_analyses()
-	Logic.save_state(_state)  # writes user://tactics.json + publishes to GameState
+	Logic.save_state(_state)  # stores state in world.meta + publishes the plan
 	_build_layout()
 	_rebuild_all()
 

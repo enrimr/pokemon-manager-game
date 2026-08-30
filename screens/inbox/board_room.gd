@@ -276,9 +276,12 @@ func _apply_grant(r: Dictionary) -> void:
 			r["before"] = int(fin["balance"])
 			if granted > 0:
 				fin["balance"] = int(fin["balance"]) + granted
+				# the injection is earmarked for squad building: it raises the
+				# board's transfer budget by the same amount
+				fin["transfer_budget"] = int(fin.get("transfer_budget", 0)) + granted
 				ledger.push_front({"date": GameState.current_date, "amount": granted,
 					"kind": "injection",
-					"text": "Board funds injection"})
+					"text": "Board funds injection (transfer budget +%s)" % news.money(granted)})
 			r["after"] = int(fin["balance"])
 		KIND_SCOUT:
 			r["before"] = int(fin["balance"])

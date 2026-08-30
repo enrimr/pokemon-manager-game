@@ -10,9 +10,22 @@ extends Node
 ## round, walk-away locks), transfer listing with asking price -> genuine AI
 ## bids over the following days -> accept/reject sale, contract termination
 ## (release with compensation, mon joins the free-agent pool), praise /
-## discipline interactions (form-justified morale effects on a cooldown),
-## nickname changes and individual training focus (delegated to the training
-## piece's TrainingService when available).
+## discipline interactions (form-justified morale effects on a cooldown,
+## scaled by hidden personality), nickname changes and individual training
+## focus (delegated to the training piece's TrainingService when available).
+##
+## Personality/happiness layer (with personality.gd):
+## - every morale mutation goes through apply_morale() and lands in a per-mon
+##   MOOD LEDGER ({date, delta, why}) so the morale word is always explained;
+## - player match results move real morale daily (win/lose, scaled by
+##   temperament) — morale reacts to the season, not just manager actions;
+## - morale drifts 1/day toward the mon's computed structural happiness, so
+##   concerns (playing time, contract, listing...) genuinely pull it down;
+## - PROMISES are real state with deadlines: a run of battles (4 in 28 days,
+##   checked against genuine appearance data), a new deal (30 days, kept by an
+##   actual renewal) or removal from the transfer list (10 days). Kept and
+##   broken promises have inbox mail, morale and trust consequences, and
+##   broken ones poison future contract demands for a while.
 
 signal actions_changed
 
@@ -21,11 +34,22 @@ const SAVE_PATH := "user://squad_actions.json"
 const UI := preload("res://screens/squad/ui_helpers.gd")
 const SeasonStats := preload("res://screens/squad/season_stats.gd")
 const History := preload("res://screens/squad/career_history.gd")
+const Personality := preload("res://screens/squad/personality.gd")
 
 const TALK_LOCK_DAYS := 42
 const INTERACT_COOLDOWN_DAYS := 10
 const MAX_TALK_ROUNDS := 3
 const MIN_SQUAD_SIZE := 6
+const MOOD_LOG_MAX := 14
+
+const PROMISE_DEFS := {
+	"battles": {"days": 28, "target": 4, "label": "A run of battles",
+		"text": "a run of battles — %d appearances within %d days"},
+	"new_deal": {"days": 30, "target": 0, "label": "An improved contract",
+		"text": "an improved contract within %d days"},
+	"unlist": {"days": 10, "target": 0, "label": "Removal from the transfer list",
+		"text": "removal from the transfer list within %d days"},
+}
 
 var state: Dictionary = {}
 var _talks: Dictionary = {}   # uid -> {rounds:int, wage:int, years:int} live session (not persisted)
@@ -70,7 +94,11 @@ func _default_state() -> Dictionary:
 		"last": GameState.current_date,
 		"next_id": 1,
 		"offers": [],   # [{id, uid, name, club_id, bid, stage, made_on, expires_on}]
-		"meta": {},     # uid -> {last_praise, last_discipline, talks_locked_until}
+		"meta": {},     # uid -> {last_interact, last_interact_delta, talks_locked_until}
+		"promises": [], # [{id, uid, name, kind, text, made_on, deadline, target, baseline, status, resolved_on}]
+		"mood": {},     # uid -> [{d, delta, why}] newest first (the morale ledger)
+		"mood_seen": {},  # uid -> morale at last tick (attributes external changes)
+		"mood_resid": {}, # uid -> unattributed morale drift accumulator
 	}
 
 
@@ -80,6 +108,12 @@ func _load_state() -> void:
 		var data: Variant = JSON.parse_string(f.get_as_text())
 		if typeof(data) == TYPE_DICTIONARY and int(data.get("version", 0)) == 1:
 			state = data
+			for k in ["promises"]:
+				if not (state.get(k) is Array):
+					state[k] = []
+			for k in ["mood", "meta", "mood_seen", "mood_resid"]:
+				if not (state.get(k) is Dictionary):
+					state[k] = {}
 			return
 	state = _default_state()
 	save_state()
@@ -139,6 +173,47 @@ func _rng_for(salt: String) -> RandomNumberGenerator:
 	return rng
 
 
+# ------------------------------------------------------------------ mood ledger
+
+## THE morale mutator: clamps, records {date, delta, why} in the mon's mood
+## ledger so every point of morale on the squad table has a visible reason.
+func apply_morale(inst: Dictionary, delta: int, why: String, date: String = "") -> void:
+	if inst.is_empty() or delta == 0:
+		return
+	var before := int(inst.get("morale", 70))
+	var after := clampi(before + delta, 0, 100)
+	inst["morale"] = after
+	var uid := str(inst["uid"])
+	(state["mood_seen"] as Dictionary)[uid] = after
+	if after == before:
+		return
+	_log_mood(uid, after - before, why, date)
+
+
+func _log_mood(uid: String, delta: int, why: String, date: String = "") -> void:
+	var moods: Dictionary = state["mood"]
+	if not moods.has(uid):
+		moods[uid] = []
+	var log: Array = moods[uid]
+	log.push_front({"d": (date if date != "" else GameState.current_date),
+		"delta": delta, "why": why})
+	while log.size() > MOOD_LOG_MAX:
+		log.pop_back()
+
+
+## Newest-first [{d, delta, why}] — what actually moved this mon's morale.
+func mood_log(uid: String) -> Array:
+	return (state["mood"] as Dictionary).get(uid, [])
+
+
+## Last praise/criticism: {date, delta} or {}.
+func last_interaction(uid: String) -> Dictionary:
+	var m := _meta(uid)
+	if not m.has("last_interact"):
+		return {}
+	return {"date": str(m["last_interact"]), "delta": int(m.get("last_interact_delta", 0))}
+
+
 # ------------------------------------------------------------------ contract renewal
 
 ## Deterministic wage/length demands from live value, form, morale, age and
@@ -167,6 +242,16 @@ func contract_demand(inst: Dictionary) -> Dictionary:
 	if is_listed(inst):
 		mult -= 0.10
 		factors.append("Transfer-listed: negotiating from weakness.")
+	var pa := Personality.attrs(uid)
+	if int(pa["ambition"]) >= 15:
+		mult += 0.07
+		factors.append("Ambitious character: expects wages to match their standing.")
+	elif int(pa["loyalty"]) >= 15 and not is_listed(inst):
+		mult -= 0.07
+		factors.append("Loyal to the club: flexible to get a deal done.")
+	if not recent_promise(uid, "broken", 45).is_empty():
+		mult += 0.10
+		factors.append("Still smarting from a broken promise: wants proof in writing.")
 	var months := int(inst["age_months"])
 	var years := 2
 	if months < 24:
@@ -256,7 +341,10 @@ func negotiate_contract(uid: String, wage_offer: int, years_offer: int, bonus: i
 			"message": "%s signs a new %d-year deal at %s/wk%s." % [name, years_offer,
 				UI.money(wage_offer), (" with a %s bonus" % UI.money(bonus)) if bonus > 0 else ""]}
 
-	if effective >= demand * 0.74 and int(t["rounds"]) < MAX_TALK_ROUNDS:
+	# Volatile characters walk out earlier; calm professionals keep talking.
+	var pa := Personality.attrs(uid)
+	var patience := 0.74 if int(pa["temperament"]) >= 8 else 0.78
+	if effective >= demand * patience and int(t["rounds"]) < MAX_TALK_ROUNDS:
 		# They concede a little each round they stay at the table.
 		t["wage"] = int(round(demand * 0.965 / 10.0)) * 10
 		var final_note := " This is close to their final position." if int(t["rounds"]) == MAX_TALK_ROUNDS - 1 else ""
@@ -267,7 +355,8 @@ func negotiate_contract(uid: String, wage_offer: int, years_offer: int, bonus: i
 	# Insulted or out of patience: talks collapse.
 	_talks.erase(uid)
 	_meta(uid)["talks_locked_until"] = Season.date_add(GameState.current_date, TALK_LOCK_DAYS)
-	inst["morale"] = clampi(int(inst["morale"]) - 7, 0, 100)
+	apply_morale(inst, -9 if int(pa["temperament"]) <= 7 else -7, "Contract talks collapsed")
+	_break_promise_kind(uid, "new_deal", "Contract talks collapsed instead of a new deal.")
 	GameState.add_inbox_message(GameState.current_date, "Contract talks collapse: %s" % name,
 		"%s walked out of contract talks after an offer of %s/wk against a demand of %s/wk. They will not return to the table before %s, and morale has taken a hit." %
 		[name, UI.money(wage_offer), UI.money(int(demand)), Season.pretty_date(talks_locked_until(uid))])
@@ -284,7 +373,9 @@ func _apply_renewal(inst: Dictionary, wage: int, years: int, bonus: int) -> void
 	var old_wage := int(inst["contract"]["salary"])
 	inst["contract"]["salary"] = wage
 	inst["contract"]["expiry"] = Season.date_add(GameState.current_date, years * 364)
-	inst["morale"] = clampi(int(inst["morale"]) + 9, 0, 100)
+	apply_morale(inst, 9, "Signed a new %d-year deal at %s/wk" % [years, UI.money(wage)])
+	if wage > old_wage:
+		_keep_promise_kind(str(inst["uid"]), "new_deal")
 	History.ensure().on_renewal(inst, old_wage, wage, years, bonus)
 	if bonus > 0:
 		var pc: Dictionary = GameState.player_club()
@@ -311,7 +402,9 @@ func set_listed(uid: String, asking: int) -> String:
 	var name := UI.display_name(inst)
 	inst["transfer_listed"] = true
 	inst["asking_price"] = maxi(asking, 250)
-	inst["morale"] = clampi(int(inst["morale"]) - 8, 0, 100)
+	var loy := int(Personality.attrs(uid)["loyalty"])
+	apply_morale(inst, -11 if loy >= 15 else -8,
+		"Placed on the transfer list" + (" — loyalty deepens the wound" if loy >= 15 else ""))
 	History.ensure().on_listed(inst, int(inst["asking_price"]))
 	GameState.add_inbox_message(GameState.current_date, "Transfer listed: %s" % name,
 		"%s has been placed on the transfer list at %s. Rival clubs will weigh the price against our %s valuation; morale has dipped. Bids will arrive in the Squad screen." %
@@ -328,7 +421,8 @@ func unlist(uid: String) -> String:
 		return "No longer in the squad."
 	inst.erase("transfer_listed")
 	inst.erase("asking_price")
-	inst["morale"] = clampi(int(inst["morale"]) + 4, 0, 100)
+	apply_morale(inst, 4, "Taken off the transfer list")
+	_keep_promise_kind(uid, "unlist")
 	History.ensure().on_unlisted(inst)
 	# Withdraw open bids for the mon.
 	for o in state["offers"]:
@@ -378,6 +472,7 @@ func accept_offer(offer_id: int) -> String:
 	for other in state["offers"]:
 		if other["uid"] == o["uid"] and other["stage"] == "open":
 			other["stage"] = "withdrawn"
+	_void_promises(str(o["uid"]))
 	GameState.add_inbox_message(GameState.current_date, "Sale completed: %s to %s" % [name, buyer["short"]],
 		"%s leaves for %s in a %s deal. The fee has been added to our balance (now %s)." %
 		[name, buyer["name"], UI.money(fee), UI.money(int(pc["finances"]["balance"]))])
@@ -435,9 +530,10 @@ func release(uid: String) -> String:
 	for o in state["offers"]:
 		if o["uid"] == uid and o["stage"] == "open":
 			o["stage"] = "collapsed"
+	_void_promises(uid)
 	# The dressing room notices.
 	for mate in pc["squad"]:
-		mate["morale"] = clampi(int(mate["morale"]) - 2, 0, 100)
+		apply_morale(mate, -2, "%s was released — the dressing room noticed" % name)
 	GameState.add_inbox_message(GameState.current_date, "Contract terminated: %s" % name,
 		"%s has been released%s and enters free agency. The rest of the squad's morale dipped slightly." %
 		[name, (" at a cost of %s in compensation" % UI.money(comp)) if comp > 0 else ""])
@@ -482,34 +578,208 @@ func _interact(uid: String, is_praise: bool) -> Dictionary:
 	var apps := SeasonStats.stat_of(uid, "battles")
 	var rating := SeasonStats.avg_rating(uid)
 	var name := UI.display_name(inst)
+	var a := Personality.attrs(uid)
+	var arch: String = str(Personality.archetype(a)["name"])
+	var volatile := int(a["temperament"]) <= 7
+	var pro := int(a["professionalism"]) >= 14
 	var delta := 0
 	var msg := ""
+	var why := ""
 	if is_praise:
 		if apps > 0 and rating >= 7.0:
-			delta = 10
-			msg = "%s beams at the recognition of a %.2f-rated season. Morale +%d." % [name, rating, 10]
+			delta = 12 if volatile else 10
+			msg = "%s beams at the recognition of a %.2f-rated season. Morale +%d." % [name, rating, delta]
+			why = "Praised for a %.2f-rated run of form" % rating
 		elif apps == 0 or rating >= 6.3:
-			delta = 4
-			msg = "%s appreciates the encouragement. Morale +%d." % [name, 4]
+			delta = 3 if pro else 4
+			msg = "%s appreciates the encouragement%s. Morale +%d." % [name,
+				" (though a %s barely needs it)" % arch if pro else "", delta]
+			why = "Encouraged by the manager"
 		else:
-			delta = -4
-			msg = "%s knows the recent form (%.2f) does not merit praise and doubts your judgement. Morale %d." % [name, rating, -4]
+			delta = -6 if pro else -4
+			msg = "%s knows the recent form (%.2f) does not merit praise and doubts your judgement%s. Morale %d." % [
+				name, rating, " — a %s hates hollow flattery" % arch if pro else "", delta]
+			why = "Saw through hollow praise"
 	else:
 		if apps > 0 and rating < 6.3:
-			delta = -3
-			msg = "%s accepts the criticism of a %.2f-rated run and vows to respond. Morale %d." % [name, rating, -3]
+			delta = -1 if pro else (-5 if volatile else -3)
+			msg = "%s accepts the criticism of a %.2f-rated run and vows to respond%s. Morale %d." % [
+				name, rating, " — the professionalism shows" if pro else (" — though the %s temper flares" % arch if volatile else ""), delta]
+			why = "Fairly criticised for weak form"
 		elif apps == 0:
-			delta = -6
-			msg = "%s feels hard done by — they have not even battled yet. Morale %d." % [name, -6]
+			delta = -9 if volatile else -6
+			msg = "%s feels hard done by — they have not even battled yet%s. Morale %d." % [
+				name, " — and a %s does not forget it" % arch if volatile else "", delta]
+			why = "Criticised without having battled"
 		else:
-			delta = -9
-			msg = "%s is furious: a %.2f average does not deserve a dressing-down. Morale %d." % [name, rating, -9]
-	inst["morale"] = clampi(int(inst["morale"]) + delta, 0, 100)
+			delta = -13 if volatile else -9
+			msg = "%s is furious: a %.2f average does not deserve a dressing-down%s. Morale %d." % [
+				name, rating, " — expect the %s reaction to linger" % arch if volatile else "", delta]
+			why = "Unfairly criticised despite good form"
+	apply_morale(inst, delta, why)
 	_meta(uid)["last_interact"] = GameState.current_date
+	_meta(uid)["last_interact_delta"] = delta
 	save_state()
 	GameState.save_game()
 	actions_changed.emit()
 	return {"ok": true, "message": msg, "delta": delta}
+
+
+# ------------------------------------------------------------------ promises
+## Real tracked commitments with deadlines and consequences (FM promises).
+## Kinds: "battles" (4 appearances in 28 days, checked against genuine
+## appearance data), "new_deal" (an actual renewal within 30 days),
+## "unlist" (off the transfer list within 10 days).
+
+func promises_for(uid: String) -> Array:
+	return (state["promises"] as Array).filter(func(p): return str(p["uid"]) == uid)
+
+
+func open_promise(uid: String) -> Dictionary:
+	for p in state["promises"]:
+		if str(p["uid"]) == uid and str(p["status"]) == "open":
+			return p
+	return {}
+
+
+## Most recent promise with `status` resolved within the last `days`. {} if none.
+func recent_promise(uid: String, status: String, days: int) -> Dictionary:
+	var best: Dictionary = {}
+	for p in state["promises"]:
+		if str(p["uid"]) != uid or str(p["status"]) != status:
+			continue
+		var res := str(p.get("resolved_on", ""))
+		if res == "" or UI.days_between(res, GameState.current_date) > days:
+			continue
+		if best.is_empty() or res > str(best.get("resolved_on", "")):
+			best = p
+	return best
+
+
+## "" if the promise can be made, else the reason it cannot.
+func can_promise(uid: String, kind: String) -> String:
+	var inst := find_instance(uid)
+	if inst.is_empty():
+		return "No longer in the squad."
+	if not PROMISE_DEFS.has(kind):
+		return "Unknown promise."
+	var open_p := open_promise(uid)
+	if not open_p.is_empty():
+		return "A promise is already outstanding (%s, deadline %s). One at a time — your word has to mean something." % \
+			[str(open_p["text"]), Season.pretty_date(str(open_p["deadline"]))]
+	match kind:
+		"unlist":
+			if not is_listed(inst):
+				return "%s is not on the transfer list." % UI.display_name(inst)
+		"new_deal":
+			if talks_locked(uid):
+				return "Talks broke down recently — promising a new deal now would ring hollow (locked until %s)." % \
+					Season.pretty_date(talks_locked_until(uid))
+	return ""
+
+
+## Make the promise: immediate trust bump, tracked deadline, inbox record.
+func make_promise(uid: String, kind: String) -> Dictionary:
+	var err := can_promise(uid, kind)
+	if err != "":
+		return {"ok": false, "message": err}
+	var inst := find_instance(uid)
+	var def: Dictionary = PROMISE_DEFS[kind]
+	var days := int(def["days"])
+	var target := int(def["target"])
+	var deadline := Season.date_add(GameState.current_date, days)
+	SeasonStats.player_stats()
+	var text: String
+	match kind:
+		"battles": text = str(def["text"]) % [target, days] + "."
+		_: text = str(def["text"]) % days + "."
+	var name := UI.display_name(inst)
+	state["promises"].append({
+		"id": int(state["next_id"]), "uid": uid, "name": name, "kind": kind,
+		"text": text, "made_on": GameState.current_date,
+		"deadline": deadline, "target": target,
+		"baseline": SeasonStats.stat_of(uid, "battles"),
+		"status": "open", "resolved_on": "",
+	})
+	state["next_id"] = int(state["next_id"]) + 1
+	apply_morale(inst, 6, "The manager promised %s" % str(def["label"]).to_lower())
+	GameState.add_inbox_message(GameState.current_date, "Promise made: %s" % name,
+		"You promised %s %s The squad screen tracks it; keep it by %s or the trust you bought today comes back with interest." %
+		[name, text, Season.pretty_date(deadline)])
+	save_state()
+	GameState.save_game()
+	actions_changed.emit()
+	return {"ok": true, "message": "%s leaves the office with your word: %s Deadline %s." %
+		[name, text, Season.pretty_date(deadline)]}
+
+
+func _keep_promise_kind(uid: String, kind: String) -> void:
+	var p := open_promise(uid)
+	if not p.is_empty() and str(p["kind"]) == kind:
+		_resolve_promise(p, true, GameState.current_date)
+
+
+func _break_promise_kind(uid: String, kind: String, _note: String) -> void:
+	var p := open_promise(uid)
+	if not p.is_empty() and str(p["kind"]) == kind:
+		_resolve_promise(p, false, GameState.current_date)
+
+
+func _void_promises(uid: String) -> void:
+	for p in state["promises"]:
+		if str(p["uid"]) == uid and str(p["status"]) == "open":
+			p["status"] = "void"
+			p["resolved_on"] = GameState.current_date
+
+
+## Broken promises hit harder on volatile / loyal characters.
+func _promise_break_penalty(uid: String) -> int:
+	var a: Dictionary = Personality.attrs(uid)
+	var p := 12
+	if int(a["temperament"]) <= 7:
+		p += 4
+	if int(a["loyalty"]) >= 15:
+		p += 2
+	if int(a["professionalism"]) >= 16:
+		p -= 3
+	return clampi(p, 8, 18)
+
+
+func _resolve_promise(p: Dictionary, kept: bool, date: String) -> void:
+	p["status"] = "kept" if kept else "broken"
+	p["resolved_on"] = date
+	var uid := str(p["uid"])
+	var inst := find_instance(uid)
+	if inst.is_empty():
+		p["status"] = "void"
+		return
+	var name := UI.display_name(inst)
+	if kept:
+		apply_morale(inst, 8, "The manager kept a promise (%s)" % str(p["kind"]).replace("_", " "), date)
+		GameState.add_inbox_message(date, "Promise kept: %s" % name,
+			"Your word held: %s %s noticed — and so did the rest of the squad. Promises kept are the cheapest morale tool a manager has." %
+			[str(p["text"]), name])
+	else:
+		var pen := _promise_break_penalty(uid)
+		apply_morale(inst, -pen, "The manager broke a promise (%s)" % str(p["kind"]).replace("_", " "), date)
+		for mate in GameState.player_club().get("squad", []):
+			if str(mate["uid"]) != uid:
+				apply_morale(mate, -1, "Saw the manager break a promise to %s" % name, date)
+		GameState.add_inbox_message(date, "Promise broken: %s" % name,
+			"The deadline passed on your promise to %s (%s). Morale has taken a real hit (%d), the distrust will poison contract talks for weeks, and the rest of the squad saw it happen." %
+			[name, str(p["text"]), -pen])
+
+
+## Open coach-brokered pledges from the Inbox piece (read-only surface):
+## the inbox tracks "promised battles" pledges on its messages; show them here
+## so the squad screen is the one place all commitments are visible.
+func inbox_pledges(uid: String) -> Array:
+	var out: Array = []
+	for m in GameState.inbox:
+		var pl: Variant = m.get("pledge")
+		if pl is Dictionary and str((pl as Dictionary).get("mon_uid", "")) == uid:
+			out.append(pl)
+	return out
 
 
 # ------------------------------------------------------------------ nickname
@@ -582,11 +852,17 @@ func _catch_up() -> void:
 	if processed > 0:
 		save_state()
 		if changed:
+			GameState.save_game()
 			actions_changed.emit()
 
 
 func _process_day(date: String) -> bool:
 	var changed := false
+	changed = _tick_residual(date) or changed
+	changed = _tick_result_morale(date) or changed
+	changed = _tick_promises(date) or changed
+	changed = _tick_happiness_drift() or changed
+	_sync_seen()
 	# Expire stale bids.
 	for o in state["offers"]:
 		if o["stage"] == "open" and str(o["expires_on"]) <= date:
@@ -628,4 +904,99 @@ func _process_day(date: String) -> bool:
 			[buyer["name"], UI.money(bid), name, UI.money(ask),
 			Season.pretty_date(Season.date_add(date, 6))])
 		changed = true
+	return changed
+
+
+## Attribute morale changes made OUTSIDE this service (training strain,
+## inbox events...) so the ledger explains every point once the swing is
+## noticeable. Accumulates small daily nudges into a single honest entry.
+func _tick_residual(date: String) -> bool:
+	var changed := false
+	var seen: Dictionary = state["mood_seen"]
+	var resid: Dictionary = state["mood_resid"]
+	for inst in GameState.player_club().get("squad", []):
+		var uid := str(inst["uid"])
+		var now := int(inst.get("morale", 70))
+		if seen.has(uid):
+			var d := now - int(seen[uid])
+			if d != 0:
+				resid[uid] = int(resid.get(uid, 0)) + d
+				if absi(int(resid[uid])) >= 3:
+					_log_mood(uid, int(resid[uid]),
+						"Day-to-day life: training load, coach handling and small events", date)
+					resid[uid] = 0
+					changed = true
+		seen[uid] = now
+	return changed
+
+
+func _sync_seen() -> void:
+	var seen: Dictionary = state["mood_seen"]
+	for inst in GameState.player_club().get("squad", []):
+		seen[str(inst["uid"])] = int(inst.get("morale", 70))
+
+
+## Player match results move real morale — wins lift the squad, defeats sting,
+## volatile temperaments swing harder. Every change lands in the mood ledger.
+func _tick_result_morale(date: String) -> bool:
+	var changed := false
+	for f in GameState.fixtures_on(date):
+		if not f.get("played", false):
+			continue
+		var home := GameState.is_player_club(str(f["home"]))
+		if not home and not GameState.is_player_club(str(f["away"])):
+			continue
+		var us := int(f["score_home"]) if home else int(f["score_away"])
+		var them := int(f["score_away"]) if home else int(f["score_home"])
+		var opp_id := str(f["away"]) if home else str(f["home"])
+		var won := us > them
+		var why := "%s %d-%d vs %s" % ["Won" if won else "Lost", us, them,
+			GameState.club(opp_id).get("short", "?")]
+		for inst in GameState.player_club().get("squad", []):
+			var volatile: bool = int(Personality.attrs(str(inst["uid"]))["temperament"]) <= 7
+			apply_morale(inst, (3 if volatile else 2) * (1 if won else -1), why, date)
+		changed = true
+	return changed
+
+
+## Resolve promise deadlines and appearance targets against real data.
+func _tick_promises(date: String) -> bool:
+	var changed := false
+	SeasonStats.player_stats()
+	for p in state["promises"]:
+		if str(p["status"]) != "open":
+			continue
+		var uid := str(p["uid"])
+		var inst := find_instance(uid)
+		if inst.is_empty():
+			p["status"] = "void"
+			p["resolved_on"] = date
+			changed = true
+			continue
+		if str(p["kind"]) == "battles" \
+				and SeasonStats.stat_of(uid, "battles") - int(p["baseline"]) >= int(p["target"]):
+			_resolve_promise(p, true, date)
+			changed = true
+			continue
+		if str(p["deadline"]) < date:
+			_resolve_promise(p, false, date)
+			changed = true
+	return changed
+
+
+## Day-to-day morale drifts one point toward each mon's structural happiness,
+## so unaddressed concerns (playing time, contract, listing...) genuinely
+## drag the morale word down over time — and fixes genuinely lift it.
+func _tick_happiness_drift() -> bool:
+	var squad: Array = GameState.player_club().get("squad", [])
+	if squad.is_empty():
+		return false
+	var ctx: Dictionary = Personality.context(self)
+	var changed := false
+	for inst in squad:
+		var h: Dictionary = Personality.happiness(inst, self, ctx)
+		var gap := int(h["score"]) - int(inst.get("morale", 70))
+		if absi(gap) > 6:
+			inst["morale"] = clampi(int(inst["morale"]) + signi(gap), 0, 100)
+			changed = true
 	return changed

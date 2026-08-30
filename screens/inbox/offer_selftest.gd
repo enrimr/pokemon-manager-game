@@ -31,6 +31,10 @@ func _msg_for(offer_id: int) -> Dictionary:
 
 
 func _run() -> void:
+	# Accepting offers below really moves money/squad members and saves the
+	# game — park the player's real save and put it back afterwards.
+	var guard: GDScript = load("res://tools/save_guard.gd")
+	guard.backup()
 	var news: RefCounted = NewsGen.new()
 	news.enrich_existing()
 	news.generate()
@@ -55,10 +59,13 @@ func _run() -> void:
 	var oid := int(live["id"])
 	var msg := _msg_for(oid)
 	_check(not msg.is_empty(), "inbox message linked to offer %d exists" % oid)
-	_check(bool(msg.get("urgent", false)), "linked message is flagged urgent (decision required)")
+	var significant: bool = not bool(live.get("routine", false))
+	_check(bool(msg.get("urgent", false)) == significant,
+		"urgency matches offer significance (big bid urgent, routine bid not)")
 	msg["read"] = true
 	news.sync_market_offers()
-	_check(bool(msg.get("urgent", false)), "urgency survives reading (decision still pending)")
+	_check(bool(msg.get("urgent", false)) == significant,
+		"urgency survives reading (decision still pending)")
 
 	# ---- 2. COUNTER: demand more through the market API the inbox button uses
 	var ask: int = news.offer_bid(live) + 50000
@@ -78,18 +85,20 @@ func _run() -> void:
 	var squad: Array = pc["squad"].duplicate()
 	squad.sort_custom(func(a, b): return int(a["level"]) > int(b["level"]))
 	var target: Dictionary = squad[0]
+	# a BIG bid (well above valuation) — must arrive as urgent decision mail
+	var fee: int = maxi(77000, int(round(float(mkt.value_of(target)) * 1.4 / 1000.0)) * 1000)
 	var buyer_id := ""
 	for c in GameState.world["clubs"]:
-		if not GameState.is_player_club(c["id"]) and int(c["finances"]["balance"]) > 100000:
+		if not GameState.is_player_club(c["id"]) and int(c["finances"]["balance"]) > fee:
 			buyer_id = c["id"]
 			break
-	var fee := 77000
+	_check(buyer_id != "", "found a buyer club that can cover the big bid")
 	var oid2: int = news._register_market_offer(target, buyer_id, fee,
 		GameState.current_date, Season.date_add(GameState.current_date, 5))
 	_check(oid2 >= 0, "second offer registered in market ledger")
 	news.sync_market_offers()
 	var msg2 := _msg_for(oid2)
-	_check(not msg2.is_empty() and bool(msg2.get("urgent", false)), "second offer mail created + urgent")
+	_check(not msg2.is_empty() and bool(msg2.get("urgent", false)), "big-bid mail created + urgent")
 	var bal_before := int(pc["finances"]["balance"])
 	var size_before: int = pc["squad"].size()
 	var buyer: Dictionary = GameState.club(buyer_id)
@@ -109,6 +118,7 @@ func _run() -> void:
 	news.sync_market_offers()
 	_check(not bool(msg2.get("urgent", false)), "accepted offer's mail no longer urgent")
 
+	guard.restore()
 	if _fails == 0:
 		print("INBOX OFFER SELFTEST OK")
 		get_tree().quit(0)

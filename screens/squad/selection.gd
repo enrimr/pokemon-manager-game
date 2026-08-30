@@ -1,10 +1,11 @@
 extends RefCounted
 ## Squad piece: matchday selection layer + availability flags.
 ## Reads the saved tactic (published by the Tactics screen into
-## GameState.world.meta.tactics; falls back to the tactics piece's saved
-## user://tactics.json, then to the instant-sim auto-pick of the best six by
-## level and condition) and self-heals against squad churn the same way the
-## match engine does, so the Picked column always matches who would battle.
+## GameState.world.meta.tactics; falls back to the preset state saved inside
+## the same world.meta — the single source of truth — then to the instant-sim
+## auto-pick of the best six by level and condition) and self-heals against
+## squad churn the same way the match engine does, so the Picked column
+## always matches who would battle.
 
 const UI := preload("res://screens/squad/ui_helpers.gd")
 
@@ -64,18 +65,16 @@ static func _plan() -> Dictionary:
 	var t: Variant = meta.get("tactics")
 	if typeof(t) == TYPE_DICTIONARY and (t as Dictionary).has("lineup"):
 		return t
-	# Tactics screen not opened this session: read its saved presets directly.
-	if FileAccess.file_exists("user://tactics.json"):
-		var f := FileAccess.open("user://tactics.json", FileAccess.READ)
-		if f != null:
-			var parsed: Variant = JSON.parse_string(f.get_as_text())
-			if typeof(parsed) == TYPE_DICTIONARY:
-				var presets: Array = parsed.get("presets", []) if typeof(parsed.get("presets")) == TYPE_ARRAY else []
-				for p in presets:
-					if typeof(p) == TYPE_DICTIONARY and str(p.get("name", "")) == str(parsed.get("active", "")):
-						return p
-				if not presets.is_empty() and typeof(presets[0]) == TYPE_DICTIONARY:
-					return presets[0]
+	# Plan not published yet this session: read the preset state saved inside
+	# the same world.meta (single source of truth — rides save.json).
+	var st: Variant = meta.get("tactics_state")
+	if typeof(st) == TYPE_DICTIONARY:
+		var presets: Array = st.get("presets", []) if typeof(st.get("presets")) == TYPE_ARRAY else []
+		for p in presets:
+			if typeof(p) == TYPE_DICTIONARY and str(p.get("name", "")) == str(st.get("active", "")):
+				return p
+		if not presets.is_empty() and typeof(presets[0]) == TYPE_DICTIONARY:
+			return presets[0]
 	return {}
 
 

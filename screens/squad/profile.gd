@@ -16,6 +16,7 @@ const Service := preload("res://screens/squad/squad_service.gd")
 const History := preload("res://screens/squad/career_history.gd")
 const Ability := preload("res://screens/squad/ability.gd")
 const Selection := preload("res://screens/squad/selection.gd")
+const Personality := preload("res://screens/squad/personality.gd")
 
 const STAT_KEYS := ["hp", "atk", "def", "spa", "spd", "spe"]
 const STAT_NAMES := {"hp": "HP", "atk": "Attack", "def": "Defence",
@@ -122,6 +123,7 @@ func _build(squad: Array, idx: int) -> void:
 	mid.add_theme_constant_override("separation", 8)
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_child(mid)
+	mid.add_child(_mind_panel(inst))
 	mid.add_child(_moves_panel(inst, sp))
 	mid.add_child(_form_panel(inst))
 
@@ -169,7 +171,7 @@ func _tab_bar(inst: Dictionary) -> Control:
 func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 12)
+	hb.add_theme_constant_override("separation", 9)
 	panel.add_child(hb)
 
 	hb.add_child(UI.monogram(UI.display_name(inst), sp["types"], 72, 30))
@@ -190,6 +192,8 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 		var b := UI.type_badge(t, 12)
 		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		name_row.add_child(b)
+	var svc: Node = Service.ensure()
+	var happy: Dictionary = Personality.happiness(inst, svc, Personality.context(svc))
 	var sel: Dictionary = Selection.selection()
 	var pick: Dictionary = Selection.pick_info(str(inst["uid"]), sel)
 	var pick_tag := Label.new()
@@ -219,15 +223,25 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 		tag.add_theme_color_override("font_color", UI.COL_BAD)
 		tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		name_row.add_child(tag)
+	var sub_row := HBoxContainer.new()
+	sub_row.add_theme_constant_override("separation", 0)
+	id_box.add_child(sub_row)
+	var arch_tag := Label.new()
+	arch_tag.text = str((happy["arch"] as Dictionary)["name"])
+	arch_tag.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.3))
+	arch_tag.mouse_filter = Control.MOUSE_FILTER_STOP
+	arch_tag.tooltip_text = "%s\nCoach's read: %s." % [str((happy["arch"] as Dictionary)["desc"]),
+		Personality.attrs_line(happy["attrs"])]
+	sub_row.add_child(arch_tag)
 	var sub := Label.new()
 	var nick_note := ""
 	if inst.get("nickname"):
 		nick_note = "%s  ·  " % inst["species"]
-	sub.text = "%sLevel %d  ·  Age %s  ·  %s  ·  #%03d" % [
+	sub.text = "  ·  %sLevel %d  ·  Age %s  ·  %s  ·  #%03d" % [
 		nick_note, int(inst["level"]), UI.age_str(int(inst["age_months"])),
 		UI.age_stage(int(inst["age_months"])), int(sp["id"])]
 	sub.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
-	id_box.add_child(sub)
+	sub_row.add_child(sub)
 	var sub2 := Label.new()
 	var club: Dictionary = GameState.player_club()
 	sub2.text = "%s  ·  Contract to %s  ·  %s/wk" % [club["name"],
@@ -266,9 +280,28 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	hb.add_child(dev_stat)
 	hb.add_child(_big_stat("CONDITION", "%d%%" % int(inst["condition"]),
 		UI.pct_color(int(inst["condition"]))))
-	hb.add_child(_big_stat("MORALE", UI.morale_word(int(inst["morale"])),
-		UI.pct_color(int(inst["morale"]))))
+	var morale_stat := _big_stat("MORALE", UI.morale_word(int(inst["morale"])),
+		UI.pct_color(int(inst["morale"])))
+	morale_stat.tooltip_text = _mood_ledger_tip(str(inst["uid"]), int(inst["morale"]), happy)
+	hb.add_child(morale_stat)
+	var happy_stat := _big_stat("HAPPINESS", str(happy["word"]), happy["color"])
+	happy_stat.tooltip_text = Personality.factors_tip(happy)
+	hb.add_child(happy_stat)
 	return panel
+
+
+func _mood_ledger_tip(uid: String, morale: int, happy: Dictionary) -> String:
+	var lines: Array = ["Morale %s (%d) — day-to-day mood. Recent events:" % [UI.morale_word(morale), morale]]
+	var log: Array = Service.ensure().mood_log(uid)
+	if log.is_empty():
+		lines.append("  none recorded yet")
+	for e in log.slice(0, 7):
+		lines.append("  %s  %+d  %s" % [Season.pretty_date(str(e["d"])), int(e["delta"]), str(e["why"])])
+	var gap: int = int(happy["score"]) - morale
+	if absi(gap) > 6:
+		lines.append("Drifting %s toward underlying happiness (%s, %d/100)." %
+			["up" if gap > 0 else "down", str(happy["word"]), int(happy["score"])])
+	return "\n".join(PackedStringArray(lines))
 
 
 ## Dialog host: the squad screen root, so popups survive profile rebuilds.
@@ -358,7 +391,7 @@ func _big_stat(label: String, value: String, col: Color) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 0)
 	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	v.custom_minimum_size = Vector2(86, 0)
+	v.custom_minimum_size = Vector2(70, 0)
 	var l1 := Label.new()
 	l1.text = label
 	l1.add_theme_font_size_override("font_size", 10)
@@ -367,7 +400,7 @@ func _big_stat(label: String, value: String, col: Color) -> Control:
 	v.add_child(l1)
 	var l2 := Label.new()
 	l2.text = value
-	l2.add_theme_font_size_override("font_size", 22)
+	l2.add_theme_font_size_override("font_size", 19)
 	l2.add_theme_color_override("font_color", col)
 	l2.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(l2)
@@ -378,7 +411,7 @@ func _big_stars(label: String, tex: ImageTexture, sub: String) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 2)
 	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	v.custom_minimum_size = Vector2(104, 0)
+	v.custom_minimum_size = Vector2(90, 0)
 	var l1 := Label.new()
 	l1.text = label
 	l1.add_theme_font_size_override("font_size", 10)
@@ -807,6 +840,240 @@ func _kv_row(grid: GridContainer, key: String, value: String, col: Color = UI.CO
 	val.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	val.add_theme_color_override("font_color", col)
 	grid.add_child(val)
+
+
+## FM's qualitative layer: personality archetype + hidden-attribute read,
+## squad-status expectation, the explained happiness ledger (every factor a
+## row, actionable concerns get a resolve button), tracked promises and the
+## recent-morale-events log.
+func _mind_panel(inst: Dictionary) -> Control:
+	var pk := _panel("Personality & Happiness")
+	var panel: PanelContainer = pk[0]
+	var v: VBoxContainer = pk[1]
+	var svc: Node = Service.ensure()
+	var uid: String = inst["uid"]
+	var h: Dictionary = Personality.happiness(inst, svc, Personality.context(svc))
+	var arch: Dictionary = h["arch"]
+	var st: Dictionary = h["status"]
+
+	# --- archetype
+	var arch_l := Label.new()
+	arch_l.text = str(arch["name"])
+	arch_l.add_theme_font_size_override("font_size", 15)
+	arch_l.add_theme_color_override("font_color", Color.WHITE)
+	v.add_child(arch_l)
+	var desc := Label.new()
+	desc.text = str(arch["desc"])
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc.add_theme_font_size_override("font_size", 11)
+	desc.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	v.add_child(desc)
+	var attrs_l := Label.new()
+	attrs_l.text = Personality.attrs_line(h["attrs"])
+	attrs_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	attrs_l.add_theme_font_size_override("font_size", 11)
+	attrs_l.add_theme_color_override("font_color", UI.COL_TEXT)
+	attrs_l.mouse_filter = Control.MOUSE_FILTER_STOP
+	attrs_l.tooltip_text = "The coaches' read of the hidden character attributes. They scale contract demands, praise/criticism reactions, result swings and promise fallout."
+	v.add_child(attrs_l)
+
+	# --- squad status expectation
+	var st_row := HBoxContainer.new()
+	st_row.add_theme_constant_override("separation", 8)
+	v.add_child(st_row)
+	var st_k := Label.new()
+	st_k.text = "SQUAD STATUS"
+	st_k.add_theme_font_size_override("font_size", 10)
+	st_k.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	st_k.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	st_row.add_child(st_k)
+	var st_v := Label.new()
+	st_v.text = str(st["label"])
+	st_v.add_theme_font_size_override("font_size", 13)
+	st_v.add_theme_color_override("font_color", st["color"])
+	st_v.mouse_filter = Control.MOUSE_FILTER_STOP
+	st_v.tooltip_text = "Rated %d of %d in the squad." % [int(st["rank"]), int(st["n"])]
+	st_row.add_child(st_v)
+	var expect := Label.new()
+	expect.text = str(st["expect"])
+	expect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	expect.add_theme_font_size_override("font_size", 11)
+	expect.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	v.add_child(expect)
+
+	# --- happiness banner
+	var band := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	var hc: Color = h["color"]
+	sb.bg_color = Color(hc.r, hc.g, hc.b, 0.13)
+	sb.border_color = hc
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
+	sb.content_margin_top = 5
+	sb.content_margin_bottom = 5
+	band.add_theme_stylebox_override("panel", sb)
+	var brow := HBoxContainer.new()
+	brow.add_theme_constant_override("separation", 10)
+	band.add_child(brow)
+	var word := Label.new()
+	word.text = str(h["word"]).to_upper()
+	word.add_theme_font_size_override("font_size", 14)
+	word.add_theme_color_override("font_color", hc.lightened(0.15))
+	word.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	brow.add_child(word)
+	var hb2 := _bar(float(h["score"]) / 100.0, hc, 120)
+	brow.add_child(hb2)
+	var scr := Label.new()
+	scr.text = "%d/100" % int(h["score"])
+	scr.add_theme_font_size_override("font_size", 11)
+	scr.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	scr.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	brow.add_child(scr)
+	v.add_child(band)
+
+	# --- factor ledger with resolve actions
+	var facs: Array = (h["factors"] as Array).duplicate()
+	facs.sort_custom(func(x, y): return float(x["w"]) < float(y["w"]))
+	if facs.is_empty():
+		var none := Label.new()
+		none.text = "Nothing on their mind — no active happiness factors."
+		none.add_theme_font_size_override("font_size", 11)
+		none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+		v.add_child(none)
+	for fac in facs:
+		var w := float(fac["w"])
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 7)
+		v.add_child(row)
+		var dot := TextureRect.new()
+		dot.texture = UI.dot_icon(UI.COL_GOOD if w >= 0.0 else (UI.COL_BAD if w <= -8.0 else UI.COL_WARN), 9)
+		dot.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+		row.add_child(dot)
+		var fl := Label.new()
+		fl.text = str(fac["short"])
+		fl.add_theme_font_size_override("font_size", 12)
+		fl.add_theme_color_override("font_color", UI.COL_TEXT if w >= 0.0 else
+			(UI.COL_BAD if w <= -8.0 else UI.COL_WARN))
+		fl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		fl.mouse_filter = Control.MOUSE_FILTER_STOP
+		fl.tooltip_text = str(fac["detail"])
+		row.add_child(fl)
+		var act := str(fac["act"])
+		if act != "":
+			var ab := Button.new()
+			ab.add_theme_font_size_override("font_size", 11)
+			match act:
+				"contract":
+					ab.text = "Offer Deal"
+					ab.disabled = svc.talks_locked(uid)
+					ab.pressed.connect(func() -> void: Actions.open_contract_dialog(_host(), uid))
+				"unlist":
+					ab.text = "Unlist"
+					ab.pressed.connect(func() -> void:
+						var err: String = svc.unlist(uid)
+						if err != "":
+							Actions.notice(_host(), "Transfer list", err))
+				"promise_battles":
+					ab.text = "Promise"
+					ab.disabled = not svc.open_promise(uid).is_empty()
+					ab.tooltip_text = "Promise a run of battles — tracked with a deadline and real consequences"
+					ab.pressed.connect(func() -> void: Actions.open_promise_dialog(_host(), uid, "battles"))
+			row.add_child(ab)
+
+	# --- promises
+	v.add_child(HSeparator.new())
+	var p_head := HBoxContainer.new()
+	v.add_child(p_head)
+	var p_t := Label.new()
+	p_t.text = "PROMISES"
+	p_t.add_theme_font_size_override("font_size", 10)
+	p_t.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+	p_t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	p_t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	p_head.add_child(p_t)
+	var pm := MenuButton.new()
+	pm.text = "Make A Promise..."
+	pm.flat = false
+	pm.disabled = not svc.open_promise(uid).is_empty()
+	if pm.disabled:
+		pm.tooltip_text = "A promise is already outstanding — one at a time."
+	var pop := pm.get_popup()
+	for i in Actions.PROMISE_KINDS.size():
+		var kind: String = Actions.PROMISE_KINDS[i]
+		if kind == "unlist" and not svc.is_listed(inst):
+			continue
+		pop.add_item(Actions.PROMISE_MENU[kind], i)
+	pop.id_pressed.connect(func(id: int) -> void:
+		Actions.open_promise_dialog(_host(), uid, Actions.PROMISE_KINDS[id]))
+	p_head.add_child(pm)
+	var plist: Array = svc.promises_for(uid)
+	plist.reverse()
+	var pledges: Array = svc.inbox_pledges(uid).filter(func(pl): return str(pl.get("status", "")) == "open")
+	if plist.is_empty() and pledges.is_empty():
+		var pn := Label.new()
+		pn.text = "None made. A tracked promise (battles, a new deal, unlisting) is the strongest lever on an unhappy battler — and the costliest to break."
+		pn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		pn.add_theme_font_size_override("font_size", 11)
+		pn.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+		v.add_child(pn)
+	for p in plist.slice(0, 3):
+		var status := str(p["status"])
+		var col: Color = UI.COL_ACCENT.lightened(0.25) if status == "open" else \
+			(UI.COL_GOOD if status == "kept" else (UI.COL_BAD if status == "broken" else UI.COL_TEXT_DIM))
+		var pr := Label.new()
+		pr.text = "%s %s — %s" % [
+			{"open": "OPEN", "kept": "KEPT", "broken": "BROKEN", "void": "VOID"}.get(status, "?"),
+			str(p["text"]).trim_suffix("."),
+			("deadline %s" % Season.pretty_date(str(p["deadline"]))) if status == "open"
+			else ("resolved %s" % Season.pretty_date(str(p["resolved_on"])))]
+		pr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		pr.add_theme_font_size_override("font_size", 11)
+		pr.add_theme_color_override("font_color", col)
+		v.add_child(pr)
+	for pl in pledges:
+		var il := Label.new()
+		il.text = "OPEN (via coach, Inbox) — %d battles by %s" % [int(pl.get("target", 4)),
+			Season.pretty_date(str(pl.get("deadline", GameState.current_date)))]
+		il.add_theme_font_size_override("font_size", 11)
+		il.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.25))
+		v.add_child(il)
+
+	# --- recent morale events
+	var log: Array = svc.mood_log(uid)
+	if not log.is_empty():
+		v.add_child(HSeparator.new())
+		var m_t := Label.new()
+		m_t.text = "RECENT MORALE EVENTS"
+		m_t.add_theme_font_size_override("font_size", 10)
+		m_t.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+		v.add_child(m_t)
+		for e in log.slice(0, 5):
+			var er := HBoxContainer.new()
+			er.add_theme_constant_override("separation", 8)
+			v.add_child(er)
+			var ed := Label.new()
+			ed.text = Season.pretty_date(str(e["d"]))
+			ed.custom_minimum_size = Vector2(78, 0)
+			ed.add_theme_font_size_override("font_size", 11)
+			ed.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
+			er.add_child(ed)
+			var edelta := Label.new()
+			edelta.text = "%+d" % int(e["delta"])
+			edelta.custom_minimum_size = Vector2(26, 0)
+			edelta.add_theme_font_size_override("font_size", 11)
+			edelta.add_theme_color_override("font_color",
+				UI.COL_GOOD if int(e["delta"]) > 0 else UI.COL_BAD)
+			er.add_child(edelta)
+			var ew := Label.new()
+			ew.text = str(e["why"])
+			ew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			ew.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			ew.add_theme_font_size_override("font_size", 11)
+			ew.add_theme_color_override("font_color", UI.COL_TEXT)
+			er.add_child(ew)
+	return panel
 
 
 func _coach_report_panel(inst: Dictionary) -> Control:

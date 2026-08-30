@@ -1,10 +1,10 @@
 {
  "piece": "inbox",
  "fm_reference": "FM24 Inbox + Board/Finances",
- "status": "critic",
+ "status": "passed",
  "round": 1,
- "verdict": "fm wins",
- "biggest_gap": "The people/media layer is real and state-mutating, but its writing pool is too shallow to survive even one simmed month without verbatim repetition: rival mind-game quote banks hold 3 lines per tone and each press-piece kind has a single prose template, so the identical manager quote ('People keep asking me about PAL. What is there to say? We are the bigger club...') was published three times in six weeks by three different rival managers (mind:L013 13 Aug, mind:L027 27 Aug, CIN 17 Sep). FM24's inbox never shows a verbatim quote repeat inside a month. Fix: expand each tone/kind bank to 8-12 variants, track recently-used lines per career and exclude them from selection, and condition phrasing on the rival manager so two managers never share a word-for-word quote.",
+ "verdict": "ours wins",
+ "biggest_gap": "None blocking — Game A wins the scope. Residual defects to fix: (1) transfer-window news ('SUMMER WINDOW OPEN/SHUT', 'Deadline-day move: ...') falls through news_gen's category heuristic to cat=board with no matching uid prefix, so report_gen._board_review renders the WRONG body (current board confidence review) instead of the story — 3 of 91 messages in a 12-week sim; (2) monthly board reviews recompute confidence/finances at read time, so September and October reviews render byte-identical when read later (violates the snapshot discipline the media layer proudly enforces); (3) the same prospect can be scout-reported twice with byte-identical renders and scouted_pct stuck at 0%; (4) offer_selftest aborts on a save whose only offers are expired (brittle precondition, mechanism itself verified live).",
  "history": [
   {
    "round": 1,
@@ -31,7 +31,13 @@
    "phase": "feature",
    "winner": "fm",
    "gap": "Verbatim quote repetition within a single simmed month — 3-line mind-game quote banks and single-template press pieces produced the same rival quote three times in six weeks; secondary: promised-battles pledges are never tracked/enforced, and mind-game FACTS blocks show read-time form instead of publication-time form."
+  },
+  {
+   "round": 1,
+   "phase": "wave2",
+   "winner": "ours",
+   "gap": "All prior gaps verified fixed by blind 84-day sim (91 messages): zero verbatim quote/prose repetition (persona-conditioned 10-line banks, recency exclusion, verbatim guard), pledge made -> broken at deadline with real -12 morale + squad knock + follow-up mail, media facts snapshotted at publication (pub pos 8 vs live pos 2, rendered verbatim), board requests/offers/economy all mutate real state. Residual: window/deadline-day news mis-categorized as board and rendered with the wrong body via _board_review; board reviews recomputed at read time (two months render identical); duplicate identical scout re-reports of the same prospect."
   }
  ],
- "updated": "2026-08-30 04:49"
+ "updated": "2026-08-30 05:59"
 }

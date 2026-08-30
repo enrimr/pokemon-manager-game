@@ -119,7 +119,9 @@ func _run() -> void:
 	else:
 		print("  info: no new flows this run (day-0 career) — AI check skipped")
 
-	gs.save_game()
+	# NOTE: deliberately no save_game() here — self-tests must never clobber
+	# the player's real user://save.json (ledger state rides world.meta and
+	# will persist with the player's own next save).
 	if _fails == 0:
 		print("ECON SELFTEST OK")
 		quit(0)
