@@ -1045,7 +1045,7 @@ def make_instance(species, lvl_lo, lvl_hi, salary_scale=1.0):
         "fitness": rng.randint(75, 100),
         "morale": rng.randint(50, 95),
         "age_months": rng.randint(12, 120),
-        "contract": {"salary": salary, "expiry": f"{exp_y:04d}-{exp_m:02d}-30"},
+        "contract": {"salary": salary, "expiry": f"{exp_y:04d}-{exp_m:02d}-{28 if exp_m == 2 else 30:02d}"},
     }
 
 def make_staff(role):

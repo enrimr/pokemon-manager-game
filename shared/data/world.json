@@ -215,7 +215,7 @@
      "age_months": 45,
      "contract": {
       "salary": 2588,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "nature": "Quiet",
      "ability": "static"
@@ -279,7 +279,7 @@
      "age_months": 28,
      "contract": {
       "salary": 1765,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Lax",
      "ability": "effect_spore"
@@ -343,7 +343,7 @@
      "age_months": 115,
      "contract": {
       "salary": 2411,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Timid",
      "ability": "keen_eye"
@@ -1397,7 +1397,7 @@
      "age_months": 64,
      "contract": {
       "salary": 3559,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "nature": "Hardy",
      "ability": "keen_eye"
@@ -1493,7 +1493,7 @@
      "age_months": 35,
      "contract": {
       "salary": 3411,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Sassy",
      "ability": "keen_eye"
@@ -1760,7 +1760,7 @@
      "age_months": 15,
      "contract": {
       "salary": 2867,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Mild",
      "ability": "synchronize"
@@ -2217,7 +2217,7 @@
      "age_months": 88,
      "contract": {
       "salary": 2764,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Lax",
      "ability": "chlorophyll"
@@ -2682,7 +2682,7 @@
      "age_months": 52,
      "contract": {
       "salary": 2241,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "nature": "Jolly",
      "ability": "poison_point"
@@ -3203,7 +3203,7 @@
      "age_months": 92,
      "contract": {
       "salary": 3211,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "nature": "Calm",
      "ability": "levitate"
@@ -3637,7 +3637,7 @@
      "age_months": 37,
      "contract": {
       "salary": 2271,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Lax",
      "ability": "keen_eye"
@@ -3957,7 +3957,7 @@
      "age_months": 17,
      "contract": {
       "salary": 2077,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "nature": "Timid",
      "ability": "swift_swim"
@@ -4906,7 +4906,7 @@
      "age_months": 103,
      "contract": {
       "salary": 1992,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Relaxed",
      "ability": "chlorophyll"
@@ -5066,7 +5066,7 @@
      "age_months": 112,
      "contract": {
       "salary": 2463,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Careful",
      "ability": "sand_veil"
@@ -6292,7 +6292,7 @@
      "age_months": 75,
      "contract": {
       "salary": 2165,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "nature": "Brave",
      "ability": "poison_point"
@@ -6472,7 +6472,7 @@
      "age_months": 56,
      "contract": {
       "salary": 2335,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Relaxed",
@@ -6505,7 +6505,7 @@
      "age_months": 101,
      "contract": {
       "salary": 2514,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "native_region": "Johto",
      "nature": "Adamant",
@@ -6571,7 +6571,7 @@
      "age_months": 47,
      "contract": {
       "salary": 2338,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Hasty",
@@ -7049,7 +7049,7 @@
      "age_months": 31,
      "contract": {
       "salary": 3032,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "native_region": "Johto",
      "nature": "Lax",
@@ -7222,7 +7222,7 @@
      "age_months": 91,
      "contract": {
       "salary": 2667,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "native_region": "Johto",
      "nature": "Hasty",
@@ -7354,7 +7354,7 @@
      "age_months": 69,
      "contract": {
       "salary": 2705,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "native_region": "Johto",
      "nature": "Lax",
@@ -7486,7 +7486,7 @@
      "age_months": 27,
      "contract": {
       "salary": 2780,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Quirky",
@@ -7714,7 +7714,7 @@
      "age_months": 84,
      "contract": {
       "salary": 2280,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "native_region": "Johto",
      "nature": "Brave",
@@ -7846,7 +7846,7 @@
      "age_months": 88,
      "contract": {
       "salary": 3189,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "native_region": "Johto",
      "nature": "Impish",
@@ -8051,7 +8051,7 @@
      "age_months": 71,
      "contract": {
       "salary": 2391,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Mild",
@@ -8084,7 +8084,7 @@
      "age_months": 76,
      "contract": {
       "salary": 3059,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "native_region": "Johto",
      "nature": "Quiet",
@@ -8249,7 +8249,7 @@
      "age_months": 104,
      "contract": {
       "salary": 2345,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Brave",
@@ -8805,7 +8805,7 @@
      "age_months": 85,
      "contract": {
       "salary": 1884,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Naive",
@@ -10859,7 +10859,7 @@
      "age_months": 76,
      "contract": {
       "salary": 1988,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Bold",
@@ -11074,7 +11074,7 @@
      "age_months": 15,
      "contract": {
       "salary": 2478,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "native_region": "Johto",
      "nature": "Bold",
@@ -11206,7 +11206,7 @@
      "age_months": 103,
      "contract": {
       "salary": 3093,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "native_region": "Johto",
      "nature": "Mild",
@@ -11657,7 +11657,7 @@
      "age_months": 85,
      "contract": {
       "salary": 2775,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "native_region": "Johto",
      "nature": "Sassy",
@@ -11756,7 +11756,7 @@
      "age_months": 76,
      "contract": {
       "salary": 2081,
-      "expiry": "2028-02-30"
+      "expiry": "2028-02-28"
      },
      "native_region": "Johto",
      "nature": "Lonely",
@@ -12086,7 +12086,7 @@
      "age_months": 39,
      "contract": {
       "salary": 3135,
-      "expiry": "2030-02-30"
+      "expiry": "2030-02-28"
      },
      "native_region": "Johto",
      "nature": "Naive",
@@ -12835,7 +12835,7 @@
      "age_months": 73,
      "contract": {
       "salary": 2619,
-      "expiry": "2029-02-30"
+      "expiry": "2029-02-28"
      },
      "native_region": "Johto",
      "nature": "Naive",
@@ -13185,7 +13185,7 @@
    "age_months": 15,
    "contract": {
     "salary": 2244,
-    "expiry": "2030-02-30"
+    "expiry": "2030-02-28"
    },
    "nature": "Hardy",
    "ability": "thick_fat"
@@ -13569,7 +13569,7 @@
    "age_months": 36,
    "contract": {
     "salary": 2011,
-    "expiry": "2028-02-30"
+    "expiry": "2028-02-28"
    },
    "nature": "Sassy",
    "ability": "keen_eye"
@@ -14017,7 +14017,7 @@
    "age_months": 72,
    "contract": {
     "salary": 1239,
-    "expiry": "2029-02-30"
+    "expiry": "2029-02-28"
    },
    "nature": "Calm",
    "ability": "guts"
@@ -14849,7 +14849,7 @@
    "age_months": 68,
    "contract": {
     "salary": 1600,
-    "expiry": "2028-02-30"
+    "expiry": "2028-02-28"
    },
    "nature": "Impish",
    "ability": "intimidate"
@@ -14913,7 +14913,7 @@
    "age_months": 112,
    "contract": {
     "salary": 1618,
-    "expiry": "2029-02-30"
+    "expiry": "2029-02-28"
    },
    "nature": "Brave",
    "ability": "sturdy"
@@ -14945,7 +14945,7 @@
    "age_months": 120,
    "contract": {
     "salary": 1692,
-    "expiry": "2029-02-30"
+    "expiry": "2029-02-28"
    },
    "nature": "Mild",
    "ability": "chlorophyll"
@@ -15265,7 +15265,7 @@
    "age_months": 95,
    "contract": {
     "salary": 1917,
-    "expiry": "2029-02-30"
+    "expiry": "2029-02-28"
    },
    "nature": "Lonely",
    "ability": "sand_veil"
@@ -15393,7 +15393,7 @@
    "age_months": 24,
    "contract": {
     "salary": 1526,
-    "expiry": "2030-02-30"
+    "expiry": "2030-02-28"
    },
    "nature": "Jolly",
    "ability": "cute_charm"
@@ -15745,7 +15745,7 @@
    "age_months": 79,
    "contract": {
     "salary": 1334,
-    "expiry": "2029-02-30"
+    "expiry": "2029-02-28"
    },
    "native_region": "Johto",
    "nature": "Rash",
@@ -17271,7 +17271,7 @@
    "age_months": 15,
    "contract": {
     "salary": 480,
-    "expiry": "2030-02-30"
+    "expiry": "2030-02-28"
    },
    "potential": 12,
    "scouted_pct": 0,
@@ -17305,7 +17305,7 @@
    "age_months": 95,
    "contract": {
     "salary": 479,
-    "expiry": "2029-02-30"
+    "expiry": "2029-02-28"
    },
    "potential": 20,
    "scouted_pct": 0,
@@ -17577,7 +17577,7 @@
    "age_months": 88,
    "contract": {
     "salary": 297,
-    "expiry": "2029-02-30"
+    "expiry": "2029-02-28"
    },
    "potential": 17,
    "scouted_pct": 0,
@@ -18087,7 +18087,7 @@
    "age_months": 21,
    "contract": {
     "salary": 419,
-    "expiry": "2030-02-30"
+    "expiry": "2030-02-28"
    },
    "potential": 11,
    "scouted_pct": 0,
@@ -18192,7 +18192,7 @@
    "age_months": 109,
    "contract": {
     "salary": 459,
-    "expiry": "2030-02-30"
+    "expiry": "2030-02-28"
    },
    "potential": 20,
    "scouted_pct": 0,
@@ -18297,7 +18297,7 @@
    "age_months": 101,
    "contract": {
     "salary": 496,
-    "expiry": "2030-02-30"
+    "expiry": "2030-02-28"
    },
    "potential": 8,
    "scouted_pct": 0,

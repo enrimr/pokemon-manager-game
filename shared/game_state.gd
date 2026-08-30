@@ -13,6 +13,8 @@ signal inbox_updated
 signal player_match_due(fixture: Dictionary)
 signal inventory_changed
 signal season_rolled(season_no: int)   # a new season's fixtures are live
+signal settings_changed(key: String)   # a game setting was changed (see `settings`)
+signal game_over(info: Dictionary)     # the board sacked the manager (see trigger_game_over)
 
 const SAVE_PATH := "user://save.json"
 
@@ -24,6 +26,13 @@ var cup_round: int = 0              # highest cup round generated so far
 var inbox: Array = []               # [{date, title, body, read}]
 var career_seed: int = 0
 var auto_sim_player_matches := true # match piece can set false and intercept
+
+## Game settings (persisted in the save, survives new careers). Documented keys
+## (see docs/ARCHITECTURE.md "Settings" — the platform piece renders these):
+##   ai_coach_uses_bag: bool (true) — may the AI coach spend YOUR club's
+##       consumable items when a player match is delegated / instant-simmed?
+var settings: Dictionary = {}
+const SETTINGS_DEFAULTS := {"ai_coach_uses_bag": true}
 
 var _clubs_by_id: Dictionary = {}
 var _table_cache: Dictionary = {}   # league_id -> table rows
@@ -65,11 +74,13 @@ func new_career(seed_value: int = 20260801, club_id: String = "") -> void:
 	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
 	world = JSON.parse_string(f.get_as_text())
 	_index_clubs()
+	_sanitize_contract_dates()
 	if club_id != "" and _clubs_by_id.has(club_id):
 		world["meta"]["player_club_id"] = club_id
 	_ensure_item_state()
 	_ensure_budget_state()
 	_ensure_league_state()
+	_ensure_settings()
 	season_start = world["meta"]["season_start"]
 	current_date = season_start
 	fixtures = []
@@ -103,6 +114,7 @@ func save_game() -> bool:
 		"world": world,
 		"fixtures": fixtures,
 		"inbox": inbox,
+		"settings": settings,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
@@ -130,7 +142,11 @@ func load_game() -> bool:
 	world = data["world"]
 	fixtures = data["fixtures"]
 	inbox = data["inbox"]
+	if typeof(data.get("settings")) == TYPE_DICTIONARY:
+		settings = data["settings"]
+	_ensure_settings()
 	_index_clubs()
+	_sanitize_contract_dates()
 	_ensure_item_state()
 	_ensure_budget_state()
 	_ensure_league_state()
@@ -765,3 +781,111 @@ func _index_clubs() -> void:
 	_clubs_by_id.clear()
 	for c in world["clubs"]:
 		_clubs_by_id[c["id"]] = c
+
+
+# ------------------------------------------------------------------ settings
+# ADDITIVE (polish piece). `settings` is a flat JSON-safe dict persisted in the
+# save. Screens read via setting()/settings and write via set_setting().
+
+## World data generated before 2026-08-31 could carry impossible contract
+## expiry dates ("YYYY-02-30"), which crash Time.get_unix_time_from_datetime_dict
+## in every date-diff helper. Clamp the day to the month's real length so both
+## old saves and the shipped world.json heal on load.
+func _sanitize_contract_dates() -> void:
+	var mdays := [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+	var pools: Array = []
+	for c in world["clubs"]:
+		pools.append(c["squad"])
+	pools.append(world["free_agents"])
+	pools.append(world["prospects"])
+	for pool in pools:
+		for inst in pool:
+			if typeof(inst.get("contract")) != TYPE_DICTIONARY:
+				continue
+			var parts: PackedStringArray = str(inst["contract"].get("expiry", "")).split("-")
+			if parts.size() != 3:
+				continue
+			var mo := int(parts[1])
+			var dmax: int = mdays[clampi(mo, 1, 12) - 1]
+			if mo == 2 and int(parts[0]) % 4 == 0:
+				dmax = 29
+			if int(parts[2]) > dmax:
+				inst["contract"]["expiry"] = "%s-%s-%02d" % [parts[0], parts[1], dmax]
+
+
+func _ensure_settings() -> void:
+	for k in SETTINGS_DEFAULTS:
+		if not settings.has(k):
+			settings[k] = SETTINGS_DEFAULTS[k]
+
+
+func setting(key: String, default: Variant = null) -> Variant:
+	_ensure_settings()
+	return settings.get(key, default if default != null else SETTINGS_DEFAULTS.get(key))
+
+
+func set_setting(key: String, value: Variant) -> void:
+	_ensure_settings()
+	settings[key] = value
+	settings_changed.emit(key)
+
+
+# ------------------------------------------------------------------ manager career & game over
+# ADDITIVE (polish piece). The manager's own career record — one stint entry
+# per completed season, written by the season_flow service at each ceremony —
+# and the sacking pathway: the board fires the manager, the shell shows a
+# career-summary game-over screen, then offers from lesser clubs continue the
+# career (accept_job_offer) or the player starts fresh.
+
+## Manager career history (oldest first). Entry (written by season_flow):
+## {season, club_id, club, league, pos, points, wins, losses, cup, honours:[..]}
+func manager_history() -> Array:
+	if typeof(world["meta"].get("manager_history")) != TYPE_ARRAY:
+		world["meta"]["manager_history"] = []
+	return world["meta"]["manager_history"]
+
+
+func record_manager_stint(entry: Dictionary) -> void:
+	manager_history().append(entry)
+
+
+func is_game_over() -> bool:
+	return typeof(world.get("meta", {}).get("game_over")) == TYPE_DICTIONARY \
+		and not (world["meta"]["game_over"] as Dictionary).is_empty()
+
+
+## {reason, season, club_id, club, summary:{seasons, record, honours:[..]},
+##  offers:[{club_id, name, league, reputation}]} — set by the season_flow
+## service the moment the board pulls the trigger.
+func game_over_info() -> Dictionary:
+	return world["meta"].get("game_over", {}) if is_game_over() else {}
+
+
+## The board fires the manager. Persists the moment in world.meta.game_over
+## (so a reload lands back on the game-over screen) and signals the shell.
+func trigger_game_over(info: Dictionary) -> void:
+	world["meta"]["game_over"] = info
+	game_over.emit(info)
+
+
+## Continue the career at one of the offered clubs. "" = ok, else error.
+func accept_job_offer(club_id: String) -> String:
+	if not is_game_over():
+		return "There is no offer on the table."
+	var offers: Array = game_over_info().get("offers", [])
+	if not offers.any(func(o): return str(o.get("club_id", "")) == club_id):
+		return "That club has not made an offer."
+	var old_club: String = str(world["meta"].get("player_club_id", ""))
+	world["meta"]["game_over"] = {}
+	world["meta"]["player_club_id"] = club_id
+	_ensure_league_state()   # league_name follows the player's league
+	_table_dirty = true
+	add_inbox_message(current_date, "A new chapter: welcome to %s" % player_club().get("name", club_id),
+		("The board of %s has taken a chance on you after your dismissal at %s. "
+		+ "Expectations are humbler here — rebuild your reputation, one matchday at a time.") % [
+		player_club().get("name", club_id), str(club(old_club).get("name", old_club))])
+	career_started.emit()
+	date_changed.emit(current_date)
+	table_updated.emit()
+	save_game()
+	return ""
