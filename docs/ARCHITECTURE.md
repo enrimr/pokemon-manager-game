@@ -278,6 +278,47 @@ from `_ready`) detects a v1/corrupt save, starts a fresh career instead of
 crashing, posts a clear inbox note ("Save file from an earlier era") and
 immediately writes a v2 save.
 
+### Season end, Championship Series & rollover (leagues piece)
+
+The season no longer dead-ends after matchday 30 — the drop-in service
+`shared/sim/services/season_flow.gd` (`SeasonFlowService.instance`) runs it:
+
+- **Championship Series** (`comp == "playoff"`, ids `P###`): once BOTH
+  championships complete, positions **1-4 of each league** enter a seeded
+  cross-league knockout (QF `K1vJ4, J2vK3, J1vK4, K2vJ3` — champions can only
+  meet in the Final; weekly rounds, normal best-of-3-battles fixtures). The
+  Final crowns the **Indigo Champion**. The table zone legend ("Championship
+  Series (1-4)") feeds exactly this. Helpers: `Season.playoff_fixtures/
+  playoff_round_name/make_playoff_round/league_complete/comp_label`,
+  `Season.PLAYOFF_NAME`, `Season.INDIGO_TITLE`.
+- **Danger Zone (14-16)** (renamed from "Relegation Zone" — no lower tier
+  exists, so the zone is real *differently*): at the ceremony every club that
+  finishes there loses 1 reputation, 25% of its transfer budget and 3% of its
+  bank (sponsor pullback). The player additionally gets a **board ultimatum**
+  (top-10 next season, judged at next season's ceremony: met = praise + funds,
+  missed = another reputation hit) and their star Pokémon demands an exit
+  (morale -25, `exit_request` flag on the instance for the transfers piece).
+- **Ceremony + history**: end-of-season awards mail (league champions rep +1,
+  Indigo Champion rep +1, Pokémon of the Season + Best Developer from real
+  recorded match ratings — deterministic, `SeasonFlowService.compute_awards`)
+  plus a player season-review mail; a permanent record is appended to
+  `world.meta.history` (`GameState.season_history()` / `add_history_entry`),
+  rendered by the Competition screen's **History** tab.
+- **Rollover**: 7 days after the Final, `GameState.start_new_season()` —
+  `season_no` +1 (`GameState.season_no()`, world.meta.season_no), calendar
+  jumps 364 days to the new preseason, fresh fixtures for both leagues + a new
+  cup draw, every instance ages +12 months; squads/finances/development/items
+  carry over. New signal `season_rolled(season_no)`. Fixture ids from season 2
+  on are prefixed `S<n>` (`GameState.season_id_prefix()`) so id-keyed state
+  (e.g. the economy's settled-fixture guard) never collides across seasons.
+  Continue flows through all of it via plain `advance_day()` — the shell stops
+  on the urgent season-end mails and plays player playoff ties normally.
+
+Competition screen: new **Championship Series** tab (qualification race +
+format before the playoff, live bracket + champion after) and **History** tab
+(roll of honour + per-season cards). Header shows CS dates / next-season start
+instead of "Season over".
+
 ## Simulation services (drop-in convention for later builders)
 
 Any script at **`res://shared/sim/services/*.gd`** is auto-loaded by GameState

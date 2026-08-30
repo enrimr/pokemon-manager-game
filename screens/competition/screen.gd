@@ -8,16 +8,21 @@ const TB := preload("res://shared/theme/theme_builder.gd")
 const TableTab := preload("res://screens/competition/table_tab.gd")
 const FixturesTab := preload("res://screens/competition/fixtures_tab.gd")
 const CupTab := preload("res://screens/competition/cup_tab.gd")
+const PlayoffTab := preload("res://screens/competition/playoff_tab.gd")
 const StatsTab := preload("res://screens/competition/stats_tab.gd")
 const OverviewTab := preload("res://screens/competition/overview_tab.gd")
+const HistoryTab := preload("res://screens/competition/history_tab.gd")
 const Profiles := preload("res://screens/competition/profiles.gd")
+const SeasonFlow := preload("res://shared/sim/services/season_flow.gd")
 
 const TABS := [
 	["table", "League Table"],
 	["fixtures", "Fixtures & Results"],
 	["cup", "Cup"],
+	["playoff", "Championship Series"],
 	["stats", "Season Stats"],
 	["overview", "Overview"],
+	["history", "History"],
 ]
 
 var _tab_buttons: Dictionary = {}
@@ -73,8 +78,10 @@ func _ready() -> void:
 	_views["table"] = TableTab.new()
 	_views["fixtures"] = FixturesTab.new()
 	_views["cup"] = CupTab.new()
+	_views["playoff"] = PlayoffTab.new()
 	_views["stats"] = StatsTab.new()
 	_views["overview"] = OverviewTab.new()
+	_views["history"] = HistoryTab.new()
 	for key in _views:
 		var v: Control = _views[key]
 		v.visible = false
@@ -407,14 +414,14 @@ func _refresh_header() -> void:
 	if _comp_ctx == "cup":
 		_refresh_header_cup()
 		return
-	var season_y: String = GameState.season_start.split("-")[0]
+	var season_t := "Season %d" % GameState.season_no()
 	_hdr_title.text = GameState.league_name(_comp_ctx).to_upper()
 	var other := ""
 	for lg in GameState.leagues():
 		if str(lg["id"]) != _comp_ctx:
 			other = str(lg["name"])
-	_hdr_sub.text = "with the %s and the %s · Season %s" % [other, GameState.cup_name(), season_y] \
-		if other != "" else "with the %s · Season %s" % [GameState.cup_name(), season_y]
+	_hdr_sub.text = "with the %s and the %s · %s" % [other, GameState.cup_name(), season_t] \
+		if other != "" else "with the %s · %s" % [GameState.cup_name(), season_t]
 
 	var lg_fixtures: Array = Season.league_fixtures(GameState.fixtures, _comp_ctx)
 	var completed := 0
@@ -447,7 +454,7 @@ func _refresh_header() -> void:
 
 	var upcoming: Array = lg_fixtures.filter(func(f): return not f["played"] and f["date"] > GameState.current_date)
 	if upcoming.is_empty():
-		_hdr_next.text = "Season over"
+		_hdr_next.text = _season_end_text()
 	else:
 		upcoming.sort_custom(func(a, b): return a["date"] < b["date"])
 		var days := Season.days_between(GameState.current_date, upcoming[0]["date"])
@@ -461,11 +468,28 @@ func _refresh_header() -> void:
 		_hdr_leader.text = "%s · %d pts" % [leader.get("short", "?"), int(table[0]["points"])]
 
 
+## What comes after matchday 30 — the season never dead-ends: Championship
+## Series rounds, then the ceremony, then the next season's start date.
+func _season_end_text() -> String:
+	var po: Array = Season.playoff_fixtures(GameState.fixtures)
+	if po.is_empty():
+		return "CS draw pending" if Season.league_complete(GameState.fixtures) else "Season over"
+	var pending: Array = po.filter(func(f): return not f["played"])
+	if not pending.is_empty():
+		pending.sort_custom(func(a, b): return str(a["date"]) < str(b["date"]))
+		return "CS %s %s" % [Season.playoff_round_name(int(pending[0]["round"])),
+			UI.short_date(str(pending[0]["date"]))]
+	var flow: Variant = SeasonFlow.instance
+	if flow != null and str(flow.rollover_date) != "":
+		return "Season %d: %s" % [GameState.season_no() + 1, UI.short_date(str(flow.rollover_date))]
+	return "Off-season"
+
+
 func _refresh_header_cup() -> void:
 	_hdr_title.text = GameState.cup_name().to_upper()
 	var names: Array = GameState.leagues().map(func(l): return str(l["name"]))
-	_hdr_sub.text = "cross-league knockout · clubs from the %s · Season %s" % [
-		" and ".join(names), GameState.season_start.split("-")[0]]
+	_hdr_sub.text = "cross-league knockout · clubs from the %s · Season %d" % [
+		" and ".join(names), GameState.season_no()]
 	var cup: Array = Season.cup_fixtures(GameState.fixtures)
 	var max_round := 0
 	var total_rounds := 5
@@ -520,7 +544,7 @@ func _build_tab_bar() -> Control:
 		var b := Button.new()
 		b.text = entry[1]
 		b.toggle_mode = true
-		b.custom_minimum_size = Vector2(150, 32)
+		b.custom_minimum_size = Vector2(0, 32)
 		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 		b.pressed.connect(_select_tab.bind(entry[0]))
 		bar.add_child(b)

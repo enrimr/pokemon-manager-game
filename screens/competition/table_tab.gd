@@ -7,9 +7,9 @@ const UI := preload("res://screens/competition/ui.gd")
 const TB := preload("res://shared/theme/theme_builder.gd")
 const Charts := preload("res://screens/competition/charts.gd")
 
-const ZONE_TITLE_END := 1     # pos 1: champions
-const ZONE_PROMO_END := 4     # pos 2..4: championship series
-const ZONE_RELEG_FROM := 14   # pos 14..16: relegation zone
+const ZONE_TITLE_END := 1     # pos 1: league champions (CS top seed)
+const ZONE_PROMO_END := 4     # pos 1..4 qualify for the Championship Series
+const ZONE_RELEG_FROM := 14   # pos 14..16: Danger Zone (board consequences)
 
 const TITLES := ["Pos", "", "Club", "Pld", "Won", "Lost", "BF", "BA", "+/-", "Pts", "Form"]
 const WIDTHS := [44, 34, 0, 52, 52, 52, 56, 56, 56, 60, 128]
@@ -99,12 +99,18 @@ func _ready() -> void:
 	_graph.visible = false
 	add_child(_graph)
 
+	# Every zone here feeds a real mechanism: 1-4 enter the cross-league
+	# Championship Series playoff after matchday 30 (see the tab of that name);
+	# 14-16 trigger board consequences at the end-of-season ceremony.
 	var legend := HBoxContainer.new()
 	legend.add_theme_constant_override("separation", 18)
-	legend.add_child(_legend_entry(Color(0.83, 0.68, 0.21), "Champions"))
-	legend.add_child(_legend_entry(Color(0.34, 0.79, 0.47), "Championship Series (2-4)"))
-	legend.add_child(_legend_entry(Color(0.88, 0.38, 0.38), "Relegation Zone (14-16)"))
-	legend.add_child(_legend_entry(TB.COL_ACCENT, "Your club"))
+	legend.add_child(_legend_entry(Color(0.83, 0.68, 0.21), "League Champions (1st)",
+		"1st place wins the league title and tops the Championship Series seeding"))
+	legend.add_child(_legend_entry(Color(0.34, 0.79, 0.47), "Championship Series (1-4)",
+		"Positions 1-4 of BOTH leagues enter the cross-league Championship Series\nplayoff after matchday 30 — its Final crowns the Indigo Champion"))
+	legend.add_child(_legend_entry(Color(0.88, 0.38, 0.38), "Danger Zone (14-16)",
+		"Finish 14th-16th and the board reacts at season's end:\nreputation -1, transfer budget cut 25%, sponsors pull back —\nand your star Pokémon may demand a move"))
+	legend.add_child(_legend_entry(TB.COL_ACCENT, "Your club", ""))
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	legend.add_child(spacer)
@@ -369,9 +375,12 @@ func _draw_form(item: TreeItem, rect: Rect2, form: Array) -> void:
 		x += pip + gap
 
 
-func _legend_entry(col: Color, text: String) -> HBoxContainer:
+func _legend_entry(col: Color, text: String, tip: String = "") -> HBoxContainer:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 6)
+	if tip != "":
+		h.tooltip_text = tip
+		h.mouse_filter = Control.MOUSE_FILTER_STOP
 	var sq := Panel.new()
 	sq.custom_minimum_size = Vector2(11, 11)
 	sq.size_flags_vertical = Control.SIZE_SHRINK_CENTER

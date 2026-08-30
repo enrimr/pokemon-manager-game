@@ -922,3 +922,68 @@ static func league_fixtures(fixtures: Array, league_id: String) -> Array:
 
 static func cup_fixtures(fixtures: Array) -> Array:
 	return fixtures.filter(func(f): return f["comp"] == "cup")
+
+
+# ------------------------------------------------- Championship Series (playoff)
+# Additive (competition piece). After both championships complete their 30
+# matchdays, the top four of EACH league enter a seeded cross-league knockout
+# — the Championship Series — whose final crowns the INDIGO CHAMPION.
+# Ties are single fixtures decided like every other match (best-of-3 battles).
+# Fixture schema is the standard one with comp == "playoff".
+
+const PLAYOFF_ROUND_STEP := 7        # QF -> SF -> Final, weekly
+const PLAYOFF_NAME := "Championship Series"
+const INDIGO_TITLE := "Indigo Champion"
+
+
+static func playoff_fixtures(fixtures: Array) -> Array:
+	return fixtures.filter(func(f): return f["comp"] == "playoff")
+
+
+static func playoff_round_name(round_no: int) -> String:
+	match round_no:
+		1: return "Quarter-Final"
+		2: return "Semi-Final"
+		3: return "Final"
+	return "Round %d" % round_no
+
+
+## One playoff round from explicit [home, away] pairs (seeding is the caller's
+## contract — no RNG, fully deterministic). id_prefix keeps ids unique across
+## seasons ("P" season 1, "S2P" season 2, ...).
+static func make_playoff_round(pairs: Array, round_no: int, date: String,
+		id_prefix: String = "P") -> Array:
+	var out: Array = []
+	for i in pairs.size():
+		out.append({
+			"id": "%s%d%02d" % [id_prefix, round_no, i + 1], "comp": "playoff",
+			"round": round_no, "date": date, "league": "",
+			"home": str(pairs[i][0]), "away": str(pairs[i][1]), "played": false,
+			"score_home": 0, "score_away": 0,
+		})
+	return out
+
+
+## True once every league fixture in the list has been played (season regular
+## phase complete). league_id "" = all leagues.
+static func league_complete(fixtures: Array, league_id: String = "") -> bool:
+	var seen := false
+	for f in fixtures:
+		if f["comp"] != "league":
+			continue
+		if league_id != "" and str(f.get("league", "")) != league_id:
+			continue
+		seen = true
+		if not f["played"]:
+			return false
+	return seen
+
+
+## Display label for any fixture's competition (league / cup / playoff).
+static func comp_label(f: Dictionary) -> String:
+	match str(f.get("comp", "")):
+		"cup":
+			return "%s · %s" % [GameState.cup_name(), cup_round_name(int(f.get("round", 1)))]
+		"playoff":
+			return "%s · %s" % [PLAYOFF_NAME, playoff_round_name(int(f.get("round", 1)))]
+	return "%s · Matchday %d" % [GameState.league_name(str(f.get("league", ""))), int(f.get("round", 1))]

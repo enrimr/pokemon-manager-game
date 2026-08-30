@@ -195,6 +195,8 @@ func _group_header(g: Dictionary) -> Control:
 	var title := ""
 	if g["comp"] == "league":
 		title = "%s · MATCHDAY %d" % [GameState.league_name(_lg()).to_upper(), g["round"]]
+	elif g["comp"] == "playoff":
+		title = "%s · %s" % [Season.PLAYOFF_NAME.to_upper(), Season.playoff_round_name(g["round"]).to_upper()]
 	else:
 		title = "%s · %s" % [GameState.cup_name().to_upper(), Season.cup_round_name(g["round"]).to_upper()]
 	var l := UI.label(title, 12, TB.COL_TEXT)
@@ -234,7 +236,7 @@ func _fixture_row(f: Dictionary) -> Button:
 	home_l.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	home_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(home_l)
-	if f["comp"] == "cup":   # cross-league tie: badge each club's championship
+	if f["comp"] in ["cup", "playoff"]:   # cross-league tie: badge each club's championship
 		var hc := UI.league_chip(GameState.league_of(str(f["home"])))
 		hc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(hc)
@@ -253,7 +255,7 @@ func _fixture_row(f: Dictionary) -> Button:
 	var am := UI.monogram(away, 20, 9)
 	am.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(am)
-	if f["comp"] == "cup":
+	if f["comp"] in ["cup", "playoff"]:
 		var ac := UI.league_chip(GameState.league_of(str(f["away"])))
 		ac.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(ac)
@@ -362,9 +364,7 @@ func _render_detail() -> void:
 	var home: Dictionary = GameState.club(f["home"])
 	var away: Dictionary = GameState.club(f["away"])
 
-	var comp_name: String = "%s · Matchday %d" % [
-		GameState.league_name(str(f.get("league", ""))), int(f["round"])] if f["comp"] == "league" \
-		else "%s · %s" % [GameState.cup_name(), Season.cup_round_name(int(f["round"]))]
+	var comp_name: String = Season.comp_label(f)
 	_detail_body.add_child(UI.dim("%s · %s %s" % [comp_name, UI.weekday(f["date"]), Season.pretty_date(f["date"])], 12))
 	_detail_body.add_child(UI.vspace(2))
 

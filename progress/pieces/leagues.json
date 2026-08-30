@@ -1,10 +1,10 @@
 {
  "piece": "leagues",
  "fm_reference": "FM24 new-game club selection (league tabs, club rows w/ rep, balance, squad strength) + FM multi-nation league structure with cross-league cup and regional scouting networks",
- "status": "fixing",
- "round": 1,
- "verdict": "fm wins",
- "biggest_gap": "Final league position has zero consequences and the competition structure dead-ends: the table's own zone legend advertises a 'Championship Series (2-4)' and a 'Relegation Zone (14-16)' that are never simulated (grep: the only hit is the legend label in table_tab.gd), and after matchday 30 the header just says 'Season over' — no playoff, no relegation, no rollover into a new season, no champions history. In FM24 every coloured table zone feeds a real mechanism (playoffs, relegation, continental qualification) and the season rolls over with awards and records.",
+ "status": "passed",
+ "round": 2,
+ "verdict": "ours wins",
+ "biggest_gap": "Round-1 gap verified CLOSED by independent live drivers (not just sim_check): a fresh career simulated 238 real days through matchday 30 -> Championship Series QF/SF/Final with the actual top-4 of each league -> ceremony (danger-zone clubs lost rep+money, awards deterministic and backed by 66+ recorded battles) -> rollover to season 2 (240 fixtures per league, fresh 16-tie cup, S2-prefixed ids, ages +12mo, fixtures actually play, Continue never dead-ends — an accidental 500-day run rolled through TWO full seasons unattended); a second 469-day driver forced a player danger-zone finish and confirmed board ultimatum + star exit_request + morale hit, ultimatum surviving save/load, and season-2 judgment (missed -> rep hit + re-issued for season 3). Remaining secondary shortfalls vs FM24, outside this round's goalposts: the board never actually sacks you (ultimatums re-issue forever), award depth is thin (2 awards; same Vileplume won both here), and there is no promotion/relegation tier below (by world design).",
  "history": [
   "gen-2 dataset done: 251 species, 208 moves, 18-type chart, natures.json, abilities.json, instances carry nature+ability; smoke OK",
   "leagues built: Kanto+Johto 16-club leagues (Johto gen-2 squads via gen_data.py), cross-league 32-club Indigo Cup (5 rounds), FM-style new-career club picker (league tabs, rep/balance/strength rows), services drop-in convention in GameState (documented), save v2 + graceful v1 recovery, sim_check extended (both leagues, cup, dark/psychic chart, services, v1-save); SMOKE OK, screenshots verified",
@@ -15,7 +15,14 @@
    "phase": "expansion",
    "winner": "fm",
    "gap": "Final league position has zero consequences and the competition structure dead-ends: the table's own zone legend advertises a 'Championship Series (2-4)' and a 'Relegation Zone (14-16)' that are never simulated (grep: the only hit is the legend label in table_tab.gd), and after matchday 30 the header just says 'Season over' — no playoff, no relegation, no rollover into a new season, no champions history. In FM24 every coloured table zone feeds a real mechanism (playoffs, relegation, continental qualification) and the season rolls over with awards and records."
+  },
+  "round-1 fix (season consequences + rollover): season_flow service — after matchday 30 the top 4 of EACH league enter the seeded cross-league Championship Series (QF K1vJ4/J2vK3/J1vK4/K2vJ3, weekly best-of-3-battle ties, Final crowns the INDIGO CHAMPION); legend renamed/fed for real: 'Championship Series (1-4)' + 'Danger Zone (14-16)' (rep -1, budget -25%, sponsor pullback, board ultimatum judged next season, star demands exit w/ exit_request flag); end-of-season ceremony (champions rep+1, Pokemon of the Season + Best Developer from real ratings, awards + season-review mails) writes permanent world.meta.history; rollover 7 days after the Final via GameState.start_new_season (season_no++, calendar +364d, fresh fixtures both leagues + cup with S<n>-prefixed ids so economy fid-guards never collide, ages +12mo, squads/finances/development carry, season_rolled signal); Competition gains Championship Series + History tabs, header shows CS dates/next-season start instead of 'Season over', shell Continue label handles playoff ties; sim_check drives a full season boundary (playoff resolves from correct seeds, danger reps drop, awards deterministic, history survives save/load, season-2 fixtures fresh); SMOKE OK, LEAGUE CHECK OK, NAV CHECK OK, 3 screenshots read (bracket+champion, history card, renamed legend)",
+  {
+   "round": 2,
+   "phase": "expansion",
+   "winner": "ours",
+   "gap": "Round-1 gap closed and independently verified: critic wrote its own drivers (artifacts/leagues/critic_driver{,2}.gd) — full 238-day season via real advance_day() into a real Championship Series seeded from the actual top-4 of both leagues, danger-zone rep/money consequences on all 6 clubs, deterministic awards from recorded ratings, history + season counter surviving save/load, season-2 fixtures for both leagues + cup actually playing with S2 ids and +12mo ages; forced player danger finish produced ultimatum + star exit_request, and the ultimatum was judged (and escalated) at the season-2 ceremony; screenshots confirm bracket/champion, honours history, renamed zone legend, and a header/Continue that never dead-end. Secondary FM24 shortfalls (out of scope this round): no manager sacking, thin awards list, no lower tier."
   }
  ],
- "updated": "2026-08-30 16:06"
+ "updated": "2026-08-30 17:55"
 }

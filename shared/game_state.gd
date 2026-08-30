@@ -12,6 +12,7 @@ signal table_updated
 signal inbox_updated
 signal player_match_due(fixture: Dictionary)
 signal inventory_changed
+signal season_rolled(season_no: int)   # a new season's fixtures are live
 
 const SAVE_PATH := "user://save.json"
 
@@ -195,6 +196,23 @@ func league_name(league_id: String = "") -> String:
 
 func cup_name() -> String:
 	return str(world["meta"].get("cup_name", "Indigo Cup"))
+
+
+## 1-based season counter (increments on every rollover — see start_new_season).
+func season_no() -> int:
+	return int(world["meta"].get("season_no", 1))
+
+
+## Champions/awards record, one entry per COMPLETED season, oldest first.
+## Written by the season_flow service at each end-of-season ceremony.
+func season_history() -> Array:
+	if not world["meta"].has("history") or typeof(world["meta"]["history"]) != TYPE_ARRAY:
+		world["meta"]["history"] = []
+	return world["meta"]["history"]
+
+
+func add_history_entry(entry: Dictionary) -> void:
+	season_history().append(entry)
 
 
 func club(id: String) -> Dictionary:
@@ -582,11 +600,70 @@ func _maybe_generate_next_cup_round() -> void:
 	var winners: Array = current.map(func(f):
 		return f["home"] if f["score_home"] > f["score_away"] else f["away"])
 	cup_round += 1
-	fixtures += Season.make_cup_round(winners, cup_round,
-		Season.cup_round_date(season_start, cup_round), career_seed + cup_round)
+	fixtures += _season_tag_ids(Season.make_cup_round(winners, cup_round,
+		Season.cup_round_date(season_start, cup_round), career_seed + cup_round))
 	add_inbox_message(current_date, "%s draw: %s" % [cup_name(), Season.cup_round_name(cup_round)],
 		"The %s %s draw has been made — clubs from both leagues remain in the hat." %
 		[cup_name(), Season.cup_round_name(cup_round)])
+
+
+# ------------------------------------------------------------------ season rollover
+
+## Fixture-id prefix that keeps ids unique across seasons ("" in season 1, so
+## every existing id — and everything keyed on them, e.g. the economy's
+## settled-fixture guard — is untouched; "S2" etc. afterwards).
+func season_id_prefix() -> String:
+	return "" if season_no() <= 1 else "S%d" % season_no()
+
+
+func _season_tag_ids(fx: Array) -> Array:
+	var prefix := season_id_prefix()
+	if prefix != "":
+		for f in fx:
+			f["id"] = prefix + str(f["id"])
+	return fx
+
+
+## Roll the world into the NEXT season (called by the season_flow service once
+## the Championship Series final has been played and the ceremony is done):
+## season counter up, calendar jumps a year forward to the new preseason,
+## fresh fixtures for both leagues + a new cup draw, every Pokémon a year
+## older. Squads, finances, development and inbox history all carry over.
+func start_new_season() -> void:
+	world["meta"]["season_no"] = season_no() + 1
+	season_start = Season.date_add(season_start, 364)   # keeps weekday cadence
+	world["meta"]["season_start"] = season_start
+	current_date = season_start
+
+	fixtures = []
+	var prefixes := ["L", "J", "K", "M"]
+	var lgs := leagues()
+	for i in lgs.size():
+		var lid: String = str(lgs[i]["id"])
+		fixtures += Season.make_league_fixtures(league_club_ids(lid), season_start,
+			season_id_prefix() + prefixes[mini(i, prefixes.size() - 1)], lid)
+	cup_round = 1
+	fixtures += _season_tag_ids(Season.make_cup_round(all_club_ids(), 1,
+		Season.cup_round_date(season_start, 1), career_seed + season_no() * 104729))
+
+	# a year passes: everyone ages 12 months (contract expiry dates simply come
+	# a year closer — they are calendar dates and the calendar just jumped).
+	for c in world["clubs"]:
+		for m in c["squad"]:
+			m["age_months"] = int(m.get("age_months", 0)) + 12
+	for pool in ["free_agents", "prospects"]:
+		for m in world.get(pool, []):
+			m["age_months"] = int(m.get("age_months", 0)) + 12
+
+	_table_dirty = true
+	add_inbox_message(current_date, "Season %d is under way" % season_no(),
+		("Preseason at %s. Both championships have published their fixtures and the "
+		+ "%s first-round draw has been made. Your league opener is on %s.") % [
+		player_club()["name"], cup_name(),
+		Season.pretty_date(next_player_fixture().get("date", season_start))])
+	season_rolled.emit(season_no())
+	date_changed.emit(current_date)
+	table_updated.emit()
 
 
 # ------------------------------------------------------------------ services
@@ -672,6 +749,8 @@ func _ensure_league_state() -> void:
 			{"id": "kanto", "name": str(world["meta"].get("league_name", "Kanto League"))}]
 	if not world["meta"].has("cup_name"):
 		world["meta"]["cup_name"] = "Indigo Cup"
+	if not world["meta"].has("season_no"):
+		world["meta"]["season_no"] = 1
 	world["meta"]["league_name"] = league_name(player_league_id())
 
 

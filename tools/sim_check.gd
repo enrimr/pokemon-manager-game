@@ -356,6 +356,8 @@ func _run() -> void:
 	_check(GameState.player_table_position() > 0, "player club in table (pos %d)" % GameState.player_table_position())
 	_check(GameState.inbox.size() > 1, "inbox has match reports (%d messages)" % GameState.inbox.size())
 
+	_season_boundary_checks()
+
 	print("=== sim_check: gen-2 type chart sanity ===")
 	_check(DataStore.effectiveness("dark", ["psychic"]) == 2.0, "Dark hits Psychic super-effectively")
 	_check(DataStore.effectiveness("ghost", ["psychic"]) == 2.0, "Ghost hits Psychic super-effectively (gen-2 fix)")
@@ -456,6 +458,171 @@ func _run() -> void:
 	else:
 		print("SIM CHECK OK")
 		get_tree().quit(0)
+
+
+## SEASON BOUNDARY: fast-forward the current career through matchday 30 and
+## across the rollover — Championship Series resolves, danger-zone consequences
+## land, awards + history are recorded, and a fresh season begins. League/cup
+## remainders are completed synthetically (deterministic scores + valid detail
+## stubs, so no costly replays); the playoff itself is simulated for real.
+func _season_boundary_checks() -> void:
+	print("=== sim_check: season boundary — playoff, awards, history, rollover ===")
+	var season1_start: String = GameState.season_start
+	_synth_complete_season()
+	_check(Season.league_complete(GameState.fixtures), "both championships completed (synthetically)")
+	var cup_final: Array = GameState.fixtures.filter(func(f):
+		return f["comp"] == "cup" and int(f["round"]) == 5 and f["played"])
+	_check(cup_final.size() == 1, "cup ran to its Final (round 5 played)")
+
+	# final tables (the playoff seeding source) + pre-ceremony club standing
+	var kanto_top: Array = GameState.league_table("kanto").slice(0, 4).map(func(r): return str(r["club_id"]))
+	var johto_top: Array = GameState.league_table("johto").slice(0, 4).map(func(r): return str(r["club_id"]))
+	var rep_before := {}
+	var danger_ids: Array = []
+	for lid in ["kanto", "johto"]:
+		var t: Array = GameState.league_table(lid)
+		for i in range(13, t.size()):
+			danger_ids.append(str(t[i]["club_id"]))
+	for cid in danger_ids + kanto_top.slice(0, 1) + johto_top.slice(0, 1):
+		rep_before[cid] = int(GameState.club(cid)["reputation"])
+
+	# one day forward: the season_flow service must draw the quarter-finals
+	GameState.advance_day()
+	var po: Array = Season.playoff_fixtures(GameState.fixtures)
+	_check(po.size() == 4, "Championship Series QF drawn after matchday 30 (%d ties)" % po.size())
+	var qualified: Array = []
+	for f in po:
+		qualified += [str(f["home"]), str(f["away"])]
+		var leagues := [GameState.league_of(str(f["home"])), GameState.league_of(str(f["away"]))]
+		_check_quiet("kanto" in leagues and "johto" in leagues, "QF %s is cross-league" % f["id"])
+	qualified.sort()
+	var expected: Array = kanto_top + johto_top
+	expected.sort()
+	_check(qualified == expected, "QF field == top four of EACH league (zone legend feeds the mechanism)")
+	_check(GameState.inbox.any(func(m): return str(m["title"]).contains("top four of each league")),
+		"playoff qualification announced in the inbox")
+
+	# play the Series + ceremony + rollover via plain advance_day (Continue path)
+	var flow: Variant = null
+	for svc in GameState._services:
+		if _svc_id(svc) == "season_flow":
+			flow = svc
+	_check(flow != null, "season_flow service auto-loaded")
+	var guard := 0
+	while GameState.season_history().is_empty() and guard < 40:
+		GameState.advance_day()
+		guard += 1
+	_check(not GameState.season_history().is_empty(), "season completed within %d days (ceremony fired)" % guard)
+	var po_all: Array = Season.playoff_fixtures(GameState.fixtures)
+	_check(po_all.size() == 7 and po_all.all(func(f): return f["played"]),
+		"playoff ran QF->SF->Final (%d ties, all played)" % po_all.size())
+	var finals: Array = po_all.filter(func(f): return int(f["round"]) == 3)
+	var indigo := Season.fixture_winner(finals[0])
+	_check(indigo != "", "Indigo Champion crowned: %s" % GameState.club(indigo).get("name", "?"))
+
+	# history entry + awards
+	var e: Dictionary = GameState.season_history()[0]
+	_check(str(e["indigo"]["champion"]) == indigo, "history records the Indigo Champion")
+	_check(str(e["league_champions"]["kanto"]["club_id"]) == kanto_top[0]
+		and str(e["league_champions"]["johto"]["club_id"]) == johto_top[0],
+		"history records both league champions")
+	_check(str(e["cup"]["winner"]) != "", "history records the cup winners (%s)" % e["cup"]["name"])
+	_check((e["playoff_results"] as Array).size() == 7, "history keeps the full playoff bracket")
+	var pos_award: Dictionary = e["awards"].get("pokemon_of_season", {})
+	_check(not pos_award.is_empty() and float(pos_award["rating"]) > 0.0 and int(pos_award["battles"]) >= 1,
+		"Pokémon of the Season from real ratings: %s (%s) %.2f" % [
+		pos_award.get("name", "?"), pos_award.get("species", "?"), float(pos_award.get("rating", 0))])
+	var dev_award: Dictionary = e["awards"].get("best_developer", {})
+	_check(not dev_award.is_empty() and int(dev_award["age_months"]) <= 60,
+		"Best Developer is a young Pokémon (%s, %d months)" % [
+		dev_award.get("name", "?"), int(dev_award.get("age_months", 0))])
+	var aw1 := str(flow.compute_awards(GameState))
+	var aw2 := str(flow.compute_awards(GameState))
+	_check(aw1 == aw2, "awards computation is deterministic (identical on recompute)")
+	_check(GameState.inbox.any(func(m): return str(m["title"]).begins_with("End-of-Season Awards")),
+		"awards ceremony mail sent")
+	_check(GameState.inbox.any(func(m): return str(m["title"]).begins_with("Season 1 review")),
+		"season review mail sent")
+
+	# danger zone (14-16) consequences are real
+	var danger_hit := 0
+	for cid in danger_ids:
+		var before := int(rep_before[cid])
+		var after := int(GameState.club(cid)["reputation"])
+		if after == maxi(1, before - 1) and after <= before:
+			danger_hit += 1
+	_check(danger_hit == danger_ids.size(), "all %d danger-zone clubs lost reputation" % danger_ids.size())
+	_check(int(GameState.club(kanto_top[0])["reputation"]) >= int(rep_before[kanto_top[0]]),
+		"league champions gained standing")
+
+	# rollover into season 2
+	var age0 := int(GameState.player_club()["squad"][0].get("age_months", 0))
+	guard = 0
+	while GameState.season_no() < 2 and guard < 12:
+		GameState.advance_day()
+		guard += 1
+	_check(GameState.season_no() == 2, "season counter rolled to 2")
+	_check(GameState.season_start == Season.date_add(season1_start, 364)
+		and GameState.current_date == GameState.season_start,
+		"calendar rolled to the new preseason (%s)" % GameState.season_start)
+	var s2_league: Array = GameState.fixtures.filter(func(f): return f["comp"] == "league")
+	var s2_cup: Array = GameState.fixtures.filter(func(f): return f["comp"] == "cup")
+	_check(s2_league.size() == 2 * 240 and s2_league.all(func(f): return not f["played"]),
+		"fresh league fixtures for BOTH leagues (%d, none played)" % s2_league.size())
+	_check(s2_cup.size() == 16 and str(s2_cup[0]["id"]).begins_with("S2"),
+		"fresh cup draw with season-unique fixture ids (%s...)" % s2_cup[0]["id"])
+	_check(int(GameState.player_club()["squad"][0].get("age_months", 0)) == age0 + 12,
+		"ages ticked +12 months across the rollover")
+	_check(not GameState.next_player_fixture().is_empty(),
+		"Continue flows on: next player fixture %s" % GameState.next_player_fixture().get("date", "?"))
+	_check(str(flow.phase) == "regular", "season_flow back in the regular phase")
+
+	# history + season state survive save/load (JSON round-trip normalizes
+	# ints to floats, so fingerprint the pre-save history the same way)
+	var hist_json: String = JSON.stringify(JSON.parse_string(JSON.stringify(GameState.season_history())))
+	_check(GameState.save_game(), "save across the boundary succeeds")
+	GameState.new_career(99)   # wipe in-memory state
+	_check(GameState.load_game(), "load across the boundary succeeds")
+	_check(GameState.season_no() == 2, "loaded save is still season 2")
+	_check(JSON.stringify(GameState.season_history()) == hist_json,
+		"champions/awards history persists through save/load")
+	var flow2: Variant = null
+	for svc in GameState._services:
+		if _svc_id(svc) == "season_flow":
+			flow2 = svc
+	_check(flow2 != null and str(flow2.phase) == "regular",
+		"season_flow state restored from the save")
+	# rollover moves current_date AFTER earlier-alphabet services already ticked
+	# that day — advance once so every service has seen the season-2 calendar.
+	GameState.advance_day()
+
+
+## Complete every remaining league fixture + cup round with deterministic
+## synthetic results and valid score-consistent detail stubs (no replays),
+## then move the calendar to the final league matchday.
+func _synth_complete_season() -> void:
+	var last_league_date := ""
+	var guard := 0
+	while guard < 8:
+		guard += 1
+		var pending: Array = GameState.fixtures.filter(func(f): return not f["played"])
+		for f in pending:
+			var h := absi(str(f["id"]).hash())
+			var home_wins := h % 2 == 0
+			var loser_score := (h / 3) % 2
+			f["played"] = true
+			f["score_home"] = 2 if home_wins else loser_score
+			f["score_away"] = loser_score if home_wins else 2
+			f["detail"] = {"score_home": int(f["score_home"]), "score_away": int(f["score_away"]),
+				"battles": [], "players": {}, "no_report": true}
+			if f["comp"] == "league" and str(f["date"]) > last_league_date:
+				last_league_date = str(f["date"])
+		GameState._table_dirty = true
+		GameState._maybe_generate_next_cup_round()
+		if not GameState.fixtures.any(func(f): return not f["played"]):
+			break
+	if last_league_date != "" and last_league_date > GameState.current_date:
+		GameState.current_date = last_league_date
 
 
 ## Service id, mirroring GameState._service_id (file basename fallback).

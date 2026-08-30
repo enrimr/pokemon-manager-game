@@ -82,14 +82,17 @@ func _next_matchday_card() -> PanelContainer:
 	var today: String = GameState.current_date
 	var upcoming: Array = GameState.fixtures.filter(func(f): return not f["played"] and f["date"] > today)
 	if upcoming.is_empty():
-		body.add_child(UI.dim("Season complete — no fixtures remain.", 13))
+		body.add_child(UI.dim("Season complete — awards done, the next season\nstarts after the off-season break (see your Inbox).", 13))
 		return card
 	upcoming.sort_custom(func(a, b): return a["date"] < b["date"])
 	var next_date: String = upcoming[0]["date"]
 	var day_fx := upcoming.filter(func(f): return f["date"] == next_date)
 	var days := Season.days_between(today, next_date)
-	var comp_lbl: String = "Matchday %d" % int(day_fx[0]["round"]) if day_fx[0]["comp"] == "league" \
-		else "Cup %s" % Season.cup_round_name(int(day_fx[0]["round"]))
+	var comp_lbl: String = "Matchday %d" % int(day_fx[0]["round"])
+	if day_fx[0]["comp"] == "cup":
+		comp_lbl = "Cup %s" % Season.cup_round_name(int(day_fx[0]["round"]))
+	elif day_fx[0]["comp"] == "playoff":
+		comp_lbl = "%s %s" % [Season.PLAYOFF_NAME, Season.playoff_round_name(int(day_fx[0]["round"]))]
 
 	body.add_child(UI.label("%s %s" % [UI.weekday(next_date), Season.pretty_date(next_date)], 15, Color.WHITE))
 	body.add_child(UI.kv_row("In", "%d day%s" % [days, "" if days == 1 else "s"],
@@ -283,7 +286,12 @@ func _recent_card() -> PanelContainer:
 			{"kind": "fixture", "id": str(f["id"])}, "Go to match report")
 		lab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		h.add_child(lab)
-		h.add_child(UI.dim("%s · %s" % ["LGE" if f["comp"] == "league" else "CUP", UI.short_date(f["date"])], 11))
+		var tag := "LGE"
+		if f["comp"] == "cup":
+			tag = "CUP"
+		elif f["comp"] == "playoff":
+			tag = "CS"
+		h.add_child(UI.dim("%s · %s" % [tag, UI.short_date(f["date"])], 11))
 		body.add_child(h)
 	return card
 

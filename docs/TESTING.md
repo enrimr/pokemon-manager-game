@@ -57,4 +57,23 @@ then deletes the test save. Prints `PICKER SHOTS OK`.
 
 Note: sim_check now also covers the two-league season (both championships,
 cross-league Indigo Cup, per-league tables), the gen-2 type chart, the
-`shared/sim/services/` auto-load convention and v1-save recovery.
+`shared/sim/services/` auto-load convention and v1-save recovery — plus the
+FULL SEASON BOUNDARY: it fast-forwards through matchday 30 (remaining league/
+cup fixtures completed synthetically with valid detail stubs), verifies the
+Championship Series resolves QF->SF->Final from the top four of each league,
+danger-zone (14-16) clubs lose reputation, awards come deterministically from
+real ratings, the ceremony writes `world.meta.history`, and the rollover
+produces fresh season-2 fixtures (season-prefixed ids), +12-month ages and a
+save/load-stable history.
+
+## 4. Season-boundary screenshot save (competition-owned, headless)
+
+```sh
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path /Users/enrique/development/projects/pokemon-manager-game res://screens/competition/season_shot_prep.tscn
+```
+
+Overwrites `user://save.json` (back it up first!) with a career sitting in the
+off-season week right after the Championship Series Final + awards ceremony —
+ideal for capturing the playoff bracket / History tab / season-end header via
+the screenshot harness with `COMP_DEV_TAB=playoff|history|table`. Prints
+`SEASON SHOT PREP OK`.

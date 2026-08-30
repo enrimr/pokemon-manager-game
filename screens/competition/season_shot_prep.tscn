@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c2lgssprep01"]
+
+[ext_resource type="Script" path="res://screens/competition/season_shot_prep.gd" id="1"]
+
+[node name="SeasonShotPrep" type="Node"]
+script = ExtResource("1")
