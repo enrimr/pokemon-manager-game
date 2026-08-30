@@ -17,6 +17,8 @@ var economy: RefCounted        # economy.gd instance (set by screen.gd)
 var people: RefCounted         # people_gen.gd instance (set by screen.gd)
 var evolutions: RefCounted     # evolution_gen.gd instance (set by screen.gd)
 var _resim_cache: Dictionary = {}
+var _academy_gen: RefCounted   # academy mail renderer (lazy, defensive)
+var _academy_tried := false
 
 
 func _init(news_gen: RefCounted) -> void:
@@ -29,6 +31,12 @@ func render(msg: Dictionary) -> Dictionary:
 	# evolution approval flow / staff hints / transformation reports
 	if evolutions != null and (uid.begins_with("evo:") or str(msg.get("kind", "")).begins_with("evo_")):
 		return evolutions.render(msg)
+	# academy piece's rich mail (intake-day reports, promotions, board asks):
+	# route to its renderer if the academy screen is installed.
+	if uid.begins_with("academy:") or msg.has("academy_kind"):
+		var ag := _academy()
+		if ag != null:
+			return ag.render(msg)
 	match str(msg.get("cat", "")):
 		"match":
 			if uid.begins_with("prematch:"):
@@ -60,6 +68,18 @@ func render(msg: Dictionary) -> Dictionary:
 func _plain(msg: Dictionary) -> Dictionary:
 	return {"bbcode": "[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", ""))],
 		"actions": [], "banner": {}}
+
+
+## Lazy, defensive handle on the academy piece's mail renderer — the inbox
+## keeps working unchanged if that screen is absent.
+func _academy() -> RefCounted:
+	if not _academy_tried:
+		_academy_tried = true
+		if ResourceLoader.exists("res://screens/academy/mail_gen.gd"):
+			var scr = load("res://screens/academy/mail_gen.gd")
+			if scr != null:
+				_academy_gen = scr.new()
+	return _academy_gen
 
 
 # ------------------------------------------------------------- match report
@@ -96,7 +116,11 @@ func _match_report(msg: Dictionary) -> Dictionary:
 			if not last_ko.is_empty():
 				line += " · %s sealed it, KO'ing %s with %s" % \
 					[last_ko.get("by", "?"), last_ko["victim"], last_ko.get("move", "a final blow")]
-			bb += line + "[/color]\n"
+			bb += line + "[/color]"
+			var wline := _weather_line(b)
+			if wline != "":
+				bb += "\n" + wline
+			bb += "\n"
 		bb += "\n[color=#%s][b]KEY MOMENTS[/b][/color]\n" % C_DIM
 		for line in _key_moments(sim, player_side):
 			bb += line + "\n"
@@ -186,7 +210,16 @@ func _digest_battle(events: Array, turns: int, winner: int) -> Dictionary:
 	var dealt := [{}, {}]         # per side: name -> damage dealt
 	var last_move := {}
 	var last_hit := {}            # victim name -> {by, move, eff, crit}
+	var weather := {}             # first weather spell: {kind, by, source}
+	var weather_chip := 0         # total HP lost to sand/hail across the battle
 	for e in events:
+		match str(e["t"]):
+			"weather_start":
+				if weather.is_empty():
+					weather = {"kind": str(e.get("kind", "")),
+						"by": str(e.get("pokemon", "")), "source": str(e.get("source", "move"))}
+			"weather_chip":
+				weather_chip += int(e.get("amount", 0))
 		match str(e["t"]):
 			"move_used":
 				last_move = e
@@ -202,7 +235,28 @@ func _digest_battle(events: Array, turns: int, winner: int) -> Dictionary:
 				kos.append({"victim": e["pokemon"], "side": int(e["side"]),
 					"by": h.get("by", ""), "move": h.get("move", ""),
 					"eff": h.get("eff", 1.0), "crit": h.get("crit", false)})
-	return {"winner": winner, "turns": turns, "kos": kos, "dealt": dealt}
+	return {"winner": winner, "turns": turns, "kos": kos, "dealt": dealt,
+		"weather": weather, "weather_chip": weather_chip}
+
+
+## Weather flavour for one battle digest ("" when the skies stayed clear).
+func _weather_line(b: Dictionary) -> String:
+	var w: Dictionary = b.get("weather", {})
+	if w.is_empty():
+		return ""
+	var kind := str(w.get("kind", ""))
+	var flavour: String = str({
+		"sun": "harsh sunlight baked the arena",
+		"rain": "driving rain swept the arena",
+		"sand": "a sandstorm raged over the field",
+		"hail": "hail hammered the field",
+	}.get(kind, "strange weather set in"))
+	var by := str(w.get("by", ""))
+	var src := " — %s's doing%s" % [by, " (ability)" if str(w.get("source", "")) == "ability" else ""] \
+		if by != "" else ""
+	var chip := int(b.get("weather_chip", 0))
+	var chip_txt := " %d HP was lost to the elements alone." % chip if chip > 0 else ""
+	return "[color=#%s]   ☂ %s%s.%s[/color]" % [C_ACC, flavour[0].to_upper() + flavour.substr(1), src, chip_txt]
 
 
 func _key_moments(sim: Dictionary, player_side: int) -> Array:
@@ -412,6 +466,13 @@ func _scout_report(msg: Dictionary) -> Dictionary:
 		return {"bbcode": "[color=#%s]This prospect is no longer available — the report has been archived.[/color]" % C_DIM,
 			"actions": [{"label": "Go to Transfers", "screen": "transfers"}], "banner": {}}
 	var sp: Dictionary = DataStore.species(int(p["species_id"]))
+	# The dossier obeys the SAME staged-knowledge ladder as the Transfer
+	# Centre (live market knowledge, same mask keys → identical bands):
+	# moves + nature at Part scouted 50%, ability at Detailed 75%,
+	# exact potential/wage/genetics only with a Full report (100%).
+	var mkt: RefCounted = news.market()
+	var puid := str(p.get("uid", ""))
+	var know: float = mkt.knowledge_of(puid) if mkt != null else float(p.get("scouted_pct", 0))
 	var types := ""
 	for t in sp.get("types", []):
 		types += "[bgcolor=#%s][color=#0d0f16] %s [/color][/bgcolor] " % [DataStore.type_color(t).to_html(false), str(t).to_upper()]
@@ -448,14 +509,42 @@ func _scout_report(msg: Dictionary) -> Dictionary:
 
 	var bb := "[color=#%s][b]%s[/b][/color]  [color=#%s]%s · Lv %d · %d yr %d mo[/color]\n%s\n\n" % \
 		[C_WHITE, news.display_name(p), C_DIM, p["species"], int(p["level"]), int(age_m / 12.0), age_m % 12, types]
-	bb += "[color=#%s][b]POTENTIAL[/b][/color]  [color=#%s][b]%s[/b][/color]  [color=#%s](%d/20)[/color]     [color=#%s][b]SCOUTED[/b][/color]  [color=#%s]%d%%[/color]\n\n" % \
-		[C_DIM, C_WARN, star_txt, C_DIM, pot, C_DIM, C_WHITE, int(p.get("scouted_pct", 0))]
-	bb += "[color=#%s][b]MOVESET[/b][/color]  [color=#%s]%s[/color]\n" % [C_DIM, C_WHITE, ", ".join(p.get("moves", []))]
+	var stage_name: String = str(mkt.stage_for(know)["name"]) if mkt != null else "Untracked"
+	if know >= 100.0:
+		bb += "[color=#%s][b]POTENTIAL[/b][/color]  [color=#%s][b]%s[/b][/color]  [color=#%s](%d/20)[/color]     [color=#%s][b]SCOUTED[/b][/color]  [color=#%s]%d%% · %s[/color]\n\n" % \
+			[C_DIM, C_WARN, star_txt, C_DIM, pot, C_DIM, C_WHITE, int(know), stage_name]
+	else:
+		var pot_band: String = mkt.masked_int(puid, "pot", pot) if mkt != null else "?"
+		bb += "[color=#%s][b]POTENTIAL[/b][/color]  [color=#%s][b]est %s/20[/b][/color] [color=#%s](full report pins it)[/color]     [color=#%s][b]SCOUTED[/b][/color]  [color=#%s]%d%% · %s[/color]\n\n" % \
+			[C_DIM, C_WARN, pot_band, C_DIM, C_DIM, C_WHITE, int(know), stage_name]
+	if know >= 50.0:
+		bb += "[color=#%s][b]MOVESET[/b][/color]  [color=#%s]%s[/color]\n" % [C_DIM, C_WHITE, ", ".join(p.get("moves", []))]
+	else:
+		bb += "[color=#%s][b]MOVESET[/b][/color]  [color=#%s]not yet logged — Part scouted (50%%) reveals it[/color]\n" % [C_DIM, C_DIM]
+	# temperament + battle ability: same staged reveal the Transfer Centre uses
+	var kn_nat: String = mkt.known_nature(p) if mkt != null else ""
+	var kn_ab: String = mkt.known_ability(p) if mkt != null else ""
+	if kn_nat != "":
+		bb += "[color=#%s][b]TEMPERAMENT[/b][/color]  [color=#%s]%s — folded into its battle stats[/color]\n" % \
+			[C_DIM, C_WHITE, mkt.nature_text(kn_nat)]
+	else:
+		bb += "[color=#%s][b]TEMPERAMENT[/b][/color]  [color=#%s]unread — Part scouted (50%%) reveals the nature[/color]\n" % [C_DIM, C_DIM]
+	if kn_ab != "":
+		bb += "[color=#%s][b]BATTLE ABILITY[/b][/color]  [color=#%s]%s[/color]\n" % \
+			[C_DIM, C_WHITE, DataStore.ability_name(kn_ab)]
+	else:
+		bb += "[color=#%s][b]BATTLE ABILITY[/b][/color]  [color=#%s]unconfirmed — a Detailed watch (75%%) pins it[/color]\n" % [C_DIM, C_DIM]
 	if best_stat != "":
-		bb += "[color=#%s][b]STANDOUT TRAIT[/b][/color]  [color=#%s]Exceptional %s (%d/15 genetics)[/color]\n" % \
-			[C_DIM, C_WHITE, iv_names.get(best_stat, best_stat), best_iv]
+		if know >= 100.0:
+			bb += "[color=#%s][b]STANDOUT TRAIT[/b][/color]  [color=#%s]Exceptional %s (%d/15 genetics)[/color]\n" % \
+				[C_DIM, C_WHITE, iv_names.get(best_stat, best_stat), best_iv]
+		else:
+			bb += "[color=#%s][b]STANDOUT TRAIT[/b][/color]  [color=#%s]Exceptional %s for its level (genetics confirmed at 100%%)[/color]\n" % \
+				[C_DIM, C_WHITE, iv_names.get(best_stat, best_stat)]
+	var wage_txt: String = news.money(int(p["contract"]["salary"])) if know >= 100.0 or mkt == null \
+		else mkt.masked_money(puid, "wage", int(p["contract"]["salary"])) + " (est.)"
 	bb += "[color=#%s][b]WAGE DEMAND[/b][/color]  [color=#%s]%s / month[/color]\n\n" % \
-		[C_DIM, C_WHITE, news.money(int(p["contract"]["salary"]))]
+		[C_DIM, C_WHITE, wage_txt]
 	bb += "[color=#%s]\"%s\"[/color]\n\n[color=#%s][b]%s[/b][/color]" % [C_WHITE, verdict, rec_col, rec]
 	return {"bbcode": bb,
 		"actions": [{"label": "Go to Transfers", "screen": "transfers"}], "banner": {}}

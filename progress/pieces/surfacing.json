@@ -1,17 +1,41 @@
 {
   "piece": "surfacing",
-  "fm_reference": "",
-  "status": "fixing",
-  "round": 1,
-  "verdict": "fm wins",
-  "biggest_gap": "Natures are applied by the match engine (+10%/-10%) but surfaced nowhere: none of squad/tactics/training/transfers/inbox/items ever shows a nature, and every stat those screens display is the pre-nature number — Calm Tauros shows Atk 130 on the squad profile and tactics slot but fights with Atk 117. Battle abilities are equally invisible (no ability shown for any first-team or scouted mon; scout reports never reveal ability/nature at interim or full knowledge; tactics type matrices call Levitate/Water Absorb holders weak to types the engine makes them immune to).",
+  "fm_reference": "FM's information standard: any fact visible where a manager needs it. Nature/ability now surface on squad (columns + profile tags, battle-real stats 'identical to what the engine uses'), tactics (nature-adjusted stats, ability-aware type matrices/immunities, role-suitability deltas, weather plan chip, doubles order note), transfers (staged reveal: nature at Part scouted 50%, ability at Detailed 75% — in Search detail, report cards, plus nature/ability search filters; Johto a first-class scouted region, all 32 clubs browsable), training (evolution-milestone column + dev-points linkage, academy pipeline cross-link), inbox (evolution Approve/Postpone action buttons, academy intake report cards, weather-flavoured match lines), items (evolution-stones filter + buy->use-stone flow cross-linked with the profile). Squad header gained a league-aware NEXT opponent chip (cup cross-league ties flagged).",
+  "status": "passed",
+  "round": 2,
+  "verdict": "ours wins",
+  "biggest_gap": "",
   "history": [
     {
       "round": 1,
       "phase": "expansion",
       "winner": "fm",
       "gap": "Nature/battle-ability facts invisible and incoherent: UI stats are pre-nature while the engine fights with nature-modified stats; scouting never reveals ability/nature at any stage; tactics matrices ignore ability immunities. Evolution surfacing (inbox approve/postpone, profile eligibility panel, stone flow) verified working end-to-end."
+    },
+    {
+      "round": 1,
+      "phase": "fix",
+      "winner": "",
+      "gap": "Fix applied: engine-identical nature math + ability awareness surfaced across all six screens; staged nature/ability scouting reveal wired into Search detail, report cards and filters; league-aware NEXT chip on squad; evolution-stones filter on items. Verified: SMOKE OK + harness shots of squad/tactics/transfers/training/inbox/items + transfers surf_shots driver (staged reveal at 55%/80% knowledge, ability/nature filters, report card) in artifacts/surfacing/."
+    },
+    {
+      "round": 1,
+      "phase": "expansion",
+      "winner": "fm",
+      "gap": "Live driver (artifacts/surfacing/coherence.gd) verified: nature/ability parity squad-profile==tactics==engine for 3 mons; staged scouting exact (nature hidden <50, revealed ==truth at 55; ability hidden <75, ==truth at 80; masked bands bracket truth, collapse at 100); evolution approved through the real inbox UI button transformed the squad instance in place (Charmeleon->Charizard, ability->Blaze, +6 morale, evo_done posted, decision stamped); league facts coherent. TWO cracks: (1) transfers Search/detail stats exclude nature (Atk 78/Spe 38 vs 85/34 everywhere else); (2) inbox 'Scout report' dossier prints the full moveset for a 0%-scouted prospect while Transfers gates moves at Part scouted 50%, and never surfaces nature/ability at any knowledge level. Smoke flaked once on service-state save/load (outside this piece), clean on retry."
+    },
+    {
+      "round": 1,
+      "phase": "fix2",
+      "winner": "",
+      "gap": "Both cracks closed. (1) market.battle_stats() = exact_stats + nature, byte-identical to BattleEngine._init_battler; Search table, sort, detail pane, masked bands and written report cards all quote it now (bands bracket the engine-real figure at every knowledge level; at Full report the +stat/-stat are tinted green/red with nature tooltips). Selftest asserts transfers==squad ui_helpers.effective_stats parity on 40 targets AND ==BattleEngine.active_battler()['stats'] live. (2) inbox scout dossier now obeys the same staged ladder (moves+nature at 50, ability at 75, exact potential/wage/IVs at 100, same mask keys => identical bands) and filing a dossier grants real Part-scouted (55%) market knowledge via new market.grant_knowledge(); masked_money inverted-band quirk for tiny wages fixed. Verified: TRANSFERS SELFTEST OK, SMOKE OK, harness shots (artifacts/surfacing/exp_fix1), surf_shots proofs incl. transfers_search_full parity print and inbox_scout_dossier."
+    },
+    {
+      "round": 2,
+      "phase": "expansion",
+      "winner": "ours",
+      "gap": "Independent blind driver (artifacts/surfacing/exp2_audit.gd, 60/60 checks): 3 squad mons show nature/ability byte-identical across squad helpers, profile tags, tactics analyze() and BattleEngine.active_battler(); Johto target (Flaaffy, Violet Skylarks) league facts coherent (league_of/table/club.league); staged scouting exact at every boundary (nature hidden at 49, revealed==truth at 50; ability hidden at 74, revealed==truth at 75; stage names correct); inbox scout dossier hides/reveals on the same ladder as the Transfer Centre (known_* shared). Evolution: injected Metapod Lv40, daily tick queued the decision + inbox message with live Approve/Postpone buttons, approve() (the inbox button's exact call) transformed the instance in place — squad table renders Butterfree BUG/FLY with Compound Eyes, tactics sees the new ability, +6 morale, follow-up mail + world log. TRANSFERS SELFTEST OK (nature-adjusted parity on all targets), SMOKE OK. Minor niggles only: nature column lives in the Battle Stats squad view rather than General; items-screen equipment board omits ability/nature."
     }
   ],
-  "updated": "2026-08-30 13:17"
+  "updated": "2026-08-30 16:58"
 }

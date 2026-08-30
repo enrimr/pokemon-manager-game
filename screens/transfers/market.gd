@@ -86,6 +86,10 @@ const REGIONS := {
 	"Old Capital": ["normal", "psychic", "ghost", "fighting"],
 	"Sevii Islands": [],
 	"Orange Archipelago": [],
+	# Johto is appended LAST: the ext-world generator iterates REGIONS in
+	# insertion order, so adding it at the end keeps every pre-Johto youth
+	# pool's rng draws (and uids) identical on existing saves.
+	"Johto": [],
 }
 const OVERSEAS_REGIONS := ["Sevii Islands", "Orange Archipelago"]
 
@@ -96,8 +100,8 @@ const STAGES := [
 	{"min": 0.0, "name": "Untracked", "unlocks": "name and level only"},
 	{"min": 1.0, "name": "Rumour", "unlocks": "wide value + attribute bands"},
 	{"min": 25.0, "name": "Initial assessment", "unlocks": "bands tighten, region intel"},
-	{"min": 50.0, "name": "Part scouted", "unlocks": "move set + interim report (star bands)"},
-	{"min": 75.0, "name": "Detailed", "unlocks": "tight bands, reliable wage read"},
+	{"min": 50.0, "name": "Part scouted", "unlocks": "move set, nature + interim report (star bands)"},
+	{"min": 75.0, "name": "Detailed", "unlocks": "battle ability confirmed, tight bands, reliable wage read"},
 	{"min": 100.0, "name": "Full report", "unlocks": "exact attributes, IVs, final stars"},
 ]
 const FOCUS_KNOW_CAP := 60.0        # a focus sweep can never produce a full book
@@ -369,7 +373,9 @@ func _ensure_ext_world() -> void:
 		ri += 1
 		var count: int = EXT_PROSPECTS_OVERSEAS if reg in OVERSEAS_REGIONS else EXT_PROSPECTS_DOMESTIC
 		var reg_pool: Array = usable
-		if not REGIONS[reg].is_empty():
+		if reg == "Johto":     # the Johto intake is gen-2 natives, like its clubs
+			reg_pool = usable.filter(func(p): return int(p["id"]) >= 152)
+		elif not REGIONS[reg].is_empty():
 			reg_pool = usable.filter(func(p): return String(p["types"][0]) in REGIONS[reg])
 			if reg_pool.is_empty():
 				reg_pool = usable
@@ -505,10 +511,31 @@ func display_name(inst: Dictionary) -> String:
 
 
 func exact_stats(inst: Dictionary) -> Dictionary:
+	## Pre-nature math (species base + IVs + level). Internal building block —
+	## the UI must never render this directly: use battle_stats() so Transfers
+	## quotes the same numbers as the squad profile, tactics board and engine.
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 	var out := {}
 	for k in ["hp", "atk", "def", "spa", "spd", "spe"]:
 		out[k] = DataStore.calc_stat(int(sp["base"][k]), int(inst["ivs"][k]), int(inst["level"]), k == "hp")
+	return out
+
+
+func battle_stats(inst: Dictionary) -> Dictionary:
+	## THE display truth for every stat the transfers UI surfaces: exact_stats
+	## with the instance's nature applied — byte-identical math to
+	## BattleEngine._init_battler (+10% floored / -10% floored min 1, never HP).
+	## A signing's numbers therefore match its squad-profile numbers exactly.
+	var out := exact_stats(inst)
+	var nat: Dictionary = DataStore.nature(String(inst.get("nature", "Hardy")))
+	if nat.is_empty():
+		return out
+	var plus: Variant = nat.get("plus")
+	var minus: Variant = nat.get("minus")
+	if plus != null and str(plus) != "hp" and out.has(str(plus)):
+		out[str(plus)] = int(floor(float(out[str(plus)]) * 1.1))
+	if minus != null and str(minus) != "hp" and out.has(str(minus)):
+		out[str(minus)] = maxi(1, int(floor(float(out[str(minus)]) * 0.9)))
 	return out
 
 
@@ -977,6 +1004,19 @@ func knowledge_of(uid: String) -> float:
 	return 0.0
 
 
+## Raise a target's knowledge to at least `floor_know` WITHOUT firing the
+## interim/full report pipeline — for callers who file their own dossier
+## (the inbox scout desk). Never lowers knowledge; persists immediately so a
+## filed report and the Transfer Centre always agree on what is known.
+func grant_knowledge(uid: String, floor_know: float) -> void:
+	if find_target(uid).is_empty():
+		return
+	if knowledge_of(uid) >= floor_know:
+		return
+	knowledge[uid] = clampf(floor_know, 0.0, 100.0)
+	save_state()
+
+
 func _mask_hash(uid: String, key: String) -> int:
 	return absi(("%s|%s|%d" % [uid, key, GameState.career_seed]).hash())
 
@@ -1008,9 +1048,11 @@ func masked_money(uid: String, key: String, exact: int) -> String:
 		return fmt_money(exact)
 	var frac := 0.45 * (1.0 - know / 100.0) + 0.08
 	var h := _mask_hash(uid, key)
-	var lo := int(float(exact) * (1.0 - frac * (0.5 + float(h % 50) / 100.0)))
-	var hi := int(float(exact) * (1.0 + frac * (0.5 + float((h / 3) % 50) / 100.0)))
-	return "%s%s-%s" % [GameState.world["meta"]["currency"], _fmt_short(maxi(1000, lo)), _fmt_short(hi)]
+	var lo := maxi(1, int(float(exact) * (1.0 - frac * (0.5 + float(h % 50) / 100.0))))
+	var hi := maxi(lo, int(float(exact) * (1.0 + frac * (0.5 + float((h / 3) % 50) / 100.0))))
+	if exact >= 10000:
+		lo = maxi(1000, lo)   # big-money reads stay rounded ("P$321K-669K")
+	return "%s%s-%s" % [GameState.world["meta"]["currency"], _fmt_short(lo), _fmt_short(hi)]
 
 
 func _fmt_short(v: int) -> String:
@@ -1085,6 +1127,10 @@ func region_of(inst: Dictionary) -> String:
 	# External-world targets carry their region; domestic ones map by primary type.
 	if inst.has("region"):
 		return String(inst["region"])
+	# Johto is a first-class domestic region: the western league's natives
+	# (world-gen tags them native_region) all scout through the Johto network.
+	if String(inst.get("native_region", "")) == "Johto":
+		return "Johto"
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 	var t0 := String(sp["types"][0])
 	for r in REGIONS:
@@ -1224,6 +1270,41 @@ func stage_for(know: float) -> Dictionary:
 	return s
 
 
+# Battle-identity reveals ride the same ladder: a part-scouted watch reads the
+# temperament (nature), a detailed watch confirms the battle ability.
+const NATURE_KNOWN_AT := 50.0
+const ABILITY_KNOWN_AT := 75.0
+
+
+## The target's nature, once scouting has revealed it ("" before that).
+func known_nature(inst: Dictionary) -> String:
+	if knowledge_of(String(inst.get("uid", ""))) < NATURE_KNOWN_AT:
+		return ""
+	return String(inst.get("nature", "Hardy"))
+
+
+## The target's battle-ability id, once scouting has revealed it ("" before).
+func known_ability(inst: Dictionary) -> String:
+	if knowledge_of(String(inst.get("uid", ""))) < ABILITY_KNOWN_AT:
+		return ""
+	var ab := String(inst.get("ability", ""))
+	if ab == "":
+		ab = String(DataStore.species(int(inst.get("species_id", 0))).get("ability", ""))
+	return ab
+
+
+## Short display text for a revealed nature: "Adamant (+Atk/−SpA)".
+func nature_text(nature: String) -> String:
+	if nature == "":
+		return ""
+	var nat: Dictionary = DataStore.nature(nature)
+	var plus: Variant = nat.get("plus")
+	var minus: Variant = nat.get("minus")
+	if plus == null or str(plus) == "":
+		return "%s (neutral)" % nature
+	return "%s (+%s/−%s)" % [nature, str(plus).capitalize(), str(minus).capitalize()]
+
+
 func full_report_count() -> int:
 	var n := 0
 	for uid in knowledge:
@@ -1324,7 +1405,7 @@ func _generate_report(uid: String, scout_name: String, final: bool = true) -> vo
 	var scout := _scout_by_name(scout_name)
 	var ja := 12 if scout.is_empty() else int(scout["ratings"]["judging_ability"])
 	var jp := 10 if scout.is_empty() else int(scout["ratings"]["judging_potential"])
-	var stats := exact_stats(inst)
+	var stats := battle_stats(inst)   # nature-adjusted: report figures == engine figures
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 
 	# Ability stars: percentile of level-weighted power vs the whole world.

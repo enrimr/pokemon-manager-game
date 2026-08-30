@@ -250,9 +250,76 @@ static func role_score(role: String, a: Dictionary) -> Dictionary:
 			if a["has_screen"]: s += 10; why.append("Screens protect the team")
 			s += clampf(a["status_moves"] * 4.0, 0, 12)
 			if a["status_moves"] >= 2: why.append("%d support moves" % a["status_moves"])
+	# battle-depth: the ability and nature shift how well a role fits.
+	for adj in _depth_role_adj(role, a):
+		s += float(adj[0])
+		why.append(str(adj[1]))
 	if why.is_empty():
 		why.append("No attributes that fit this role")
 	return {"score": int(clampf(s, 1, 99)), "why": why}
+
+
+## Ability + nature adjustments for one role: Array of [delta, reason].
+## Modest nudges (±4..10) mirroring what the engine actually rewards.
+static func _depth_role_adj(role: String, a: Dictionary) -> Array:
+	var out: Array = []
+	var ab_name := str(a.get("ability_name", ""))
+	var immunities: Array = []
+	for e in DataStore.ability(str(a.get("ability", ""))).get("effects", []):
+		var parts: Array = str(e).split(":")
+		match parts[0]:
+			"on_switch_in":
+				if parts.size() >= 2 and parts[1] == "stat" and role in ["lead", "pivot"]:
+					out.append([10 if role == "lead" else 6,
+						"%s softens whatever it faces on entry" % ab_name])
+				elif parts.size() >= 2 and parts[1] == "weather" and role == "lead":
+					out.append([6, "%s sets the weather from turn one" % ab_name])
+			"end_turn_stat":
+				if parts.size() >= 3 and parts[1] == "spe" and role in ["sweeper", "revenge"]:
+					out.append([10 if role == "sweeper" else 5,
+						"%s snowballs its Speed every turn" % ab_name])
+			"mult":
+				if parts.size() >= 2 and parts[1] in ["atk", "spa"] and role == "sweeper":
+					out.append([8, "%s multiplies its attacking power" % ab_name])
+			"immune", "absorb":
+				if parts.size() >= 2:
+					immunities.append(str(parts[1]))
+			"heal_status_on_switch":
+				if role in ["pivot", "cleric"]:
+					out.append([6, "%s sheds status on the switch out" % ab_name])
+			"sturdy":
+				if role in ["lead", "wall"]:
+					out.append([5 if role == "lead" else 4,
+						"%s guarantees it survives the first blow" % ab_name])
+			"end_turn_cure":
+				if role == "wall":
+					out.append([5, "%s throws off status over time" % ab_name])
+			"no_stat_drop":
+				if role == "wall":
+					out.append([4, "%s can't be softened up" % ab_name])
+			"contact_status", "contact_damage":
+				if role == "wall":
+					out.append([4, "%s punishes physical contact" % ab_name])
+			"status_boost":
+				if role == "sweeper":
+					out.append([4, "%s turns status against the attacker" % ab_name])
+	if not immunities.is_empty() and role in ["pivot", "wall"]:
+		out.append([mini(5 * immunities.size(), 10) if role == "pivot" else 4,
+			"%s grants free switch-ins vs %s" % [ab_name, "/".join(immunities)]])
+	# nature: does the +10%/-10% land on this role's key stats?
+	var off_key := "atk" if int(a["base"]["atk"]) >= int(a["base"]["spa"]) else "spa"
+	var keys: Array = {
+		"lead": ["spe"], "sweeper": [off_key, "spe"], "wall": ["def", "spd"],
+		"pivot": ["def", "spd"], "revenge": ["spe", off_key], "cleric": ["def", "spd"],
+	}.get(role, [])
+	var nat: Dictionary = DataStore.nature(str(a.get("nature", "Hardy")))
+	var plus := str(nat.get("plus", "")) if nat.get("plus") != null else ""
+	var minus := str(nat.get("minus", "")) if nat.get("minus") != null else ""
+	if plus in keys:
+		out.append([5, "%s nature (+10%% %s) suits the role" % [a.get("nature", ""), plus.to_upper()]])
+	if minus in keys:
+		out.append([-5, "%s nature (−10%% %s) works against the role" % [a.get("nature", ""), minus.to_upper()]])
+	return out
 
 
 static func band(score: int) -> Array:  # [label, Color]
@@ -271,6 +338,80 @@ static func best_role(a: Dictionary) -> String:
 			best_s = s
 			best = r
 	return best
+
+
+# ------------------------------------------------------------------ weather
+
+## Does the selected six deliberately set weather, and who gains from it?
+## -> {} when no starter sets weather, else:
+##    {kind, setters: ["Politoed (Drizzle)", "Sunflora (Sunny Day)"...],
+##     boosts: [strings], risks: [strings]}
+static func weather_plan(analyses: Dictionary, lineup: Array) -> Dictionary:
+	var setters := {}          # kind -> Array of "Name (How)"
+	for uid in lineup:
+		var a: Dictionary = analyses.get(uid, {})
+		if a.is_empty():
+			continue
+		var nm := str(a["battler"].get("name", a["inst"].get("species", "?")))
+		for e in DataStore.ability(str(a.get("ability", ""))).get("effects", []):
+			var parts: Array = str(e).split(":")
+			if parts[0] == "on_switch_in" and parts.size() >= 3 and parts[1] == "weather":
+				var k := str(parts[2])
+				if not setters.has(k):
+					setters[k] = []
+				setters[k].append("%s (%s)" % [nm, a.get("ability_name", "ability")])
+		for mn in a["battler"].get("moves", []):
+			for e in DataStore.move(mn).get("effects", []):
+				var parts: Array = str(e).split(":")
+				if parts[0] == "weather" and parts.size() >= 2:
+					var k := str(parts[1])
+					if not setters.has(k):
+						setters[k] = []
+					setters[k].append("%s (%s)" % [nm, mn])
+	if setters.is_empty():
+		return {}
+	var kind := ""
+	for k in setters:      # primary plan = the kind with the most setters
+		if kind == "" or (setters[k] as Array).size() > (setters[kind] as Array).size():
+			kind = k
+	var boosts: Array = []
+	var risks: Array = []
+	for uid in lineup:
+		var a: Dictionary = analyses.get(uid, {})
+		if a.is_empty():
+			continue
+		var nm := str(a["battler"].get("name", a["inst"].get("species", "?")))
+		var ab := str(a.get("ability", ""))
+		for e in DataStore.ability(ab).get("effects", []):
+			var parts: Array = str(e).split(":")
+			if parts[0] == "weather_speed" and parts.size() >= 2 and str(parts[1]) == kind:
+				boosts.append("%s doubles its Speed (%s)" % [nm, a.get("ability_name", "")])
+			elif parts[0] == "weather_heal" and parts.size() >= 2 and str(parts[1]) == kind:
+				boosts.append("%s heals every turn (%s)" % [nm, a.get("ability_name", "")])
+			elif parts[0] == "weather_eva" and parts.size() >= 2 and str(parts[1]) == kind:
+				boosts.append("%s gets harder to hit (%s)" % [nm, a.get("ability_name", "")])
+		var atk_types: Dictionary = a.get("attack_types", {})
+		if kind == "sun":
+			if atk_types.has("fire"):
+				boosts.append("%s's Fire attacks hit ×1.5" % nm)
+			if atk_types.has("water"):
+				risks.append("%s's Water attacks fall to ×0.5" % nm)
+		elif kind == "rain":
+			if atk_types.has("water"):
+				boosts.append("%s's Water attacks hit ×1.5" % nm)
+			if atk_types.has("fire"):
+				risks.append("%s's Fire attacks fall to ×0.5" % nm)
+		elif kind == "sand":
+			var types: Array = a.get("types", [])
+			var safe := false
+			for t in types:
+				if str(t) in ["rock", "ground", "steel"]:
+					safe = true
+			if types.has("rock"):
+				boosts.append("%s gains ×1.5 Sp. Def (Rock type)" % nm)
+			if not safe and str(ab) != "sand_veil":
+				risks.append("%s takes 1/16 chip damage each turn" % nm)
+	return {"kind": kind, "setters": setters[kind], "boosts": boosts, "risks": risks}
 
 
 # ------------------------------------------------------------------ coverage

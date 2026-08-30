@@ -19,6 +19,8 @@ var market: RefCounted
 var _search_text := ""
 var _pool_filter := 0
 var _type_filter := ""
+var _nature_filter := ""    # nature name; matches only targets whose nature scouting revealed
+var _ability_filter := ""   # ability id; matches only targets whose ability scouting confirmed
 var _min_level := 1
 var _price_filter := 0
 var _scouted_only := false
@@ -507,7 +509,7 @@ func _build_search_tab() -> void:
 
 	var search := LineEdit.new()
 	search.placeholder_text = "Search species / nickname..."
-	search.custom_minimum_size.x = 210
+	search.custom_minimum_size.x = 150
 	search.text_changed.connect(func(t: String):
 		_search_text = t
 		_refresh_search())
@@ -552,6 +554,36 @@ func _build_search_tab() -> void:
 		_refresh_search())
 	bar.add_child(price)
 
+	var nat_opt := OptionButton.new()
+	nat_opt.fit_to_longest_item = false
+	nat_opt.clip_text = true
+	nat_opt.custom_minimum_size.x = 104
+	nat_opt.add_item("Any nature")
+	var nat_names: Array = DataStore.natures.keys()
+	nat_names.sort()
+	for n in nat_names:
+		nat_opt.add_item(market.nature_text(String(n)))
+	nat_opt.tooltip_text = "Filter by temperament (nature). Scouting reveals a target's nature at Part scouted (50%) — targets whose nature is still unknown never match."
+	nat_opt.item_selected.connect(func(i: int):
+		_nature_filter = "" if i == 0 else String(nat_names[i - 1])
+		_refresh_search())
+	bar.add_child(nat_opt)
+
+	var ab_opt := OptionButton.new()
+	ab_opt.fit_to_longest_item = false
+	ab_opt.clip_text = true
+	ab_opt.custom_minimum_size.x = 104
+	ab_opt.add_item("Any ability")
+	var ab_ids: Array = DataStore.abilities.keys()
+	ab_ids.sort_custom(func(a, b): return DataStore.ability_name(String(a)) < DataStore.ability_name(String(b)))
+	for a in ab_ids:
+		ab_opt.add_item(DataStore.ability_name(String(a)))
+	ab_opt.tooltip_text = "Filter by battle ability. A Detailed watch (75%) confirms it — targets whose ability is unconfirmed never match."
+	ab_opt.item_selected.connect(func(i: int):
+		_ability_filter = "" if i == 0 else String(ab_ids[i - 1])
+		_refresh_search())
+	bar.add_child(ab_opt)
+
 	var scouted := CheckBox.new()
 	scouted.text = "Fully scouted"
 	scouted.toggled.connect(func(on: bool):
@@ -564,6 +596,8 @@ func _build_search_tab() -> void:
 	bar.add_child(sp)
 	_count_label = Label.new()
 	_count_label.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	_count_label.clip_text = true
+	_count_label.custom_minimum_size.x = 130
 	bar.add_child(_count_label)
 
 	var body := HBoxContainer.new()
@@ -647,6 +681,10 @@ func _filtered_targets() -> Array:
 			var cost: int = market.ask_price(inst, t["club_id"]) if t["pool"] == "club" else market.value_of(inst)
 			if cost > PRICE_CAPS[_price_filter]:
 				continue
+		if _nature_filter != "" and market.known_nature(inst) != _nature_filter:
+			continue   # unknown nature (< Part scouted) never matches
+		if _ability_filter != "" and market.known_ability(inst) != _ability_filter:
+			continue   # unconfirmed ability (< Detailed) never matches
 		if _scouted_only and market.knowledge_of(inst["uid"]) < 100.0:
 			continue
 		out.append(t)
@@ -664,11 +702,23 @@ func _sort_value(t: Dictionary) -> Variant:
 		4: return int(inst["level"])
 		5, 6, 7, 8, 9, 10:
 			var k: String = STAT_KEYS[_sort_col - 5]
-			var b: Array = market.masked_bounds(uid, k, int(market.exact_stats(inst)[k]))
+			var b: Array = market.masked_bounds(uid, k, int(market.battle_stats(inst)[k]))
 			return int(b[0]) + int(b[1])
 		11: return market.ask_price(inst, t["club_id"]) if t["pool"] == "club" else market.value_of(inst)
 		12: return int(inst["contract"]["salary"])
 		13: return market.knowledge_of(uid)
+	return 0
+
+
+## +1 if `nature` boosts stat `key`, -1 if it hinders it, 0 otherwise.
+func _nature_dir(nature: String, key: String) -> int:
+	var nat: Dictionary = DataStore.nature(nature)
+	if nat.is_empty():
+		return 0
+	if str(nat.get("plus")) == key:
+		return 1
+	if str(nat.get("minus")) == key:
+		return -1
 	return 0
 
 
@@ -709,12 +759,21 @@ func _refresh_search() -> void:
 		it.set_custom_color(2, ThemeBuilder.COL_TEXT_DIM)
 		it.set_text(3, "%dy %dm" % [int(inst["age_months"]) / 12, int(inst["age_months"]) % 12])
 		it.set_text(4, str(int(inst["level"])))
-		var stats: Dictionary = market.exact_stats(inst)
+		# battle_stats = nature-adjusted, engine-identical (bands bracket the
+		# number this target would actually fight with, same as the squad screen)
+		var stats: Dictionary = market.battle_stats(inst)
+		var kn_nat_row: String = market.known_nature(inst)
 		for i in 6:
 			var k: String = STAT_KEYS[i]
 			it.set_text(5 + i, market.masked_int(uid, k, int(stats[k])))
 			if know < 100.0:
 				it.set_custom_color(5 + i, ThemeBuilder.COL_TEXT_DIM)
+			elif kn_nat_row != "":
+				var d := _nature_dir(kn_nat_row, k)
+				if d > 0:
+					it.set_custom_color(5 + i, ThemeBuilder.COL_GOOD)
+				elif d < 0:
+					it.set_custom_color(5 + i, ThemeBuilder.COL_BAD)
 		var val_txt: String
 		if t["pool"] == "club":
 			val_txt = market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))
@@ -747,7 +806,9 @@ func _refresh_search() -> void:
 		if uid == _selected_uid:
 			it.select(0)
 	var n_ext: int = rows.filter(func(t): return market.is_ext_uid(String(t["inst"]["uid"]))).size()
-	_count_label.text = "%d targets (%d overseas/youth pools) · %d fully scouted" % [
+	_count_label.text = "%d targets · %d overseas · %d full" % [
+		rows.size(), n_ext, market.full_report_count()]
+	_count_label.tooltip_text = "%d targets match the filters (%d from overseas leagues/youth pools) · %d fully scouted." % [
 		rows.size(), n_ext, market.full_report_count()]
 
 
@@ -834,18 +895,33 @@ func _refresh_detail() -> void:
 
 	_detail.add_child(HSeparator.new())
 
-	# stats grid (masked)
+	# stats grid (masked) — battle_stats: nature-adjusted, engine-identical, so
+	# the numbers here are the numbers on the squad profile the day one signs
 	var grid := GridContainer.new()
 	grid.columns = 6
 	grid.add_theme_constant_override("h_separation", 14)
 	_detail.add_child(grid)
-	var stats: Dictionary = market.exact_stats(inst)
+	var stats: Dictionary = market.battle_stats(inst)
+	var grid_nat: String = market.known_nature(inst)
 	for k in STAT_KEYS:
 		var h := _dlabel(STAT_NAMES[k], ThemeBuilder.COL_TEXT_DIM, 11)
 		grid.add_child(h)
 	for k in STAT_KEYS:
-		var v := _dlabel(market.masked_int(uid, k, int(stats[k])),
-			Color.WHITE if know >= 100.0 else ThemeBuilder.COL_WARN, 14)
+		var col: Color = Color.WHITE if know >= 100.0 else ThemeBuilder.COL_WARN
+		var tip := "Battle-real figure — nature already folded in, identical to the squad screen and the match engine."
+		if know < 100.0:
+			tip = "Estimated range around the battle-real figure (nature folded in). A Full report (100%) pins it exactly."
+		if grid_nat != "":
+			var d := _nature_dir(grid_nat, k)
+			if d > 0:
+				col = ThemeBuilder.COL_GOOD
+				tip += "\nBoosted +10%% by its %s nature." % grid_nat
+			elif d < 0:
+				col = ThemeBuilder.COL_BAD
+				tip += "\nHindered −10%% by its %s nature." % grid_nat
+		var v := _dlabel(market.masked_int(uid, k, int(stats[k])), col, 14)
+		v.tooltip_text = tip
+		v.mouse_filter = Control.MOUSE_FILTER_STOP
 		grid.add_child(v)
 	if know >= 100.0:
 		_detail.add_child(_dlabel("Genetics: %d/90 IV  ·  Condition %d%%  ·  Fitness %d%%" % [
@@ -859,6 +935,23 @@ func _refresh_detail() -> void:
 		_detail.add_child(_dlabel("Moves: " + ", ".join(inst["moves"]), ThemeBuilder.COL_TEXT, 13, true))
 	else:
 		_detail.add_child(_dlabel("Move set unknown — reach Part scouted (50%) to reveal.", ThemeBuilder.COL_TEXT_DIM, 13))
+
+	# nature + battle ability — staged knowledge (nature at 50%, ability at 75%)
+	var kn_nat: String = market.known_nature(inst)
+	var kn_ab: String = market.known_ability(inst)
+	var na_row := HBoxContainer.new()
+	na_row.add_theme_constant_override("separation", 14)
+	_detail.add_child(na_row)
+	var nat_l := _dlabel("Nature: %s" % (market.nature_text(kn_nat) if kn_nat != "" else "unknown (Part scouted 50%)"),
+		ThemeBuilder.COL_TEXT if kn_nat != "" else ThemeBuilder.COL_TEXT_DIM, 12)
+	nat_l.tooltip_text = ("Temperament shapes battle stats: +10% to one stat, −10% to another — already folded into the stats above, which match the squad profile and the match engine exactly." if kn_nat != ""
+		else "A scout reads a target's temperament once knowledge reaches Part scouted (50%). Stats above already include the (still hidden) nature — they are the battle-real figures.")
+	na_row.add_child(nat_l)
+	var ab_l := _dlabel("Ability: %s" % (DataStore.ability_name(kn_ab) if kn_ab != "" else "unconfirmed (Detailed 75%)"),
+		ThemeBuilder.COL_TEXT if kn_ab != "" else ThemeBuilder.COL_TEXT_DIM, 12)
+	ab_l.tooltip_text = (String(DataStore.ability(kn_ab).get("desc", "")) if kn_ab != ""
+		else "The battle ability is only confirmed by a Detailed watch (75% knowledge).")
+	na_row.add_child(ab_l)
 
 	_detail.add_child(HSeparator.new())
 
@@ -1270,6 +1363,18 @@ func _show_report(uid: String) -> void:
 	else:
 		s += "\n[b]Current ability[/b]   [color=#e0b050]%s[/color]\n" % _stars(float(r["ability_stars"]))
 		s += "[b]Potential[/b]           [color=#e0b050]%s[/color]\n\n" % _stars(float(r["potential_stars"]))
+	# temperament + battle ability: live staged knowledge (nature at 50%, ability at 75%)
+	var rt: Dictionary = market.find_target(uid)
+	if not rt.is_empty():
+		var rn: String = market.known_nature(rt["inst"])
+		var ra: String = market.known_ability(rt["inst"])
+		s += "[b]Nature[/b]  %s\n" % (("[color=#d8dbe6]%s[/color]" % market.nature_text(rn)) if rn != ""
+			else "[color=#8b91a8]unknown — revealed at Part scouted (50%)[/color]")
+		if ra != "":
+			s += "[b]Battle ability[/b]  [color=#d8dbe6]%s[/color] [color=#8b91a8]— %s[/color]\n\n" % [
+				DataStore.ability_name(ra), String(DataStore.ability(ra).get("desc", ""))]
+		else:
+			s += "[b]Battle ability[/b]  [color=#8b91a8]unconfirmed — a Detailed watch (75%) pins it down[/color]\n\n"
 	s += "[b]Strengths[/b]\n"
 	for p in r["pros"]:
 		s += "[color=#57c979]  +  %s[/color]\n" % p

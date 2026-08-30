@@ -6,6 +6,7 @@ extends Control
 ## All model logic lives in training_service.gd (kept alive at /root).
 
 const TrainingServiceScript := preload("res://screens/training/training_service.gd")
+const EvoSvc := preload("res://shared/sim/services/evolution.gd")
 
 const FOCUS_COLORS := {
 	"physical": Color("e06868"), "special": Color("f085b0"), "defense": Color("6890f0"),
@@ -2038,13 +2039,13 @@ func _build_development_tab() -> Control:
 
 	_dev_tree = Tree.new()
 	_dev_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_dev_tree.columns = 12
+	_dev_tree.columns = 13
 	_dev_tree.column_titles_visible = true
 	_dev_tree.hide_root = true
-	var titles := ["Pokémon", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "IV gains", "Strain", "Moves", "Mentoring"]
+	var titles := ["Pokémon", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "IV gains", "Strain", "Moves", "Mentoring", "Evolution"]
 	for i in titles.size():
 		_dev_tree.set_column_title(i, titles[i])
-		_dev_tree.set_column_expand(i, i == 0 or i == 11)
+		_dev_tree.set_column_expand(i, i == 0 or i == 11 or i == 12)
 		if i > 0:
 			_dev_tree.set_column_custom_minimum_width(i, 62 if i < 9 else (70 if i < 11 else 168))
 	v.add_child(_dev_tree)
@@ -2117,8 +2118,13 @@ func _refresh_development() -> void:
 		else:
 			it.set_text(11, "—")
 			it.set_custom_color(11, Color("3a4058"))
+		# --- evolution linkage: what this development is buying
+		var evo := _evo_cell(inst)
+		it.set_text(12, evo["text"])
+		it.set_custom_color(12, evo["color"])
+		it.set_tooltip_text(12, evo["tip"])
 
-	_dev_note.text = "Attribute changes over the last 28 training days (tracking %d day%s so far). ▲ real stat increases from training — IVs are capped at 15 per stat." % [tracked, "" if tracked == 1 else "s"]
+	_dev_note.text = "Attribute changes over the last 28 training days (tracking %d day%s so far). ▲ real stat increases from training — IVs are capped at 15 per stat.\nEvolution: every %d development points = +1 effective level toward evolution thresholds (decisions land in the Inbox). Need more rapid developers? Promote from the Academy — its intake pipeline feeds this squad." % [tracked, "" if tracked == 1 else "s", _evo_dev_per_level()]
 
 	_clear(_best_box)
 	var best := 0
@@ -2188,3 +2194,45 @@ func _dev_summary_row(inst: Dictionary, detail: String, col: Color) -> Control:
 	dl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	r.add_child(dl)
 	return r
+
+
+# ------------------------------------------------- evolution-development linkage
+
+func _evo_dev_per_level() -> int:
+	var s = EvoSvc.instance
+	return maxi(1, int(s._dev_per_level)) if s != null else 6
+
+
+## One-line evolution status for the Development table: what this mon's
+## training points are buying, and how far it still has to go.
+func _evo_cell(inst: Dictionary) -> Dictionary:
+	var s = EvoSvc.instance
+	if s == null:
+		return {"text": "—", "color": Color("3a4058"), "tip": ""}
+	var uid := str(inst.get("uid", ""))
+	var pend: Dictionary = s.pending_for(uid)
+	if not pend.is_empty():
+		var pto := str(DataStore.species(int(pend.get("to", 0))).get("name", "?"))
+		return {"text": "→ %s AWAITING APPROVAL" % pto, "color": ThemeBuilder.COL_GOOD,
+			"tip": "Requirements met — approve or postpone the evolution from the Inbox or this Pokémon's profile."}
+	var opts: Array = s.eligibility(inst)
+	if opts.is_empty():
+		return {"text": "final form", "color": Color("3a4058"),
+			"tip": "%s does not evolve — development here is pure stat growth." % _display_name(inst)}
+	# nearest milestone: an ok option first, else the first with a readable gap
+	for o in opts:
+		if o["ok"]:
+			if str(o["method"]) == "stone":
+				return {"text": "→ %s (use stone)" % o["to_name"], "color": ThemeBuilder.COL_ACCENT,
+					"tip": "A stone in the storeroom can evolve it today — Items screen, or the profile's evolution panel."}
+			return {"text": "→ %s ready" % o["to_name"], "color": ThemeBuilder.COL_GOOD,
+				"tip": "Requirements met — the offer will land in your Inbox on the next training day."}
+	var best: Dictionary = opts[0]
+	var txt := "→ %s · %s" % [best["to_name"], best["why"]]
+	var tip := "Development points from training push evolution milestones: %d pts = +1 effective level.\nDev so far: %d pts (+%d eff. levels)." % [
+		_evo_dev_per_level(), int(s.dev_points(uid)), int(s.dev_levels(uid))]
+	if str(best["method"]) == "stone":
+		tip += "\nStone routes are bought in the Items screen and applied from there or the profile."
+	if opts.size() > 1:
+		tip += "\nBranches: " + ", ".join(opts.map(func(o): return str(o["to_name"])))
+	return {"text": txt, "color": ThemeBuilder.COL_WARN if str(best["method"]) != "stone" else ThemeBuilder.COL_ACCENT, "tip": tip}

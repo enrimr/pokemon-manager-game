@@ -1,14 +1,21 @@
 {
  "piece": "leagues",
  "fm_reference": "FM24 new-game club selection (league tabs, club rows w/ rep, balance, squad strength) + FM multi-nation league structure with cross-league cup and regional scouting networks",
- "status": "critic",
+ "status": "fixing",
  "round": 1,
- "verdict": null,
- "biggest_gap": null,
+ "verdict": "fm wins",
+ "biggest_gap": "Final league position has zero consequences and the competition structure dead-ends: the table's own zone legend advertises a 'Championship Series (2-4)' and a 'Relegation Zone (14-16)' that are never simulated (grep: the only hit is the legend label in table_tab.gd), and after matchday 30 the header just says 'Season over' — no playoff, no relegation, no rollover into a new season, no champions history. In FM24 every coloured table zone feeds a real mechanism (playoffs, relegation, continental qualification) and the season rolls over with awards and records.",
  "history": [
   "gen-2 dataset done: 251 species, 208 moves, 18-type chart, natures.json, abilities.json, instances carry nature+ability; smoke OK",
   "leagues built: Kanto+Johto 16-club leagues (Johto gen-2 squads via gen_data.py), cross-league 32-club Indigo Cup (5 rounds), FM-style new-career club picker (league tabs, rep/balance/strength rows), services drop-in convention in GameState (documented), save v2 + graceful v1 recovery, sim_check extended (both leagues, cup, dark/psychic chart, services, v1-save); SMOKE OK, screenshots verified",
-  "leagues-ui built: competition switcher (Kanto/Johto/Indigo Cup) drives header+all tabs; per-league table/fixtures/graph/footers; cup bracket w/ league badges + Road to the Final view (player run + every round results); overview shows both title races + cross-league cup card; stats centre REGION filter w/ all-regions merge (Lg column, scoped percentiles/leaders/hub); club profiles state league + per-league position/trend; fixed pos-history & club-stats cache bleed, float scores after save load, stale 16-club cup-final checks; league_check.tscn (27 checks) + nav_check + SMOKE OK; 10 screenshots verified"
+  "leagues-ui built: competition switcher (Kanto/Johto/Indigo Cup) drives header+all tabs; per-league table/fixtures/graph/footers; cup bracket w/ league badges + Road to the Final view (player run + every round results); overview shows both title races + cross-league cup card; stats centre REGION filter w/ all-regions merge (Lg column, scoped percentiles/leaders/hub); club profiles state league + per-league position/trend; fixed pos-history & club-stats cache bleed, float scores after save load, stale 16-club cup-final checks; league_check.tscn (27 checks) + nav_check + SMOKE OK; 10 screenshots verified",
+  "leagues-ui re-verified: SMOKE OK, LEAGUE CHECK OK (27 checks), NAV CHECK OK, 12 screenshots read and confirmed (both league tables/fixtures, cup bracket+road, overview, all-regions stats, johto club profile)",
+  {
+   "round": 1,
+   "phase": "expansion",
+   "winner": "fm",
+   "gap": "Final league position has zero consequences and the competition structure dead-ends: the table's own zone legend advertises a 'Championship Series (2-4)' and a 'Relegation Zone (14-16)' that are never simulated (grep: the only hit is the legend label in table_tab.gd), and after matchday 30 the header just says 'Season over' — no playoff, no relegation, no rollover into a new season, no champions history. In FM24 every coloured table zone feeds a real mechanism (playoffs, relegation, continental qualification) and the season rolls over with awards and records."
+  }
  ],
- "updated": "2026-08-30 11:55"
+ "updated": "2026-08-30 16:06"
 }

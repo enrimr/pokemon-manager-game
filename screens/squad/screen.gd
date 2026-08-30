@@ -438,6 +438,22 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 		evo_chip.tooltip_text = "Manager approval needed — decide from the profile or the inbox:\n" + \
 			"\n".join(PackedStringArray(pend.map(func(e): return "%s -> %s" % [e["name"], e["to_name"]])))
 		_chips_box.add_child(evo_chip)
+	var nf: Dictionary = GameState.next_player_fixture()
+	if not nf.is_empty():
+		var we_home: bool = GameState.is_player_club(str(nf["home"]))
+		var opp_id: String = str(nf["away"] if we_home else nf["home"])
+		var opp: Dictionary = GameState.club(opp_id)
+		var is_cup: bool = str(nf.get("league", "")) == ""
+		var comp: String = GameState.cup_name() if is_cup else GameState.league_name(str(nf["league"]))
+		var cross: bool = is_cup and GameState.league_of(opp_id) != GameState.player_league_id()
+		var next_chip := _chip("NEXT", "%s %s (%s)" % ["vs" if we_home else "@", str(opp["short"]),
+			("CUP·" + GameState.league_name(GameState.league_of(opp_id)).trim_suffix(" League")) if cross else comp.trim_suffix(" League")],
+			UI.COL_ACCENT if cross else UI.COL_TEXT)
+		next_chip.tooltip_text = "%s — %s %s, %s.%s" % [comp, "home to" if we_home else "away at", str(opp["name"]),
+			Season.pretty_date(str(nf["date"])),
+			("\nCross-league cup tie: they play in the %s — check their squad on the Transfers search." % GameState.league_name(GameState.league_of(opp_id))) if cross
+			else ("\nCup ties are best-of-3 and game 2 is 2v2 doubles — set your pair on Tactics." if is_cup else "")]
+		_chips_box.add_child(next_chip)
 	var wages_chip := _chip("WAGES /WK", "%s of %s" % [UI.money(wage_bill),
 		UI.money(int(club["finances"]["wage_budget"]))],
 		UI.COL_WARN if wage_bill > int(club["finances"]["wage_budget"]) else UI.COL_TEXT)

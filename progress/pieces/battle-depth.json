@@ -1,10 +1,10 @@
 {
  "piece": "battle-depth",
  "fm_reference": "FM match-engine depth: hidden attribute modifiers (natures), player traits that fire at the right moments (abilities), and pitch/weather conditions that shape play — all surfaced through commentary",
- "status": "fixing",
+ "status": "passed",
  "round": 1,
- "verdict": "fm wins",
- "biggest_gap": "Manual 2v2 doubles is unplayable in the real UI: the live view's action bar (the 'pick a move AND its target' panel with the target picker and spread labels) is laid out off-screen in doubles — measured global rect y=905, height 172 on the game's fixed 1600x900 canvas_items canvas (two stacked battler blocks per side card inflate the column; singles fits, doubles overflows). The engine/runner side is genuinely complete (targeting, 0.75x spread verified at 0.755 measured, Earthquake ally-hit, redirection, determinism), but the player cannot see or click the bar, so requirement (d) fails at the presentation layer.",
+ "verdict": "ours wins",
+ "biggest_gap": "",
  "history": [
   "singles depth shipped: natures, 48 abilities live at all hooks, weather system + AI awareness; sim_check extended (natures, 10 abilities, weather lifecycle, determinism); SMOKE OK",
   {
@@ -12,7 +12,18 @@
    "phase": "expansion",
    "winner": "fm",
    "gap": "Doubles manual action bar renders off-screen (y=905 on a 900px canvas) so manual doubles cannot be played from the UI; secondary: weather and ability triggers are engine-only in the presentation — no weather_start/end/chip commentary lines (hook filter drops them), no weather indicator or stage effect, weather_chip doesn't refresh HP cards, and no ability is ever named on the stage or in the ticker (Intimidate/Sturdy/Flash Fire etc. surface only as unattributed stat/damage lines)."
+  },
+  {
+   "round": 1,
+   "phase": "fix",
+   "note": "action bar overflow fixed + weather/ability presentation wired; sim_check doubles assertions added; SMOKE OK, DOUBLES QA OK, DOUBLES UI QA OK, CRITIC OK, UI SHOTS OK"
+  },
+  {
+   "round": 1,
+   "phase": "expansion",
+   "winner": "ours",
+   "gap": "All mandatory checks verified by an independent driver (artifacts/battle-depth/critic_driver.gd): 10+ abilities change outcomes with A/B controls (Levitate immunity vs control, Flash Fire absorb+1.5x charge, Water Absorb heal, Intimidate -1 both foes in doubles, Sturdy 1 HP, Speed Boost +1/turn, Huge Power 1.83x measured, Static contact para, Guts through burn, Drought/Sand Stream entry weather); natures ±10% floored, never HP; weather mods (rain 1.45x water measured), residuals (1/16 sand chip, type + Sand Veil exemptions), interactions (Rain Dish heal, Swift Swim exact 2x speed); manual 2v2 doubles played end-to-end with per-slot target selection, exact 0.75x spread estimate, Earthquake hitting both foes + ally with spread:true, Levitate ally immune, deterministic replay (109 identical events). UI QA re-run: action bar on-canvas both slots, target pickers list both foes, POURING RAIN chip + stage rain, abilities named in commentary. Remaining nits in critic notes only (ally cannot be chosen as a single-move target; spread classes are a hardcoded whitelist; AI-vs-AI season sims stay singles-only)."
   }
  ],
- "updated": "2026-08-30 13:10"
+ "updated": "2026-08-30 16:07"
 }

@@ -276,6 +276,18 @@ func _rebuild_left() -> void:
 	for i in p["bench"].size():
 		_left_box.add_child(_make_row(p["bench"][i], "B%d" % (i + 1), false))
 
+	var dbl := Label.new()
+	var nxt: Dictionary = GameState.next_player_fixture()
+	var cup_next: bool = not nxt.is_empty() and str(nxt.get("league", "")) == ""
+	dbl.text = ("NEXT: %s game 2 is 2v2 DOUBLES — slots 1 & 2 open as your pair." % GameState.cup_name()) \
+		if cup_next else "Cup ties: game 2 is 2v2 doubles — slots 1 & 2 open as your pair."
+	dbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dbl.add_theme_font_size_override("font_size", 10)
+	dbl.add_theme_color_override("font_color",
+		ThemeBuilder.COL_ACCENT if cup_next else ThemeBuilder.COL_TEXT_DIM)
+	dbl.tooltip_text = "The engine plays cup game 2 as 2v2 doubles. Your battle order is the doubles order: slots 1 and 2 start together, faints pull in slot 3 onward. League matches are all singles."
+	_left_box.add_child(dbl)
+
 	var hint := Label.new()
 	hint.text = "Drag a row onto another (or click two rows) to swap. Slot 1 opens the battle."
 	hint.add_theme_font_size_override("font_size", 10)
@@ -309,6 +321,9 @@ func _rebuild_center() -> void:
 	_center_box.add_child(_section("Defensive response — damage taken from each attack type"))
 	_center_box.add_child(_make_coverage_grid(false))
 	_center_box.add_child(_make_coverage_summary())
+	var wp := _make_weather_panel()
+	if wp != null:
+		_center_box.add_child(wp)
 	var opp := _make_opponent_panel()
 	if opp != null:
 		_center_box.add_child(opp)
@@ -576,6 +591,54 @@ func _make_coverage_summary() -> Control:
 	l.add_theme_color_override("font_color",
 		ThemeBuilder.COL_TEXT_DIM if uncovered.is_empty() and weak_counts.is_empty() else ThemeBuilder.COL_WARN)
 	return l
+
+
+## Weather summary chip: shows when the selected six deliberately sets weather
+## (Drizzle/Drought/Sand Stream or a weather move) and who profits/suffers.
+func _make_weather_panel() -> Control:
+	var plan := Logic.weather_plan(_analyses, _preset()["lineup"])
+	if plan.is_empty():
+		return null
+	var kind := str(plan["kind"])
+	var kind_col: Color = {"sun": Color(0.95, 0.62, 0.22), "rain": Color(0.35, 0.62, 0.95),
+		"sand": Color(0.78, 0.65, 0.38)}.get(kind, ThemeBuilder.COL_ACCENT)
+	var box := PanelContainer.new()
+	var st := StyleBoxFlat.new()
+	st.bg_color = kind_col.darkened(0.82)
+	st.border_color = kind_col.darkened(0.35)
+	st.set_border_width_all(1)
+	st.set_corner_radius_all(4)
+	st.set_content_margin_all(8)
+	box.add_theme_stylebox_override("panel", st)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 2)
+	box.add_child(v)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 8)
+	v.add_child(head)
+	var chip := Label.new()
+	chip.text = " %s PLAN " % kind.to_upper()
+	chip.add_theme_font_size_override("font_size", 11)
+	chip.add_theme_color_override("font_color", Color(0.08, 0.08, 0.1))
+	var cst := StyleBoxFlat.new()
+	cst.bg_color = kind_col
+	cst.set_corner_radius_all(3)
+	chip.add_theme_stylebox_override("normal", cst)
+	head.add_child(chip)
+	var who := Label.new()
+	who.text = "Set by %s" % ", ".join(plan["setters"])
+	who.add_theme_font_size_override("font_size", 11)
+	head.add_child(who)
+	for pair in [[plan["boosts"], "+ ", ThemeBuilder.COL_GOOD], [plan["risks"], "− ", ThemeBuilder.COL_WARN]]:
+		for line in pair[0]:
+			var l := Label.new()
+			l.text = pair[1] + str(line)
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			l.add_theme_font_size_override("font_size", 10)
+			l.add_theme_color_override("font_color", pair[2])
+			v.add_child(l)
+	box.tooltip_text = "Weather lasts 5 turns from a move (8 from an ability). Sun: Fire ×1.5 / Water ×0.5. Rain: the reverse. Sandstorm chips non Rock/Ground/Steel and raises Rock SpD ×1.5."
+	return box
 
 
 func _make_opponent_panel() -> Control:

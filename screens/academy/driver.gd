@@ -132,6 +132,30 @@ func _ready() -> void:
 		GameState.advance_day()
 	_check(svc.facility_level == 2, "construction complete -> facility level 2")
 
+	# --- mail routing: every academy mail carries its snapshot + renders rich --
+	var mails := {}
+	for msg in GameState.inbox:
+		mails[str(msg.get("academy_kind", ""))] = msg
+	for k in ["preview", "intake", "promote", "board_request", "board_approve", "facility_open"]:
+		_check(mails.has(k), "inbox holds a stamped '%s' academy mail" % k)
+	if mails.has("intake"):
+		_check(not (mails["intake"].get("recruits", []) as Array).is_empty(),
+			"intake mail snapshotted its recruit cards on intake day")
+	if mails.has("promote"):
+		_check(mails["promote"].has("species") and mails["promote"].has("band_lo"),
+			"promotion mail carries the rich-card snapshot (species + bands)")
+	var mg: RefCounted = (load("res://screens/academy/mail_gen.gd") as GDScript).new()
+	if mails.has("facility_open"):
+		var rendered: Dictionary = mg.render(mails["facility_open"])
+		var bb := str(rendered.get("bbcode", ""))
+		_check(bb.contains("ACADEMY FACILITIES") and bb.contains(str(mails["facility_open"]["facility_name"])),
+			"facility-open mail renders the purpose-built body (not board boilerplate)")
+		_check(not bb.contains("CONFIDENCE"), "facility-open mail free of board-review template")
+	if mails.has("board_approve"):
+		var bb2 := str(mg.render(mails["board_approve"]).get("bbcode", ""))
+		_check(bb2.contains("APPROVED") and bb2.contains("$250,000"),
+			"board-approve mail renders cost + verdict")
+
 	# --- facility level changes intake quality (deterministic) --------------
 	var lo_svc: RefCounted = Academy.new()
 	lo_svc._gs = GameState
@@ -151,6 +175,13 @@ func _ready() -> void:
 		lo_svc.roster.size(), lo_avg, hi_svc.roster.size(), hi_avg])
 	_check(hi_avg > lo_avg, "higher facility level -> higher intake potential")
 	_check(hi_svc.roster.size() >= lo_svc.roster.size(), "higher facility level -> at least as many recruits")
+	# fresh recruits arrive with juvenile-appropriate moves (no Lv-5 Hyper Beam)
+	var moves_ok := true
+	for m in lo_svc.roster + hi_svc.roster:
+		for mv in m.get("moves", []):
+			if int(DataStore.move(String(mv)).get("power", 0)) > 60:
+				moves_ok = false
+	_check(moves_ok, "recruit starter moves are level-appropriate (power <= 60)")
 
 	# --- save/load roundtrip -------------------------------------------------
 	var snap := {

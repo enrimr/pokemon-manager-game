@@ -76,11 +76,48 @@ func _ready() -> void:
 	var club_t: Dictionary = targets.filter(func(t): return t["pool"] == "club" and not m.is_ext_uid(String(t["inst"]["uid"]))).front()
 	var uid: String = club_t["inst"]["uid"]
 	_ok(m.knowledge_of(uid) < 100.0, "club target starts unscouted")
-	var stats: Dictionary = m.exact_stats(club_t["inst"])
+	var stats: Dictionary = m.battle_stats(club_t["inst"])
 	var masked: String = m.masked_int(uid, "atk", int(stats["atk"]))
 	_ok(masked.contains("-"), "unscouted attack shown as range (%s)" % masked)
 	var b: Array = m.masked_bounds(uid, "atk", int(stats["atk"]))
-	_ok(int(b[0]) <= int(stats["atk"]) and int(stats["atk"]) <= int(b[1]), "range contains true value")
+	_ok(int(b[0]) <= int(stats["atk"]) and int(stats["atk"]) <= int(b[1]), "range contains true (nature-adjusted) value")
+	# cross-screen truth: transfers battle_stats == squad effective_stats ==
+	# engine _init_battler for every target we can find with a non-neutral nature
+	var squad_helpers = load("res://screens/squad/ui_helpers.gd")
+	var parity_checked := 0
+	var parity_nonneutral := 0
+	for pt in targets.slice(0, 40):
+		var pi: Dictionary = pt["inst"]
+		var mine: Dictionary = m.battle_stats(pi)
+		var theirs: Dictionary = squad_helpers.effective_stats(pi)
+		if str(mine) != str(theirs):
+			_ok(false, "battle_stats mismatch vs squad for %s" % str(pi.get("species")))
+			break
+		parity_checked += 1
+		var natp: Dictionary = DataStore.nature(str(pi.get("nature", "Hardy")))
+		if not natp.is_empty() and natp.get("plus") != null:
+			parity_nonneutral += 1
+			var pre: Dictionary = m.exact_stats(pi)
+			_ok(int(mine[str(natp["plus"])]) == int(floor(float(pre[str(natp["plus"])]) * 1.1)),
+				"nature +10%% applied (engine math) for %s" % str(pi.get("species")))
+	_ok(parity_checked == 40 and parity_nonneutral > 0,
+		"transfers==squad stat parity on %d targets (%d nature-modified)" % [parity_checked, parity_nonneutral])
+	# ...and == the LIVE engine: what Search quotes is what would fight
+	var eng_b: Dictionary = DataStore.make_battler(club_t["inst"])
+	var eng := BattleEngine.new([eng_b], [eng_b.duplicate(true)], 7)
+	var eng_stats: Dictionary = eng.active_battler(0)["stats"]
+	var eng_same := true
+	for sk in ["hp", "atk", "def", "spa", "spd", "spe"]:
+		if int(eng_stats[sk]) != int(stats[sk]):
+			eng_same = false
+	_ok(eng_same, "transfers battle_stats == BattleEngine initialised stats (%s)" % str(club_t["inst"].get("nature")))
+	# a filed inbox dossier grants Part-scouted market knowledge
+	var pros_t: Dictionary = targets.filter(func(t): return t["pool"] == "prospect" and m.knowledge_of(String(t["inst"]["uid"])) < 40.0).front()
+	if not pros_t.is_empty():
+		var puid: String = String(pros_t["inst"]["uid"])
+		m.grant_knowledge(puid, 55.0)
+		_ok(m.knowledge_of(puid) >= 55.0, "grant_knowledge raises a prospect's book to Part scouted")
+		_ok(m.known_nature(pros_t["inst"]) != "", "nature readable at Part scouted after a filed dossier")
 
 	print("=== transfers: board transfer budget ===")
 	var pc0: Dictionary = GameState.player_club()

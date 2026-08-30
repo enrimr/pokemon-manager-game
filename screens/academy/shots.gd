@@ -26,6 +26,8 @@ func _run() -> void:
 	GameState.player_club()["finances"]["balance"] = 3000000
 	var svc: RefCounted = (load("res://shared/sim/services/academy.gd") as GDScript).active
 	svc.request_upgrade()
+	for i in 16:  # board decision (3d) + L2 construction (10d) -> facilities open
+		GameState.advance_day()
 
 	_shell = (load("res://shell/main.tscn") as PackedScene).instantiate()
 	get_tree().root.add_child(_shell)
@@ -43,10 +45,28 @@ func _run() -> void:
 	await _shot(out_dir, "academy_roster")
 	_shell.navigate_to("inbox")
 	await _settle()
+	var inbox_scr: Control = _shell.find_child("InboxScreen", true, false)
+	if inbox_scr != null:
+		_select_mail(inbox_scr, "intake")
+		await _settle()
 	await _shot(out_dir, "academy_intake_inbox")
+	if inbox_scr != null:
+		_select_mail(inbox_scr, "facility_open")
+		await _settle()
+		await _shot(out_dir, "academy_facility_open_inbox")
+		_select_mail(inbox_scr, "preview")
+		await _settle()
+		await _shot(out_dir, "academy_preview_inbox")
 	SaveGuard.restore()
 	print("ACADEMY SHOTS OK")
 	get_tree().quit(0)
+
+
+func _select_mail(inbox_scr: Control, kind: String) -> void:
+	for m in GameState.inbox:
+		if str(m.get("academy_kind", "")) == kind:
+			inbox_scr._on_row_pressed(m)
+			return
 
 
 func _shot(out_dir: String, name: String) -> void:

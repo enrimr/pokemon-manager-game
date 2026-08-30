@@ -11,7 +11,7 @@ const RARITY_COLORS := {
 	"rare": ThemeBuilder.COL_WARN,
 }
 const CLASS_LABEL := {"held": "HELD", "usable": "USABLE"}
-const CLASS_FILTERS := ["All items", "Held (passive in battle)", "Usable (trainer action)"]
+const CLASS_FILTERS := ["All items", "Held (passive in battle)", "Usable (trainer action)", "Evolution stones"]
 const RARITY_FILTERS := ["Any rarity", "Common", "Uncommon", "Rare"]
 
 var _search := ""
@@ -431,7 +431,9 @@ func _refresh_shop() -> void:
 		var owned := int(inv.get(iid, 0))
 		if _class_filter == 1 and str(it["class"]) != "held":
 			continue
-		if _class_filter == 2 and str(it["class"]) != "usable":
+		if _class_filter == 2 and (str(it["class"]) != "usable" or _is_stone(it)):
+			continue
+		if _class_filter == 3 and not _is_stone(it):
 			continue
 		if _rarity_filter > 0 and str(it["rarity"]) != RARITY_FILTERS[_rarity_filter].to_lower():
 			continue

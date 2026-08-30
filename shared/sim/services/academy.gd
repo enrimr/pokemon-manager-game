@@ -96,6 +96,8 @@ func on_career_started(gs) -> void:
 func on_day(gs, date: String) -> void:
 	_gs = gs
 	_tick_upgrade(date)
+	if int(date.substr(8, 2)) == INTAKE_DAY - 7:
+		_post_intake_preview(date)
 	if int(date.substr(8, 2)) == INTAKE_DAY:
 		_run_intake(date)
 	_tick_development(date)
@@ -156,6 +158,27 @@ func head_youth_coach() -> String:
 			best = int(s["ratings"].get("youth", 0))
 			who = String(s["name"])
 	return who
+
+
+# ------------------------------------------------------------------ mail
+
+## Post an inbox mail with the routing key and a JSON-safe snapshot already
+## attached. report_gen routes any message carrying academy_kind (or an
+## "academy:" uid) to screens/academy/mail_gen.gd, and news_gen's enrichment
+## skips messages that arrive with a cat — so these mails NEVER fall back to
+## the generic board-review template, and the snapshot is taken on the day the
+## mail is sent (intake-day truth, not first-read truth). The plain body stays
+## as a fallback for installs without the academy screen.
+func _post_mail(date: String, title: String, body: String, extra: Dictionary) -> void:
+	_gs.add_inbox_message(date, title, body)
+	var m: Dictionary = _gs.inbox[0]
+	if str(m.get("title", "")) == title:
+		m.merge(extra, true)
+		_gs.inbox_updated.emit()
+
+
+func _board_sender() -> String:
+	return "%s Board of Directors" % str(_gs.player_club().get("name", "Club"))
 
 
 # ------------------------------------------------------------------ intake
@@ -219,7 +242,10 @@ func _pick_weighted(r: RandomNumberGenerator, pool: Array) -> Dictionary:
 	return pool.back()[0]
 
 
-func _run_intake(date: String) -> void:
+## The month's intake roll (seeded off career + month — the preview a week
+## out and intake day itself see the SAME class). Returns {r, count, golden,
+## thin}; r is the RNG mid-stream, ready to generate the recruits.
+func _roll_intake(date: String) -> Dictionary:
 	var r := RandomNumberGenerator.new()
 	r.seed = int(_gs.career_seed) + hash("academy|intake|" + date.substr(0, 7))
 	var lo: int = INTAKE_MIN[facility_level]
@@ -227,6 +253,45 @@ func _run_intake(date: String) -> void:
 	var count := lo + int(r.randi() % (hi - lo + 1))
 	var golden := r.randf() < GOLDEN_CHANCE
 	var thin := (not golden) and r.randf() < THIN_CHANCE
+	return {"r": r, "count": count, "golden": golden, "thin": thin}
+
+
+## FM's iconic intake-preview mail: a week before intake day the head youth
+## coach sends an early, hedged read on the incoming class.
+func _post_intake_preview(date: String) -> void:
+	var roll := _roll_intake(date)
+	var coach := head_youth_coach()
+	var mood := "normal"
+	if bool(roll["golden"]):
+		mood = "golden"
+	elif bool(roll["thin"]):
+		mood = "thin"
+	var intake_on := date.substr(0, 8) + "%02d" % INTAKE_DAY
+	var body := "%s has been watching the youth candidates ahead of intake day on %s. " % [coach, intake_on]
+	match mood:
+		"golden":
+			body += "Whispers from the programme suggest a special group is coming through — the staff can barely contain themselves."
+		"thin":
+			body += "Expectations are low this month; the region's best juveniles appear to have gone elsewhere."
+		_:
+			body += "A typical group is expected — a couple of names worth watching, nothing the staff are shouting about yet."
+	_post_mail(date, "Youth intake preview", body, {
+		"cat": "staff", "sender": coach, "coach": coach,
+		"academy_kind": "preview", "uid": "academy:preview:" + date,
+		"mood": mood, "intake_on": intake_on,
+		"expect_lo": int(INTAKE_MIN[facility_level]),
+		"expect_hi": int(INTAKE_MAX[facility_level]),
+		"facility": facility_level,
+		"facility_name": String(FACILITY_NAMES[facility_level]),
+	})
+
+
+func _run_intake(date: String) -> void:
+	var roll := _roll_intake(date)
+	var r: RandomNumberGenerator = roll["r"]
+	var count: int = roll["count"]
+	var golden: bool = roll["golden"]
+	var thin: bool = roll["thin"]
 	var pool := _weighted_pool()
 	var recruits: Array = []
 	for i in count:
@@ -240,8 +305,28 @@ func _run_intake(date: String) -> void:
 		"best": String(best["species"]), "facility": facility_level})
 	if history.size() > 24:
 		history.resize(24)
-	_gs.add_inbox_message(date, "Youth intake day: %d new recruits" % count,
-		_intake_report(recruits, golden, thin))
+	var coach := head_youth_coach()
+	var snap: Array = []
+	for m in recruits:
+		var sp: Dictionary = DataStore.species(int(m["species_id"]))
+		var band := potential_stars(m)
+		snap.append({
+			"species": String(m["species"]), "types": (sp.get("types", []) as Array).duplicate(),
+			"level": int(m["level"]), "age_months": int(m["age_months"]),
+			"nature": String(m["nature"]), "stars": float(m["stars"]),
+			"band_lo": float(band[0]), "band_hi": float(band[1]),
+			"pot_max": int(m["pot_max"]), "moves": (m["moves"] as Array).duplicate(),
+			"note": _pot_note(int(m["pot_max"])),
+			"best": String(m["uid"]) == String(best["uid"]),
+		})
+	_post_mail(date, "Youth intake day: %d new recruits" % count,
+		_intake_report(recruits, golden, thin), {
+			"cat": "staff", "sender": coach, "coach": coach,
+			"academy_kind": "intake", "uid": "academy:intake:" + date,
+			"recruits": snap, "golden": golden, "thin": thin,
+			"facility": facility_level,
+			"facility_name": String(FACILITY_NAMES[facility_level]),
+		})
 
 
 func _make_recruit(r: RandomNumberGenerator, pool: Array, golden: bool, thin: bool,
@@ -260,10 +345,20 @@ func _make_recruit(r: RandomNumberGenerator, pool: Array, golden: bool, thin: bo
 		if facility_level >= 3:
 			v = maxi(v, int(r.randi() % 16))  # better facilities, better raw material
 		ivs[k] = v
+	# Starter moves are juvenile-appropriate: the first learnset entries whose
+	# power a Lv-5 recruit could plausibly wield (no "Knows: Hyper Beam").
 	var learn: Array = sp.get("learnset", [])
 	var moves: Array = []
+	for mv in learn:
+		if moves.size() >= 2:
+			break
+		if int(DataStore.move(String(mv)).get("power", 0)) <= 60:
+			moves.append(mv)
 	for i in mini(2, learn.size()):
-		moves.append(learn[i])
+		if moves.size() >= 2:
+			break
+		if not (learn[i] in moves):
+			moves.append(learn[i])
 	var nk: Array = DataStore.natures.keys()
 	nk.sort()
 	var jp := _coach_rating("judging_potential")
@@ -474,10 +569,22 @@ func promote(uid: String) -> String:
 	}
 	squad.append(inst)
 	roster.erase(m)
-	_gs.add_inbox_message(_gs.current_date, "%s promoted to the first team" % inst["species"],
+	var band := potential_stars(m)
+	_post_mail(_gs.current_date, "%s promoted to the first team" % inst["species"],
 		"%s steps up from the academy on a contract to %s. Coaches rate the ceiling %s – %s. Young battlers develop fastest alongside senior squad-mates — consider a mentor." % [
 			inst["species"], inst["contract"]["expiry"],
-			star_text(potential_stars(m)[0]), star_text(potential_stars(m)[1])])
+			star_text(band[0]), star_text(band[1])], {
+			"cat": "staff", "sender": head_youth_coach(),
+			"academy_kind": "promote",
+			"uid": "academy:promote:%s:%s" % [_gs.current_date, String(m["uid"])],
+			"species": String(inst["species"]),
+			"types": (sp.get("types", []) as Array).duplicate(),
+			"level": int(inst["level"]),
+			"band_lo": float(band[0]), "band_hi": float(band[1]),
+			"pot_max": int(m["pot_max"]),
+			"salary": int(inst["contract"]["salary"]),
+			"expiry": String(inst["contract"]["expiry"]),
+		})
 	academy_changed.emit()
 	return ""
 
@@ -487,8 +594,13 @@ func release(uid: String) -> String:
 	if m.is_empty():
 		return "Not in the academy."
 	roster.erase(m)
-	_gs.add_inbox_message(_gs.current_date, "%s released from the academy" % m["species"],
-		"%s leaves the club's youth setup. The staff wish them well." % m["species"])
+	_post_mail(_gs.current_date, "%s released from the academy" % m["species"],
+		"%s leaves the club's youth setup. The staff wish them well." % m["species"], {
+			"cat": "staff", "sender": head_youth_coach(),
+			"academy_kind": "release",
+			"uid": "academy:release:%s:%s" % [_gs.current_date, String(m["uid"])],
+			"species": String(m["species"]),
+		})
 	academy_changed.emit()
 	return ""
 
@@ -512,9 +624,17 @@ func request_upgrade() -> String:
 	pending = {"to_level": facility_level + 1, "cost": cost, "status": "pending",
 		"requested": _gs.current_date, "decide_on": Season.date_add(_gs.current_date, 3),
 		"complete_on": ""}
-	_gs.add_inbox_message(_gs.current_date, "Board considering academy investment",
+	_post_mail(_gs.current_date, "Board considering academy investment",
 		"You have asked the board to fund Level %d academy facilities (%s). They will respond within days." % [
-			facility_level + 1, format_money(cost)])
+			facility_level + 1, format_money(cost)], {
+			"cat": "board", "sender": _board_sender(),
+			"academy_kind": "board_request",
+			"uid": "academy:board:req:" + _gs.current_date,
+			"to_level": facility_level + 1,
+			"facility_name": String(FACILITY_NAMES[facility_level + 1]),
+			"cost": cost, "decide_on": String(pending["decide_on"]),
+			"reserve": BOARD_RESERVE,
+		})
 	academy_changed.emit()
 	return ""
 
@@ -530,20 +650,39 @@ func _tick_upgrade(date: String) -> void:
 			fin["balance"] = int(fin["balance"]) - cost
 			pending["status"] = "building"
 			pending["complete_on"] = Season.date_add(date, int(CONSTRUCTION_DAYS[to]))
-			_gs.add_inbox_message(date, "Board approves academy expansion",
+			_post_mail(date, "Board approves academy expansion",
 				"The board has released %s for Level %d facilities. Construction completes on %s." % [
-					format_money(cost), to, pending["complete_on"]])
+					format_money(cost), to, pending["complete_on"]], {
+					"cat": "board", "sender": _board_sender(),
+					"academy_kind": "board_approve",
+					"uid": "academy:board:ok:" + date,
+					"to_level": to, "cost": cost,
+					"facility_name": String(FACILITY_NAMES[to]),
+					"complete_on": String(pending["complete_on"]),
+				})
 		else:
 			pending = {}
-			_gs.add_inbox_message(date, "Board rejects academy request",
+			_post_mail(date, "Board rejects academy request",
 				"The club cannot commit %s while keeping a %s operating reserve. Improve the balance and ask again." % [
-					format_money(cost), format_money(BOARD_RESERVE)])
+					format_money(cost), format_money(BOARD_RESERVE)], {
+					"cat": "board", "sender": _board_sender(),
+					"academy_kind": "board_reject",
+					"uid": "academy:board:no:" + date,
+					"to_level": to, "cost": cost, "reserve": BOARD_RESERVE,
+					"facility_name": String(FACILITY_NAMES[to]),
+				})
 	elif String(pending["status"]) == "building" and date >= String(pending["complete_on"]):
 		facility_level = to
 		pending = {}
-		_gs.add_inbox_message(date, "New academy facilities open",
+		_post_mail(date, "New academy facilities open",
 			"The %s (Level %d) are ready. Expect larger, higher-quality intakes from the %dth of each month." % [
-				FACILITY_NAMES[facility_level], facility_level, INTAKE_DAY])
+				FACILITY_NAMES[facility_level], facility_level, INTAKE_DAY], {
+				"cat": "board", "sender": _board_sender(),
+				"academy_kind": "facility_open",
+				"uid": "academy:board:open:" + date,
+				"to_level": facility_level,
+				"facility_name": String(FACILITY_NAMES[facility_level]),
+			})
 
 
 static func format_money(v: int) -> String:

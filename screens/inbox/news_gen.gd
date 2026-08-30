@@ -103,10 +103,111 @@ func enrich_existing() -> void:
 		elif title.begins_with("Scouting:") or title.begins_with("Scout report ready:"):
 			m["cat"] = "scout"
 			m["sender"] = scout_name()
+		elif title.begins_with("Youth intake day:") or title.contains("promoted to the first team") \
+				or title.contains("released from the academy") or _academy_board_kind(title) != "":
+			_enrich_academy(m, title)
 		else:
 			m["cat"] = "board"
 			m["sender"] = pc.get("name", "Club")
 		_refresh_urgency(m)
+
+
+# ---- academy mail. The academy service posts plain title/body messages; we
+# attach the routing key (academy_kind) + a JSON-safe snapshot on first sight
+# so the academy piece's mail_gen can render rich intake-day report cards.
+
+func _academy_service() -> Object:
+	if not ResourceLoader.exists("res://shared/sim/services/academy.gd"):
+		return null
+	var scr = load("res://shared/sim/services/academy.gd")
+	return scr.active if scr != null else null
+
+
+## Academy board/facility mails (new ones arrive pre-stamped by the service;
+## this backfills messages written by older versions).
+func _academy_board_kind(title: String) -> String:
+	match title:
+		"Board considering academy investment":
+			return "board_request"
+		"Board approves academy expansion":
+			return "board_approve"
+		"Board rejects academy request":
+			return "board_reject"
+		"New academy facilities open":
+			return "facility_open"
+	return ""
+
+
+func _enrich_academy(m: Dictionary, title: String) -> void:
+	var bk := _academy_board_kind(title)
+	if bk != "":
+		m["cat"] = "board"
+		m["sender"] = "%s Board of Directors" % GameState.player_club().get("name", "Club")
+		m["academy_kind"] = bk
+		m["uid"] = "academy:board:%s:%s" % [bk, str(m.get("date", ""))]
+		return
+	m["cat"] = "staff"
+	m["sender"] = "Academy"
+	var svc := _academy_service()
+	if svc != null and svc.has_method("head_youth_coach"):
+		m["sender"] = str(svc.head_youth_coach())
+	if title.begins_with("Youth intake day:"):
+		m["academy_kind"] = "intake"
+		m["uid"] = "academy:intake:%s" % str(m.get("date", ""))
+		if svc != null:
+			_snapshot_intake(m, svc)
+	elif title.contains("promoted to the first team"):
+		m["academy_kind"] = "promote"   # mail_gen plain-renders + Academy link
+		m["uid"] = "academy:promote:%s:%d" % [str(m.get("date", "")), absi(title.hash()) % 1000]
+	else:
+		m["academy_kind"] = "release"
+		m["uid"] = "academy:release:%s:%d" % [str(m.get("date", "")), absi(title.hash()) % 1000]
+
+
+## Rebuild the intake-day class from the live roster (recruits still at the
+## academy on enrichment day). Fields snapshot onto the message, so the card
+## keeps showing intake-day bands even after the coaches narrow them.
+func _snapshot_intake(m: Dictionary, svc: Object) -> void:
+	var date := str(m.get("date", ""))
+	var hist: Dictionary = {}
+	for h in svc.history:
+		if str(h.get("date", "")) == date:
+			hist = h
+			break
+	var recruits: Array = []
+	for r in svc.roster:
+		if str(r.get("joined", "")) != date:
+			continue
+		var sp: Dictionary = DataStore.species(int(r["species_id"]))
+		var band: Array = svc.potential_stars(r)
+		var pot_max := int(r.get("pot_max", 8))
+		recruits.append({
+			"species": str(r.get("species", "?")), "types": sp.get("types", []),
+			"level": int(r.get("level", 1)), "age_months": int(r.get("age_months", 12)),
+			"nature": str(r.get("nature", "")), "stars": float(r.get("stars", 0.5)),
+			"band_lo": float(band[0]), "band_hi": float(band[1]), "pot_max": pot_max,
+			"moves": (r.get("moves", []) as Array).duplicate(),
+			"note": _intake_note(pot_max),
+			"best": not hist.is_empty() and str(hist.get("best", "")) == str(r.get("species", "")),
+		})
+	if recruits.is_empty():
+		return    # class already promoted/released — mail_gen falls back to the plain body
+	m["recruits"] = recruits
+	m["golden"] = bool(hist.get("golden", false))
+	m["thin"] = bool(hist.get("thin", false))
+	m["facility"] = int(hist.get("facility", svc.facility_level))
+	m["facility_name"] = str((svc.FACILITY_NAMES as Dictionary).get(int(m["facility"]), "Academy"))
+	m["coach"] = str(m.get("sender", "The coaching staff"))
+
+
+func _intake_note(pot_max: int) -> String:
+	if pot_max >= 17:
+		return "could lead the first team for a decade"
+	if pot_max >= 13:
+		return "a genuine prospect worth developing"
+	if pot_max >= 9:
+		return "solid foundations, needs game time"
+	return "one for the depth chart at best"
 
 
 ## Titles produced by the transfers piece's market via add_inbox_message.
@@ -235,16 +336,23 @@ func _gen_scout_report(have: Dictionary, date: String, day: int, salt: int) -> v
 	rng.seed = GameState.career_seed + day * 131 + salt * 7 + 5
 	var p: Dictionary = prospects[rng.randi_range(0, prospects.size() - 1)]
 	var uid := "scout:%s:%d" % [date, salt]
+	# A filed dossier is REAL knowledge: raise the market's book on this
+	# prospect to Part scouted (55%) so the report, the Transfer Centre and
+	# every stat band agree on what is known. (Floor only — never lowers.)
+	if not have.has(uid):
+		var mkt := market()
+		if mkt != null and mkt.has_method("grant_knowledge"):
+			mkt.grant_knowledge(str(p["uid"]), 55.0)
 	var title := "Scout report: %s" % display_name(p)
 	if display_name(p) != str(p["species"]):
 		title += " (%s)" % p["species"]
 	var flavors := [
-		"%s has filed a full report on a prospect they have been tracking.",
-		"A completed dossier from %s has landed on your desk — full assessment attached.",
+		"%s has filed a report on a prospect they have been tracking.",
+		"A dossier from %s has landed on your desk — assessment attached.",
 		"%s has wrapped up several weeks on the road watching a promising youngster.",
-		"Fresh intel: %s marks another prospect file complete and recommends you read it.",
-		"%s writes: \"Finished my homework on this one, boss. Worth two minutes of your time.\"",
-		"The scouting desk closes another file — %s's finished report is attached.",
+		"Fresh intel: %s has opened a proper book on this prospect and recommends you read it.",
+		"%s writes: \"Done my homework on this one, boss. Worth two minutes of your time.\"",
+		"The scouting desk files another dossier — %s's report is attached.",
 	]
 	var body: String = flavors[rng.randi_range(0, flavors.size() - 1)] % scout_name()
 	_add(have, uid, date, title, body,

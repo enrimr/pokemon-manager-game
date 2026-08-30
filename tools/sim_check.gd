@@ -80,6 +80,8 @@ func _run() -> void:
 		steps += 1
 	_check(e4.is_over(), "step-mode battle finishes (turns=%d)" % e4.turn)
 
+	_doubles_checks()
+
 	print("=== sim_check: items — held effects, use_item, determinism ===")
 	_check(DataStore.items.size() >= 40, "item catalog loaded (%d items)" % DataStore.items.size())
 	var held_n: int = DataStore.items_list("held").size()
@@ -480,6 +482,66 @@ func _inv_norm(inv: Dictionary) -> String:
 	for k in keys:
 		parts.append("%s=%d" % [str(k), int(inv[k])])
 	return ",".join(parts)
+
+
+## DOUBLES (2v2) engine assertions: mode boot, targeting, spread scaling,
+## ally-hitting field moves, per-slot event info and determinism.
+func _doubles_checks() -> void:
+	print("=== sim_check: doubles (2v2) engine ===")
+	var mk_sides := func() -> Array:
+		return [[_mkx(112, 50, ["Swift", "Earthquake", "Slash"], "Hardy", null),
+			_mkx(143, 50, ["Body Slam", "Rest"], "Hardy", null),
+			_mkx(25, 50, ["Thunderbolt", "Quick Attack"], "Hardy", null)],
+			[_mkx(9, 55, ["Tackle"], "Hardy", null),
+			_mkx(55, 55, ["Tackle"], "Hardy", null),
+			_mkx(143, 55, ["Tackle"], "Hardy", null)]]
+	var s: Array = mk_sides.call()
+	var ed := BattleEngine.new(s[0], s[1], 2424, "doubles")
+	_check(ed.is_doubles() and ed.slot_count() == 2, "doubles mode boots with 2 slots/side")
+	var opens := ed.events.filter(func(ev): return ev["t"] == "switch" and ev.get("first", false))
+	_check(opens.size() == 4 and opens.all(func(ev): return ev.has("slot")),
+		"four opening send-outs, all with slot info")
+	# single-target moves list both foes as choosable targets
+	var slash: Dictionary = {}
+	for a in ed.legal_actions_slot(0, 0):
+		if a.get("type", "") == "move" and str(a.get("move", "")) == "Slash":
+			slash = a
+	_check(str(slash.get("targeting", "")) == "single" and slash.get("targets", []).size() == 2,
+		"single-target move offers both foe slots as targets")
+	var heal_all := func(eng: BattleEngine) -> void:
+		for side in 2:
+			for b in eng.team_state(side):
+				b["hp"] = b["max_hp"]
+	# targeted Slash hits exactly the chosen slot
+	var evs1: Array = ed.step_turn([{"type": "move", "index": 2,
+		"target": {"side": 1, "slot": 1}}, null], null)
+	var hits1 := evs1.filter(func(ev): return ev["t"] == "damage" and ev.get("move", "") == "Slash")
+	_check(hits1.size() == 1 and int(hits1[0].get("slot", -9)) == 1
+		and int(hits1[0].get("by_slot", -9)) == 0,
+		"targeted single move hit the chosen foe slot (with slot/by_slot info)")
+	heal_all.call(ed)
+	# spread move (Swift, never-miss) hits BOTH foes at 0.75x
+	var evs2: Array = ed.step_turn([{"type": "move", "index": 0}, null], null)
+	var hits2 := evs2.filter(func(ev): return ev["t"] == "damage" and ev.get("move", "") == "Swift")
+	_check(hits2.size() == 2 and hits2.all(func(ev): return ev.get("spread", false)),
+		"spread move hit both foes, damage flagged spread (0.75x)")
+	heal_all.call(ed)
+	# Earthquake hits both foes AND the user's ally
+	var evs3: Array = ed.step_turn([{"type": "move", "index": 1}, null], null)
+	var hits3 := evs3.filter(func(ev): return ev["t"] == "damage" and ev.get("move", "") == "Earthquake")
+	var ally := hits3.filter(func(ev): return ev.get("ally_hit", false))
+	_check(hits3.size() == 3 and ally.size() == 1,
+		"Earthquake hit both foes + the ally (%d hits, %d ally)" % [hits3.size(), ally.size()])
+	# doubles determinism: same teams + seed + mode => identical log
+	var sa: Array = mk_sides.call()
+	var sb: Array = mk_sides.call()
+	var d1 := BattleEngine.new(sa[0], sa[1], 4321, "doubles")
+	var d2 := BattleEngine.new(sb[0], sb[1], 4321, "doubles")
+	var dl1 := d1.run_to_end()
+	var dl2 := d2.run_to_end()
+	_check(d1.is_over() and d1.winner() in [0, 1], "doubles battle finishes (winner=%d, turns=%d)" % [d1.winner(), d1.turn])
+	_check(dl1.size() == dl2.size() and d1.winner() == d2.winner(),
+		"doubles same seed => identical battle (%d events)" % dl1.size())
 
 
 ## Battler factory with explicit moves + nature (ability = species ability).

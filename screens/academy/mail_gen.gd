@@ -24,6 +24,8 @@ func render(msg: Dictionary) -> Dictionary:
 	match str(msg.get("academy_kind", "")):
 		"intake":
 			return _intake(msg)
+		"preview":
+			return _preview(msg)
 		"promote":
 			return _promote(msg)
 		"release":
@@ -122,6 +124,27 @@ func _recruit_card(r: Dictionary, golden: bool) -> String:
 		edge, CARD_BG, head, meters, foot]
 
 
+# ---------------------------------------------------------------- preview
+
+## A week before intake day: the head youth coach's hedged early read.
+func _preview(msg: Dictionary) -> Dictionary:
+	var b := "[color=#%s][font_size=12]INTAKE PREVIEW  ·  %s (LEVEL %d)[/font_size][/color]\n" % [
+		C_DIM, str(msg.get("facility_name", "Academy")).to_upper(), int(msg.get("facility", 1))]
+	b += "[color=#%s][b]%s[/b] has been watching this month's youth candidates ahead of intake day on [b]%s[/b].[/color]\n\n" % [
+		C_WHITE, str(msg.get("coach", "The head youth coach")), str(msg.get("intake_on", ""))]
+	match str(msg.get("mood", "normal")):
+		"golden":
+			b += "[bgcolor=#3a3113][color=#%s][b] ★ Whispers of a special group — the staff can barely contain themselves. [/b][/color][/bgcolor]\n\n" % C_GOLD
+		"thin":
+			b += "[color=#%s][i]Expectations are low — the region's best juveniles appear to have gone elsewhere.[/i][/color]\n\n" % C_WARN
+		_:
+			b += "[color=#%s]A typical group is expected — a couple of names worth watching, nothing the staff are shouting about yet.[/color]\n\n" % C_WHITE
+	b += "[color=#%s]Expected class size[/color]  [color=#%s][b]%d–%d juveniles[/b][/color]\n" % [
+		C_DIM, C_ACC, int(msg.get("expect_lo", 2)), int(msg.get("expect_hi", 3))]
+	b += "[font_size=12][color=#%s]First impressions can mislead — the coaches' potential bands only firm up once the recruits start work.[/color][/font_size]" % C_DIM
+	return {"bbcode": b, "actions": [GO_ACADEMY], "banner": {}}
+
+
 # ---------------------------------------------------------------- promotion
 
 func _promote(msg: Dictionary) -> Dictionary:
@@ -151,6 +174,11 @@ func _promote(msg: Dictionary) -> Dictionary:
 func _board(msg: Dictionary) -> Dictionary:
 	var kind := str(msg.get("academy_kind", ""))
 	var b := "[color=#%s][font_size=12]ACADEMY FACILITIES[/font_size][/color]\n" % C_DIM
+	if not msg.has("to_level"):
+		# Mail from before the snapshot era (old save): the plain body already
+		# carries the facts — present it under the facilities kicker.
+		b += "[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", ""))]
+		return {"bbcode": b, "actions": [GO_ACADEMY], "banner": {}}
 	match kind:
 		"board_request":
 			b += "[color=#%s]You have asked the board to fund [b]Level %d[/b] facilities — [b]%s[/b].[/color]\n\n" % [
