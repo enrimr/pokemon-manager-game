@@ -235,9 +235,19 @@ func _gen_scout_report(have: Dictionary, date: String, day: int, salt: int) -> v
 	rng.seed = GameState.career_seed + day * 131 + salt * 7 + 5
 	var p: Dictionary = prospects[rng.randi_range(0, prospects.size() - 1)]
 	var uid := "scout:%s:%d" % [date, salt]
-	_add(have, uid, date,
-		"Scout report: %s (%s)" % [display_name(p), p["species"]],
-		"%s has filed a full report on a prospect he has been tracking." % scout_name(),
+	var title := "Scout report: %s" % display_name(p)
+	if display_name(p) != str(p["species"]):
+		title += " (%s)" % p["species"]
+	var flavors := [
+		"%s has filed a full report on a prospect they have been tracking.",
+		"A completed dossier from %s has landed on your desk — full assessment attached.",
+		"%s has wrapped up several weeks on the road watching a promising youngster.",
+		"Fresh intel: %s marks another prospect file complete and recommends you read it.",
+		"%s writes: \"Finished my homework on this one, boss. Worth two minutes of your time.\"",
+		"The scouting desk closes another file — %s's finished report is attached.",
+	]
+	var body: String = flavors[rng.randi_range(0, flavors.size() - 1)] % scout_name()
+	_add(have, uid, date, title, body,
 		{"cat": "scout", "sender": scout_name(), "prospect_uid": p["uid"]})
 
 

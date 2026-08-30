@@ -1,10 +1,11 @@
 extends Node
 ## Headless QA for the match piece (not part of the game UI).
 ## Run: godot --headless --path . res://screens/match/_qa.tscn
-## Back up user://save.json first if you care about it — this mutates state,
-## then deletes the save it wrote.
+## Runs a destructive throwaway career, but the player's real user://save.json
+## is backed up and restored via tools/save_guard.gd (like the other dev tools).
 
 const MatchRunner := preload("res://screens/match/match_runner.gd")
+const SaveGuard := preload("res://tools/save_guard.gd")
 
 var _fail := false
 
@@ -23,6 +24,7 @@ func _check(cond: bool, what: String) -> void:
 
 func _run() -> void:
 	print("=== match QA: full interactive flow (headless) ===")
+	SaveGuard.backup()
 	GameState.new_career(112233)
 	var f: Dictionary = GameState.next_player_fixture()
 	_check(not f.is_empty(), "found player fixture %s" % str(f.get("id")))
@@ -173,6 +175,7 @@ func _run() -> void:
 		"choose_action_policy is deterministic")
 
 	GameState.delete_save()
+	SaveGuard.restore()
 	if _fail:
 		printerr("MATCH QA FAILED")
 		get_tree().quit(1)

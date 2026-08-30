@@ -4,7 +4,7 @@ extends VBoxContainer
 ## column views, league-percentile shading, club and competition filters, name
 ## search, clickable column sorting), a Teams mode, a Data Hub view of visual
 ## analytics (scatter / bar charts) and a Leaders board. All numbers come from
-## deterministic engine replays of the real simulated results.
+## the per-Pokémon match details recorded when each fixture is played.
 
 const UI := preload("res://screens/competition/ui.gd")
 const TB := preload("res://shared/theme/theme_builder.gd")
@@ -63,7 +63,7 @@ const TEAM_DEFS := {
 	"arec":      {"title": "Away",   "w": 62, "fmt": "rec_a",   "tip": "Away match record (W-L)", "shade": false},
 	"abpct":     {"title": "A B%",   "w": 52, "fmt": "pct",     "tip": "Battle win rate away"},
 	"venue_gap": {"title": "H-A",    "w": 54, "fmt": "signpct", "tip": "Home advantage: home minus away battle-win %, in points", "shade": false},
-	"kos":       {"title": "KO+",    "w": 50, "fmt": "int",     "tip": "Opposing Pokémon knocked out (engine replays)"},
+	"kos":       {"title": "KO+",    "w": 50, "fmt": "int",     "tip": "Opposing Pokémon knocked out (recorded match details)"},
 	"faints":    {"title": "KO-",    "w": 50, "fmt": "int",     "tip": "Own Pokémon fainted", "neg": true},
 	"kod":       {"title": "KO±",    "w": 52, "fmt": "sign",    "tip": "KO difference (scored minus conceded)"},
 	"dmg_leg":   {"title": "Dmg/B",  "w": 58, "fmt": "int0",    "tip": "Damage dealt per battle"},
@@ -702,7 +702,7 @@ func _build_teams() -> void:
 
 	var foot := HBoxContainer.new()
 	foot.add_theme_constant_override("separation", 14)
-	foot.add_child(UI.dim("click a header to sort · club names link to profiles · KO± / Acc / SE from deterministic engine replays", 11))
+	foot.add_child(UI.dim("click a header to sort · club names link to profiles · KO± / Acc / SE from recorded match details", 11))
 	foot.add_child(_pctl_legend())
 	_teams.add_child(foot)
 
@@ -816,7 +816,7 @@ func _rebuild_teams_table() -> void:
 				item.set_custom_bg_color(c, UI.COL_PLAYER_ROW)
 
 
-## One stats row per club, from Season.season_club_stats (scores + replays).
+## One stats row per club, from Season.season_club_stats (scores + recorded details).
 func _build_team_rows(comp: String) -> Array:
 	var stats: Dictionary = Season.season_club_stats(GameState.club_ids(), GameState.fixtures, comp)
 	var rows: Array = []
@@ -1010,7 +1010,7 @@ func _insight_chip(caption: String, r: Dictionary, detail: String) -> PanelConta
 
 
 # =================================================================== Data Hub
-# FM Data Hub: visual analytics computed from the same deterministic replay
+# FM Data Hub: visual analytics computed from the same recorded match-detail
 # aggregates — attack/defence scatter, top-rated bars, KO-difference and
 # home-advantage diverging bars. Every mark is hoverable for exact numbers.
 
@@ -1078,7 +1078,7 @@ func _build_hub() -> void:
 
 func _refresh_hub() -> void:
 	var team_rows: Array = _build_team_rows("all").filter(func(r): return int(r["matches"]) > 0)
-	_hub_note.text = "%d clubs with matches played · all marks from deterministic engine replays" % team_rows.size()
+	_hub_note.text = "%d clubs with matches played · all marks from recorded match details" % team_rows.size()
 
 	# 1) attack vs defence scatter
 	var pts: Array = []
@@ -1169,7 +1169,7 @@ func _apply_view() -> void:
 
 func refresh() -> void:
 	var played_n: int = GameState.fixtures.filter(func(f): return f["played"]).size()
-	_note.text = "computed from %d simulated match%s · deterministic engine replays" % [
+	_note.text = "computed from %d simulated match%s · details recorded at play time" % [
 		played_n, "" if played_n == 1 else "es"]
 	match _view:
 		"centre":

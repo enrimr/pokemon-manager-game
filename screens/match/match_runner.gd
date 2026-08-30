@@ -540,16 +540,32 @@ func _bump(key: String, field: String, amount: int) -> void:
 # ------------------------------------------------------------------ ratings / result
 
 func rating_rows(side: int) -> Array:
+	# Numbers come from the SAME per-battle tally that gets recorded on the
+	# fixture (Season._tally_battle -> fixture["detail"]), so the post-match
+	# screen, the competition's match report and the season stats all agree
+	# exactly. Falls back to the live _stats tally if no battle has finished.
 	var rows: Array = []
-	for k in _stats:
-		var s: Dictionary = _stats[k]
-		if int(s["side"]) != side or s["apps"].is_empty():
+	for uid in _detail_players:
+		var s: Dictionary = _detail_players[uid]
+		if int(s["side"]) != side or int(s.get("battles", 0)) == 0:
 			continue
 		rows.append({
-			"name": s["name"], "level": s["level"], "dealt": s["dealt"], "taken": s["taken"],
-			"kos": s["kos"], "fainted": s["fainted"], "status": s["status"],
-			"apps": s["apps"].size(), "rating": _rating(s),
+			"name": s["name"], "level": s["level"], "dealt": int(s["dmg"]),
+			"taken": int(s["taken"]), "kos": int(s["kos"]),
+			"fainted": int(s.get("faints", 0)), "status": 0,
+			"apps": int(s["battles"]),
+			"rating": snappedf(float(s.get("rating_sum", 6.0)) / maxf(1.0, float(s["battles"])), 0.1),
 		})
+	if rows.is_empty():
+		for k in _stats:
+			var s: Dictionary = _stats[k]
+			if int(s["side"]) != side or s["apps"].is_empty():
+				continue
+			rows.append({
+				"name": s["name"], "level": s["level"], "dealt": s["dealt"], "taken": s["taken"],
+				"kos": s["kos"], "fainted": s["fainted"], "status": s["status"],
+				"apps": s["apps"].size(), "rating": _rating(s),
+			})
 	rows.sort_custom(func(a, b): return a["rating"] > b["rating"])
 	return rows
 
