@@ -125,12 +125,18 @@ func _row(parent: VBoxContainer, label_text: String, desc: String, control: Cont
 # -- sections ----------------------------------------------------------------
 
 func _build_display(v: VBoxContainer) -> void:
+	# In the browser the canvas follows the window (adaptive resize policy) —
+	# window mode and resolution don't apply there and stay disabled.
+	var web := OS.has_feature("web")
 	var mode := OptionButton.new()
 	for m in MODES:
 		mode.add_item(m[1])
 	mode.selected = _index_of(MODES, Settings.get_setting("window_mode"))
 	mode.item_selected.connect(func(i): Settings.set_setting("window_mode", MODES[i][0]))
-	_row(v, "Window Mode", "Borderless fills the screen without exclusive fullscreen.", mode)
+	mode.disabled = web
+	_row(v, "Window Mode",
+		"The browser window controls the size in the web version." if web
+		else "Borderless fills the screen without exclusive fullscreen.", mode)
 
 	_res_option = OptionButton.new()
 	for r in Settings.RESOLUTIONS:
@@ -139,6 +145,7 @@ func _build_display(v: VBoxContainer) -> void:
 	var ridx := Settings.RESOLUTIONS.find(cur)
 	_res_option.selected = maxi(ridx, 0)
 	_res_option.item_selected.connect(func(i): Settings.set_setting("resolution", Settings.RESOLUTIONS[i]))
+	_res_option.disabled = web
 	_row(v, "Resolution", "Window size (windowed mode only). The UI scales to any size.", _res_option)
 
 	var scale := OptionButton.new()
@@ -238,7 +245,8 @@ func _refresh_dependent() -> void:
 		return
 	_refreshing = true
 	if is_instance_valid(_res_option):
-		_res_option.disabled = String(Settings.get_setting("window_mode")) != "windowed"
+		_res_option.disabled = OS.has_feature("web") \
+			or String(Settings.get_setting("window_mode")) != "windowed"
 	_refreshing = false
 
 

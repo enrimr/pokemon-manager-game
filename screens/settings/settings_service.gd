@@ -102,6 +102,14 @@ func _apply_display() -> void:
 	if _headless:
 		return
 	var win := get_window()
+	if OS.has_feature("web"):
+		# Browser owns the window: the exported canvas uses the "adaptive"
+		# resize policy, so the canvas tracks the browser window and the
+		# canvas_items+expand stretch scales the UI. Window mode/size/position
+		# writes are unsupported there and pin the render to a fixed rect —
+		# never touch them on web. UI scale is still safe to apply.
+		win.content_scale_factor = clampf(float(get_setting("ui_scale")), 0.5, 2.0)
+		return
 	win.min_size = Vector2i(1152, 648)
 	win.content_scale_factor = clampf(float(get_setting("ui_scale")), 0.5, 2.0)
 	var mode := String(get_setting("window_mode"))
