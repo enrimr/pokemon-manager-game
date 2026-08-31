@@ -1,0 +1,17 @@
+{
+ "piece": "menu",
+ "fm_reference": "FM24 game-entry & career-creation flow: title/landing, manager creation, club selection with expectations/budgets/squad quality, confirmation, and save handling (Continue/overwrite)",
+ "status": "passed",
+ "round": 1,
+ "verdict": "ours",
+ "biggest_gap": null,
+ "history": [
+  {
+   "round": 1,
+   "phase": "expansion",
+   "winner": "ours",
+   "gap": "Independently driven end-to-end against the REAL title scene (artifacts/menu/critic_driver.gd — clicks live buttons, types into real LineEdits, fires row gui_input) in BOTH locales. Verified: SMOKE OK (direct-boot contract holds — headless/--quickstart/TM_QUICKSTART swap title->shell by design). Title with no save shows NO Continue door and highlights New Game; with a save the Continue card reads club · manager — pretty-date · season and loads the exact career (Cinnabar Blaze/Maximo Beltran, Kanto, 2026-08-01 matched). 3-step wizard (Manager/Club/Confirm) with step chips: identity name+optional nickname, Next gated on a non-empty name; club step has league tabs (Kanto/Johto), rows with reputation meter + world-percentile squad stars + top-six avg level + squad size, and a rich detail pane (board season-expectation sentence for league AND cup using the same tier maths as the in-game Board screen, expected league position out of 32 by reputation, squad stars, top-six avg Lv, squad size, reputation/20 meter, bank balance, weekly wage budget, and the manager you replace). Custom name flows to the world: world.meta.manager_name + club.manager stamped, name visible in the shell sidebar. Save safety is strong: summary carries an inline overwrite warning AND starting pops a ConfirmationDialog naming the existing save (club · manager — date, season); cancel preserves the old save, confirm replaces it. Settings overlay opens the real settings screen and closes cleanly. Quit exits clean. Speed-to-playing beats FM (title->name->club->confirm->playing in ~3 clicks; Continue is one). Minor misses vs FM's slicker cinematic entry: the animated backdrop + procedural chiptune are tasteful but comparatively static/low-motion next to FM's presentation, and the FIRST welcome/board mail is generic (does not inject the manager name, though club.manager IS set so subsequent press/board/mind-games content renders it). Neither dents the in-scope win."
+  }
+ ],
+ "updated": "2026-08-31 21:30"
+}
