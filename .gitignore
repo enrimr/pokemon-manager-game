@@ -1,3 +1,6 @@
 artifacts/
 .godot/
 .DS_Store
+dist/linux/
+dist/macos/
+dist/windows/
