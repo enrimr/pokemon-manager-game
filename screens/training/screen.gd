@@ -281,8 +281,10 @@ func _build_schedule_tab() -> Control:
 	(left_wrap[0] as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(left_wrap[0])
 
-	var week_row := HBoxContainer.new()
-	week_row.add_theme_constant_override("separation", 12)
+	# Flow: the toolbar wraps on narrow widths / wide locales instead of
+	# forcing a minimum width that shoves the right rail off the screen.
+	var week_row := HFlowContainer.new()
+	week_row.add_theme_constant_override("h_separation", 12)
 	left.add_child(week_row)
 	_week_title = Label.new()
 	_week_title.add_theme_font_size_override("font_size", 15)
@@ -326,8 +328,9 @@ func _build_schedule_tab() -> Control:
 	left.add_child(_cal_scroll)
 
 	left.add_child(HSeparator.new())
-	var presets := HBoxContainer.new()
-	presets.add_theme_constant_override("separation", 8)
+	var presets := HFlowContainer.new()
+	presets.add_theme_constant_override("h_separation", 8)
+	presets.add_theme_constant_override("v_separation", 4)
 	left.add_child(presets)
 	var pl := Label.new()
 	pl.text = tr("Weekday template presets:")

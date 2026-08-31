@@ -30,7 +30,7 @@ var _selected_uid := ""
 
 # --- nodes
 var _tabs: TabContainer
-var _header_stats: HBoxContainer
+var _header_stats: HFlowContainer
 var _tree: Tree
 var _detail: VBoxContainer
 var _count_label: Label
@@ -41,7 +41,7 @@ var _report_card: RichTextLabel
 var _out_box: VBoxContainer
 var _in_box: VBoxContainer
 var _deals_tree: Tree
-var _centre_budget: HBoxContainer
+var _centre_budget: HFlowContainer
 var _window_banner: PanelContainer
 # recruitment hub
 var _sl_box: VBoxContainer
@@ -98,11 +98,15 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_color_override("font_color", Color.WHITE)
 	head.add_child(title)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_child(spacer)
-	_header_stats = HBoxContainer.new()
-	_header_stats.add_theme_constant_override("separation", 22)
+	# Wide-vocabulary locales (es) can make these chips wider than the screen:
+	# a flow container wraps them onto extra rows instead of clipping the
+	# whole screen at the right edge (the HBox min-width used to propagate
+	# up and blow out every tab's layout).
+	_header_stats = HFlowContainer.new()
+	_header_stats.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_header_stats.alignment = FlowContainer.ALIGNMENT_END
+	_header_stats.add_theme_constant_override("h_separation", 22)
+	_header_stats.add_theme_constant_override("v_separation", 4)
 	head.add_child(_header_stats)
 
 	# ---- tabs
@@ -283,7 +287,7 @@ func _make_shortlist_card(t: Dictionary) -> PanelContainer:
 		"club": where = String(market.club_of(t["club_id"])["short"])
 		"fa": where = tr("Free agent")
 		_: where = "Prospect"
-	head.add_child(_dlabel(tr("Lv %d · %s · %s") % [int(inst["level"]), where, tr(market.region_of(inst))], ThemeBuilder.COL_TEXT_DIM, 11))
+	head.add_child(_dlabel(tr("Lv %d · %s · %s") % [int(inst["level"]), where, tr(market.region_of(inst))], ThemeBuilder.COL_TEXT_DIM, 11, true))
 
 	var cost_txt: String
 	if t["pool"] == "club":
@@ -315,8 +319,8 @@ func _make_shortlist_card(t: Dictionary) -> PanelContainer:
 	for tg in tags:
 		vb.add_child(_dlabel("· " + tg[0], tg[1], 11, true))
 
-	var btns := HBoxContainer.new()
-	btns.add_theme_constant_override("separation", 6)
+	var btns := HFlowContainer.new()
+	btns.add_theme_constant_override("h_separation", 6)
 	vb.add_child(btns)
 	if offer.is_empty():
 		var ob := Button.new()
@@ -360,8 +364,8 @@ func _refresh_recs_col() -> void:
 		head.add_child(_dlabel("(gone)" if t.is_empty() else market.display_name(t["inst"]), Color.WHITE, 14))
 		head.add_child(_dlabel("%s / %s" % [_stars(float(r["ability"])), _stars(float(r["potential"]))], Color(0.88, 0.69, 0.31), 12))
 		vb.add_child(_dlabel(String(r["note"]), ThemeBuilder.COL_TEXT_DIM, 11, true))
-		var btns := HBoxContainer.new()
-		btns.add_theme_constant_override("separation", 6)
+		var btns := HFlowContainer.new()
+		btns.add_theme_constant_override("h_separation", 6)
 		vb.add_child(btns)
 		var rid := int(r["id"])
 		var ab := Button.new()
@@ -405,8 +409,8 @@ func _refresh_agents_col() -> void:
 		var ask_txt: String = (tr("Deal near %s — seller softened while this stands") % market.fmt_money(int(a["ask"]))) \
 			if String(a["kind"]) == "club" else ("Signs for ~%s/wk, no fee" % market.fmt_money(int(a["ask"])))
 		vb.add_child(_dlabel(tr("%s  ·  offer stands until %s") % [ask_txt, I18n.pretty_date(String(a["expires"]))], ThemeBuilder.COL_WARN, 11, true))
-		var btns := HBoxContainer.new()
-		btns.add_theme_constant_override("separation", 6)
+		var btns := HFlowContainer.new()
+		btns.add_theme_constant_override("h_separation", 6)
 		vb.add_child(btns)
 		var aid := int(a["id"])
 		if market.offer_for_target(uid).is_empty():
@@ -503,8 +507,11 @@ func _build_search_tab() -> void:
 	tab.add_theme_constant_override("separation", 8)
 	_tabs.add_child(tab)
 
-	var bar := HBoxContainer.new()
-	bar.add_theme_constant_override("separation", 10)
+	# Flow, not HBox: the filter strip wraps onto extra rows on narrow windows
+	# instead of forcing a minimum width wider than the screen.
+	var bar := HFlowContainer.new()
+	bar.add_theme_constant_override("h_separation", 10)
+	bar.add_theme_constant_override("v_separation", 4)
 	tab.add_child(bar)
 
 	var search := LineEdit.new()
@@ -612,7 +619,7 @@ func _build_search_tab() -> void:
 	_tree.select_mode = Tree.SELECT_ROW
 	_tree.columns = 14
 	var titles := ["Name", "Type", "Club", "Age", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "Value", "Wage", "Knowledge"]
-	var widths := [118, 72, 42, 40, 32, 52, 52, 52, 52, 52, 52, 92, 78, 106]
+	var widths := [118, 72, 42, 40, 32, 52, 52, 52, 52, 52, 52, 110, 92, 116]
 	_tree.set_column_titles_visible(true)
 	for i in 14:
 		_tree.set_column_title(i, titles[i])
@@ -621,6 +628,8 @@ func _build_search_tab() -> void:
 		_tree.set_column_title_alignment(i, HORIZONTAL_ALIGNMENT_LEFT if i < 3 else HORIZONTAL_ALIGNMENT_RIGHT)
 	_tree.column_title_clicked.connect(_on_sort_clicked)
 	_tree.item_selected.connect(_on_row_selected)
+	# Double-click / Enter on a row jumps straight into the deal flow.
+	_tree.item_activated.connect(_on_row_activated)
 	body.add_child(_tree)
 
 	var dpanel := PanelContainer.new()
@@ -649,6 +658,32 @@ func _on_row_selected() -> void:
 	if it != null:
 		_selected_uid = String(it.get_metadata(0))
 		_refresh_detail()
+
+
+func _on_row_activated() -> void:
+	## Double-click (or Enter) on a search row: open the right deal flow for
+	## the target directly — offer sheet for contracted Pokémon, personal
+	## terms for free agents / prospects. Falls back to the detail pane
+	## (Transfer Centre for in-progress deals) when no new offer can start.
+	var it := _tree.get_selected()
+	if it == null:
+		return
+	_selected_uid = String(it.get_metadata(0))
+	_refresh_detail()
+	var t: Dictionary = market.find_target(_selected_uid)
+	if t.is_empty() or t["pool"] == "mine":
+		return
+	if not market.offer_for_target(_selected_uid).is_empty():
+		_tabs.current_tab = 3   # deal already live — manage it in the Centre
+		return
+	if t["pool"] == "club":
+		if market.window_open():
+			_open_offer_sheet(_selected_uid)
+	elif t["pool"] == "prospect":
+		if market.window_open():
+			_open_contract_sheet(_selected_uid)
+	else:
+		_open_contract_sheet(_selected_uid)   # free agents sign any time
 
 
 func _filtered_targets() -> Array:
@@ -934,7 +969,7 @@ func _refresh_detail() -> void:
 	if know >= 50.0:
 		_detail.add_child(_dlabel(tr("Moves: ") + ", ".join(inst["moves"]), ThemeBuilder.COL_TEXT, 13, true))
 	else:
-		_detail.add_child(_dlabel(tr("Move set unknown — reach Part scouted (50%) to reveal."), ThemeBuilder.COL_TEXT_DIM, 13))
+		_detail.add_child(_dlabel(tr("Move set unknown — reach Part scouted (50%) to reveal."), ThemeBuilder.COL_TEXT_DIM, 13, true))
 
 	# nature + battle ability — staged knowledge (nature at 50%, ability at 75%)
 	var kn_nat: String = market.known_nature(inst)
@@ -943,12 +978,14 @@ func _refresh_detail() -> void:
 	na_row.add_theme_constant_override("separation", 14)
 	_detail.add_child(na_row)
 	var nat_l := _dlabel("Nature: %s" % (market.nature_text(kn_nat) if kn_nat != "" else "unknown (Part scouted 50%)"),
-		ThemeBuilder.COL_TEXT if kn_nat != "" else ThemeBuilder.COL_TEXT_DIM, 12)
+		ThemeBuilder.COL_TEXT if kn_nat != "" else ThemeBuilder.COL_TEXT_DIM, 12, true)
+	nat_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nat_l.tooltip_text = ("Temperament shapes battle stats: +10% to one stat, −10% to another — already folded into the stats above, which match the squad profile and the match engine exactly." if kn_nat != ""
 		else tr("A scout reads a target's temperament once knowledge reaches Part scouted (50%). Stats above already include the (still hidden) nature — they are the battle-real figures."))
 	na_row.add_child(nat_l)
 	var ab_l := _dlabel("Ability: %s" % (DataStore.ability_name(kn_ab) if kn_ab != "" else "unconfirmed (Detailed 75%)"),
-		ThemeBuilder.COL_TEXT if kn_ab != "" else ThemeBuilder.COL_TEXT_DIM, 12)
+		ThemeBuilder.COL_TEXT if kn_ab != "" else ThemeBuilder.COL_TEXT_DIM, 12, true)
+	ab_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ab_l.tooltip_text = (String(DataStore.ability(kn_ab).get("desc", "")) if kn_ab != ""
 		else tr("The battle ability is only confirmed by a Detailed watch (75% knowledge)."))
 	na_row.add_child(ab_l)
@@ -1173,8 +1210,8 @@ func _refresh_scouting() -> void:
 		var loc_txt: String = "" if loc == market.scout_region(s) else tr("  ·  currently in %s") % tr(loc)
 		vb.add_child(_dlabel(tr("Home network: %s%s%s") % [tr(market.scout_region(s)), wage_txt, loc_txt], ThemeBuilder.COL_TEXT, 12, true))
 		var a: Dictionary = market.assignment_for_scout(s["name"])
-		var btns := HBoxContainer.new()
-		btns.add_theme_constant_override("separation", 6)
+		var btns := HFlowContainer.new()
+		btns.add_theme_constant_override("h_separation", 6)
 		if a.is_empty():
 			vb.add_child(_dlabel(tr("Available — assign from Search (Send Scout) or set a focus."), ThemeBuilder.COL_TEXT_DIM, 12, true))
 			var fb := Button.new()
@@ -1415,8 +1452,9 @@ func _build_centre_tab() -> void:
 	_window_banner = PanelContainer.new()
 	tab.add_child(_window_banner)
 
-	_centre_budget = HBoxContainer.new()
-	_centre_budget.add_theme_constant_override("separation", 26)
+	_centre_budget = HFlowContainer.new()
+	_centre_budget.add_theme_constant_override("h_separation", 26)
+	_centre_budget.add_theme_constant_override("v_separation", 2)
 	tab.add_child(_centre_budget)
 
 	var body := HBoxContainer.new()
@@ -1644,7 +1682,9 @@ func _make_out_card(o: Dictionary, live: bool) -> PanelContainer:
 		who = tr("%s  ·  youth prospect") % String(o["name"])
 	else:
 		who = tr("%s  ·  free agent") % String(o["name"])
-	head.add_child(_dlabel(who, Color.WHITE if live else ThemeBuilder.COL_TEXT_DIM, 14))
+	var who_l := _dlabel(who, Color.WHITE if live else ThemeBuilder.COL_TEXT_DIM, 14, true)
+	who_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(who_l)
 	var stage := _dlabel(_stage_text(o), _stage_color(String(o["stage"])), 12)
 	stage.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vb.add_child(stage)
@@ -1676,8 +1716,8 @@ func _make_out_card(o: Dictionary, live: bool) -> PanelContainer:
 		var last: Dictionary = o["log"][o["log"].size() - 1]
 		vb.add_child(_dlabel("%s — %s" % [I18n.short_date(String(last["date"])), String(last["text"])], ThemeBuilder.COL_TEXT_DIM, 11, true))
 	if live:
-		var btns := HBoxContainer.new()
-		btns.add_theme_constant_override("separation", 6)
+		var btns := HFlowContainer.new()
+		btns.add_theme_constant_override("h_separation", 6)
 		vb.add_child(btns)
 		var oid := int(o["id"])
 		var uid := String(o["uid"])
@@ -1738,7 +1778,7 @@ func _make_loan_card(inst: Dictionary) -> PanelContainer:
 		(tr(" · option to buy %s") % market.fmt_money(opt)) if opt > 0 else ""],
 		ThemeBuilder.COL_TEXT_DIM, 12, true))
 	if opt > 0:
-		var btns := HBoxContainer.new()
+		var btns := HFlowContainer.new()
 		vb.add_child(btns)
 		var b := Button.new()
 		b.text = tr("Exercise Option (%s)") % market.fmt_money(opt)
@@ -1775,8 +1815,8 @@ func _make_in_card(o: Dictionary, live: bool) -> PanelContainer:
 				var last: Dictionary = o["log"][o["log"].size() - 1]
 				vb.add_child(_dlabel(String(last["text"]), ThemeBuilder.COL_TEXT_DIM, 11, true))
 	if live:
-		var btns := HBoxContainer.new()
-		btns.add_theme_constant_override("separation", 6)
+		var btns := HFlowContainer.new()
+		btns.add_theme_constant_override("h_separation", 6)
 		vb.add_child(btns)
 		var oid := int(o["id"])
 		if String(o["stage"]) in ["open", "agreed"]:
@@ -1806,8 +1846,7 @@ func _err(msg: String) -> void:
 	dlg.dialog_text = msg
 	dlg.confirmed.connect(dlg.queue_free)
 	dlg.canceled.connect(dlg.queue_free)
-	add_child(dlg)
-	dlg.popup_centered()
+	ThemeBuilder.popup_fitted(self, dlg)
 
 
 func _sheet_spin(minv: int, maxv: int, step: int, val: int) -> SpinBox:
@@ -1950,8 +1989,7 @@ func _open_offer_sheet(uid: String, offer_id: int = -1) -> void:
 		_err(msg)
 		dlg.queue_free())
 	dlg.canceled.connect(dlg.queue_free)
-	add_child(dlg)
-	dlg.popup_centered()
+	ThemeBuilder.popup_fitted(self, dlg, vb)
 
 
 func _open_contract_sheet(uid: String, offer_id: int = -1) -> void:
@@ -2031,8 +2069,7 @@ func _open_contract_sheet(uid: String, offer_id: int = -1) -> void:
 			_err(market.sign_free_agent(uid, con))
 		dlg.queue_free())
 	dlg.canceled.connect(dlg.queue_free)
-	add_child(dlg)
-	dlg.popup_centered()
+	ThemeBuilder.popup_fitted(self, dlg, vb)
 
 
 func _open_counter_in_dialog(offer_id: int) -> void:
@@ -2064,8 +2101,7 @@ func _open_counter_in_dialog(offer_id: int) -> void:
 		_err(market.counter_offer_in(offer_id, int(fee_spin.value), int(so_spin.value)))
 		dlg.queue_free())
 	dlg.canceled.connect(dlg.queue_free)
-	add_child(dlg)
-	dlg.popup_centered()
+	ThemeBuilder.popup_fitted(self, dlg, vb)
 
 
 func _open_scout_dialog(uid: String) -> void:
@@ -2096,8 +2132,7 @@ func _open_scout_dialog(uid: String) -> void:
 		_err(market.assign_scout_to_target(idle[opt.selected]["name"], uid))
 		dlg.queue_free())
 	dlg.canceled.connect(dlg.queue_free)
-	add_child(dlg)
-	dlg.popup_centered()
+	ThemeBuilder.popup_fitted(self, dlg, vb)
 
 
 func _open_focus_dialog(scout_name: String) -> void:
@@ -2124,8 +2159,7 @@ func _open_focus_dialog(scout_name: String) -> void:
 		_err(market.assign_scout_to_focus(scout_name, String(choices[opt.selected])))
 		dlg.queue_free())
 	dlg.canceled.connect(dlg.queue_free)
-	add_child(dlg)
-	dlg.popup_centered()
+	ThemeBuilder.popup_fitted(self, dlg, vb)
 
 
 # ------------------------------------------------------------ refresh

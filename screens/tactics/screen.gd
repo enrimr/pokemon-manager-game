@@ -168,7 +168,10 @@ func _build_layout() -> void:
 
 	var center_scroll := ScrollContainer.new()
 	center_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	center_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# AUTO, not DISABLED: otherwise the centre column's minimum width (type
+	# tables + es-length labels) propagates up and shoves the right rail off
+	# the window edge instead of scrolling.
+	center_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	body.add_child(center_scroll)
 	_center_box = VBoxContainer.new()
 	_center_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -203,14 +206,15 @@ func _build_header() -> Control:
 	club.size_flags_vertical = Control.SIZE_SHRINK_END
 	h.add_child(club)
 
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	h.add_child(spacer)
-
 	_saved_lbl = Label.new()
 	_saved_lbl.add_theme_font_size_override("font_size", 11)
 	_saved_lbl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_saved_lbl.text = "Loaded · active plan live on the match engine"
+	# The status blurb absorbs the leftover width and trims itself first, so
+	# the preset picker + action buttons never get pushed past the right edge.
+	_saved_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_saved_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_saved_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	h.add_child(_saved_lbl)
 
 	_preset_pick = OptionButton.new()

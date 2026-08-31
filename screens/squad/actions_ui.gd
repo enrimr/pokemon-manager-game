@@ -182,8 +182,7 @@ static func open_promise_dialog(host: Control, uid: String, kind: String) -> voi
 		d.queue_free())
 	d.close_requested.connect(d.queue_free)
 	d.canceled.connect(d.queue_free)
-	host.add_child(d)
-	d.popup_centered()
+	ThemeBuilder.popup_fitted(host, d)
 
 
 static func _dialog(title: String) -> Array:
@@ -344,8 +343,7 @@ static func open_contract_dialog(host: Control, uid: String) -> AcceptDialog:
 				response.add_theme_color_override("font_color", UI.COL_BAD)
 		update_bill.call())
 	d.confirmed.connect(d.queue_free)
-	host.add_child(d)
-	d.popup_centered()
+	ThemeBuilder.popup_fitted(host, d, body)
 	return d
 
 
@@ -408,8 +406,7 @@ static func open_list_dialog(host: Control, uid: String) -> void:
 		if err != "":
 			notice(host, I18n.t("Transfer list"), err)
 		d.queue_free())
-	host.add_child(d)
-	d.popup_centered()
+	ThemeBuilder.popup_fitted(host, d, body)
 
 
 # ------------------------------------------------------------------ bids
@@ -465,8 +462,7 @@ static func open_offers_dialog(host: Control, uid: String = "") -> void:
 			row.add_child(rej)
 	rebuild[0].call()
 	d.confirmed.connect(d.queue_free)
-	host.add_child(d)
-	d.popup_centered()
+	ThemeBuilder.popup_fitted(host, d, body)
 
 
 # ------------------------------------------------------------------ release
@@ -491,8 +487,7 @@ static func open_release_dialog(host: Control, uid: String) -> void:
 		d.queue_free())
 	d.close_requested.connect(d.queue_free)
 	d.canceled.connect(d.queue_free)
-	host.add_child(d)
-	d.popup_centered()
+	ThemeBuilder.popup_fitted(host, d)
 
 
 # ------------------------------------------------------------------ nickname
@@ -515,6 +510,5 @@ static func open_nickname_dialog(host: Control, uid: String) -> void:
 	d.confirmed.connect(func() -> void:
 		svc.set_nickname(uid, edit.text)
 		d.queue_free())
-	host.add_child(d)
-	d.popup_centered()
+	ThemeBuilder.popup_fitted(host, d, body)
 	edit.grab_focus()

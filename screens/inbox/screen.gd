@@ -555,6 +555,8 @@ func _render_reading_pane() -> void:
 		I18n.pretty_date(str(m.get("date", ""))), tr(str(meta["label"]))]
 	fromline.add_theme_font_size_override("font_size", 12)
 	fromline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	fromline.clip_text = true
+	fromline.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	hv.add_child(fromline)
 	if m.get("urgent", false):
 		var u := Label.new()
@@ -600,8 +602,11 @@ func _render_reading_pane() -> void:
 	var actions: Array = rendered.get("actions", [])
 	if not actions.is_empty() or _action_note != "":
 		_read_pane.add_child(HSeparator.new())
-		var arow := HBoxContainer.new()
-		arow.add_theme_constant_override("separation", 8)
+		# Flow: decision + navigation buttons wrap onto extra rows instead of
+		# forcing the reading pane wider than the window (es labels are long).
+		var arow := HFlowContainer.new()
+		arow.add_theme_constant_override("h_separation", 8)
+		arow.add_theme_constant_override("v_separation", 6)
 		_read_pane.add_child(arow)
 		for a in actions:
 			var kind := str(a.get("kind", "screen"))

@@ -170,6 +170,7 @@ func _build_layout() -> void:
 	_header_info.add_theme_font_size_override("font_size", 13)
 	_header_info.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	_header_info.clip_text = true
+	_header_info.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_header_info.mouse_filter = Control.MOUSE_FILTER_STOP
 	title_box.add_child(_header_info)
 	# Chips flow (and wrap) instead of clipping: at 1600x900 the rightmost
