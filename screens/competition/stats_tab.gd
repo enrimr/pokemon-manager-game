@@ -309,7 +309,7 @@ func _build_centre() -> void:
 
 	var foot := HBoxContainer.new()
 	foot.add_theme_constant_override("separation", 14)
-	foot.add_child(UI.dim("click a header to sort · names link to profiles · Columns ▾ builds a custom view", 11))
+	foot.add_child(UI.dim("click a header to sort · names link to profiles · the Columns menu builds a custom view", 11))
 	foot.add_child(_pctl_legend())
 	_centre.add_child(foot)
 
@@ -396,7 +396,9 @@ func _pctl_legend() -> Control:
 ## current key list; setter receives the updated list.
 func _make_cols_menu(defs: Dictionary, getter: Callable, setter: Callable) -> MenuButton:
 	var mb := MenuButton.new()
-	mb.text = "Columns ▾"
+	mb.text = "Columns"
+	mb.icon = GlyphIcons.tex("caret_down", 9, ThemeBuilder.COL_TEXT)
+	mb.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	mb.focus_mode = Control.FOCUS_NONE
 	mb.custom_minimum_size = Vector2(96, 26)
 	mb.add_theme_font_size_override("font_size", 12)
@@ -510,7 +512,7 @@ func _rebuild_table() -> void:
 				width = STAT_DEFS[key]["w"]
 				tip = STAT_DEFS[key]["tip"]
 		if key == _sort_key:
-			title += " ▲" if _sort_asc else " ▼"
+			title += " ^" if _sort_asc else " v"
 		_tree.set_column_title(i, tr(title))
 		_tree.set_column_title_alignment(i,
 			HORIZONTAL_ALIGNMENT_LEFT if key in ["name", "type"] else HORIZONTAL_ALIGNMENT_CENTER)
@@ -851,7 +853,7 @@ func _rebuild_teams_table() -> void:
 				width = TEAM_DEFS[key]["w"]
 				tip = TEAM_DEFS[key]["tip"]
 		if key == _tsort_key:
-			col_title += " ▲" if _tsort_asc else " ▼"
+			col_title += " ^" if _tsort_asc else " v"
 		_ttree.set_column_title(i, tr(col_title))
 		_ttree.set_column_title_alignment(i,
 			HORIZONTAL_ALIGNMENT_LEFT if key == "name" else HORIZONTAL_ALIGNMENT_CENTER)
@@ -1135,7 +1137,7 @@ func _build_hub() -> void:
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.add_child(sp)
-	var hint := UI.dim("hover any mark for exact numbers · position graph: League Table ▸ Position Graph", 11)
+	var hint := UI.dim("hover any mark for exact numbers · position graph: League Table › Position Graph", 11)
 	hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.add_child(hint)
 	_hub.add_child(bar)
@@ -1159,8 +1161,8 @@ func _build_hub() -> void:
 		return card
 
 	_hub_scatter = Charts.ScatterChart.new()
-	_hub_scatter.x_title = tr("damage dealt per battle →")
-	_hub_scatter.y_title = tr("damage taken per battle →")
+	_hub_scatter.x_title = tr("damage dealt per battle »")
+	_hub_scatter.y_title = tr("damage taken per battle »")
 	_hub_scatter.quads = [tr("leaky, low output"), tr("all-out brawlers"), tr("cagey, low output"), tr("complete sides")]
 	grid.add_child(mk_card.call(tr("Attack vs Defence · every club"),
 		_hub_scatter, tr("dashed lines = league average · ring = your club · right & low = complete side")))

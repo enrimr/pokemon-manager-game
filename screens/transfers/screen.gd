@@ -281,7 +281,8 @@ func _make_shortlist_card(t: Dictionary) -> PanelContainer:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 8)
 	vb.add_child(head)
-	head.add_child(_dlabel("★ " + market.display_name(inst), Color.WHITE, 14))
+	head.add_child(GlyphIcons.icon("star", 13, Color(0.88, 0.69, 0.31)))
+	head.add_child(_dlabel(market.display_name(inst), Color.WHITE, 14))
 	var where: String
 	match String(t["pool"]):
 		"club": where = String(market.club_of(t["club_id"])["short"])
@@ -482,7 +483,7 @@ func _refresh_rumours_col() -> void:
 			_: col = ThemeBuilder.COL_TEXT_DIM
 		var suffix := ""
 		if bool(r.get("came_true", false)):
-			suffix = tr("   ✔ came true")
+			suffix = tr("   • came true")
 		elif bool(r.get("dud", false)):
 			suffix = tr("   — came to nothing")
 		var line := _dlabel("%s  [%s]  %s%s" % [I18n.short_date(String(r["date"])), tr(String(r["strength"])), market.rumour_text(r), suffix],
@@ -784,7 +785,7 @@ func _refresh_search() -> void:
 		it.set_metadata(0, uid)
 		var name_txt: String = market.display_name(inst)
 		if market.shortlisted(uid):
-			name_txt = "★ " + name_txt
+			it.set_icon(0, GlyphIcons.tex("star", 11, Color(0.88, 0.69, 0.31)))
 		it.set_text(0, name_txt)
 		it.set_custom_color(0, Color(0.88, 0.69, 0.31) if market.shortlisted(uid) else (Color.WHITE if know >= 100.0 else ThemeBuilder.COL_TEXT))
 		var types_txt := I18n.types_join(sp["types"], " / ")
@@ -813,7 +814,7 @@ func _refresh_search() -> void:
 		if t["pool"] == "club":
 			val_txt = market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))
 			if market.is_listed(uid):
-				val_txt += " ▼"
+				it.set_icon(11, GlyphIcons.tex("tri_down", 10, ThemeBuilder.COL_GOOD))
 		elif t["pool"] == "prospect":
 			val_txt = market.masked_money(uid, "val", market.value_of(inst))
 		else:
@@ -1037,11 +1038,11 @@ func _refresh_detail() -> void:
 		var r: Dictionary = market.reports[uid]
 		if String(r.get("stage", "full")) == "interim":
 			_detail.add_child(_dlabel(tr("Interim report (%s): Ability %s to %s — bands narrow as scouting continues. See Scouting tab.") % [
-				r["scout"], _stars(float(r.get("ability_lo", r["ability_stars"]))),
-				_stars(float(r.get("ability_hi", r["ability_stars"])))], ThemeBuilder.COL_WARN, 12, true))
+				r["scout"], _stars_txt(float(r.get("ability_lo", r["ability_stars"]))),
+				_stars_txt(float(r.get("ability_hi", r["ability_stars"])))], ThemeBuilder.COL_WARN, 12, true))
 		else:
 			_detail.add_child(_dlabel(tr("Scout report (%s): Ability %s  Potential %s — see Scouting tab.") % [
-				r["scout"], _stars(float(r["ability_stars"])), _stars(float(r["potential_stars"]))], ThemeBuilder.COL_GOOD, 12, true))
+				r["scout"], _stars_txt(float(r["ability_stars"])), _stars_txt(float(r["potential_stars"]))], ThemeBuilder.COL_GOOD, 12, true))
 
 	# pipeline intel: listings, agents, rumours
 	if market.is_listed(uid):
@@ -1075,7 +1076,9 @@ func _refresh_detail() -> void:
 	brow.add_theme_constant_override("separation", 8)
 	_detail.add_child(brow)
 	var sl_btn := Button.new()
-	sl_btn.text = "Unshortlist" if market.shortlisted(uid) else tr("☆ Shortlist")
+	sl_btn.text = "Unshortlist" if market.shortlisted(uid) else tr("Shortlist")
+	if not market.shortlisted(uid):
+		sl_btn.icon = GlyphIcons.tex("star_empty", 11, ThemeBuilder.COL_TEXT)
 	sl_btn.pressed.connect(func(): _err(market.toggle_shortlist(uid)))
 	brow.add_child(sl_btn)
 	var scout_btn := Button.new()
@@ -1300,11 +1303,11 @@ func _refresh_scouting() -> void:
 		var row_txt: String
 		if String(r.get("stage", "full")) == "interim":
 			row_txt = tr("[interim] %s  ·  Ability %s to %s  ·  %s") % [
-				r["name"], _stars(float(r.get("ability_lo", r["ability_stars"]))),
-				_stars(float(r.get("ability_hi", r["ability_stars"]))), I18n.pretty_date(r["date"])]
+				r["name"], _stars_txt(float(r.get("ability_lo", r["ability_stars"]))),
+				_stars_txt(float(r.get("ability_hi", r["ability_stars"]))), I18n.pretty_date(r["date"])]
 		else:
 			row_txt = tr("%s  ·  Ability %s  Pot %s  ·  %s") % [
-				r["name"], _stars(float(r["ability_stars"])), _stars(float(r["potential_stars"])), I18n.pretty_date(r["date"])]
+				r["name"], _stars_txt(float(r["ability_stars"])), _stars_txt(float(r["potential_stars"])), I18n.pretty_date(r["date"])]
 		var idx := _report_list.add_item(row_txt)
 		_report_list.set_item_metadata(idx, r["uid"])
 		if String(r["uid"]) == sel_uid:
@@ -1427,18 +1430,26 @@ func _show_report(uid: String) -> void:
 	_report_card.text = s
 
 
+## Star meter for BBCode report cards — drawn SVG icons (no star glyph in
+## the bundled web font).
 func _stars(v: float) -> String:
 	var full := int(v)
 	var half := (v - float(full)) >= 0.45
 	var s := ""
 	for i in full:
-		s += "★"
+		s += "[img=13x13]res://shared/theme/icons/star_warn.svg[/img]"
 	if half:
-		s += "½"
-	var empties := 5 - full - (1 if half else 0)
-	for i in maxi(0, empties):
-		s += "☆"
+		s += "[img=13x13]res://shared/theme/icons/star_half_warn.svg[/img]"
+	for i in maxi(0, 5 - full - (1 if half else 0)):
+		s += "[img=13x13]res://shared/theme/icons/star_empty.svg[/img]"
 	return s
+
+
+## Compact numeric meter for plain Labels / list rows ("3½/5").
+func _stars_txt(v: float) -> String:
+	var full := int(v)
+	var half := (v - float(full)) >= 0.45
+	return "%d%s/5" % [full, "½" if half else ""]
 
 
 # ------------------------------------------------------------ TRANSFER CENTRE TAB
@@ -1638,8 +1649,8 @@ func _refresh_centre() -> void:
 		it.set_custom_color(0, ThemeBuilder.COL_TEXT_DIM)
 		it.set_text(1, String(d["name"]))
 		it.set_custom_color(1, Color.WHITE)
-		it.set_text(2, "%s → %s" % [_short_club_name(String(d["from"])), _short_club_name(String(d["to"]))])
-		it.set_tooltip_text(2, "%s → %s" % [String(d["from"]), String(d["to"])])
+		it.set_text(2, "%s » %s" % [_short_club_name(String(d["from"])), _short_club_name(String(d["to"]))])
+		it.set_tooltip_text(2, "%s » %s" % [String(d["from"]), String(d["to"])])
 		it.set_custom_color(2, ThemeBuilder.COL_TEXT_DIM)
 		it.set_text(3, market.fmt_money(int(d["fee"])) if int(d["fee"]) > 0 else "Free")
 		var kind := String(d["kind"])

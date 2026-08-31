@@ -403,24 +403,24 @@ const REPLY_NONE := [
 	"Not a word. Some fights aren't worth the ink.",
 ]
 const REPLY_PROMISE := [
-	"You promise {name} a proper run — {target} battles inside the next four weeks. Morale {b} → {a}. The coaches will hold you to it, and so will this inbox.",
-	"Your word is given: {target} battles for {name} within four weeks (morale {b} → {a}). Break it and the whole squad will know.",
-	"{name} leaves your office with a promise: {target} battles by {deadline}. Morale {b} → {a}. Promises here are tracked.",
+	"You promise {name} a proper run — {target} battles inside the next four weeks. Morale {b} » {a}. The coaches will hold you to it, and so will this inbox.",
+	"Your word is given: {target} battles for {name} within four weeks (morale {b} » {a}). Break it and the whole squad will know.",
+	"{name} leaves your office with a promise: {target} battles by {deadline}. Morale {b} » {a}. Promises here are tracked.",
 ]
 const REPLY_PATIENT := [
-	"You tell {name} to earn the shirt in training. Morale {b} → {a} — a gamble on their character.",
-	"No guarantees, you say — form picks the team. {name} takes it badly for now (morale {b} → {a}).",
-	"You back the coaches' selection and tell {name} so. Morale {b} → {a}; time will judge the call.",
+	"You tell {name} to earn the shirt in training. Morale {b} » {a} — a gamble on their character.",
+	"No guarantees, you say — form picks the team. {name} takes it badly for now (morale {b} » {a}).",
+	"You back the coaches' selection and tell {name} so. Morale {b} » {a}; time will judge the call.",
 ]
 const REPLY_PRAISE := [
-	"You pass on the praise personally. {name}'s morale {b} → {a}.",
-	"A word from the manager, delivered in front of the group — {name} beams (morale {b} → {a}).",
-	"You make sure {name} hears it from you, not the corridor. Morale {b} → {a}.",
+	"You pass on the praise personally. {name}'s morale {b} » {a}.",
+	"A word from the manager, delivered in front of the group — {name} beams (morale {b} » {a}).",
+	"You make sure {name} hears it from you, not the corridor. Morale {b} » {a}.",
 ]
 const REPLY_GROUNDED := [
-	"You keep the praise in-house — no complacency here. Morale {b} → {a}.",
-	"Quiet approval, nothing more; standards stay standards. Morale {b} → {a}.",
-	"You bank the praise for when it's needed. Morale {b} → {a}.",
+	"You keep the praise in-house — no complacency here. Morale {b} » {a}.",
+	"Quiet approval, nothing more; standards stay standards. Morale {b} » {a}.",
+	"You bank the praise for when it's needed. Morale {b} » {a}.",
 ]
 
 
@@ -1520,7 +1520,7 @@ func _render_pledge(msg: Dictionary) -> Dictionary:
 		[C_DIM, C_WHITE, int(msg.get("target", PLEDGE_TARGET)),
 		I18n.pretty_date(str(msg.get("made_on", ""))),
 		I18n.pretty_date(str(msg.get("deadline", ""))), int(msg.get("apps", 0))]
-	bb += I18n.t("[color=#%s][b]MORALE[/b][/color]  [color=#%s][b]%d → %d[/b][/color]") % \
+	bb += I18n.t("[color=#%s][b]MORALE[/b][/color]  [color=#%s][b]%d » %d[/b][/color]") % \
 		[C_DIM, C_GOOD if kept else C_BAD, int(msg.get("morale_before", 70)), int(msg.get("morale_after", 70))]
 	if not kept:
 		bb += I18n.t("  [color=#%s](and a knock across the rest of the squad — word travels)[/color]") % C_DIM
@@ -1550,7 +1550,7 @@ func _render_roundup(msg: Dictionary) -> Dictionary:
 				[C_DIM, medals[i], name_col, str(p["name"]), C_DIM, str(p["species"]), str(p["club"]),
 				int(p["battles"]), int(p["kos"]), int(p["dmg"]),
 				C_GOOD if float(p["rating"]) >= 7.0 else C_WHITE, I18n.decimal(float(p["rating"]), 2),
-				I18n.t("  [color=#%s][b]← OURS[/b][/color]") % C_GOOD if bool(p.get("mine", false)) else ""]
+				I18n.t("  [color=#%s][b]« OURS[/b][/color]") % C_GOOD if bool(p.get("mine", false)) else ""]
 		var w: Dictionary = podium[0]
 		var pom_quote := str(msg.get("pom_quote", ""))
 		if pom_quote == "":   # legacy message

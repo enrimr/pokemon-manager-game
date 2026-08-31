@@ -381,20 +381,26 @@ func _build_summary() -> Control:
 	col.add_child(exp)
 
 	var stars_n := clampi(int(_selected.get("stars", 3)), 1, 5)
+	var facts_row := HBoxContainer.new()
+	facts_row.add_theme_constant_override("separation", 8)
+	var facts_stars := TextureRect.new()
+	facts_stars.texture = GlyphIcons.rating_tex(float(stars_n), 5, 13, ThemeBuilder.COL_WARN)
+	facts_stars.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	facts_row.add_child(facts_stars)
 	var facts := Label.new()
-	facts.text = "%s   ·   %s   ·   %s" % [
-		"★".repeat(stars_n) + "☆".repeat(5 - stars_n),
+	facts.text = "  ·   %s   ·   %s" % [
 		tr("Bank: P$ %s") % I18n.number(int(_selected.get("balance", 0))),
 		tr("Wages: P$ %s/w") % I18n.number(int(_selected.get("wage_budget", 0)))]
 	facts.add_theme_font_size_override("font_size", 13)
 	facts.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
-	col.add_child(facts)
+	facts_row.add_child(facts)
+	col.add_child(facts_row)
 
 	if MenuFlow.has_save():
 		col.add_child(_hline())
 		var warn := Label.new()
 		var s := MenuFlow.save_summary()
-		warn.text = tr("⚠ Starting this career overwrites your saved one (%s, %s).") \
+		warn.text = tr("Warning: starting this career overwrites your saved one (%s, %s).") \
 			% [str(s.get("club", "?")), I18n.pretty_date(str(s.get("date", "")))]
 		warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		warn.add_theme_font_size_override("font_size", 12)

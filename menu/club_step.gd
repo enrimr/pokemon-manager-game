@@ -301,11 +301,10 @@ func _club_row(s: Dictionary) -> Control:
 	str_cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	str_cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	str_cell.add_theme_constant_override("separation", 8)
-	var stars := Label.new()
+	var stars := TextureRect.new()
 	var n := clampi(int(s["stars"]), 1, 5)
-	stars.text = "★".repeat(n) + "☆".repeat(5 - n)
-	stars.add_theme_font_size_override("font_size", 13)
-	stars.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+	stars.texture = GlyphIcons.rating_tex(float(n), 5, 12, ThemeBuilder.COL_WARN)
+	stars.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	str_cell.add_child(stars)
 	var avg := Label.new()
 	avg.text = tr("avg Lv %.0f") % float(s["avg6"])
@@ -405,8 +404,12 @@ func _render_detail(s: Dictionary) -> void:
 
 	# stat rows
 	var stars_n := clampi(int(s["stars"]), 1, 5)
-	_detail_box.add_child(_stat_row(tr("Squad stars"),
-		"★".repeat(stars_n) + "☆".repeat(5 - stars_n), ThemeBuilder.COL_WARN))
+	var stars_row := _stat_row(tr("Squad stars"), "", ThemeBuilder.COL_WARN)
+	var stars_tex := TextureRect.new()
+	stars_tex.texture = GlyphIcons.rating_tex(float(stars_n), 5, 12, ThemeBuilder.COL_WARN)
+	stars_tex.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	stars_row.add_child(stars_tex)
+	_detail_box.add_child(stars_row)
 	_detail_box.add_child(_stat_row(tr("Top-six average level"), "Lv %.0f" % float(s["avg6"]), ThemeBuilder.COL_TEXT))
 	_detail_box.add_child(_stat_row(tr("Squad size"), str(int(s["squad_n"])), ThemeBuilder.COL_TEXT))
 	var rep_row := HBoxContainer.new()

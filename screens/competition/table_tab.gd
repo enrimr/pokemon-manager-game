@@ -305,7 +305,7 @@ func _refresh_titles() -> void:
 	for i in _tree.columns:
 		var t: String = tr(TITLES[i]) if TITLES[i] != "" else ""
 		if i == _sort_col and t != "":
-			t += " ▲" if _sort_asc else " ▼"
+			t += " ^" if _sort_asc else " v"
 		_tree.set_column_title(i, t)
 
 

@@ -152,7 +152,7 @@ static func stage_text(stages: Dictionary) -> String:
 	for k in ["atk", "def", "spa", "spd", "spe", "acc", "eva"]:
 		var v := int(stages.get(k, 0))
 		if v != 0:
-			var arrows := ("▲".repeat(mini(v, 3)) if v > 0 else "▼".repeat(mini(-v, 3)))
+			var arrows := ("+".repeat(mini(v, 3)) if v > 0 else "−".repeat(mini(-v, 3)))
 			parts.append("%s%s" % [arrows, I18n.t(names[k])])
 	return "  ".join(parts)
 

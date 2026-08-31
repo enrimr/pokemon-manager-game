@@ -83,10 +83,12 @@ func _build_lineup_panel() -> Control:
 
 	var btns := UI.hbox(6)
 	box.add_child(btns)
-	for spec in [[tr("▲ Up"), _move_up], [tr("▼ Down"), _move_down], [tr("⇄ Swap with reserve"), _swap],
-			[tr("Reset best six"), _reset]]:
+	for spec in [[tr("Up"), _move_up, "tri_up"], [tr("Down"), _move_down, "tri_down"],
+			[tr("Swap with reserve"), _swap, "swap"], [tr("Reset best six"), _reset, ""]]:
 		var b := Button.new()
 		b.text = spec[0]
+		if str(spec[2]) != "":
+			b.icon = GlyphIcons.tex(str(spec[2]), 10, ThemeBuilder.COL_TEXT)
 		b.add_theme_font_size_override("font_size", 12)
 		b.pressed.connect(spec[1])
 		btns.add_child(b)
@@ -134,7 +136,7 @@ func _inst_row(inst: Dictionary, slot: int = -1) -> String:
 	return tr("%s%-14s Lv%-3d %-16s cond %d%%  fit %d%%  mor %d%%  %s") % [
 		prefix, nick, int(inst["level"]), types,
 		int(inst.get("condition", 100)), int(inst.get("fitness", 100)), int(inst.get("morale", 70)),
-		("◆ " + I18n.item_name(held)) if held != "" else "—"]
+		("• " + I18n.item_name(held)) if held != "" else "—"]
 
 
 func _refresh_lists() -> void:
@@ -351,7 +353,7 @@ func _build_their_panel() -> Control:
 			int(b["stats"]["spd"]), int(b["stats"]["spe"])], 11, UI.COL_DIM))
 		var held := str(b.get("held_item", "") if b.get("held_item") != null else "")
 		if held != "":
-			var hl := UI.label(tr("     ◆ holds %s") % I18n.item_name(held), 11, UI.COL_WARN)
+			var hl := UI.label(tr("     • holds %s") % I18n.item_name(held), 11, UI.COL_WARN)
 			hl.tooltip_text = I18n.item_desc(held)
 			hl.mouse_filter = Control.MOUSE_FILTER_STOP
 			box.add_child(hl)
@@ -369,19 +371,25 @@ func _build_footer() -> Control:
 	row.add_child(UI.label(tr("Play it yourself — every move, switch and item is your call —\nor delegate: watch the coach run it, or take the instant result."), 12, UI.COL_DIM))
 	row.add_child(UI.spacer_h())
 	var instant := Button.new()
-	instant.text = tr("Instant result  ⏩")
+	instant.text = tr("Instant result")
+	instant.icon = GlyphIcons.tex("fast_forward", 12, ThemeBuilder.COL_TEXT)
+	instant.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	instant.tooltip_text = tr("Simulate the whole tie and jump to the report.")
 	instant.custom_minimum_size = Vector2(150, 38)
 	instant.pressed.connect(func(): instant_result.emit())
 	row.add_child(instant)
 	var watch := Button.new()
-	watch.text = tr("Watch — coach decides  ▷")
+	watch.text = tr("Watch — coach decides")
+	watch.icon = GlyphIcons.tex("tri_right_hollow", 12, ThemeBuilder.COL_TEXT)
+	watch.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	watch.tooltip_text = tr("Sit back on the touchline: the AI coach picks moves under your instructions.\nYou can still force switches, change instructions or take over at any time.")
 	watch.custom_minimum_size = Vector2(200, 38)
 	watch.pressed.connect(func(): start_live.emit(false))
 	row.add_child(watch)
 	var go := Button.new()
-	go.text = tr("PLAY THE MATCH — you call every turn  ▶")
+	go.text = tr("PLAY THE MATCH — you call every turn")
+	go.icon = GlyphIcons.tex("tri_right", 12, Color.WHITE)
+	go.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	go.tooltip_text = tr("Interactive battle: choose attacks, switches and bag items each turn.")
 	go.custom_minimum_size = Vector2(310, 38)
 	go.add_theme_color_override("font_color", Color.WHITE)

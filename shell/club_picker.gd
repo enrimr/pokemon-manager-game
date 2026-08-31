@@ -379,11 +379,10 @@ func _club_row(s: Dictionary) -> Control:
 	str_cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	str_cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	str_cell.add_theme_constant_override("separation", 8)
-	var stars := Label.new()
+	var stars := TextureRect.new()
 	var n := clampi(int(s["stars"]), 1, 5)
-	stars.text = "★".repeat(n) + "☆".repeat(5 - n)
-	stars.add_theme_font_size_override("font_size", 14)
-	stars.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+	stars.texture = GlyphIcons.rating_tex(float(n), 5, 13, ThemeBuilder.COL_WARN)
+	stars.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	str_cell.add_child(stars)
 	var avg := Label.new()
 	avg.text = tr("top six avg Lv %.0f") % float(s["avg6"])

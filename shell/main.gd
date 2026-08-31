@@ -167,7 +167,7 @@ func _retranslate_chrome() -> void:
 		side_hint.text = tr("Space = Continue · %d–%d = screens · Ctrl+1–9 = sections") % [1, _shortcut_count]
 	var top_hint: Node = find_child("ShortcutHint", true, false)
 	if top_hint is Label:
-		top_hint.text = tr("1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search") % _shortcut_count
+		top_hint.text = tr("1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+Left/Right  Back/Fwd   ·   Ctrl+F  Search") % _shortcut_count
 	_refresh_identity()
 	_refresh_topbar()
 	_update_subnav()
@@ -440,10 +440,10 @@ func _update_history_buttons() -> void:
 	var can_fwd := _history_pos < _history.size() - 1
 	_back_btn.disabled = not can_back
 	_fwd_btn.disabled = not can_fwd
-	_back_btn.tooltip_text = (tr("Back to %s   (Alt+← / mouse-4)") % _history_label(_history[_history_pos - 1])) \
-		if can_back else tr("Back   (Alt+← — nowhere to go)")
-	_fwd_btn.tooltip_text = (tr("Forward to %s   (Alt+→ / mouse-5)") % _history_label(_history[_history_pos + 1])) \
-		if can_fwd else tr("Forward   (Alt+→ — nowhere to go)")
+	_back_btn.tooltip_text = (tr("Back to %s   (Alt+Left / mouse-4)") % _history_label(_history[_history_pos - 1])) \
+		if can_back else tr("Back   (Alt+Left — nowhere to go)")
+	_fwd_btn.tooltip_text = (tr("Forward to %s   (Alt+Right / mouse-5)") % _history_label(_history[_history_pos + 1])) \
+		if can_fwd else tr("Forward   (Alt+Right — nowhere to go)")
 
 
 func _current_screen_instance() -> Node:
@@ -581,7 +581,8 @@ func _build_topbar() -> Control:
 
 	# game menu (save / load / new career)
 	_menu_btn = MenuButton.new()
-	_menu_btn.text = "  ☰  TM  "
+	_menu_btn.text = " TM  "
+	_menu_btn.icon = GlyphIcons.tex("menu", 12, ThemeBuilder.COL_ACCENT)
 	_menu_btn.flat = false
 	_menu_btn.focus_mode = Control.FOCUS_NONE
 	_menu_btn.add_theme_font_override("font", _font_bold)
@@ -616,21 +617,21 @@ func _build_topbar() -> Control:
 	row.add_child(spacer)
 
 	# info blocks: next match | balance | date — all live hyperlinks
-	var fx := _info_block("NEXT MATCH ▸", _on_fixture_block_clicked)
+	var fx := _info_block("NEXT MATCH ›", _on_fixture_block_clicked)
 	_fixture_block = fx[0]
 	_fixture_value = fx[1]
 	_fixture_caption = fx[2]
 	row.add_child(fx[0])
 	row.add_child(_vsep())
 
-	var bal := _info_block("BALANCE ▸", _on_balance_block_clicked)
+	var bal := _info_block("BALANCE ›", _on_balance_block_clicked)
 	_balance_value = bal[1]
 	_balance_caption = bal[2]
 	bal[0].tooltip_text = "Open Board & Finances — balance, wages, board confidence"
 	row.add_child(bal[0])
 	row.add_child(_vsep())
 
-	var dt := _info_block("DATE ▸", _on_date_block_clicked)
+	var dt := _info_block("DATE ›", _on_date_block_clicked)
 	_date_value = dt[1]
 	_date_caption = dt[2]
 	dt[0].tooltip_text = "Open Competition — season calendar and fixtures"
@@ -656,7 +657,7 @@ func _build_topbar() -> Control:
 	cbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	cbox.add_theme_constant_override("separation", 0)
 	_continue_main = Label.new()
-	_continue_main.text = "CONTINUE  ▶"
+	_continue_main.text = "CONTINUE  ›"
 	_continue_main.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_continue_main.add_theme_font_override("font", _font_header)
 	_continue_main.add_theme_font_size_override("font_size", 15)
@@ -829,10 +830,10 @@ func _build_breadcrumb() -> Control:
 	# back / forward history arrows (FM-style)
 	var arrows := HBoxContainer.new()
 	arrows.add_theme_constant_override("separation", 2)
-	_back_btn = _history_arrow("◀")
+	_back_btn = _history_arrow("tri_left")
 	_back_btn.pressed.connect(go_back)
 	arrows.add_child(_back_btn)
-	_fwd_btn = _history_arrow("▶")
+	_fwd_btn = _history_arrow("tri_right")
 	_fwd_btn.pressed.connect(go_forward)
 	arrows.add_child(_fwd_btn)
 	row.add_child(arrows)
@@ -852,7 +853,7 @@ func _build_breadcrumb() -> Control:
 	_crumb_chip_panel.add_child(_crumb_chip)
 	row.add_child(_crumb_chip_panel)
 
-	# clickable trail: League ▸ Club ▸ Screen
+	# clickable trail: League › Club › Screen
 	_crumb_league_btn = _crumb_link()
 	_crumb_league_btn.pressed.connect(_on_crumb_league)
 	row.add_child(_crumb_league_btn)
@@ -884,7 +885,7 @@ func _build_breadcrumb() -> Control:
 	row.add_child(sp)
 
 	var hint := Label.new()
-	hint.text = tr("1–%d screens   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search   ·   Ctrl+S  Save") % 7
+	hint.text = tr("1–%d screens   ·   Space  Continue   ·   Alt+Left/Right  Back/Fwd   ·   Ctrl+F  Search   ·   Ctrl+S  Save") % 7
 	hint.name = "ShortcutHint"
 	hint.add_theme_font_size_override("font_size", 10)
 	hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -893,9 +894,10 @@ func _build_breadcrumb() -> Control:
 	return bar
 
 
-func _history_arrow(glyph: String) -> Button:
+func _history_arrow(kind: String) -> Button:
 	var btn := Button.new()
-	btn.text = glyph
+	btn.icon = GlyphIcons.tex(kind, 10, ThemeBuilder.COL_TEXT)
+	btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.custom_minimum_size = Vector2(30, 26)
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -936,7 +938,7 @@ func _crumb_link() -> Button:
 
 func _crumb_sep() -> Label:
 	var sep := Label.new()
-	sep.text = "▸"
+	sep.text = "›"
 	sep.add_theme_font_size_override("font_size", 11)
 	sep.add_theme_color_override("font_color", Color("4a5068"))
 	return sep
@@ -1056,7 +1058,7 @@ func _build_nav() -> void:
 
 	var hint_node: Node = find_child("ShortcutHint", true, false)
 	if hint_node is Label:
-		hint_node.text = tr("1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search") % maxi(shortcut, 1)
+		hint_node.text = tr("1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+Left/Right  Back/Fwd   ·   Ctrl+F  Search") % maxi(shortcut, 1)
 	_update_subnav()
 
 
@@ -1156,7 +1158,8 @@ func _nav_button(n: String, shortcut: int) -> Button:
 	# chevron: expand/collapse the FM-style sub-section list without navigating
 	if not _screen_tabs(n).is_empty():
 		var chev := Button.new()
-		chev.text = "▸"
+		chev.icon = GlyphIcons.tex("caret_right", 8, Color("6a7186"))
+		chev.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		chev.flat = true
 		chev.focus_mode = Control.FOCUS_NONE
 		chev.custom_minimum_size = Vector2(18, 22)
@@ -1195,7 +1198,7 @@ func _add_subnav(list: VBoxContainer, n: String) -> void:
 		b.focus_mode = Control.FOCUS_NONE
 		b.custom_minimum_size.y = 26
 		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		b.tooltip_text = "%s → %s" % [tr(str(screens[n]["title"])), tr(str(t["title"]))]
+		b.tooltip_text = "%s » %s" % [tr(str(screens[n]["title"])), tr(str(t["title"]))]
 		b.pressed.connect(_on_subnav_pressed.bind(n, tab_id))
 		var row := HBoxContainer.new()
 		row.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1258,7 +1261,7 @@ func _style_subnav_button_states(n: String) -> void:
 		var tick: Label = b.find_child("Tick", true, false)
 		var lbl: Label = b.find_child("Title", true, false)
 		if tick != null:
-			tick.text = "▪" if active else "·"
+			tick.text = "•" if active else "·"
 			tick.add_theme_color_override("font_color",
 				ThemeBuilder.COL_ACCENT if active else Color("4a5068"))
 		if lbl != null:
@@ -1274,7 +1277,7 @@ func _update_subnav() -> void:
 		_nav_sub_boxes[n].visible = open
 		if _nav_expanders.has(n):
 			var chev: Button = _nav_expanders[n]
-			chev.text = "▾" if open else "▸"
+			chev.icon = GlyphIcons.tex("caret_down" if open else "caret_right", 8, Color("6a7186"))
 			chev.tooltip_text = tr("Collapse %s sections" if _nav_pinned.get(n, false) \
 				else ("Hide %s sections" if open else "Show %s sections")) % tr(str(screens[n]["title"]))
 		_style_subnav_button_states(n)
@@ -1349,20 +1352,20 @@ func _refresh_continue_label() -> void:
 		return
 	var nf := GameState.next_player_fixture()
 	if nf.is_empty():
-		_continue_main.text = "CONTINUE  ▶"
+		_continue_main.text = "CONTINUE  ›"
 		_continue_sub.text = tr("Advance %d days") % ADVANCE_CAP
 		return
 	var we_home: bool = GameState.is_player_club(nf["home"])
 	var opp := GameState.club(nf["away"] if we_home else nf["home"])
 	var days := _days_until(nf["date"])
 	if days <= 0:
-		_continue_main.text = "MATCHDAY  ▶"
+		_continue_main.text = "MATCHDAY  ›"
 		_continue_sub.text = tr("vs %s · go to match") % opp.get("name", "?")
 	elif days == 1:
-		_continue_main.text = "CONTINUE  ▶"
+		_continue_main.text = "CONTINUE  ›"
 		_continue_sub.text = tr("Matchday vs %s") % opp.get("name", "?")
 	else:
-		_continue_main.text = "CONTINUE  ▶"
+		_continue_main.text = "CONTINUE  ›"
 		_continue_sub.text = tr("Advance %d days · vs %s") % [mini(days, ADVANCE_CAP), opp.get("short", "?")]
 
 
@@ -1414,7 +1417,7 @@ func _on_continue() -> void:
 		return
 	_advancing = true
 	_continue_btn.disabled = true
-	var spinner := ["◐", "◓", "◑", "◒"]
+	var spinner := ["·", "··", "···", "··"]
 	var stop_reason := ""
 	var played_fixture := {}
 	for i in ADVANCE_CAP:
@@ -1706,7 +1709,7 @@ func _on_search_text(text: String) -> void:
 			var idx := _search_list.add_item("%s    —  %s" % [entry["label"], entry["sub"]], _type_icon(entry["color"]))
 			var dest: String = tr(str(screens.get(entry["screen"], {}).get("title", entry["screen"])))
 			if entry.has("tab"):
-				dest += " ▸ %s" % tr(_tab_title(entry["screen"], str(entry["tab"])))
+				dest += " › %s" % tr(_tab_title(entry["screen"], str(entry["tab"])))
 			_search_list.set_item_tooltip(idx, tr("Open %s") % dest)
 	if not _search_results.is_empty():
 		_search_list.select(0)
@@ -1756,8 +1759,8 @@ func _activate_search_index(idx: int) -> void:
 	navigate_to(entry["screen"], entry)
 	var dest: String = tr(str(screens[entry["screen"]]["title"]))
 	if entry.has("tab"):
-		dest += " ▸ %s" % tr(_tab_title(entry["screen"], str(entry["tab"])))
-	_toast("%s  →  %s" % [entry["label"], dest])
+		dest += " › %s" % tr(_tab_title(entry["screen"], str(entry["tab"])))
+	_toast("%s  »  %s" % [entry["label"], dest])
 
 
 func _close_search() -> void:

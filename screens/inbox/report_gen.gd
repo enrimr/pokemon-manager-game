@@ -127,7 +127,7 @@ func _match_report(msg: Dictionary) -> Dictionary:
 			var b: Dictionary = battles[i]
 			var w_us: bool = b["winner"] == player_side
 			var wcol := C_GOOD if w_us else C_BAD
-			var line := I18n.t("[color=#%s]● Battle %d — %s[/color] [color=#%s]in %d turns") % \
+			var line := I18n.t("[color=#%s]• Battle %d — %s[/color] [color=#%s]in %d turns") % \
 				[wcol, i + 1, I18n.t("WON") if w_us else I18n.t("LOST"), C_DIM, b["turns"]]
 			var last_ko: Dictionary = b["kos"].back() if not (b["kos"] as Array).is_empty() else {}
 			if not last_ko.is_empty():
@@ -273,7 +273,7 @@ func _weather_line(b: Dictionary) -> String:
 		if by != "" else ""
 	var chip := int(b.get("weather_chip", 0))
 	var chip_txt := I18n.t(" %d HP was lost to the elements alone.") % chip if chip > 0 else ""
-	return I18n.t("[color=#%s]   ☂ %s%s.%s[/color]") % [C_ACC, flavour[0].to_upper() + flavour.substr(1), src, chip_txt]
+	return I18n.t("[color=#%s]   [img=12x12]res://shared/theme/icons/umbrella_acc.svg[/img] %s%s.%s[/color]") % [C_ACC, flavour[0].to_upper() + flavour.substr(1), src, chip_txt]
 
 
 func _key_moments(sim: Dictionary, player_side: int) -> Array:
@@ -484,7 +484,7 @@ func _scout_report(msg: Dictionary) -> Dictionary:
 			"actions": [{"label": I18n.t("Go to Transfers"), "screen": "transfers"}], "banner": {}}
 	var sp: Dictionary = DataStore.species(int(p["species_id"]))
 	# The dossier obeys the SAME staged-knowledge ladder as the Transfer
-	# Centre (live market knowledge, same mask keys → identical bands):
+	# Centre (live market knowledge, same mask keys » identical bands):
 	# moves + nature at Part scouted 50%, ability at Detailed 75%,
 	# exact potential/wage/genetics only with a Full report (100%).
 	var mkt: RefCounted = news.market()
@@ -497,7 +497,7 @@ func _scout_report(msg: Dictionary) -> Dictionary:
 	var stars := int(round(pot / 4.0))
 	var star_txt := ""
 	for i in 5:
-		star_txt += "●" if i < stars else "○"
+		star_txt += "[img=13x13]res://shared/theme/icons/%s.svg[/img]" % ("star_warn" if i < stars else "star_empty")
 	var age_m := int(p.get("age_months", 24))
 	var ivs: Dictionary = p.get("ivs", {})
 	var iv_names := {"hp": I18n.t("constitution"), "atk": I18n.t("physical power"), "def": I18n.t("resilience"),
@@ -632,7 +632,7 @@ func _live_offer(msg: Dictionary, o: Dictionary) -> Dictionary:
 		upfront = int(pkg.get("upfront", 0))
 		bb += I18n.t("[color=#%s][b]DEAL STRUCTURE[/b][/color]  [color=#%s]%s.[/color]\n") % \
 			[C_DIM, C_WHITE, str(mkt.describe_package(pkg))]
-	bb += I18n.t("[color=#%s][b]IF WE SELL[/b][/color]  [color=#%s]Balance %s → [b]%s[/b]%s · frees %s / month in wages · squad %d → %d.[/color]\n") % \
+	bb += I18n.t("[color=#%s][b]IF WE SELL[/b][/color]  [color=#%s]Balance %s » [b]%s[/b]%s · frees %s / month in wages · squad %d » %d.[/color]\n") % \
 		[C_DIM, C_WHITE, news.money(int(pc["finances"]["balance"])),
 		news.money(int(pc["finances"]["balance"]) + upfront),
 		"" if upfront == fee else I18n.t(" now (rest in installments)"), news.money(wage),
@@ -733,13 +733,13 @@ func _board_preseason(msg: Dictionary) -> Dictionary:
 	var fin: Dictionary = news.finance_summary()
 	var bb := "[color=#%s]%s[/color]\n\n" % [C_WHITE, str(msg.get("body", ""))]
 	bb += I18n.t("[color=#%s][b]SEASON OBJECTIVES[/b][/color]\n") % C_DIM
-	bb += I18n.t("[color=#%s]● League:[/color] [color=#%s][b]%s[/b][/color]\n") % [C_DIM, C_WHITE, news.league_expectation_text().capitalize()]
-	bb += I18n.t("[color=#%s]● Cup:[/color] [color=#%s][b]%s[/b][/color]\n\n") % [C_DIM, C_WHITE, news.cup_expectation_text().capitalize()]
+	bb += I18n.t("[color=#%s]• League:[/color] [color=#%s][b]%s[/b][/color]\n") % [C_DIM, C_WHITE, news.league_expectation_text().capitalize()]
+	bb += I18n.t("[color=#%s]• Cup:[/color] [color=#%s][b]%s[/b][/color]\n\n") % [C_DIM, C_WHITE, news.cup_expectation_text().capitalize()]
 	bb += I18n.t("[color=#%s][b]RESOURCES[/b][/color]\n") % C_DIM
-	bb += I18n.t("[color=#%s]● Bank balance:[/color] [color=#%s][b]%s[/b][/color]\n") % [C_DIM, C_WHITE, news.money(fin["balance"])]
-	bb += I18n.t("[color=#%s]● Transfer budget:[/color] [color=#%s][b]%s[/b][/color] [color=#%s](released by the board for fees and equipment)[/color]\n") % \
+	bb += I18n.t("[color=#%s]• Bank balance:[/color] [color=#%s][b]%s[/b][/color]\n") % [C_DIM, C_WHITE, news.money(fin["balance"])]
+	bb += I18n.t("[color=#%s]• Transfer budget:[/color] [color=#%s][b]%s[/b][/color] [color=#%s](released by the board for fees and equipment)[/color]\n") % \
 		[C_DIM, C_WHITE, news.money(maxi(0, int(fin.get("transfer_budget", 0)))), C_DIM]
-	bb += I18n.t("[color=#%s]● Wage budget:[/color] [color=#%s][b]%s / month[/b][/color] [color=#%s](current bill %s)[/color]\n\n") % \
+	bb += I18n.t("[color=#%s]• Wage budget:[/color] [color=#%s][b]%s / month[/b][/color] [color=#%s](current bill %s)[/color]\n\n") % \
 		[C_DIM, C_WHITE, news.money(fin["wage_budget"]), C_DIM, news.money(fin["wage_bill"])]
 	bb += I18n.t("[color=#%s]The board will formally review progress at the start of each month. Expected league position based on club stature: [b]%s[/b].[/color]") % \
 		[C_DIM, _ordinal(news.expected_position())]
@@ -810,12 +810,12 @@ func _finance_report(msg: Dictionary) -> Dictionary:
 	bb += I18n.t("[color=#%s][b]INCOME[/b][/color]   [color=#%s][b]+%s[/b][/color]\n") % [C_DIM, C_GOOD, news.money(income)]
 	for r in lines:
 		if int(r["amount"]) > 0:
-			bb += I18n.t("[color=#%s]●[/color] [color=#%s]%s[/color]  [color=#%s]+%s[/color]\n") % \
+			bb += I18n.t("[color=#%s]•[/color] [color=#%s]%s[/color]  [color=#%s]+%s[/color]\n") % \
 				[C_DIM, C_WHITE, str(r["text"]), C_GOOD, news.money(int(r["amount"]))]
 	bb += I18n.t("\n[color=#%s][b]EXPENDITURE[/b][/color]   [color=#%s][b]-%s[/b][/color]\n") % [C_DIM, C_BAD, news.money(expense)]
 	for r in lines:
 		if int(r["amount"]) < 0:
-			bb += I18n.t("[color=#%s]●[/color] [color=#%s]%s[/color]  [color=#%s]%s[/color]\n") % \
+			bb += I18n.t("[color=#%s]•[/color] [color=#%s]%s[/color]  [color=#%s]%s[/color]\n") % \
 				[C_DIM, C_WHITE, str(r["text"]), C_BAD, news.money(int(r["amount"]))]
 	bb += I18n.t("\n[color=#%s][b]OPERATING RESULT[/b][/color]  [color=#%s][b]%s%s[/b][/color]\n") % \
 		[C_DIM, C_GOOD if net >= 0 else C_BAD, "+" if net >= 0 else "", news.money(net)]
@@ -881,7 +881,7 @@ func _board_decision(msg: Dictionary) -> Dictionary:
 
 	bb += I18n.t("[color=#%s][b]THE BOARD'S REASONING[/b][/color]\n") % C_DIM
 	for line in r.get("reasons", []):
-		bb += I18n.t("[color=#%s]●[/color] [color=#%s]%s[/color]\n") % [C_DIM, C_WHITE, str(line)]
+		bb += I18n.t("[color=#%s]•[/color] [color=#%s]%s[/color]\n") % [C_DIM, C_WHITE, str(line)]
 	bb += "\n"
 
 	match status:
@@ -889,13 +889,13 @@ func _board_decision(msg: Dictionary) -> Dictionary:
 			bb += I18n.t("[color=#%s][b]WHAT CHANGES[/b][/color]\n") % C_DIM
 			match str(r["kind"]):
 				"wage":
-					bb += I18n.t("[color=#%s]Monthly wage budget: %s → [b]%s[/b] (+%s).[/color]\n") % \
+					bb += I18n.t("[color=#%s]Monthly wage budget: %s » [b]%s[/b] (+%s).[/color]\n") % \
 						[C_GOOD, news.money(int(r["before"])), news.money(int(r["after"])), news.money(granted)]
 				"funds":
-					bb += I18n.t("[color=#%s]Bank balance: %s → [b]%s[/b] — %s of the owners' money, available to spend now.[/color]\n") % \
+					bb += I18n.t("[color=#%s]Bank balance: %s » [b]%s[/b] — %s of the owners' money, available to spend now.[/color]\n") % \
 						[C_GOOD, news.money(int(r["before"])), news.money(int(r["after"])), news.money(granted)]
 				"scouting":
-					bb += I18n.t("[color=#%s]Bank balance: %s → [b]%s[/b]. All %d prospect files gained +%d%% scouting knowledge.[/color]\n") % \
+					bb += I18n.t("[color=#%s]Bank balance: %s » [b]%s[/b]. All %d prospect files gained +%d%% scouting knowledge.[/color]\n") % \
 						[C_GOOD, news.money(int(r["before"])), news.money(int(r["after"])),
 						int(r.get("prospects_updated", 0)), board.SCOUT_KNOWLEDGE_GAIN]
 			if status == "partial":

@@ -389,7 +389,7 @@ func play_event(e: Dictionary) -> void:
 		"ability_triggered":
 			_anim_ability(e)
 		"held_item":
-			_float_med(_med_from_event(e), "◆ " + tr(str(e.get("item_name", ""))), Color("e0b050"), 12, -26.0)
+			_float_med(_med_from_event(e), "• " + tr(str(e.get("item_name", ""))), Color("e0b050"), 12, -26.0)
 		"battle_end":
 			var s: Array = runner.shorts()
 			_set_caption(tr("BATTLE %d — %s TAKE IT") % [runner.battle_no, s[int(e["winner"])]],
@@ -574,7 +574,7 @@ func _anim_stat(e: Dictionary) -> void:
 	var d := int(e.get("delta", 0))
 	var names := {"atk": "ATK", "def": "DEF", "spa": "SPA", "spd": "SPD",
 		"spe": "SPE", "acc": "ACC", "eva": "EVA"}
-	var arrow := "▲".repeat(mini(absi(d), 2)) if d > 0 else "▼".repeat(mini(absi(d), 2))
+	var arrow := "+".repeat(mini(absi(d), 2)) if d > 0 else "−".repeat(mini(absi(d), 2))
 	_float_med(_med_from_event(e), "%s %s" % [arrow, tr(str(names.get(str(e["stat"]), str(e["stat"]).to_upper())))],
 		Color("57c979") if d > 0 else Color("e06060"), 13)
 
@@ -608,7 +608,7 @@ func _anim_ability(e: Dictionary) -> void:
 	var col := Color("9a8dff")
 	if effect in ["immune", "absorb", "sturdy"]:
 		col = Color("e0b050")
-	_float_med(m, "◈ " + ab, col, 12, -30.0)
+	_float_med(m, "• " + ab, col, 12, -30.0)
 	_ring(m.center() - global_position, col)
 	if effect in ["entry_stat", "weather", "sturdy", "immune", "absorb"]:
 		var subs := {"entry_stat": tr("takes the field"), "weather": tr("changes the weather"),
@@ -625,13 +625,13 @@ func _anim_item(e: Dictionary) -> void:
 	var t_idx := int(e.get("target_index", -1))
 	var target_slot := actives.find(t_idx)
 	var corner := Vector2(size.x * (0.12 if side == 0 else 0.88), size.y * 0.82)
-	_float_text(corner, "🧰 %s" % iname, Color("9a8dff"), 14)
+	_float_text(corner, "• %s" % iname, Color("9a8dff"), 14)
 	var m: Medallion = _med(side, target_slot) if target_slot >= 0 else null
 	if m != null:
 		_projectile(corner, m.center() - global_position, Color("9a8dff"), 5)
 		_ring(m.center() - global_position, Color("9a8dff"))
 	else:
-		_float_text(corner + Vector2(0, 18), tr("→ %s (bench)") % str(e.get("pokemon", "?")), Color("8b91a8"), 11)
+		_float_text(corner + Vector2(0, 18), tr("» %s (bench)") % str(e.get("pokemon", "?")), Color("8b91a8"), 11)
 
 
 # ================================================================= primitives

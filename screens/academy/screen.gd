@@ -203,12 +203,15 @@ func _fill_cull(s: RefCounted) -> void:
 		_cull_checks[uid] = cb
 		row.add_child(cb)
 		var who := Label.new()
-		who.text = tr("%s  Lv %d · %s · pot %s–%s") % [String(it["species"]), int(it["level"]),
-			Academy._age_text(int(it["age_months"])),
-			Academy.star_text(float(int(it["pot_min"])) / 4.0),
-			Academy.star_text(float(int(it["pot_max"])) / 4.0)]
+		who.text = tr("%s  Lv %d · %s · pot") % [String(it["species"]), int(it["level"]),
+			Academy._age_text(int(it["age_months"]))]
 		who.add_theme_font_size_override("font_size", 13)
 		row.add_child(who)
+		var pot_icon := TextureRect.new()
+		pot_icon.texture = GlyphIcons.rating_range_tex(float(int(it["pot_min"])) / 4.0,
+			float(int(it["pot_max"])) / 4.0, 5, 11, GOLD)
+		pot_icon.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+		row.add_child(pot_icon)
 		var why := Label.new()
 		var rel: bool = String(it["rec"]) == "release"
 		why.text = tr("coach: %s — %s") % [tr("RELEASE") if rel else tr("KEEP"), String(it["reason"])]
@@ -297,11 +300,9 @@ func _fill_table(s: RefCounted) -> void:
 		it.set_text(3, str(int(m["level"])))
 		it.set_text(4, String(m["nature"]))
 		it.set_text(5, DataStore.ability_name(String(m["ability"])))
-		it.set_text(6, Academy.star_text(float(m["stars"])))
-		it.set_custom_color(6, TB.COL_ACCENT.lightened(0.25))
+		it.set_icon(6, GlyphIcons.rating_tex(float(m["stars"]), 5, 11, TB.COL_ACCENT.lightened(0.25)))
 		var band: Array = s.potential_stars(m)
-		it.set_text(7, "%s – %s" % [Academy.star_text(band[0]), Academy.star_text(band[1])])
-		it.set_custom_color(7, GOLD)
+		it.set_icon(7, GlyphIcons.rating_range_tex(band[0], band[1], 5, 11, GOLD))
 		it.set_text(8, "%d%%" % int(round(s.dev_progress(m) * 100.0)))
 		it.set_custom_color(8, TB.COL_GOOD)
 		it.set_text(9, Academy.FOCUS_LABELS[String(m.get("focus", "balanced"))])
@@ -389,6 +390,18 @@ func _build_detail() -> Control:
 	return panel
 
 
+func _star_line(prefix: String, meter: Texture2D, col: Color) -> HBoxContainer:
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 8)
+	var l := _dl(prefix, col, 15)
+	h.add_child(l)
+	var t := TextureRect.new()
+	t.texture = meter
+	t.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	h.add_child(t)
+	return h
+
+
 func _dl(text: String, color: Color = TB.COL_TEXT, size: int = 14) -> Label:
 	var l := Label.new()
 	l.text = text
@@ -436,9 +449,10 @@ func _fill_detail() -> void:
 	_detail.add_child(_dl(String(m["species"]), TB.COL_TEXT, 20))
 	_detail.add_child(_type_badges(sp.get("types", [])))
 	var band: Array = s.potential_stars(m)
-	_detail.add_child(_dl(tr("Current  %s") % Academy.star_text(float(m["stars"])), TB.COL_ACCENT.lightened(0.25), 15))
-	_detail.add_child(_dl(tr("Potential  %s – %s") % [Academy.star_text(band[0]),
-		Academy.star_text(band[1])], GOLD, 15))
+	_detail.add_child(_star_line(tr("Current"),
+		GlyphIcons.rating_tex(float(m["stars"]), 5, 13, TB.COL_ACCENT.lightened(0.25)), TB.COL_ACCENT.lightened(0.25)))
+	_detail.add_child(_star_line(tr("Potential"),
+		GlyphIcons.rating_range_tex(band[0], band[1], 5, 13, GOLD), GOLD))
 	_detail.add_child(_dl(tr("Coach view: %s.") % s._pot_note(int(m["pot_max"])), TB.COL_TEXT_DIM, 13))
 	_detail.add_child(HSeparator.new())
 	_detail.add_child(_dl(tr("Level %d   ·   %s   ·   joined %s") % [int(m["level"]),

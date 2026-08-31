@@ -2,7 +2,7 @@ extends Control
 ## Training screen — owned by the "training" piece.
 ## Five tabs, FM-style: Schedule (dated calendar), Individual (per-Pokémon
 ## focus + move learning), Coaches (staff assignments + workload), Mentoring
-## (veteran → junior groups), Development (deltas + attribution).
+## (veteran » junior groups), Development (deltas + attribution).
 ## All model logic lives in training_service.gd (kept alive at /root).
 
 const TrainingServiceScript := preload("res://screens/training/training_service.gd")
@@ -334,7 +334,7 @@ func _build_schedule_tab() -> Control:
 	left.add_child(presets)
 	var pl := Label.new()
 	pl.text = tr("Weekday template presets:")
-	pl.tooltip_text = tr("Rewrites the repeating weekday DEFAULT. To plan one specific future week instead, use that week's Plan ▾ menu on the calendar.")
+	pl.tooltip_text = tr("Rewrites the repeating weekday DEFAULT. To plan one specific future week instead, use that week's Plan menu on the calendar.")
 	pl.mouse_filter = Control.MOUSE_FILTER_STOP
 	pl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	presets.add_child(pl)
@@ -348,7 +348,7 @@ func _build_schedule_tab() -> Control:
 		presets.add_child(b)
 
 	var legend := Label.new()
-	legend.text = tr("Every cell edits THAT DATE only (violet = date-specific plan; ↺ resets to the weekday template). Use a week's Plan ▾ menu to stamp a preset on just that week — a recovery week before a congested block, a heavy development block, opponent prep — or to save it as the template. Fixtures embed automatically (amber): matchday is locked, the days around it default to recovery/prep but your date edits win. High intensity trains faster but builds strain; each Pokémon also carries its own load below (Automatic rests above %d%% strain, eases above %d%%).") % [int(svc.AUTO_REST_AT), int(svc.AUTO_LIGHT_AT)]
+	legend.text = tr("Every cell edits THAT DATE only (violet = date-specific plan; Template default resets it). Use a week's Plan menu to stamp a preset on just that week — a recovery week before a congested block, a heavy development block, opponent prep — or to save it as the template. Fixtures embed automatically (amber): matchday is locked, the days around it default to recovery/prep but your date edits win. High intensity trains faster but builds strain; each Pokémon also carries its own load below (Automatic rests above %d%% strain, eases above %d%%).") % [int(svc.AUTO_REST_AT), int(svc.AUTO_LIGHT_AT)]
 	legend.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	legend.add_theme_font_size_override("font_size", 12)
 	legend.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -387,7 +387,7 @@ func _on_date_session_pick(idx: int, date: String, slot: String) -> void:
 	if idx < svc.FOCUSES.size():
 		svc.set_date_session(date, slot, svc.FOCUSES[idx])
 	else:
-		svc.clear_date_slot(date, slot)  # tr("↺ Template default")
+		svc.clear_date_slot(date, slot)  # tr("Template default")
 	_refresh_schedule.call_deferred()
 
 
@@ -464,7 +464,7 @@ func _day_header(plan: Dictionary) -> Control:
 		if bool(ov[k]):
 			edited = true
 	var bot := Label.new()
-	bot.text = "%d %s" % [int(parts[2]), tr(months[int(parts[1]) - 1])] + ("  ●" if edited else "")
+	bot.text = "%d %s" % [int(parts[2]), tr(months[int(parts[1]) - 1])] + ("  •" if edited else "")
 	bot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	bot.add_theme_font_size_override("font_size", 11)
 	bot.add_theme_color_override("font_color", OVERRIDE_COL if edited else ThemeBuilder.COL_TEXT_DIM)
@@ -556,13 +556,14 @@ func _session_cell(plan: Dictionary, slot: String) -> Control:
 	ob.clip_text = true
 	for f in svc.FOCUSES:
 		ob.add_item(svc.FOCUS_LABELS[f])
-	ob.add_item(tr("↺ Template default"))
+	ob.add_item(tr("Template default"))
+	ob.set_item_icon(ob.item_count - 1, GlyphIcons.tex("undo", 10, ThemeBuilder.COL_TEXT_DIM))
 	ob.select(svc.FOCUSES.find(focus))
 	_tint_focus_button(ob, focus)
 	var tpl_focus: String = svc.state["schedule"][plan["day"]][slot]
 	var tip := tr("Edits %s %s ONLY (per-date plan).") % [I18n.pretty_date(date), slot.to_upper()]
 	if overridden:
-		tip += tr("\nDate-specific: %s (template default: %s). ↺ resets it.") % [
+		tip += tr("\nDate-specific: %s (template default: %s). Template default resets it.") % [
 			svc.FOCUS_LABELS[focus], svc.FOCUS_LABELS[tpl_focus]]
 	elif kind == "post_match":
 		tip += "\nAuto: recovery after yesterday's match — pick a focus to override this date."
@@ -586,11 +587,12 @@ func _intensity_cell(plan: Dictionary) -> Control:
 	ob.clip_text = true
 	for i in svc.INTENSITIES:
 		ob.add_item(svc.INTENSITY_LABELS[i])
-	ob.add_item(tr("↺ Default"))
+	ob.add_item(tr("Default"))
+	ob.set_item_icon(ob.item_count - 1, GlyphIcons.tex("undo", 10, ThemeBuilder.COL_TEXT_DIM))
 	ob.select(svc.INTENSITIES.find(str(plan["intensity"])))
 	var tip := tr("Intensity for %s ONLY.") % I18n.pretty_date(date)
 	if overridden:
-		tip += tr("\nDate-specific: %s. ↺ resets to the default.") % svc.INTENSITY_LABELS[plan["intensity"]]
+		tip += tr("\nDate-specific: %s. Default resets it.") % svc.INTENSITY_LABELS[plan["intensity"]]
 	elif plan["kind"] == "post_match" or plan["kind"] == "pre_match":
 		tip += tr("\nAuto: Light around the fixture — pick to override this date.")
 	ob.tooltip_text = tip
@@ -607,7 +609,9 @@ func _week_menu(week_idx: int, start_date: String) -> Control:
 	l.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT if week_idx == 0 else ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(l)
 	var mb := MenuButton.new()
-	mb.text = tr("Plan ▾")
+	mb.text = tr("Plan")
+	mb.icon = GlyphIcons.tex("caret_down", 9, ThemeBuilder.COL_TEXT)
+	mb.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	mb.flat = false
 	mb.custom_minimum_size = Vector2(74, 26)
 	mb.tooltip_text = tr("Plan THIS specific week: stamp a preset on it (per-date, template untouched), reset it to the template, or save it as the new weekday template.")
@@ -692,7 +696,7 @@ func _on_status_load_edited() -> void:
 
 func _load_column_options(inst: Dictionary) -> String:
 	# First entry shows what Automatic resolves to right now for THIS Pokémon.
-	var opts: Array = ["Auto → %s" % tr(str(svc.LOAD_LABELS[svc.resolve_auto_load(inst)]))]
+	var opts: Array = ["Auto » %s" % tr(str(svc.LOAD_LABELS[svc.resolve_auto_load(inst)]))]
 	for i in range(1, svc.LOADS.size()):
 		opts.append(tr(str(svc.LOAD_LABELS[svc.LOADS[i]])))
 	return ",".join(opts)
@@ -756,7 +760,7 @@ func _load_tooltip(inst: Dictionary, setting: String, reaction: String) -> Strin
 	var eff: String = svc.effective_load(inst)
 	var txt := ""
 	if setting == "auto":
-		txt = tr("Automatic → %s (%s).") % [tr(str(svc.LOAD_LABELS[eff])), svc.auto_load_reason(inst)]
+		txt = tr("Automatic » %s (%s).") % [tr(str(svc.LOAD_LABELS[eff])), svc.auto_load_reason(inst)]
 	else:
 		txt = tr("Manual override: %s (×%.2f development, ×%.2f strain).") % [tr(str(svc.LOAD_LABELS[eff])),
 			float(svc.LOAD_MULT[eff]), float(svc.LOAD_STRAIN[eff])]
@@ -851,7 +855,7 @@ func _refresh_schedule_summary() -> void:
 	_summary_box.add_child(HSeparator.new())
 	var pdl := Label.new()
 	pdl.text = tr("PLANNED DAYS · NEXT 28")
-	pdl.tooltip_text = tr("Dates you planned individually on the calendar (or via a week's Plan ▾ preset). They override the weekday template on that date only.")
+	pdl.tooltip_text = tr("Dates you planned individually on the calendar (or via a week's Plan preset). They override the weekday template on that date only.")
 	pdl.mouse_filter = Control.MOUSE_FILTER_STOP
 	pdl.add_theme_font_size_override("font_size", 11)
 	pdl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -859,7 +863,7 @@ func _refresh_schedule_summary() -> void:
 	var planned: Array = svc.planned_custom_dates(28)
 	if planned.is_empty():
 		var nop := Label.new()
-		nop.text = tr("None — every day runs the weekday template. Edit any calendar cell or use a week's Plan ▾ menu.")
+		nop.text = tr("None — every day runs the weekday template. Edit any calendar cell or use a week's Plan menu.")
 		nop.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		nop.add_theme_font_size_override("font_size", 12)
 		nop.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -888,7 +892,8 @@ func _refresh_schedule_summary() -> void:
 		what.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
 		r.add_child(what)
 		var x := Button.new()
-		x.text = "↺"
+		x.icon = GlyphIcons.tex("undo", 11, ThemeBuilder.COL_TEXT)
+		x.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		x.custom_minimum_size = Vector2(26, 22)
 		x.tooltip_text = tr("Reset this date to the weekday template.")
 		x.pressed.connect(func():
@@ -966,7 +971,7 @@ func _refresh_schedule_summary() -> void:
 		var v := Label.new()
 		var setting: String = svc.load_setting(str(inst["uid"]))
 		var eff_lbl: String = str(svc.LOAD_LABELS[svc.effective_load(inst)])
-		v.text = "%d%% · %s" % [int(s), ("auto→" + eff_lbl) if setting == "auto" else eff_lbl]
+		v.text = "%d%% · %s" % [int(s), ("auto » " + eff_lbl) if setting == "auto" else eff_lbl]
 		v.add_theme_font_size_override("font_size", 12)
 		v.add_theme_color_override("font_color", _strain_color(s))
 		v.tooltip_text = _load_tooltip(inst, setting, svc.workload_reaction(inst))
@@ -1047,7 +1052,7 @@ func _refresh_individual() -> void:
 		var setting: String = svc.load_setting(str(inst["uid"]))
 		var eff_lbl: String = str(svc.LOAD_LABELS[svc.effective_load(inst)])
 		var reaction: String = svc.workload_reaction(inst)
-		it.set_text(5, ("auto→" + eff_lbl) if setting == "auto" else eff_lbl)
+		it.set_text(5, ("auto » " + eff_lbl) if setting == "auto" else eff_lbl)
 		if reaction == "overworked":
 			it.set_custom_color(5, ThemeBuilder.COL_BAD)
 		elif reaction == "wants_more":
@@ -1165,7 +1170,7 @@ func _refresh_detail() -> void:
 	wrow.add_child(wob)
 	var wnow := Label.new()
 	if setting == "auto":
-		wnow.text = tr("→ %s today") % svc.LOAD_LABELS[eff]
+		wnow.text = tr("» %s today") % svc.LOAD_LABELS[eff]
 		wnow.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
 	else:
 		wnow.text = tr("manual override")
@@ -1799,7 +1804,8 @@ func _mentor_group_card(g: Dictionary) -> Control:
 		mor.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		r.add_child(mor)
 		var x := Button.new()
-		x.text = "✕"
+		x.icon = GlyphIcons.tex("cross", 10, ThemeBuilder.COL_TEXT)
+		x.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		x.custom_minimum_size = Vector2(26, 22)
 		x.tooltip_text = tr("Remove %s from the group.") % _display_name(junior)
 		x.pressed.connect(func():
@@ -2084,10 +2090,10 @@ func _refresh_development() -> void:
 		for i in svc.STATS.size():
 			var dv := int(row["d"][svc.STATS[i]])
 			if dv > 0:
-				it.set_text(2 + i, "▲ %d" % dv)
+				it.set_text(2 + i, "+%d" % dv)
 				it.set_custom_color(2 + i, ThemeBuilder.COL_GOOD)
 			elif dv < 0:
-				it.set_text(2 + i, "▼ %d" % absi(dv))
+				it.set_text(2 + i, "−%d" % absi(dv))
 				it.set_custom_color(2 + i, ThemeBuilder.COL_BAD)
 			else:
 				it.set_text(2 + i, "—")
@@ -2127,7 +2133,7 @@ func _refresh_development() -> void:
 		it.set_custom_color(12, evo["color"])
 		it.set_tooltip_text(12, evo["tip"])
 
-	_dev_note.text = tr("Attribute changes over the last 28 training days (tracking %d day%s so far). ▲ real stat increases from training — IVs are capped at 15 per stat.\nEvolution: every %d development points = +1 effective level toward evolution thresholds (decisions land in the Inbox). Need more rapid developers? Promote from the Academy — its intake pipeline feeds this squad.") % [tracked, "" if tracked == 1 else "s", _evo_dev_per_level()]
+	_dev_note.text = tr("Attribute changes over the last 28 training days (tracking %d day%s so far). +N marks real stat increases from training — IVs are capped at 15 per stat.\nEvolution: every %d development points = +1 effective level toward evolution thresholds (decisions land in the Inbox). Need more rapid developers? Promote from the Academy — its intake pipeline feeds this squad.") % [tracked, "" if tracked == 1 else "s", _evo_dev_per_level()]
 
 	_clear(_best_box)
 	var best := 0
@@ -2216,7 +2222,7 @@ func _evo_cell(inst: Dictionary) -> Dictionary:
 	var pend: Dictionary = s.pending_for(uid)
 	if not pend.is_empty():
 		var pto := str(DataStore.species(int(pend.get("to", 0))).get("name", "?"))
-		return {"text": tr("→ %s AWAITING APPROVAL") % pto, "color": ThemeBuilder.COL_GOOD,
+		return {"text": tr("» %s AWAITING APPROVAL") % pto, "color": ThemeBuilder.COL_GOOD,
 			"tip": tr("Requirements met — approve or postpone the evolution from the Inbox or this Pokémon's profile.")}
 	var opts: Array = s.eligibility(inst)
 	if opts.is_empty():
@@ -2226,12 +2232,12 @@ func _evo_cell(inst: Dictionary) -> Dictionary:
 	for o in opts:
 		if o["ok"]:
 			if str(o["method"]) == "stone":
-				return {"text": tr("→ %s (use stone)") % o["to_name"], "color": ThemeBuilder.COL_ACCENT,
+				return {"text": tr("» %s (use stone)") % o["to_name"], "color": ThemeBuilder.COL_ACCENT,
 					"tip": tr("A stone in the storeroom can evolve it today — Items screen, or the profile's evolution panel.")}
-			return {"text": tr("→ %s ready") % o["to_name"], "color": ThemeBuilder.COL_GOOD,
+			return {"text": tr("» %s ready") % o["to_name"], "color": ThemeBuilder.COL_GOOD,
 				"tip": tr("Requirements met — the offer will land in your Inbox on the next training day.")}
 	var best: Dictionary = opts[0]
-	var txt := "→ %s · %s" % [best["to_name"], best["why"]]
+	var txt := "» %s · %s" % [best["to_name"], best["why"]]
 	var tip := tr("Development points from training push evolution milestones: %d pts = +1 effective level.\nDev so far: %d pts (+%d eff. levels).") % [
 		_evo_dev_per_level(), int(s.dev_points(uid)), int(s.dev_levels(uid))]
 	if str(best["method"]) == "stone":

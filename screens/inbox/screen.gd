@@ -416,6 +416,10 @@ func _make_row(m: Dictionary) -> Button:
 	date.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	right.add_child(date)
 
+	var flag_row := HBoxContainer.new()
+	flag_row.alignment = BoxContainer.ALIGNMENT_END
+	flag_row.add_theme_constant_override("separation", 4)
+	flag_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var flag := Label.new()
 	flag.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	flag.add_theme_font_size_override("font_size", 11)
@@ -424,12 +428,15 @@ func _make_row(m: Dictionary) -> Button:
 		flag.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		flag.add_theme_font_override("font", _bold)
 	elif unread:
-		flag.text = tr("● NEW")
+		# drawn dot marker (the web font has no ● glyph)
+		flag_row.add_child(GlyphIcons.icon("dot", 8, ThemeBuilder.COL_ACCENT))
+		flag.text = tr("NEW")
 		flag.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	else:
 		flag.text = " "
 	flag.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	right.add_child(flag)
+	flag_row.add_child(flag)
+	right.add_child(flag_row)
 
 	return btn
 

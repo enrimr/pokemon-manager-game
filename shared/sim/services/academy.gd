@@ -605,13 +605,15 @@ func _intake_report(recruits: Array, golden: bool, thin: bool) -> String:
 	return "\n".join(lines)
 
 
+## Star meter as BBCode [img] tags (mail bodies render through RichTextLabel;
+## the bundled web font has no star glyph, so stars are drawn SVG icons).
 static func star_text(v: float) -> String:
 	var out := ""
 	for i in int(v):
-		out += "★"
-	if v - float(int(v)) >= 0.49:
-		out += "½"
-	return out if out != "" else "½"
+		out += "[img=13x13]res://shared/theme/icons/star_gold.svg[/img]"
+	if v - float(int(v)) >= 0.49 or v < 1.0:
+		out += "[img=13x13]res://shared/theme/icons/star_half_gold.svg[/img]"
+	return out
 
 
 static func _age_text(months: int) -> String:

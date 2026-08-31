@@ -307,20 +307,28 @@ func _build_touchline() -> Control:
 
 	var row1 := UI.hbox(6)
 	box.add_child(row1)
-	for spec in [["⏸", 0.0], ["1x", 1.0], ["2x", 2.0], ["4x", 4.0]]:
+	for spec in [["", 0.0], ["1x", 1.0], ["2x", 2.0], ["4x", 4.0]]:
 		var b := Button.new()
-		b.text = spec[0]
+		if str(spec[0]) == "":  # pause — drawn icon, no glyph in the web font
+			b.icon = GlyphIcons.tex("pause", 12, ThemeBuilder.COL_TEXT)
+			b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		else:
+			b.text = spec[0]
 		b.toggle_mode = true
 		b.custom_minimum_size = Vector2(44, 30)
 		b.pressed.connect(_set_speed.bind(float(spec[1])))
 		row1.add_child(b)
 		_speed_btns[float(spec[1])] = b
 	var skip_b := Button.new()
-	skip_b.text = tr("Sim rest of battle ⏭")
+	skip_b.text = tr("Sim rest of battle")
+	skip_b.icon = GlyphIcons.tex("skip", 11, ThemeBuilder.COL_TEXT)
+	skip_b.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	skip_b.pressed.connect(_on_skip_battle)
 	row1.add_child(skip_b)
 	var skip_s := Button.new()
-	skip_s.text = tr("Sim to result ⏭⏭")
+	skip_s.text = tr("Sim to result")
+	skip_s.icon = GlyphIcons.tex("skip_all", 11, ThemeBuilder.COL_TEXT)
+	skip_s.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	skip_s.pressed.connect(_on_skip_series)
 	row1.add_child(skip_s)
 	row1.add_child(UI.spacer_h())
@@ -365,7 +373,9 @@ func _build_touchline() -> Control:
 		runner.add_note(tr("switch policy set to %s.") % [tr("Normal"), tr("Hold the line"), tr("Rotate freely")][i]))
 	row2.add_child(_swi_opt)
 	_force_btn = MenuButton.new()
-	_force_btn.text = tr("Force switch ▾")
+	_force_btn.text = tr("Force switch")
+	_force_btn.icon = GlyphIcons.tex("caret_down", 9, ThemeBuilder.COL_TEXT)
+	_force_btn.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_force_btn.flat = false
 	_force_btn.about_to_popup.connect(_fill_force_menu)
 	_force_btn.get_popup().id_pressed.connect(_on_force_switch)
@@ -397,7 +407,8 @@ func _build_action_bar() -> Control:
 	head_row.add_child(head)
 	head_row.add_child(UI.spacer_h())
 	var undo := Button.new()
-	undo.text = tr("↩ redo slot 1")
+	undo.text = tr("redo slot 1")
+	undo.icon = GlyphIcons.tex("undo", 11, ThemeBuilder.COL_TEXT)
 	undo.visible = false
 	undo.custom_minimum_size = Vector2(110, 24)
 	undo.add_theme_font_size_override("font_size", 12)
@@ -465,7 +476,7 @@ func _refresh_scoreboard() -> void:
 		_weather_label.visible = true
 		var spec: Array = WEATHER_UI[wk]
 		var turns := int(runner.vm.get("weather_turns", 0))
-		_weather_label.text = "◈ %s%s" % [tr(spec[0]),
+		_weather_label.text = "• %s%s" % [tr(spec[0]),
 			I18n.np(turns, "  ·  %d turn left", "  ·  %d turns left") if turns > 0 else ""]
 		_weather_label.add_theme_color_override("font_color", spec[1])
 
@@ -561,7 +572,7 @@ func _refresh_block(refs: Dictionary, b: Dictionary, animate: bool) -> void:
 	else:
 		var it: Dictionary = DataStore.item(iid)
 		var consumed := bool(b.get("item_consumed", false))
-		refs["item"].text = "◆ %s%s" % [tr(str(it.get("name", iid))),
+		refs["item"].text = "• %s%s" % [tr(str(it.get("name", iid))),
 			("*" if compact else tr("  (spent)")) if consumed else ""]
 		refs["item"].add_theme_color_override("font_color", UI.COL_DIM if consumed else UI.COL_WARN)
 		refs["item"].tooltip_text = "%s\n%s%s" % [tr(str(it.get("name", iid))), tr(str(it.get("desc", ""))),
@@ -686,11 +697,15 @@ func _show_over_bar() -> void:
 	var s: Array = runner.shorts()
 	if runner.series_decided():
 		_over_label.text = tr("FULL TIME — %s %d-%d %s") % [s[0], runner.wins[0], runner.wins[1], s[1]]
-		_over_btn.text = tr("Full-time report  ▶")
+		_over_btn.text = tr("Full-time report")
+		_over_btn.icon = GlyphIcons.tex("tri_right", 11, ThemeBuilder.COL_TEXT)
+		_over_btn.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	else:
 		_over_label.text = tr("Battle %d goes to %s.  Series: %d–%d.") % [
 			runner.battle_no, s[runner.battles.back()["winner"]], runner.wins[0], runner.wins[1]]
-		_over_btn.text = tr("Start battle %d  ▶") % (runner.battle_no + 1)
+		_over_btn.text = tr("Start battle %d") % (runner.battle_no + 1)
+		_over_btn.icon = GlyphIcons.tex("tri_right", 11, ThemeBuilder.COL_TEXT)
+		_over_btn.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 
 func _on_over_pressed() -> void:
@@ -749,7 +764,7 @@ func _show_action_bar() -> void:
 			slot + 1, runner.engine.slot_count(), str(me.get("name", "?"))]
 		if not runner.slot_actions.is_empty():
 			var prev_slot: int = runner.slot_actions.keys()[0]
-			undo.text = tr("↩ redo slot %d") % (int(prev_slot) + 1)
+			undo.text = tr("redo slot %d") % (int(prev_slot) + 1)
 			undo.visible = true
 	else:
 		head.text = tr("Attack, switch or use an item (items cost the turn).")
@@ -798,11 +813,11 @@ static func _eff_text(mv: Dictionary, pv: Dictionary, spread: bool) -> String:
 		return I18n.t("status")
 	var t := I18n.t("~%d%% dmg") % est
 	if eff >= 2.0:
-		t += " ▲▲"
+		t += " ++"
 	elif eff == 0.0:
-		t = I18n.t("immune ✕")
+		t = I18n.t("immune ×")
 	elif eff < 1.0:
-		t += " ▼"
+		t += " −"
 	if spread:
 		t += I18n.t(" · EACH")
 	return t
@@ -848,8 +863,9 @@ func _move_target_menu(a: Dictionary) -> MenuButton:
 	var pow_txt := "—" if int(mv.get("power", 0)) <= 0 else str(int(mv["power"]))
 	var acc_v := int(mv.get("accuracy", 100))
 	var acc_txt := "—" if acc_v <= 0 else "%d%%" % acc_v
-	mb.text = I18n.t("%s  🎯▾\n%s · pw %s · acc %s · %d PP\npick a target") % [tr(str(a["move"])),
+	mb.text = I18n.t("%s\n%s · pw %s · acc %s · %d PP\npick a target") % [tr(str(a["move"])),
 		I18n.type_name(str(mv.get("type", "?"))).to_upper(), pow_txt, acc_txt, int(a["pp"])]
+	mb.icon = GlyphIcons.tex("target", 12, ThemeBuilder.COL_WARN)
 	mb.flat = false
 	mb.add_theme_font_size_override("font_size", 12)
 	mb.custom_minimum_size = Vector2(120, 46)
@@ -860,7 +876,8 @@ func _move_target_menu(a: Dictionary) -> MenuButton:
 	for i in targets.size():
 		var t: Dictionary = targets[i]
 		var pv: Dictionary = t.get("preview", {})
-		pop.add_item("→ %s   (%s)" % [str(t.get("name", "?")), _eff_text(mv, pv, false)], i)
+		pop.add_item("%s   (%s)" % [str(t.get("name", "?")), _eff_text(mv, pv, false)], i)
+		pop.set_item_icon(i, GlyphIcons.tex("arrow_right", 10, ThemeBuilder.COL_TEXT_DIM))
 	pop.id_pressed.connect(func(id: int):
 		var t: Dictionary = targets[id]
 		_on_player_action({"type": "move", "index": int(a["index"]),
@@ -870,7 +887,8 @@ func _move_target_menu(a: Dictionary) -> MenuButton:
 
 func _switch_button(a: Dictionary) -> Button:
 	var btn := Button.new()
-	btn.text = "⇄ %s · %d%% HP" % [str(a["pokemon"]),
+	btn.icon = GlyphIcons.tex("swap", 11, UI.COL_ACCENT)
+	btn.text = "%s · %d%% HP" % [str(a["pokemon"]),
 		int(round(100.0 * float(a["hp"]) / maxf(float(a["max_hp"]), 1.0)))]
 	btn.add_theme_color_override("font_color", UI.COL_ACCENT)
 	btn.add_theme_font_size_override("font_size", 12)
@@ -883,7 +901,8 @@ func _item_menu(iid: String, actions: Array) -> MenuButton:
 	## One button per distinct item in the bag; the popup picks the target.
 	var mb := MenuButton.new()
 	var first: Dictionary = actions[0]
-	mb.text = "🧰 %s ×%d ▾" % [tr(str(first.get("name", iid))), int(first.get("count", 1))]
+	mb.icon = GlyphIcons.tex("bag", 11, UI.COL_WARN)
+	mb.text = "%s ×%d" % [tr(str(first.get("name", iid))), int(first.get("count", 1))]
 	mb.flat = false
 	mb.add_theme_color_override("font_color", UI.COL_WARN)
 	mb.add_theme_font_size_override("font_size", 12)
@@ -901,7 +920,8 @@ func _item_menu(iid: String, actions: Array) -> MenuButton:
 			desc = tr("%d/%d HP") % [hp, int(a.get("target_max", 1))]
 			if status != "":
 				desc += " · " + I18n.t(status).to_upper()
-		pop.add_item("→ %s   (%s)" % [str(a.get("target_name", "?")), desc], i)
+		pop.add_item("%s   (%s)" % [str(a.get("target_name", "?")), desc], i)
+		pop.set_item_icon(i, GlyphIcons.tex("arrow_right", 10, ThemeBuilder.COL_TEXT_DIM))
 	pop.id_pressed.connect(func(id: int):
 		var a: Dictionary = actions[id]
 		_on_player_action({"type": "use_item", "item": str(a["item"]), "target": int(a["target"])}))

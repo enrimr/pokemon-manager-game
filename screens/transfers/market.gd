@@ -1527,18 +1527,15 @@ func _maybe_recommend(uid: String, scout_name: String) -> void:
 	if recs.size() > 30:
 		recs.resize(30)
 	GameState.add_inbox_message(GameState.current_date,
-		I18n.t("Scout recommendation: %s (%s / %s)") % [String(r["name"]), _star_txt(ab), _star_txt(pot)],
+		I18n.t("Scout recommendation: %s (%s · %s)") % [String(r["name"]), _star_txt(ab), _star_txt(pot)],
 		I18n.t("%s Review the recommendation queue in Transfers > Recruitment — shortlist them or pass.") % note)
 
 
+## Compact numeric meter for plain-text subjects ("3½/5") — the bundled web
+## font has no star glyph.
 func _star_txt(v: float) -> String:
 	var full := int(v)
-	var s := ""
-	for i in full:
-		s += "★"
-	if v - float(full) >= 0.45:
-		s += "½"
-	return s
+	return "%d%s/5" % [full, "½" if v - float(full) >= 0.45 else ""]
 
 
 # ------------------------------------------------------------------ outgoing offers (buying)

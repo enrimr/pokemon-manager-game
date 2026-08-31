@@ -11,6 +11,8 @@ const RARITY_COLORS := {
 	"rare": ThemeBuilder.COL_WARN,
 }
 const CLASS_LABEL := {"held": "HELD", "usable": "USABLE"}
+## Drawn inline arrow for the equip status line (no arrow glyph in the web font).
+const ARROW_IMG := "[img=12x12]res://shared/theme/icons/arrow_dim.svg[/img]"
 const CLASS_FILTERS := ["All items", "Held (passive in battle)", "Usable (trainer action)", "Evolution stones"]
 const RARITY_FILTERS := ["Any rarity", "Common", "Uncommon", "Rare"]
 
@@ -29,7 +31,7 @@ var _squad_tree: Tree
 var _equip_btn: Button
 var _strip_btn: Button
 var _use_btn: Button        # evolution stones: apply from the storeroom
-var _equip_hint: Label
+var _equip_hint: RichTextLabel
 
 
 func _ready() -> void:
@@ -255,19 +257,30 @@ func _build_ui() -> void:
 	right.add_child(eq_row)
 	_equip_btn = Button.new()
 	_equip_btn.text = "Equip"
+	# Fixed height: the neighbouring status text may wrap to several lines —
+	# the buttons must never stretch with it.
+	_equip_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_equip_btn.pressed.connect(_do_equip)
 	eq_row.add_child(_equip_btn)
 	_strip_btn = Button.new()
 	_strip_btn.text = tr("Take item")
+	_strip_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_strip_btn.pressed.connect(_do_strip)
 	eq_row.add_child(_strip_btn)
 	_use_btn = Button.new()
 	_use_btn.text = tr("Use stone")
+	_use_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_use_btn.visible = false
 	_use_btn.pressed.connect(_do_use_stone)
 	eq_row.add_child(_use_btn)
-	_equip_hint = _lbl("", ThemeBuilder.COL_TEXT_DIM, 11, true)
+	_equip_hint = RichTextLabel.new()
+	_equip_hint.bbcode_enabled = true
+	_equip_hint.fit_content = true
+	_equip_hint.scroll_active = false
+	_equip_hint.add_theme_color_override("default_color", ThemeBuilder.COL_TEXT_DIM)
+	_equip_hint.add_theme_font_size_override("normal_font_size", 11)
 	_equip_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_equip_hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	eq_row.add_child(_equip_hint)
 
 
@@ -434,19 +447,20 @@ func _refresh_shop() -> void:
 			continue
 		if _stock_only and owned <= 0:
 			continue
-		if _search != "" and not str(it["name"]).to_lower().contains(_search.to_lower()):
+		if _search != "" and not I18n.item_name(iid).to_lower().contains(_search.to_lower()) \
+				and not str(it["name"]).to_lower().contains(_search.to_lower()):
 			continue
 		shown += 1
 		var row := _shop_tree.create_item(root)
 		row.set_metadata(0, iid)
-		row.set_text(0, str(it["name"]))
+		row.set_text(0, I18n.item_name(iid))
 		row.set_custom_color(0, Color.WHITE if owned > 0 else ThemeBuilder.COL_TEXT)
 		row.set_text(1, CLASS_LABEL.get(str(it["class"]), "?"))
 		row.set_custom_color(1, ThemeBuilder.COL_ACCENT if str(it["class"]) == "held" else ThemeBuilder.COL_WARN)
 		row.set_text(2, str(it["rarity"]).capitalize())
 		row.set_custom_color(2, RARITY_COLORS.get(str(it["rarity"]), ThemeBuilder.COL_TEXT))
-		row.set_text(3, str(it["desc"]))
-		row.set_tooltip_text(3, str(it["desc"]))
+		row.set_text(3, tr(str(it["desc"])))
+		row.set_tooltip_text(3, tr(str(it["desc"])))
 		row.set_custom_color(3, ThemeBuilder.COL_TEXT_DIM)
 		row.set_text(4, _money(int(it["price"])))
 		row.set_custom_color(4, ThemeBuilder.COL_TEXT)
@@ -480,9 +494,9 @@ func _refresh_squad() -> void:
 		var h: Variant = m.get("held_item")
 		if h != null and str(h) != "":
 			var it: Dictionary = DataStore.item(str(h))
-			row.set_text(3, str(it.get("name", h)))
+			row.set_text(3, I18n.item_name(str(h)))
 			row.set_custom_color(3, ThemeBuilder.COL_GOOD)
-			row.set_tooltip_text(3, str(it.get("desc", "")))
+			row.set_tooltip_text(3, tr(str(it.get("desc", ""))))
 		else:
 			row.set_text(3, tr("— bare —"))
 			row.set_custom_color(3, ThemeBuilder.COL_TEXT_DIM)
@@ -505,12 +519,12 @@ func _refresh_detail() -> void:
 	var toprow := HBoxContainer.new()
 	toprow.add_theme_constant_override("separation", 8)
 	_detail.add_child(toprow)
-	toprow.add_child(_lbl(str(it["name"]), Color.WHITE, 19))
+	toprow.add_child(_lbl(I18n.item_name(_selected_item), Color.WHITE, 19))
 	toprow.add_child(_chip(CLASS_LABEL.get(str(it["class"]), "?"),
 		ThemeBuilder.COL_ACCENT if str(it["class"]) == "held" else ThemeBuilder.COL_WARN))
 	toprow.add_child(_chip(str(it["rarity"]).to_upper(),
 		RARITY_COLORS.get(str(it["rarity"]), ThemeBuilder.COL_TEXT)))
-	_detail.add_child(_lbl(str(it["desc"]), ThemeBuilder.COL_TEXT, 13, true))
+	_detail.add_child(_lbl(tr(str(it["desc"])), ThemeBuilder.COL_TEXT, 13, true))
 	_detail.add_child(_lbl(tr("Engine effects: %s") % ", ".join(it.get("effects", [])),
 		ThemeBuilder.COL_TEXT_DIM, 11, true))
 	_detail.add_child(HSeparator.new())
@@ -534,7 +548,7 @@ func _refresh_detail() -> void:
 			var lines: Array = []
 			for m in targets:
 				var route := _stone_route(_selected_item, m)
-				lines.append(tr("%s (Lv %d) -> %s") % [_display_name(m), int(m["level"]),
+				lines.append(tr("%s (Lv %d) evolves into %s") % [_display_name(m), int(m["level"]),
 					str(DataStore.species(int(route["to"])).get("name", "?"))])
 			_detail.add_child(_lbl(tr("Would evolve: %s") % ", ".join(PackedStringArray(lines)),
 				ThemeBuilder.COL_GOOD, 12, true))
@@ -574,7 +588,8 @@ func _refresh_equip_row() -> void:
 	var owned := int(GameState.player_inventory().get(_selected_item, 0))
 	var is_held: bool = not it.is_empty() and str(it["class"]) == "held"
 	_equip_btn.disabled = not (is_held and owned > 0 and not m.is_empty())
-	_equip_btn.text = I18n.t("Equip %s") % str(it["name"]) if is_held else "Equip"
+	var iname := I18n.item_name(_selected_item) if not it.is_empty() else ""
+	_equip_btn.text = I18n.t("Equip %s") % iname if is_held else "Equip"
 	var cur: Variant = m.get("held_item") if not m.is_empty() else null
 	_strip_btn.disabled = m.is_empty() or cur == null or str(cur) == ""
 	# evolution stones: the Use path (apply from storeroom -> evolves NOW)
@@ -582,27 +597,28 @@ func _refresh_equip_row() -> void:
 	var route: Dictionary = _stone_route(_selected_item, m) if is_stone else {}
 	_use_btn.visible = is_stone
 	_use_btn.disabled = route.is_empty() or owned <= 0
-	_use_btn.text = I18n.t("Use %s") % str(it["name"]) if is_stone else "Use stone"
+	_use_btn.text = I18n.t("Use %s") % iname if is_stone else "Use stone"
 	if is_stone:
 		if m.is_empty():
-			_equip_hint.text = I18n.t("Pick a Pokémon below to apply the %s — stones evolve certain species instantly (never used in battle).") % str(it["name"])
+			_equip_hint.text = I18n.t("Pick a Pokémon below to apply the %s — stones evolve certain species instantly (never used in battle).") % iname
 		elif route.is_empty():
-			_equip_hint.text = I18n.t("The %s has no effect on %s.") % [str(it["name"]), _display_name(m)]
+			_equip_hint.text = I18n.t("The %s has no effect on %s.") % [iname, _display_name(m)]
 		elif owned <= 0:
 			_equip_hint.text = tr("%s would evolve into %s — buy a %s first.") % [_display_name(m),
-				str(DataStore.species(int(route["to"])).get("name", "?")), str(it["name"])]
+				str(DataStore.species(int(route["to"])).get("name", "?")), iname]
 		else:
-			_equip_hint.text = tr("%s -> evolves %s into %s. Permanent — using the stone is the approval.") % \
-				[str(it["name"]), _display_name(m),
+			_equip_hint.text = tr("%s evolves %s into %s. Permanent — using the stone is the approval.") % \
+				[iname, _display_name(m),
 				str(DataStore.species(int(route["to"])).get("name", "?"))]
 		return
 	if m.is_empty():
 		_equip_hint.text = tr("Pick an item above and a Pokémon here, then Equip. Swapping returns the old item to the storeroom.")
 	elif is_held and owned > 0:
-		_equip_hint.text = "%s -> %s%s" % [tr(str(it["name"])), _display_name(m),
+		# "Item -> Mon": the arrow is drawn (bundled web font has no arrow glyph).
+		_equip_hint.text = "%s %s %s%s" % [iname, ARROW_IMG, _display_name(m),
 			(tr("  (replaces %s)") % I18n.item_name(str(cur))) if cur != null and str(cur) != "" else ""]
 	elif is_held and owned <= 0:
-		_equip_hint.text = I18n.t("No %s in the storeroom — buy one first.") % tr(str(it["name"]))
+		_equip_hint.text = I18n.t("No %s in the storeroom — buy one first.") % iname
 	elif cur != null and str(cur) != "":
 		_equip_hint.text = I18n.t("%s is holding %s.") % [_display_name(m), I18n.item_name(str(cur))]
 	else:

@@ -55,7 +55,7 @@ func _cull(msg: Dictionary) -> Dictionary:
 	b += I18n.t("[color=#%s][b]%s[/b] has reviewed every juvenile on the academy roster ahead of the new season.[/color]\n") % [
 		C_WHITE, str(msg.get("sender", I18n.t("The head youth coach")))]
 	if resolved:
-		b += I18n.t("\n[color=#%s][b]✔ Review settled — decisions applied on the Academy screen.[/b][/color]\n") % C_GOOD
+		b += I18n.t("\n[color=#%s][b][img=12x12]res://shared/theme/icons/check_good.svg[/img] Review settled — decisions applied on the Academy screen.[/b][/color]\n") % C_GOOD
 	for it in items:
 		var rel := str(it.get("rec", "keep")) == "release"
 		b += I18n.t("\n[table=1][cell border=#%s bg=#%s padding=10,6,10,6]") % [
@@ -91,19 +91,21 @@ func _plain(msg: Dictionary) -> Dictionary:
 		"actions": [_go_academy()], "banner": {}}
 
 
-## Padded 5-star meter: ★★★½☆ with the fill coloured and the rest dim.
+## Padded 5-star meter drawn with SVG star icons (full/half/empty) — the
+## bundled web font has no star glyphs, so these are [img] tags, tinted by
+## pre-coloured icon variants (gold / accent).
 func _stars(v: float, col: String) -> String:
 	var full := int(v)
 	var half := v - float(full) >= 0.49
-	var fill := ""
+	var variant := "gold" if col == C_GOLD else "acc"
+	var out := ""
 	for i in full:
-		fill += "★"
+		out += "[img=13x13]res://shared/theme/icons/star_%s.svg[/img]" % variant
 	if half:
-		fill += "½"
-	var pad := ""
+		out += "[img=13x13]res://shared/theme/icons/star_half_%s.svg[/img]" % variant
 	for i in (5 - full - (1 if half else 0)):
-		pad += "☆"
-	return "[color=#%s]%s[/color][color=#%s]%s[/color]" % [col, fill, C_EMPTY, pad]
+		out += "[img=13x13]res://shared/theme/icons/star_empty.svg[/img]"
+	return out
 
 
 func _type_chips(types: Array) -> String:
@@ -143,7 +145,7 @@ func _intake(msg: Dictionary) -> Dictionary:
 	b += I18n.t("[color=#%s][b]%s[/b] presents this month's crop of [b]%d[/b] juveniles from the club's youth programme.[/color]\n") % [
 		C_WHITE, coach, recruits.size()]
 	if golden:
-		b += I18n.t("\n[bgcolor=#3a3113][color=#%s][b] ★ GOLDEN GENERATION — the staff are buzzing. Intakes like this come along once a decade. [/b][/color][/bgcolor]\n") % C_GOLD
+		b += I18n.t("\n[bgcolor=#3a3113][color=#%s][b] [img=13x13]res://shared/theme/icons/star_gold.svg[/img] GOLDEN GENERATION — the staff are buzzing. Intakes like this come along once a decade. [/b][/color][/bgcolor]\n") % C_GOLD
 	elif thin:
 		b += I18n.t("\n[color=#%s][i]A thin month — the region's best young battlers went elsewhere.[/i][/color]\n") % C_WARN
 	for r in recruits:
@@ -160,7 +162,7 @@ func _recruit_card(r: Dictionary, golden: bool) -> String:
 		C_DIM, int(r.get("level", 1)), _age(int(r.get("age_months", 12))),
 		I18n.t(str(r.get("nature", "")))]
 	if r.get("best", false):
-		head += I18n.t("   [color=#%s][b]● BEST OF THE CROP[/b][/color]") % C_GOLD
+		head += I18n.t("   [color=#%s][b][img=10x10]res://shared/theme/icons/dot_gold.svg[/img] BEST OF THE CROP[/b][/color]") % C_GOLD
 	var meters := I18n.t("[color=#%s]Current[/color]    %s      [color=#%s]Potential[/color]  %s [color=#%s]–[/color] %s   [color=#%s][font_size=12][b]%s[/b][/font_size][/color]") % [
 		C_DIM, _stars(float(r.get("stars", 0.5)), C_ACC),
 		C_DIM, _stars(float(r.get("band_lo", 0.5)), C_GOLD),
@@ -188,7 +190,7 @@ func _preview(msg: Dictionary) -> Dictionary:
 		C_WHITE, str(msg.get("coach", I18n.t("The head youth coach"))), I18n.pretty_date(str(msg.get("intake_on", "")))]
 	match str(msg.get("mood", "normal")):
 		"golden":
-			b += I18n.t("[bgcolor=#3a3113][color=#%s][b] ★ Whispers of a special group — the staff can barely contain themselves. [/b][/color][/bgcolor]\n\n") % C_GOLD
+			b += I18n.t("[bgcolor=#3a3113][color=#%s][b] [img=13x13]res://shared/theme/icons/star_gold.svg[/img] Whispers of a special group — the staff can barely contain themselves. [/b][/color][/bgcolor]\n\n") % C_GOLD
 		"thin":
 			b += I18n.t("[color=#%s][i]Expectations are low — the region's best juveniles appear to have gone elsewhere.[/i][/color]\n\n") % C_WARN
 		_:

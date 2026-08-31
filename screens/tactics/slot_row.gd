@@ -15,7 +15,7 @@ var _a: Dictionary = {}
 var _role := "pivot"
 var _selected := false
 var _role_btn: OptionButton
-var _pips: Label
+var _pips: HBoxContainer
 var _band_lbl: Label
 
 
@@ -40,11 +40,10 @@ func setup(analysis: Dictionary, slot_text: String, role_id: String, starter: bo
 	h.add_child(nudge)
 	for dir in [-1, 1]:
 		var b := Button.new()
-		b.text = "▲" if dir == -1 else "▼"
+		b.icon = GlyphIcons.tex("tri_up" if dir == -1 else "tri_down", 9, ThemeBuilder.COL_TEXT_DIM)
+		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		b.flat = true
 		b.custom_minimum_size = Vector2(16, 15)
-		b.add_theme_font_size_override("font_size", 8)
-		b.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		b.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 		b.add_theme_stylebox_override("hover", StyleBoxEmpty.new())
 		b.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
@@ -145,8 +144,7 @@ func setup(analysis: Dictionary, slot_text: String, role_id: String, starter: bo
 	suit.alignment = BoxContainer.ALIGNMENT_CENTER
 	suit.custom_minimum_size.x = 72
 	h.add_child(suit)
-	_pips = Label.new()
-	_pips.add_theme_font_size_override("font_size", 12)
+	_pips = GlyphIcons.rating(0, 5, 10, ThemeBuilder.COL_TEXT_DIM)
 	suit.add_child(_pips)
 	_band_lbl = Label.new()
 	_band_lbl.add_theme_font_size_override("font_size", 9)
@@ -179,8 +177,7 @@ func _refresh_suit() -> void:
 	var score: int = res["score"]
 	var b: Array = Logic.band(score)
 	var filled := int(round(score / 20.0))
-	_pips.text = "●".repeat(filled) + "○".repeat(5 - filled)
-	_pips.add_theme_color_override("font_color", b[1])
+	GlyphIcons.set_rating(_pips, filled, b[1])
 	_band_lbl.text = str(b[0])
 	_band_lbl.add_theme_color_override("font_color", b[1])
 	var tip := tr("%s as %s: %d/100 (%s)\n") % [_a["battler"]["name"], tr(Logic.ROLES[_role]["name"]), score, tr(str(b[0]))]

@@ -67,7 +67,8 @@ func _build_header() -> Control:
 			chips.add_child(UI.label("  ", 12))
 	var motm: Dictionary = runner.man_of_the_match()
 	if not motm.is_empty():
-		chips.add_child(UI.label(tr("    ★ Player of the match: %s (%.1f)") % [motm["name"], motm["rating"]],
+		chips.add_child(GlyphIcons.icon("star", 12, Color("e8c15a")))
+		chips.add_child(UI.label(tr("Player of the match: %s (%.1f)") % [motm["name"], motm["rating"]],
 			12, UI.COL_WARN))
 	mid.add_child(chips)
 	# items spent across the series (deducted from each club's store)
@@ -102,7 +103,7 @@ func _build_ratings(side: int, title: String) -> Control:
 	for h in ["POKÉMON", "LV", tr("DMG OUT"), tr("DMG IN"), "KO", "RATING"]:
 		grid.add_child(UI.label(h, 10, UI.COL_DIM))
 	for r in runner.rating_rows(side):
-		grid.add_child(UI.label(str(r["name"]) + ("  ✝" if int(r["fainted"]) > 0 else ""), 13,
+		grid.add_child(UI.label(str(r["name"]) + ("  †" if int(r["fainted"]) > 0 else ""), 13,
 			Color.WHITE if int(r["fainted"]) == 0 else UI.COL_DIM))
 		grid.add_child(UI.label(str(r["level"]), 12, UI.COL_DIM))
 		grid.add_child(UI.label(str(r["dealt"]), 12, UI.COL_TEXT))
@@ -164,7 +165,9 @@ func _build_footer() -> Control:
 		[us, them, runner.opponent_club()["name"]], 13, UI.COL_DIM))
 	row.add_child(UI.spacer_h())
 	var btn := Button.new()
-	btn.text = tr("Continue  ▶")
+	btn.text = tr("Continue")
+	btn.icon = GlyphIcons.tex("tri_right", 11, ThemeBuilder.COL_TEXT)
+	btn.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	btn.custom_minimum_size = Vector2(180, 38)
 	btn.add_theme_color_override("font_color", Color.WHITE)
 	var sb := StyleBoxFlat.new()

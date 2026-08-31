@@ -136,11 +136,11 @@ SQUAD,PLANTILLA
 MATCHDAY,JORNADA
 CLUB,CLUB
 MORE,MÁS
-NEXT MATCH ▸,PRÓX. PARTIDO ▸
-BALANCE ▸,SALDO ▸
-DATE ▸,FECHA ▸
-CONTINUE  ▶,CONTINUAR  ▶
-MATCHDAY  ▶,JORNADA  ▶
+NEXT MATCH ›,PRÓX. PARTIDO ›
+BALANCE ›,SALDO ›
+DATE ›,FECHA ›
+CONTINUE  ›,CONTINUAR  ›
+MATCHDAY  ›,JORNADA  ›
 %s  ADVANCING,%s  AVANZANDO
 Advance %d days,Avanzar %d días
 vs %s · go to match,vs %s · ir al partido
@@ -177,17 +177,17 @@ Open Competition — %s table & fixtures,Abrir Competición: clasificación y pa
 Open Squad — %s,Abrir Plantilla: %s
 Go to matchday vs %s,Ir a la jornada: vs %s
 "Open fixture — %s, %s (%s)","Abrir partido: %s, %s (%s)"
-Back to %s   (Alt+← / mouse-4),Volver a %s   (Alt+← / ratón 4)
-Forward to %s   (Alt+→ / mouse-5),Adelante a %s   (Alt+→ / ratón 5)
-Back   (Alt+← — nowhere to go),Atrás   (Alt+←: no hay historial)
-Forward   (Alt+→ — nowhere to go),Adelante   (Alt+→: no hay historial)
+Back to %s   (Alt+Left / mouse-4),Volver a %s   (Alt+Izq / ratón 4)
+Forward to %s   (Alt+Right / mouse-5),Adelante a %s   (Alt+Der / ratón 5)
+Back   (Alt+Left — nowhere to go),Atrás   (Alt+Izq: no hay historial)
+Forward   (Alt+Right — nowhere to go),Adelante   (Alt+Der: no hay historial)
 Show %s sections,Mostrar secciones de %s
 Hide %s sections,Ocultar secciones de %s
 %s  (press %d),%s  (tecla %d)
 %s · %s-type core,%s · núcleo de tipo %s
 TRAINER MANAGER · %s,TRAINER MANAGER · %s
-1–%d screens   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search   ·   Ctrl+S  Save,1–%d pantallas   ·   Espacio  Continuar   ·   Alt+←/→  Atrás/Adelante   ·   Ctrl+F  Buscar   ·   Ctrl+S  Guardar
-1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search,1–%d pantallas   ·   Ctrl+1–9 secciones   ·   Espacio  Continuar   ·   Alt+←/→  Atrás/Adelante   ·   Ctrl+F  Buscar
+1–%d screens   ·   Space  Continue   ·   Alt+Left/Right  Back/Fwd   ·   Ctrl+F  Search   ·   Ctrl+S  Save,1–%d pantallas   ·   Espacio  Continuar   ·   Alt+Izq/Der  Atrás/Adelante   ·   Ctrl+F  Buscar   ·   Ctrl+S  Guardar
+1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+Left/Right  Back/Fwd   ·   Ctrl+F  Search,1–%d pantallas   ·   Ctrl+1–9 secciones   ·   Espacio  Continuar   ·   Alt+Izq/Der  Atrás/Adelante   ·   Ctrl+F  Buscar
 Space = Continue · %d–%d = screens · Ctrl+1–9 = sections,Espacio = Continuar · %d–%d = pantallas · Ctrl+1–9 = secciones
 Matchday — your fixture is due today,Jornada: tu partido se juega hoy
 News needs your attention,Hay noticias que requieren tu atención
@@ -1046,7 +1046,7 @@ green = upper half, red = lower half, no tint = mid-pack.
 Lower-is-better stats (battles lost, KOs conceded) are inverted.","Colorea cada celda según su percentil en la liga:
 verde = mitad superior, rojo = mitad inferior, sin tinte = zona media.
 Las estadísticas donde menos es mejor (combates perdidos, KO encajados) se invierten."
-click a header to sort · names link to profiles · Columns ▾ builds a custom view,clic en una cabecera para ordenar · los nombres enlazan a perfiles · Columnas ▾ crea una vista propia
+click a header to sort · names link to profiles · the Columns menu builds a custom view,clic en una cabecera para ordenar · los nombres enlazan a perfiles · el menú Columnas crea una vista propia
 click a header to sort · club names link to profiles · KO± / Acc / SE from recorded match details,clic en una cabecera para ordenar · los clubes enlazan a perfiles · KO± / Prec. / SE según crónicas registradas
 "Cell shading = league percentile for that stat
 (computed across every Pokémon with an appearance)","Color de celda = percentil de esa estadística en la liga
@@ -1054,7 +1054,7 @@ click a header to sort · club names link to profiles · KO± / Acc / SE from re
 percentile:,percentil:
 low,bajo
 high,alto
-Columns ▾,Columnas ▾
+Columns,Columnas
 Build a custom view: tick exactly the stat columns you want,Crea una vista propia: marca exactamente las columnas que quieras
 Custom view,Vista personalizada
 League + Cup,Liga + Copa
@@ -1165,9 +1165,9 @@ IN FORM,EN RACHA
 won last %d in a row,ha ganado los últimos %d seguidos
 IN CRISIS,EN CRISIS
 lost last %d in a row,ha perdido los últimos %d seguidos
-hover any mark for exact numbers · position graph: League Table ▸ Position Graph,pasa el ratón por cualquier marca para ver cifras exactas · gráfico de posiciones: Clasificación ▸ Gráfico
-damage dealt per battle →,daño infligido por combate →
-damage taken per battle →,daño recibido por combate →
+hover any mark for exact numbers · position graph: League Table › Position Graph,pasa el ratón por cualquier marca para ver cifras exactas · gráfico de posiciones: Clasificación › Gráfico
+damage dealt per battle »,daño infligido por combate »
+damage taken per battle »,daño recibido por combate »
 "leaky, low output",frágil y poco daño
 all-out brawlers,puro ataque
 "cagey, low output",cerrojo sin pegada
@@ -1205,7 +1205,7 @@ Coaching,Cuerpo técnico
    Ningún mensaje coincide con este filtro."
 DECISION,DECISIÓN
 URGENT,URGENTE
-● NEW,● NUEVO
+NEW,NUEVO
 Select a message to read it.,Selecciona un mensaje para leerlo.
 From: %s   ·   %s   ·   %s,De: %s   ·   %s   ·   %s
 DECISION REQUIRED,DECISIÓN REQUERIDA
@@ -1459,18 +1459,18 @@ You sidestep the bait and talk up your battlers instead (morale +1 across the sq
 "No comment. The story dies by the weekend — and the squad takes its cue from the match, not the papers.","Sin comentarios. La historia muere antes del fin de semana, y la plantilla se guía por el partido, no por los periódicos."
 You let silence do the talking. By the weekend it's yesterday's news.,Dejas que hable el silencio. Para el fin de semana ya es noticia vieja.
 Not a word. Some fights aren't worth the ink.,Ni una palabra. Hay peleas que no merecen la tinta.
-"You promise {name} a proper run — {target} battles inside the next four weeks. Morale {b} → {a}. The coaches will hold you to it, and so will this inbox.","Le prometes a {name} una racha de verdad: {target} combates en las próximas cuatro semanas. Moral {b} → {a}. Los entrenadores te tomarán la palabra, y esta bandeja también."
-Your word is given: {target} battles for {name} within four weeks (morale {b} → {a}). Break it and the whole squad will know.,Has dado tu palabra: {target} combates para {name} en cuatro semanas (moral {b} → {a}). Rómpela y toda la plantilla lo sabrá.
-{name} leaves your office with a promise: {target} battles by {deadline}. Morale {b} → {a}. Promises here are tracked.,{name} sale de tu despacho con una promesa: {target} combates antes del {deadline}. Moral {b} → {a}. Aquí las promesas se registran.
-You tell {name} to earn the shirt in training. Morale {b} → {a} — a gamble on their character.,Le dices a {name} que se gane el puesto entrenando. Moral {b} → {a}: una apuesta por su carácter.
-"No guarantees, you say — form picks the team. {name} takes it badly for now (morale {b} → {a}).","Nada de garantías, dices: la forma elige el equipo. {name} se lo toma mal, de momento (moral {b} → {a})."
-You back the coaches' selection and tell {name} so. Morale {b} → {a}; time will judge the call.,Respaldas la alineación de los entrenadores y se lo dices a {name}. Moral {b} → {a}; el tiempo juzgará la decisión.
-You pass on the praise personally. {name}'s morale {b} → {a}.,Transmites el elogio en persona. Moral de {name}: {b} → {a}.
-"A word from the manager, delivered in front of the group — {name} beams (morale {b} → {a}).","Unas palabras del entrenador, delante del grupo; {name} se ilumina (moral {b} → {a})."
-"You make sure {name} hears it from you, not the corridor. Morale {b} → {a}.","Te aseguras de que {name} lo oiga de ti, no del pasillo. Moral {b} → {a}."
-You keep the praise in-house — no complacency here. Morale {b} → {a}.,Guardas el elogio de puertas adentro: aquí no hay autocomplacencia. Moral {b} → {a}.
-"Quiet approval, nothing more; standards stay standards. Morale {b} → {a}.","Aprobación discreta, nada más; el listón sigue donde estaba. Moral {b} → {a}."
-You bank the praise for when it's needed. Morale {b} → {a}.,Te guardas el elogio para cuando haga falta. Moral {b} → {a}.
+"You promise {name} a proper run — {target} battles inside the next four weeks. Morale {b} » {a}. The coaches will hold you to it, and so will this inbox.","Le prometes a {name} una racha de verdad: {target} combates en las próximas cuatro semanas. Moral {b} » {a}. Los entrenadores te tomarán la palabra, y esta bandeja también."
+Your word is given: {target} battles for {name} within four weeks (morale {b} » {a}). Break it and the whole squad will know.,Has dado tu palabra: {target} combates para {name} en cuatro semanas (moral {b} » {a}). Rómpela y toda la plantilla lo sabrá.
+{name} leaves your office with a promise: {target} battles by {deadline}. Morale {b} » {a}. Promises here are tracked.,{name} sale de tu despacho con una promesa: {target} combates antes del {deadline}. Moral {b} » {a}. Aquí las promesas se registran.
+You tell {name} to earn the shirt in training. Morale {b} » {a} — a gamble on their character.,Le dices a {name} que se gane el puesto entrenando. Moral {b} » {a}: una apuesta por su carácter.
+"No guarantees, you say — form picks the team. {name} takes it badly for now (morale {b} » {a}).","Nada de garantías, dices: la forma elige el equipo. {name} se lo toma mal, de momento (moral {b} » {a})."
+You back the coaches' selection and tell {name} so. Morale {b} » {a}; time will judge the call.,Respaldas la alineación de los entrenadores y se lo dices a {name}. Moral {b} » {a}; el tiempo juzgará la decisión.
+You pass on the praise personally. {name}'s morale {b} » {a}.,Transmites el elogio en persona. Moral de {name}: {b} » {a}.
+"A word from the manager, delivered in front of the group — {name} beams (morale {b} » {a}).","Unas palabras del entrenador, delante del grupo; {name} se ilumina (moral {b} » {a})."
+"You make sure {name} hears it from you, not the corridor. Morale {b} » {a}.","Te aseguras de que {name} lo oiga de ti, no del pasillo. Moral {b} » {a}."
+You keep the praise in-house — no complacency here. Morale {b} » {a}.,Guardas el elogio de puertas adentro: aquí no hay autocomplacencia. Moral {b} » {a}.
+"Quiet approval, nothing more; standards stay standards. Morale {b} » {a}.","Aprobación discreta, nada más; el listón sigue donde estaba. Moral {b} » {a}."
+You bank the praise for when it's needed. Morale {b} » {a}.,Te guardas el elogio para cuando haga falta. Moral {b} » {a}.
 Nobody outside the {pcs} dressing room saw this coming. A club with a reputation of {prep}/20 dismantling [b]{opp}[/b] ({orep}/20) by {us}-{them} is the kind of result that changes how a league talks about you. {mgr}'s side played without fear — and the giants blinked first.,Nadie fuera del vestuario del {pcs} vio venir esto. Que un club con reputación {prep}/20 desarme a [b]{opp}[/b] ({orep}/20) por {us}-{them} es de esos resultados que cambian cómo habla de ti una liga. El equipo de {mgr} jugó sin miedo... y los gigantes parpadearon primero.
 "Put the coffee down and read that scoreline again: {pcs} {us}, {opp} {them}. The reputation charts say this should not happen. It happened, and {opp} have no complaints worth printing.","Deja el café y vuelve a leer ese marcador: {pcs} {us}, {opp} {them}. Las tablas de reputación dicen que esto no debería pasar. Pasó, y {opp} no tiene quejas que merezcan tinta."
 "Giant-killing is a craft, and [b]{pc}[/b] just published a masterclass. {opp} arrived as heavy favourites and left {us}-{them} losers, out-planned in every exchange that mattered.","Tumbar gigantes es un oficio, y [b]{pc}[/b] acaba de publicar una lección magistral. {opp} llegó como claro favorito y se marchó derrotado {us}-{them}, superado en el plan en cada intercambio que importó."
@@ -1715,7 +1715,7 @@ Keep Them Grounded,Mantenerle los pies en el suelo
 "[color=#%s][b]THE PLEDGE[/b][/color]  [color=#%s]%d battles promised on %s, deadline %s — [b]%d delivered[/b].[/color]
 ","[color=#%s][b]EL COMPROMISO[/b][/color]  [color=#%s]%d combates prometidos el %s, plazo hasta el %s — [b]%d entregados[/b].[/color]
 "
-[color=#%s][b]MORALE[/b][/color]  [color=#%s][b]%d → %d[/b][/color],[color=#%s][b]MORAL[/b][/color]  [color=#%s][b]%d → %d[/b][/color]
+[color=#%s][b]MORALE[/b][/color]  [color=#%s][b]%d » %d[/b][/color],[color=#%s][b]MORAL[/b][/color]  [color=#%s][b]%d » %d[/b][/color]
   [color=#%s](and a knock across the rest of the squad — word travels)[/color],  [color=#%s](y un golpe para el resto de la plantilla: las noticias vuelan)[/color]
 "[color=#%s][i]%s's monthly league column.[/i][/color]
 
@@ -1736,7 +1736,7 @@ Keep Them Grounded,Mantenerle los pies en el suelo
 "[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d battles, %d KOs, %d dmg · avg rating [/color][color=#%s][b]%.2f[/b][/color]%s
 ","[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d combates, %d KO, %d daño · nota media [/color][color=#%s][b]%.2f[/b][/color]%s
 "
-  [color=#%s][b]← OURS[/b][/color],  [color=#%s][b]← NUESTRO[/b][/color]
+  [color=#%s][b]« OURS[/b][/color],  [color=#%s][b]« NUESTRO[/b][/color]
 "[color=#%s][b]TEAM OF THE MONTH[/b][/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%d-%d in the league)%s[/color]
 ","[color=#%s][b]EQUIPO DEL MES[/b][/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%d-%d en liga)%s[/color]
 "
@@ -1770,7 +1770,7 @@ Honours & History,Palmarés e historia
 "[color=#%s][b]BATTLE BY BATTLE[/b][/color]
 ","[color=#%s][b]COMBATE A COMBATE[/b][/color]
 "
-[color=#%s]● Battle %d — %s[/color] [color=#%s]in %d turns,[color=#%s]● Combate %d — %s[/color] [color=#%s]en %d turnos
+[color=#%s]• Battle %d — %s[/color] [color=#%s]in %d turns,[color=#%s]• Combate %d — %s[/color] [color=#%s]en %d turnos
 WON,GANADO
 LOST,PERDIDO
 " · %s sealed it, KO'ing %s with %s", · %s lo selló debilitando a %s con %s
@@ -1947,8 +1947,8 @@ below our %s valuation — we hold the cards,por debajo de nuestra valoración d
 "[color=#%s][b]DEAL STRUCTURE[/b][/color]  [color=#%s]%s.[/color]
 ","[color=#%s][b]ESTRUCTURA DEL ACUERDO[/b][/color]  [color=#%s]%s.[/color]
 "
-"[color=#%s][b]IF WE SELL[/b][/color]  [color=#%s]Balance %s → [b]%s[/b]%s · frees %s / month in wages · squad %d → %d.[/color]
-","[color=#%s][b]SI VENDEMOS[/b][/color]  [color=#%s]Saldo %s → [b]%s[/b]%s · libera %s / mes en salarios · plantilla %d → %d.[/color]
+"[color=#%s][b]IF WE SELL[/b][/color]  [color=#%s]Balance %s » [b]%s[/b]%s · frees %s / month in wages · squad %d » %d.[/color]
+","[color=#%s][b]SI VENDEMOS[/b][/color]  [color=#%s]Saldo %s » [b]%s[/b]%s · libera %s / mes en salarios · plantilla %d » %d.[/color]
 "
  now (rest in installments), ahora (el resto a plazos)
 "[color=#%s][b]SQUAD WARNING[/b]  Selling would leave us at the 6-battler league minimum.[/color]
@@ -1982,26 +1982,26 @@ End Talks,Cerrar la negociación
 "[color=#%s][b]SEASON OBJECTIVES[/b][/color]
 ","[color=#%s][b]OBJETIVOS DE LA TEMPORADA[/b][/color]
 "
-"[color=#%s]● League:[/color] [color=#%s][b]%s[/b][/color]
-","[color=#%s]● Liga:[/color] [color=#%s][b]%s[/b][/color]
+"[color=#%s]• League:[/color] [color=#%s][b]%s[/b][/color]
+","[color=#%s]• Liga:[/color] [color=#%s][b]%s[/b][/color]
 "
-"[color=#%s]● Cup:[/color] [color=#%s][b]%s[/b][/color]
+"[color=#%s]• Cup:[/color] [color=#%s][b]%s[/b][/color]
 
-","[color=#%s]● Copa:[/color] [color=#%s][b]%s[/b][/color]
+","[color=#%s]• Copa:[/color] [color=#%s][b]%s[/b][/color]
 
 "
 "[color=#%s][b]RESOURCES[/b][/color]
 ","[color=#%s][b]RECURSOS[/b][/color]
 "
-"[color=#%s]● Bank balance:[/color] [color=#%s][b]%s[/b][/color]
-","[color=#%s]● Saldo bancario:[/color] [color=#%s][b]%s[/b][/color]
+"[color=#%s]• Bank balance:[/color] [color=#%s][b]%s[/b][/color]
+","[color=#%s]• Saldo bancario:[/color] [color=#%s][b]%s[/b][/color]
 "
-"[color=#%s]● Transfer budget:[/color] [color=#%s][b]%s[/b][/color] [color=#%s](released by the board for fees and equipment)[/color]
-","[color=#%s]● Presupuesto de fichajes:[/color] [color=#%s][b]%s[/b][/color] [color=#%s](liberado por la directiva para traspasos y equipamiento)[/color]
+"[color=#%s]• Transfer budget:[/color] [color=#%s][b]%s[/b][/color] [color=#%s](released by the board for fees and equipment)[/color]
+","[color=#%s]• Presupuesto de fichajes:[/color] [color=#%s][b]%s[/b][/color] [color=#%s](liberado por la directiva para traspasos y equipamiento)[/color]
 "
-"[color=#%s]● Wage budget:[/color] [color=#%s][b]%s / month[/b][/color] [color=#%s](current bill %s)[/color]
+"[color=#%s]• Wage budget:[/color] [color=#%s][b]%s / month[/b][/color] [color=#%s](current bill %s)[/color]
 
-","[color=#%s]● Presupuesto salarial:[/color] [color=#%s][b]%s / mes[/b][/color] [color=#%s](gasto actual %s)[/color]
+","[color=#%s]• Presupuesto salarial:[/color] [color=#%s][b]%s / mes[/b][/color] [color=#%s](gasto actual %s)[/color]
 
 "
 [color=#%s]The board will formally review progress at the start of each month. Expected league position based on club stature: [b]%s[/b].[/color],[color=#%s]La directiva revisará formalmente el progreso al inicio de cada mes. Posición esperada en liga según la talla del club: [b]%s[/b].[/color]
@@ -2080,14 +2080,14 @@ REQUEST REFUSED,PETICIÓN RECHAZADA
 "[color=#%s][b]WHAT CHANGES[/b][/color]
 ","[color=#%s][b]QUÉ CAMBIA[/b][/color]
 "
-"[color=#%s]Monthly wage budget: %s → [b]%s[/b] (+%s).[/color]
-","[color=#%s]Presupuesto salarial mensual: %s → [b]%s[/b] (+%s).[/color]
+"[color=#%s]Monthly wage budget: %s » [b]%s[/b] (+%s).[/color]
+","[color=#%s]Presupuesto salarial mensual: %s » [b]%s[/b] (+%s).[/color]
 "
-"[color=#%s]Bank balance: %s → [b]%s[/b] — %s of the owners' money, available to spend now.[/color]
-","[color=#%s]Saldo bancario: %s → [b]%s[/b] — %s del dinero de los propietarios, disponible para gastar ya.[/color]
+"[color=#%s]Bank balance: %s » [b]%s[/b] — %s of the owners' money, available to spend now.[/color]
+","[color=#%s]Saldo bancario: %s » [b]%s[/b] — %s del dinero de los propietarios, disponible para gastar ya.[/color]
 "
-"[color=#%s]Bank balance: %s → [b]%s[/b]. All %d prospect files gained +%d%% scouting knowledge.[/color]
-","[color=#%s]Saldo bancario: %s → [b]%s[/b]. Los %d expedientes de promesas ganaron +%d %% de conocimiento.[/color]
+"[color=#%s]Bank balance: %s » [b]%s[/b]. All %d prospect files gained +%d%% scouting knowledge.[/color]
+","[color=#%s]Saldo bancario: %s » [b]%s[/b]. Los %d expedientes de promesas ganaron +%d %% de conocimiento.[/color]
 "
 "[color=#%s]That is [b]%s[/b] of the %s you asked for — the board would not stretch further.[/color]
 ","[color=#%s]Eso es [b]%s[/b] de los %s que pediste; la directiva no quiso estirarse más.[/color]
@@ -2314,9 +2314,9 @@ away day,partido a domicilio
 "CUP FORMAT — game 2 is played 2v2 DOUBLES: two actives per side, ","FORMATO DE COPA — el 2.º combate se juega en DOBLES 2c2: dos activos por bando, "
 "spread moves, targeting calls. Order your six with a doubles pair in mind.",movimientos de área y elección de objetivos. Ordena tu seis pensando en una pareja de dobles.
 Your starting six  ·  slot 1 leads off,Tu seis titular  ·  el puesto 1 abre
-▲ Up,▲ Subir
-▼ Down,▼ Bajar
-⇄ Swap with reserve,⇄ Cambiar con un reserva
+Up,Subir
+Down,Bajar
+Swap with reserve,Cambiar con un reserva
 Reset best six,Restablecer el mejor seis
 RESERVES,RESERVAS
 MATCH BAG — usable mid-battle (an item spends the turn),MOCHILA DE PARTIDO — usable en pleno combate (un objeto gasta el turno)
@@ -2337,20 +2337,20 @@ Big underdogs,Grandes tapados
 %s  ·  avg level %0.1f vs %0.1f,%s  ·  nivel medio %0.1f vs %0.1f
 Their expected six,Su seis esperado
      HP %d · Atk %d · Def %d · SpA %d · SpD %d · Spe %d,     PS %d · Ata. %d · Def. %d · AtE. %d · DfE. %d · Vel. %d
-     ◆ holds %s,     ◆ lleva %s
+     • holds %s,     • lleva %s
 "Six picked by level and condition — expect this exact
 lineup in every battle of the series.","Seis elegido por nivel y estado: espera exactamente
 esta alineación en cada combate de la serie."
 "Play it yourself — every move, switch and item is your call —
 or delegate: watch the coach run it, or take the instant result.","Juégalo tú mismo —cada movimiento, cambio y objeto es cosa tuya—
 o delega: mira cómo lo lleva el técnico, o toma el resultado instantáneo."
-Instant result  ⏩,Resultado instantáneo  ⏩
+Instant result,Resultado instantáneo
 Simulate the whole tie and jump to the report.,Simula toda la eliminatoria y salta a la crónica.
-Watch — coach decides  ▷,Ver — decide el técnico  ▷
+Watch — coach decides,Ver — decide el técnico
 "Sit back on the touchline: the AI coach picks moves under your instructions.
 You can still force switches, change instructions or take over at any time.","Siéntate en la banda: el técnico elige los movimientos según tus instrucciones.
 Puedes forzar cambios, ajustar instrucciones o tomar el mando en cualquier momento."
-PLAY THE MATCH — you call every turn  ▶,JUGAR EL PARTIDO — tú cantas cada turno  ▶
+PLAY THE MATCH — you call every turn,JUGAR EL PARTIDO — tú cantas cada turno
 "Interactive battle: choose attacks, switches and bag items each turn.","Combate interactivo: elige ataques, cambios y objetos de la mochila cada turno."
 Your ratings,Tus notas
 %s ratings,Notas del %s
@@ -2358,7 +2358,7 @@ League Round %d,"Liga, jornada %d"
 FULL TIME  ·  %s  ·  %s  ·  %s,FINAL  ·  %s  ·  %s  ·  %s
 VICTORY,VICTORIA
 %s · %d turns,%s · %d turnos
-    ★ Player of the match: %s (%.1f),    ★ Jugador del partido: %s (%.1f)
+Player of the match: %s (%.1f),Jugador del partido: %s (%.1f)
 Bag: you used %s  ·  they used %d item%s  ·  stock updated,Mochila: usaste %s  ·  ellos usaron %d objeto%s  ·  existencias actualizadas
 DMG OUT,DAÑO HECHO
 DMG IN,DAÑO RECIBIDO
@@ -2370,7 +2370,6 @@ Key moments,Momentos clave
 [color=#8b91a8]A quiet affair — no defining moments.[/color],"[color=#8b91a8]Un duelo tranquilo, sin momentos decisivos.[/color]"
 Momentum — full series,Impulso — serie completa
 Result recorded — %d-%d vs %s. A full report is waiting in your inbox.,Resultado registrado: %d-%d vs %s. Tienes la crónica completa en tu bandeja.
-Continue  ▶,Continuar  ▶
 US,NOSOTROS
 THEM,ELLOS
 Momentum,Impulso
@@ -2380,8 +2379,8 @@ BENCH,BANQUILLO
 HELD,OBJETO
 MOVES,MOVIMIENTOS
 Touchline,Banda
-Sim rest of battle ⏭,Simular resto del combate ⏭
-Sim to result ⏭⏭,Ir al resultado ⏭⏭
+Sim rest of battle,Simular resto del combate
+Sim to result,Ir al resultado
 Key moments only,Solo momentos clave
 Auto-pilot (coach decides),Piloto automático
 "On: the AI coach follows your touchline instructions and may use the bag.
@@ -2396,9 +2395,9 @@ Switching,Cambios
 Hold the line,Aguantar la línea
 Rotate freely,Rotar con libertad
 switch policy set to %s.,política de cambios fijada en %s.
-Force switch ▾,Forzar cambio ▾
+Force switch,Forzar cambio
 YOUR CALL,TU DECISIÓN
-↩ redo slot 1,↩ rehacer puesto 1
+redo slot 1,rehacer puesto 1
 BEST OF 3  ·  BATTLE %d%s  ·  TURN %d  ·  %s,AL MEJOR DE 3  ·  COMBATE %d%s  ·  TURNO %d  ·  %s
   ·  2v2 DOUBLES,  ·  DOBLES 2c2
 LEAGUE ROUND %d,"LIGA, JORNADA %d"
@@ -2414,22 +2413,21 @@ No held item.,Sin objeto equipado.
 (already spent this battle)","
 (ya gastado en este combate)"
 FULL TIME — %s %d-%d %s,FINAL — %s %d-%d %s
-Full-time report  ▶,Crónica del partido  ▶
+Full-time report,Crónica del partido
 Battle %d goes to %s.  Series: %d–%d.,El combate %d es para %s.  Serie: %d–%d.
-Start battle %d  ▶,Empezar el combate %d  ▶
+Start battle %d,Empezar el combate %d
 force switch — %s will come in.,cambio forzado: entrará %s.
 "DOUBLES — SLOT %d/%d: %s.  Pick a move AND its target, switch, or use an item.","DOBLES — PUESTO %d/%d: %s.  Elige un movimiento Y su objetivo, cambia o usa un objeto."
-↩ redo slot %d,↩ rehacer puesto %d
+redo slot %d,rehacer puesto %d
 "Attack, switch or use an item (items cost the turn).","Ataca, cambia o usa un objeto (los objetos cuestan el turno)."
 ~%d%% dmg,~%d %% daño
-immune ✕,inmune ✕
+immune ×,inmune ×
  · EACH, · CADA UNO
 Type %s · %s · power %s · accuracy %s · %d PP left%s,Tipo %s · %s · potencia %s · precisión %s · %d PP restantes%s
 "
 Spread: hits every target at 75% power.","
 Área: golpea a todos los objetivos al 75 % de potencia."
 Single-target move — choose which foe to hit.,Movimiento de objetivo único: elige a qué rival golpear.
-⇄ %s · %d%% HP,⇄ %s · %d %% PS
 HARSH SUNLIGHT,SOL ABRASADOR
 POURING RAIN,LLUVIA TORRENCIAL
 SANDSTORM,TORMENTA DE ARENA
@@ -2599,19 +2597,19 @@ Auto-adjust around matches,Autoajuste alrededor de los partidos
 When off: your plan runs straight into matches — strain will spike.","Activado: sin entrenamiento de campo el día de partido (solo calentamiento), un día de recuperación a la mañana siguiente y una preparación ligera la víspera; todo editable por fecha, y tus ediciones mandan.
 Desactivado: tu plan choca de lleno con los partidos y el desgaste se disparará."
 Weekday template presets:,Preajustes de la plantilla semanal:
-"Rewrites the repeating weekday DEFAULT. To plan one specific future week instead, use that week's Plan ▾ menu on the calendar.","Reescribe el VALOR POR DEFECTO semanal repetitivo. Para planificar una semana futura concreta, usa el menú Plan ▾ de esa semana en el calendario."
+"Rewrites the repeating weekday DEFAULT. To plan one specific future week instead, use that week's Plan menu on the calendar.","Reescribe el VALOR POR DEFECTO semanal repetitivo. Para planificar una semana futura concreta, usa el menú Plan de esa semana en el calendario."
 Sets the repeating weekday template. Per-date edits on the calendar stay in place on top of it.,Fija la plantilla semanal repetitiva. Las ediciones por fecha del calendario se mantienen por encima.
-"Every cell edits THAT DATE only (violet = date-specific plan; ↺ resets to the weekday template). Use a week's Plan ▾ menu to stamp a preset on just that week — a recovery week before a congested block, a heavy development block, opponent prep — or to save it as the template. Fixtures embed automatically (amber): matchday is locked, the days around it default to recovery/prep but your date edits win. High intensity trains faster but builds strain; each Pokémon also carries its own load below (Automatic rests above %d%% strain, eases above %d%%).","Cada celda edita SOLO ESA FECHA (violeta = plan específico de fecha; ↺ vuelve a la plantilla semanal). Usa el menú Plan ▾ de una semana para estampar un preajuste solo en ella —una semana de recuperación antes de un bloque cargado, un bloque de desarrollo intenso, preparación del rival— o para guardarla como plantilla. Los partidos se insertan solos (ámbar): el día de partido queda bloqueado y los días de alrededor pasan a recuperación/preparación, aunque tus ediciones mandan. La intensidad alta entrena más rápido pero acumula desgaste; cada Pokémon lleva además su propia carga abajo (Automático descansa por encima del %d %% de desgaste y afloja por encima del %d %%)."
+"Every cell edits THAT DATE only (violet = date-specific plan; Template default resets it). Use a week's Plan menu to stamp a preset on just that week — a recovery week before a congested block, a heavy development block, opponent prep — or to save it as the template. Fixtures embed automatically (amber): matchday is locked, the days around it default to recovery/prep but your date edits win. High intensity trains faster but builds strain; each Pokémon also carries its own load below (Automatic rests above %d%% strain, eases above %d%%).","Cada celda edita SOLO ESA FECHA (violeta = plan específico de fecha; «Valor de plantilla» la restablece). Usa el menú Plan de una semana para estampar un preajuste solo en ella —una semana de recuperación antes de un bloque cargado, un bloque de desarrollo intenso, preparación del rival— o para guardarla como plantilla. Los partidos se insertan solos (ámbar): el día de partido queda bloqueado y los días de alrededor pasan a recuperación/preparación, aunque tus ediciones mandan. La intensidad alta entrena más rápido pero acumula desgaste; cada Pokémon lleva además su propia carga abajo (Automático descansa por encima del %d %% de desgaste y afloja por encima del %d %%)."
 SQUAD TRAINING STATUS,ESTADO DE ENTRENAMIENTO DE LA PLANTILLA
 Load: each Pokémon's own training intensity — click the cell to change it. 7d Δ: its projected net strain this week at that load.,Carga: la intensidad propia de cada Pokémon; haz clic en la celda para cambiarla. Δ 7d: su desgaste neto proyectado esta semana con esa carga.
 This week · fixtures & load,Esta semana · partidos y carga
-↺ Template default,↺ Valor de plantilla
+Template default,Valor de plantilla
 This date has its own plan (differs from the weekday template).,Esta fecha tiene su propio plan (difiere de la plantilla semanal).
 The fixture itself. Starters take heavy strain from playing.,El propio partido. Los titulares acumulan mucho desgaste al jugar.
 Edits %s %s ONLY (per-date plan).,Edita SOLO %s %s (plan por fecha).
 "
-Date-specific: %s (template default: %s). ↺ resets it.","
-Específico de fecha: %s (valor de plantilla: %s). ↺ lo restablece."
+Date-specific: %s (template default: %s). Template default resets it.","
+Específico de fecha: %s (valor de plantilla: %s). «Valor de plantilla» lo restablece."
 "
 Auto: Match Prep for tomorrow's fixture — pick a focus to override this date.","
 Auto: preparación para el partido de mañana; elige un enfoque para anular esta fecha."
@@ -2619,24 +2617,24 @@ Auto: preparación para el partido de mañana; elige un enfoque para anular esta
 Currently the %s template default.","
 Actualmente el valor de plantilla del %s."
 No training intensity on matchday.,Sin intensidad de entrenamiento el día de partido.
-↺ Default,↺ Por defecto
+Default,Por defecto
 Intensity for %s ONLY.,Intensidad SOLO para %s.
 "
-Date-specific: %s. ↺ resets to the default.","
-Específico de fecha: %s. ↺ vuelve al valor por defecto."
+Date-specific: %s. Default resets it.","
+Específico de fecha: %s. «Por defecto» lo restablece."
 "
 Auto: Light around the fixture — pick to override this date.","
 Auto: Ligera alrededor del partido; elige para anular esta fecha."
 THIS WEEK,ESTA SEMANA
 WEEK +%d,SEMANA +%d
-Plan ▾,Plan ▾
+Plan,Plan
 "Plan THIS specific week: stamp a preset on it (per-date, template untouched), reset it to the template, or save it as the new weekday template.","Planifica ESTA semana concreta: estampa un preajuste (por fecha, sin tocar la plantilla), restablécela a la plantilla o guárdala como nueva plantilla semanal."
 Preset: %s,Preajuste: %s
 Reset week to template,Restablecer la semana a la plantilla
 Save week as template,Guardar la semana como plantilla
 NET STRAIN,DESGASTE NETO
 Projected net strain over the next 7 days at %s load%s.,Desgaste neto proyectado en los próximos 7 días con carga %s%s.
-Automatic → %s (%s).,Automático → %s (%s).
+Automatic » %s (%s).,Automático » %s (%s).
 "Manual override: %s (×%.2f development, ×%.2f strain).","Anulación manual: %s (×%.2f desarrollo, ×%.2f desgaste)."
 "
 Unhappy: fresh rapid developer being held back — wants to train more.","
@@ -2650,8 +2648,8 @@ Free week — no fixtures interrupt training.,Semana libre: ningún partido inte
 Auto-adjust is OFF: full training runs into matchdays and strain will spike.","
 El autoajuste está APAGADO: el entrenamiento completo choca con las jornadas y el desgaste se disparará."
 PLANNED DAYS · NEXT 28,DÍAS PLANIFICADOS · PRÓXIMOS 28
-Dates you planned individually on the calendar (or via a week's Plan ▾ preset). They override the weekday template on that date only.,Fechas que planificaste individualmente en el calendario (o con el preajuste Plan ▾ de una semana). Anulan la plantilla semanal solo en esa fecha.
-None — every day runs the weekday template. Edit any calendar cell or use a week's Plan ▾ menu.,Ninguno: todos los días siguen la plantilla semanal. Edita cualquier celda del calendario o usa el menú Plan ▾ de una semana.
+Dates you planned individually on the calendar (or via a week's Plan preset). They override the weekday template on that date only.,Fechas que planificaste individualmente en el calendario (o con el preajuste Plan de una semana). Anulan la plantilla semanal solo en esa fecha.
+None — every day runs the weekday template. Edit any calendar cell or use a week's Plan menu.,Ninguno: todos los días siguen la plantilla semanal. Edita cualquier celda del calendario o usa el menú Plan de una semana.
 matchday — plan resumes around the fixture,día de partido: el plan se reanuda alrededor del encuentro
 Reset this date to the weekday template.,Restablecer esta fecha a la plantilla semanal.
 … and %d more planned day%s,… y %d día%s planificados más
@@ -2671,7 +2669,7 @@ Pokémon detail,Detalle del Pokémon
 %s · Lv %d,%s · Nv. %d
 %d%%  ·  fitness %d%%,%d %%  ·  forma %d %%
 TRAINING WORKLOAD,CARGA DE TRABAJO
-→ %s today,→ %s hoy
+» %s today,» %s hoy
 manual override,anulación manual
 "Rule: %s.
 Effect: ×%.2f development · ×%.2f strain intake · %+.0f strain projected over 7 days.","Regla: %s.
@@ -2768,8 +2766,8 @@ IV gains,Ganancias de IV
 "Mentored by %s (%s): +%.1f bonus training points, %d of its IV gains attributed to mentoring.","Con %s de mentor (%s): +%.1f puntos extra de entrenamiento, %d de sus IV ganados atribuidos a la mentoría."
 mentoring %s,mentor de %s
 %s personality — renewed purpose from mentoring lifts its morale (currently %d%%).,Personalidad %s: el propósito renovado de la mentoría le sube la moral (actualmente %d %%).
-"Attribute changes over the last 28 training days (tracking %d day%s so far). ▲ real stat increases from training — IVs are capped at 15 per stat.
-Evolution: every %d development points = +1 effective level toward evolution thresholds (decisions land in the Inbox). Need more rapid developers? Promote from the Academy — its intake pipeline feeds this squad.","Cambios de atributos en los últimos 28 días de entrenamiento (%d día%s registrados). ▲ subidas reales de estadísticas por entrenar; los IV tienen tope de 15 por estadística.
+"Attribute changes over the last 28 training days (tracking %d day%s so far). +N marks real stat increases from training — IVs are capped at 15 per stat.
+Evolution: every %d development points = +1 effective level toward evolution thresholds (decisions land in the Inbox). Need more rapid developers? Promote from the Academy — its intake pipeline feeds this squad.","Cambios de atributos en los últimos 28 días de entrenamiento (%d día%s registrados). +N marca subidas reales de estadísticas por entrenar; los IV tienen tope de 15 por estadística.
 Evolución: cada %d puntos de desarrollo = +1 nivel efectivo hacia los umbrales de evolución (las decisiones llegan a la Bandeja). ¿Faltan jóvenes en desarrollo rápido? Asciende desde la Academia: su cantera alimenta esta plantilla."
 +%d stat points · %d IVs gained,+%d puntos de estadísticas · %d IV ganados
  · learning from %s, · aprende de %s
@@ -2779,13 +2777,13 @@ No measurable gains yet — development shows here as training days pass.,Aún s
  — set the individual load to Light or Automatic, — pon la carga individual en Ligera o Automático
 held on %s while fresh — a rapid developer wasting growth; raise the individual load,retenido en %s estando fresco: un joven en desarrollo rápido desperdiciando crecimiento; sube la carga individual
 No concerns — workload and age profile look healthy.,Sin preocupaciones: la carga y el perfil de edad tienen buena pinta.
-→ %s AWAITING APPROVAL,→ %s ESPERANDO APROBACIÓN
+» %s AWAITING APPROVAL,» %s ESPERANDO APROBACIÓN
 Requirements met — approve or postpone the evolution from the Inbox or this Pokémon's profile.,Requisitos cumplidos: aprueba o pospón la evolución desde la Bandeja o el perfil de este Pokémon.
 final form,forma final
 %s does not evolve — development here is pure stat growth.,%s no evoluciona: aquí el desarrollo es puro crecimiento de estadísticas.
-→ %s (use stone),→ %s (usar piedra)
+» %s (use stone),» %s (usar piedra)
 "A stone in the storeroom can evolve it today — Items screen, or the profile's evolution panel.",Una piedra del almacén puede evolucionarlo hoy: pantalla de Objetos o el panel de evolución del perfil.
-→ %s ready,→ %s listo
+» %s ready,» %s listo
 Requirements met — the offer will land in your Inbox on the next training day.,Requisitos cumplidos: la oferta llegará a tu Bandeja el próximo día de entrenamiento.
 "Development points from training push evolution milestones: %d pts = +1 effective level.
 Dev so far: %d pts (+%d eff. levels).","Los puntos de desarrollo del entrenamiento empujan los hitos de evolución: %d ptos. = +1 nivel efectivo.
@@ -2901,7 +2899,7 @@ Swat lowball bids for our squad,Rechazar ofertas a la baja por nuestra plantilla
 Pursue shortlist targets (open + close deals),Perseguir los objetivos de la lista (abrir y cerrar tratos)
 Keep idle scouts on the shortlist,Mantener a los ojeadores ociosos sobre la lista
 Max over valuation:,Máximo sobre la valoración:
-   ✔ came true,   ✔ se cumplió
+   • came true,   • se cumplió
    — came to nothing,   — quedó en nada
 "The mill is quiet.
 Rumours build as the window runs: listings genuinely cut ask prices, interest whispers ripen into real transfers, and links to OUR squad often precede real bids.","La rumorología está tranquila.
@@ -2959,7 +2957,6 @@ RUMOUR: %s,RUMOR: %s
 Active offer: %s — manage it in the Transfer Centre tab.,Oferta activa: %s — gestiónala en la pestaña Centro de traspasos.
 %s is on this target%s — full report in ~%d day%s.,%s está sobre este objetivo%s — informe completo en ~%d día%s.
 " (in transit, %dd to arrive)"," (de camino, %d d para llegar)"
-☆ Shortlist,☆ Añadir a la lista
 Send Scout,Enviar ojeador
 Make Offer / Loan,Hacer oferta / cesión
 "Window closes in %d day%s — clubs respond faster, rivals circle harder.",La ventana cierra en %d día%s: los clubes responden más rápido y los rivales aprietan más.
@@ -3239,7 +3236,7 @@ PRELIMINARY (%d%% scouted) — the bands below narrow as the watch continues. %s
 "%s: ""A genuine difference-maker — take this to the board.""",%s: «Marca diferencias de verdad; llévaselo a la directiva».
 "%s: ""Would improve our first team today.""",%s: «Mejoraría nuestro primer equipo hoy mismo».
 "%s: ""One for the future — the ceiling is %s.""",%s: «Uno para el futuro; su techo es %s».
-Scout recommendation: %s (%s / %s),Recomendación de ojeador: %s (%s / %s)
+Scout recommendation: %s (%s · %s),Recomendación de ojeador: %s (%s · %s)
 %s Review the recommendation queue in Transfers > Recruitment — shortlist them or pass.,%s Revisa la cola de recomendaciones en Traspasos > Fichajes: añádelo a la lista o pasa.
 That target cannot be bought with a transfer fee.,Ese objetivo no puede comprarse con un traspaso.
 There is already an active offer for this target.,Ya hay una oferta activa por este objetivo.
@@ -3474,7 +3471,7 @@ Currently held by: nobody in the squad.,Ahora lo lleva: nadie en la plantilla.
 Currently held by: %s,Ahora lo lleva: %s
 %s (Lv %d),%s (Nv. %d)
 "Evolution stone — applied from the storeroom, never in battle. Nobody in the current squad evolves with it.","Piedra evolutiva: se aplica desde el almacén, nunca en combate. Nadie en la plantilla actual evoluciona con ella."
-%s (Lv %d) -> %s,%s (Nv. %d) -> %s
+%s (Lv %d) evolves into %s,%s (Nv. %d) evoluciona a %s
 Would evolve: %s,Evolucionaría: %s
 Pick the Pokémon below and press Use — evolution is immediate and permanent; using the stone is the approval.,Elige el Pokémon abajo y pulsa Usar: la evolución es inmediata y permanente; usar la piedra es la aprobación.
 "Usable items are consumed as a battle turn — the engine exposes them as ""use_item"" actions from your matchday bag.",Los objetos usables se consumen como un turno de combate; el motor los expone como acciones «use_item» desde tu mochila de partido.
@@ -3482,14 +3479,14 @@ Buy 1  (%s),Comprar 1  (%s)
 Buy 5,Comprar 5
 Sell 1,Vender 1
 %s would evolve into %s — buy a %s first.,%s evolucionaría a %s: compra antes una %s.
-%s -> evolves %s into %s. Permanent — using the stone is the approval.,%s -> evoluciona a %s en %s. Permanente: usar la piedra es la aprobación.
+%s evolves %s into %s. Permanent — using the stone is the approval.,%s evoluciona a %s en %s. Permanente: usar la piedra es la aprobación.
 "Pick an item above and a Pokémon here, then Equip. Swapping returns the old item to the storeroom.","Elige un objeto arriba y un Pokémon aquí, luego Equipar. Al cambiarlo, el objeto anterior vuelve al almacén."
 %s is not holding anything.,%s no lleva nada.
 Equip,Equipar
 Youth Academy,Academia juvenil
 Development Centre,Centro de desarrollo
 END-OF-SEASON YOUTH REVIEW — %s's recommendations (Season %d),REVISIÓN JUVENIL DE FIN DE TEMPORADA — recomendaciones de %s (Temporada %d)
-%s  Lv %d · %s · pot %s–%s,%s  Nv. %d · %s · pot. %s–%s
+%s  Lv %d · %s · pot,%s  Nv. %d · %s · pot.
 coach: %s — %s,entrenador: %s — %s
 Apply youth review,Aplicar la revisión juvenil
 Keep everyone,Conservar a todos
@@ -3503,8 +3500,6 @@ No intakes yet this season.,Aún sin ingresos esta temporada.
 "Select a recruit to review development,
 set a focus, promote or release.","Selecciona un recluta para revisar su desarrollo,
 fijar un enfoque, ascenderlo o soltarlo."
-Current  %s,Actual  %s
-Potential  %s – %s,Potencial  %s – %s
 Coach view: %s.,Visión del entrenador: %s.
 Level %d   ·   %s   ·   joined %s,Nivel %d   ·   %s   ·   ingresó el %s
 Nature %s   ·   %s,Naturaleza %s   ·   %s
@@ -3529,9 +3524,9 @@ Request Level %d upgrade  (%s),Solicitar mejora a nivel %d  (%s)
 ","[color=#%s][b]%s[/b] ha revisado a cada juvenil de la academia de cara a la nueva temporada.[/color]
 "
 "
-[color=#%s][b]✔ Review settled — decisions applied on the Academy screen.[/b][/color]
+[color=#%s][b][img=12x12]res://shared/theme/icons/check_good.svg[/img] Review settled — decisions applied on the Academy screen.[/b][/color]
 ","
-[color=#%s][b]✔ Revisión resuelta: decisiones aplicadas en la pantalla Academia.[/b][/color]
+[color=#%s][b][img=12x12]res://shared/theme/icons/check_good.svg[/img] Revisión resuelta: decisiones aplicadas en la pantalla Academia.[/b][/color]
 "
 [color=#%s][b]%s[/b][/color]  [color=#%s]Lv %d · %s[/color]   ,[color=#%s][b]%s[/b][/color]  [color=#%s]Nv. %d · %s[/color]   
 [font_size=12][color=#%s]Potential %s – %s   ·   [i]“%s”[/i][/color][/font_size][/cell][/table],[font_size=12][color=#%s]Potencial %s – %s   ·   [i]«%s»[/i][/color][/font_size][/cell][/table]
@@ -3560,9 +3555,9 @@ DEPTH AT BEST,FONDO DE ARMARIO COMO MUCHO
 ","[color=#%s][b]%s[/b] presenta la cosecha de este mes: [b]%d[/b] juveniles del programa de cantera del club.[/color]
 "
 "
-[bgcolor=#3a3113][color=#%s][b] ★ GOLDEN GENERATION — the staff are buzzing. Intakes like this come along once a decade. [/b][/color][/bgcolor]
+[bgcolor=#3a3113][color=#%s][b] [img=13x13]res://shared/theme/icons/star_gold.svg[/img] GOLDEN GENERATION — the staff are buzzing. Intakes like this come along once a decade. [/b][/color][/bgcolor]
 ","
-[bgcolor=#3a3113][color=#%s][b] ★ GENERACIÓN DORADA — el cuerpo técnico está alborotado. Ingresos así llegan una vez por década. [/b][/color][/bgcolor]
+[bgcolor=#3a3113][color=#%s][b] [img=13x13]res://shared/theme/icons/star_gold.svg[/img] GENERACIÓN DORADA — el cuerpo técnico está alborotado. Ingresos así llegan una vez por década. [/b][/color][/bgcolor]
 "
 "
 [color=#%s][i]A thin month — the region's best young battlers went elsewhere.[/i][/color]
@@ -3573,7 +3568,7 @@ DEPTH AT BEST,FONDO DE ARMARIO COMO MUCHO
 [color=#%s]They begin work at the academy immediately. Set each recruit's training focus and watch the coaches narrow their potential bands over the coming weeks.[/color]","
 [color=#%s]Empiezan a trabajar en la academia de inmediato. Fija el enfoque de entrenamiento de cada recluta y observa cómo los entrenadores estrechan sus bandas de potencial en las próximas semanas.[/color]"
 [b][color=#%s]%s[/color][/b]  %s  [color=#%s]Lv %d · %s · %s[/color],[b][color=#%s]%s[/color][/b]  %s  [color=#%s]Nv. %d · %s · %s[/color]
-   [color=#%s][b]● BEST OF THE CROP[/b][/color],   [color=#%s][b]● EL MEJOR DE LA COSECHA[/b][/color]
+   [color=#%s][b][img=10x10]res://shared/theme/icons/dot_gold.svg[/img] BEST OF THE CROP[/b][/color],   [color=#%s][b][img=10x10]res://shared/theme/icons/dot_gold.svg[/img] EL MEJOR DE LA COSECHA[/b][/color]
 [color=#%s]Current[/color]    %s      [color=#%s]Potential[/color]  %s [color=#%s]–[/color] %s   [color=#%s][font_size=12][b]%s[/b][/font_size][/color],[color=#%s]Actual[/color]    %s      [color=#%s]Potencial[/color]  %s [color=#%s]–[/color] %s   [color=#%s][font_size=12][b]%s[/b][/font_size][/color]
    ·   Knows: %s,   ·   Conoce: %s
 "[color=#%s][font_size=12]INTAKE PREVIEW  ·  %s (LEVEL %d)[/font_size][/color]
@@ -3584,9 +3579,9 @@ DEPTH AT BEST,FONDO DE ARMARIO COMO MUCHO
 ","[color=#%s][b]%s[/b] ha estado observando a los candidatos juveniles del mes de cara al día de ingreso, el [b]%s[/b].[/color]
 
 "
-"[bgcolor=#3a3113][color=#%s][b] ★ Whispers of a special group — the staff can barely contain themselves. [/b][/color][/bgcolor]
+"[bgcolor=#3a3113][color=#%s][b] [img=13x13]res://shared/theme/icons/star_gold.svg[/img] Whispers of a special group — the staff can barely contain themselves. [/b][/color][/bgcolor]
 
-","[bgcolor=#3a3113][color=#%s][b] ★ Se susurra que viene un grupo especial; el cuerpo técnico apenas se contiene. [/b][/color][/bgcolor]
+","[bgcolor=#3a3113][color=#%s][b] [img=13x13]res://shared/theme/icons/star_gold.svg[/img] Se susurra que viene un grupo especial; el cuerpo técnico apenas se contiene. [/b][/color][/bgcolor]
 
 "
 "[color=#%s][i]Expectations are low — the region's best juveniles appear to have gone elsewhere.[/i][/color]
@@ -4641,9 +4636,9 @@ Lv %d  %s,Nv %d  %s
 %s","%s
 %s · pot. %s · prec. %s · %d PP
 %s"
-"%s  🎯▾
+"%s
 %s · pw %s · acc %s · %d PP
-pick a target","%s  🎯▾
+pick a target","%s
 %s · pot. %s · prec. %s · %d PP
 elige un objetivo"
 %s%-14s Lv%-3d %-16s cond %d%%  fit %d%%  mor %d%%  %s,%s%-14s Nv%-3d %-16s est. %d%%  forma %d%%  moral %d%%  %s
@@ -5058,7 +5053,7 @@ used on %s · costs the turn,usado en %s · gasta el turno
 Your career to date: %s, ","cerrará el descanso de temporada.
 
 Tu carrera hasta hoy: %s, "
-→ %s (bench),→ %s (banquillo)
+» %s (bench),» %s (banquillo)
 Continue,Continuar
 New Game,Nueva partida
 Quit,Salir
@@ -5087,7 +5082,7 @@ CONTRACT SUMMARY,RESUMEN DEL CONTRATO
 season starts %s,la temporada empieza el %s
 Bank: P$ %s,Banco: P$ %s
 Wages: P$ %s/w,Salarios: P$ %s/sem
-"⚠ Starting this career overwrites your saved one (%s, %s).","⚠ Empezar esta carrera sobrescribe la partida guardada (%s, %s)."
+"Warning: starting this career overwrites your saved one (%s, %s).","Atención: empezar esta carrera sobrescribe la partida guardada (%s, %s)."
 avg Lv %.0f,nv. medio %.0f
 You will replace %s,Sustituirás a %s
 "Select a club to see the board's expectations, squad strength and budget.","Selecciona un club para ver las expectativas de la directiva, el nivel de plantilla y el presupuesto."

@@ -274,7 +274,7 @@ func _club_season_card(club: Dictionary, pos: int, row: Dictionary, fixtures: Ar
 			labels.append(I18n.t("After MD %d") % (i + 1))
 		spark.set_data(vals, labels)
 		h.add_child(spark)
-		var trend := UI.dim("%s → %s" % [_ord(int(vals[0])), _ord(int(vals[vals.size() - 1]))], 11)
+		var trend := UI.dim("%s » %s" % [_ord(int(vals[0])), _ord(int(vals[vals.size() - 1]))], 11)
 		trend.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(trend)
 		body.add_child(h)
