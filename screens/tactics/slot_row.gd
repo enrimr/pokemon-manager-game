@@ -26,7 +26,7 @@ func setup(analysis: Dictionary, slot_text: String, role_id: String, starter: bo
 	is_starter = starter
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	custom_minimum_size = Vector2(0, 60 if starter else 54)
-	tooltip_text = "%s — drag onto another row to swap, or click two rows." % _a["battler"]["name"]
+	tooltip_text = tr("%s — drag onto another row to swap, or click two rows.") % _a["battler"]["name"]
 	_restyle()
 
 	var h := HBoxContainer.new()
@@ -82,7 +82,7 @@ func setup(analysis: Dictionary, slot_text: String, role_id: String, starter: bo
 	name_l.add_theme_color_override("font_color", Color.WHITE)
 	line1.add_child(name_l)
 	var lv := Label.new()
-	lv.text = "Lv %d" % int(_a["battler"]["level"])
+	lv.text = tr("Lv %d") % int(_a["battler"]["level"])
 	lv.add_theme_font_size_override("font_size", 11)
 	lv.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	line1.add_child(lv)
@@ -109,14 +109,14 @@ func setup(analysis: Dictionary, slot_text: String, role_id: String, starter: bo
 		line2.add_child(pc)
 	var stats := Label.new()
 	var st: Dictionary = _a["battler"]["stats"]
-	stats.text = "HP %d  SPE %d  %d%%" % [int(st["hp"]), int(st["spe"]),
+	stats.text = tr("HP %d  SPE %d  %d%%") % [int(st["hp"]), int(st["spe"]),
 		int(_a["inst"].get("condition", 100))]
 	stats.add_theme_font_size_override("font_size", 9)
 	stats.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	line2.add_child(stats)
 
 	var moves_l := Label.new()
-	moves_l.text = " · ".join(_a["battler"].get("moves", []))
+	moves_l.text = " · ".join(_a["battler"].get("moves", []).map(func(m): return tr(str(m))))
 	moves_l.clip_text = true
 	moves_l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	moves_l.add_theme_font_size_override("font_size", 9)
@@ -133,7 +133,7 @@ func setup(analysis: Dictionary, slot_text: String, role_id: String, starter: bo
 	for i in Logic.ROLE_ORDER.size():
 		var rid: String = Logic.ROLE_ORDER[i]
 		var sc: int = Logic.role_score(rid, _a)["score"]
-		_role_btn.add_item("%s  %d" % [Logic.ROLES[rid]["name"], sc], i)
+		_role_btn.add_item("%s  %d" % [tr(str(Logic.ROLES[rid]["name"])), sc], i)
 		if rid == _role:
 			_role_btn.select(i)
 	_role_btn.item_selected.connect(_on_role_pick)
@@ -163,8 +163,8 @@ func _moves_tooltip() -> String:
 		if mv.is_empty():
 			continue
 		var pw := int(mv.get("power", 0))
-		lines.append("%s — %s %s, %s, acc %s" % [mn, str(mv["type"]).capitalize(),
-			mv.get("category", ""), ("pow %d" % pw) if pw > 0 else "status",
+		lines.append(I18n.t("%s — %s %s, %s, acc %s") % [tr(str(mn)), tr(str(mv["type"]).capitalize()),
+			mv.get("category", ""), (tr("pow %d") % pw) if pw > 0 else tr("status"),
 			str(int(mv.get("accuracy", 0))) + "%" if int(mv.get("accuracy", 0)) > 0 else "—"])
 	return "\n".join(lines)
 
@@ -183,13 +183,13 @@ func _refresh_suit() -> void:
 	_pips.add_theme_color_override("font_color", b[1])
 	_band_lbl.text = str(b[0])
 	_band_lbl.add_theme_color_override("font_color", b[1])
-	var tip := "%s as %s: %d/100 (%s)\n" % [_a["battler"]["name"], Logic.ROLES[_role]["name"], score, b[0]]
+	var tip := tr("%s as %s: %d/100 (%s)\n") % [_a["battler"]["name"], tr(Logic.ROLES[_role]["name"]), score, tr(str(b[0]))]
 	for w in res["why"]:
 		tip += "\n· " + str(w)
 	_pips.tooltip_text = tip
 	_band_lbl.tooltip_text = tip
 	if _role_btn:
-		_role_btn.tooltip_text = "%s\n\nSuited to: %s" % [Logic.ROLES[_role]["desc"], Logic.ROLES[_role]["wants"]]
+		_role_btn.tooltip_text = tr("%s\n\nSuited to: %s") % [tr(Logic.ROLES[_role]["desc"]), tr(Logic.ROLES[_role]["wants"])]
 
 
 func _on_role_pick(idx: int) -> void:

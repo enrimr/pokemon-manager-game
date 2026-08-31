@@ -113,7 +113,7 @@ static func archetype(a: Dictionary) -> Dictionary:
 static func attrs_line(a: Dictionary) -> String:
 	var parts: Array = []
 	for k in ATTR_ORDER:
-		parts.append("%s: %s" % [ATTR_NAMES[k], attr_word(int(a[k]))])
+		parts.append("%s: %s" % [I18n.t(ATTR_NAMES[k]), I18n.t(attr_word(int(a[k])))])
 	return " · ".join(PackedStringArray(parts))
 
 
@@ -240,7 +240,7 @@ static func happiness(inst: Dictionary, svc: Node, ctx: Dictionary) -> Dictionar
 		var share := float(apps) / float(team_played)
 		if share >= need:
 			f.append(_f("Happy with playing time",
-				"%d battles across %d matchdays meets a %s's expectations." % [apps, team_played, st["label"]],
+				I18n.t("%d battles across %d matchdays meets a %s's expectations.") % [apps, team_played, I18n.t(st["label"])],
 				8.0 + (2.0 if st["key"] == "star" else 0.0)))
 		else:
 			var amb_scale := 1.0 + (float(a["ambition"]) - 10.0) * 0.04
@@ -254,25 +254,25 @@ static func happiness(inst: Dictionary, svc: Node, ctx: Dictionary) -> Dictionar
 			if picked:
 				w *= 0.4
 				f.append(_f("Wants the starts to keep coming",
-					"Only %d battles in %d matchdays — below what a %s expects — but being named in the current starting six is easing it." %
-					[apps, team_played, st["label"]], w, "promise_battles"))
+					I18n.t("Only %d battles in %d matchdays — below what a %s expects — but being named in the current starting six is easing it.") %
+					[apps, team_played, I18n.t(st["label"])], w, "promise_battles"))
 			else:
 				f.append(_f(short,
-					"%d battles in %d matchdays is below what a %s expects (%s). Not in the current picked six." %
-					[apps, team_played, st["label"], st["expect"].to_lower()], w, "promise_battles"))
+					I18n.t("%d battles in %d matchdays is below what a %s expects (%s). Not in the current picked six.") %
+					[apps, team_played, I18n.t(st["label"]), I18n.t(st["expect"]).to_lower()], w, "promise_battles"))
 	elif picked:
 		f.append(_f("Named in the starting six",
-			"The season is young and they are in the picked six — no complaints.", 4.0))
+			I18n.t("The season is young and they are in the picked six — no complaints."), 4.0))
 
 	# --- form
 	if apps >= 3:
 		var rat := SeasonStats.avg_rating(uid)
 		if rat >= 7.3:
 			f.append(_f("In excellent form",
-				"Averaging %.2f over %d battles — confidence is soaring." % [rat, apps], 6.0))
+				I18n.t("Averaging %.2f over %d battles — confidence is soaring.") % [rat, apps], 6.0))
 		elif rat < 6.2:
 			f.append(_f("Struggling for form",
-				"Averaging just %.2f over %d battles — confidence is low." % [rat, apps], -4.0))
+				I18n.t("Averaging just %.2f over %d battles — confidence is low.") % [rat, apps], -4.0))
 
 	# --- wage fairness (ability rank vs salary rank inside the squad)
 	var abil_r := int((ctx["abil_rank"] as Dictionary).get(uid, 99))
@@ -280,7 +280,7 @@ static func happiness(inst: Dictionary, svc: Node, ctx: Dictionary) -> Dictionar
 	if abil_r <= 4 and pay_r - abil_r >= 4 and int(ctx["n"]) >= 8:
 		var w2 := -6.0 - maxf(float(a["ambition"]) - 12.0, 0.0) * 0.5
 		f.append(_f("Feels underpaid",
-			"Rated the squad's %s-strongest battler but only its %s-highest earner — wants the deal to reflect their standing." %
+			I18n.t("Rated the squad's %s-strongest battler but only its %s-highest earner — wants the deal to reflect their standing.") %
 			[_ord(abil_r), _ord(pay_r)], w2, "contract"))
 
 	# --- contract runway
@@ -288,45 +288,45 @@ static func happiness(inst: Dictionary, svc: Node, ctx: Dictionary) -> Dictionar
 	if st["key"] in ["star", "important", "prospect"]:
 		if days_left < 120:
 			f.append(_f("Contract running down",
-				"Deal expires in %d days and nothing new is agreed — a %s wants their future settled." %
-				[maxi(days_left, 0), st["label"]], -7.0, "contract"))
+				I18n.t("Deal expires in %d days and nothing new is agreed — a %s wants their future settled.") %
+				[maxi(days_left, 0), I18n.t(st["label"])], -7.0, "contract"))
 		elif days_left < 240 and st["key"] != "prospect":
 			f.append(_f("Would welcome a new deal",
-				"%d days left on the current contract; open to talks." % days_left, -3.0, "contract"))
+				I18n.t("%d days left on the current contract; open to talks.") % days_left, -3.0, "contract"))
 
 	# --- transfer listing
 	if bool(inst.get("transfer_listed", false)):
 		var w3 := -10.0 - maxf(float(a["loyalty"]) - 8.0, 0.0) * 0.5
 		f.append(_f("Transfer-listed — feels unwanted",
-			"On the list at %s. Loyalty makes it sting%s." % [UI.money(int(inst.get("asking_price", 0))),
-			" badly" if int(a["loyalty"]) >= 13 else ""], clampf(w3, -16.0, -8.0), "unlist"))
+			I18n.t("On the list at %s. Loyalty makes it sting%s.") % [UI.money(int(inst.get("asking_price", 0))),
+			I18n.t(" badly") if int(a["loyalty"]) >= 13 else ""], clampf(w3, -16.0, -8.0), "unlist"))
 
 	# --- collapsed talks
 	if svc.talks_locked(uid):
 		f.append(_f("Bruised by collapsed talks",
-			"Contract negotiations broke down; will not return to the table before %s." %
-			Season.pretty_date(svc.talks_locked_until(uid)), -8.0))
+			I18n.t("Contract negotiations broke down; will not return to the table before %s.") %
+			I18n.pretty_date(svc.talks_locked_until(uid)), -8.0))
 
 	# --- promises (squad-screen promises + coach-brokered inbox pledges)
 	var open_p: Dictionary = svc.open_promise(uid)
 	if not open_p.is_empty():
 		f.append(_f("Trusting the manager's promise",
-			"%s Deadline %s." % [str(open_p["text"]), Season.pretty_date(str(open_p["deadline"]))], 3.0))
+			I18n.t("%s Deadline %s.") % [str(open_p["text"]), I18n.pretty_date(str(open_p["deadline"]))], 3.0))
 	var kept: Dictionary = svc.recent_promise(uid, "kept", 30)
 	if not kept.is_empty():
 		f.append(_f("Manager kept their word",
-			"Promise honoured on %s: %s" % [Season.pretty_date(str(kept["resolved_on"])), str(kept["text"])], 5.0))
+			I18n.t("Promise honoured on %s: %s") % [I18n.pretty_date(str(kept["resolved_on"])), str(kept["text"])], 5.0))
 	var broken: Dictionary = svc.recent_promise(uid, "broken", 45)
 	if not broken.is_empty():
 		var w4 := -10.0 - maxf(8.0 - float(a["temperament"]), 0.0) * 0.5
 		f.append(_f("Trust broken by the manager",
-			"Promise broken on %s: %s The distrust lingers." %
-			[Season.pretty_date(str(broken["resolved_on"])), str(broken["text"])], clampf(w4, -15.0, -8.0)))
+			I18n.t("Promise broken on %s: %s The distrust lingers.") %
+			[I18n.pretty_date(str(broken["resolved_on"])), str(broken["text"])], clampf(w4, -15.0, -8.0)))
 	for pl in svc.inbox_pledges(uid):
 		if str(pl.get("status", "")) == "open":
 			f.append(_f("Awaiting a promised run of battles",
-				"The coach brokered a pledge of %d battles by %s (see Inbox)." %
-				[int(pl.get("target", 4)), Season.pretty_date(str(pl.get("deadline", GameState.current_date)))], 2.0))
+				I18n.t("The coach brokered a pledge of %d battles by %s (see Inbox).") %
+				[int(pl.get("target", 4)), I18n.pretty_date(str(pl.get("deadline", GameState.current_date)))], 2.0))
 
 	# --- team position vs club reputation
 	if team_played >= 4:
@@ -334,10 +334,10 @@ static func happiness(inst: Dictionary, svc: Node, ctx: Dictionary) -> Dictionar
 		var rep_rank := int(ctx["rep_rank"])
 		if pos <= 3:
 			f.append(_f("Enjoying a strong season",
-				"The club sits %s in the league — the mood around the pens is good." % _ord(pos), 4.0))
+				I18n.t("The club sits %s in the league — the mood around the pens is good.") % _ord(pos), 4.0))
 		elif pos - rep_rank >= 4 and int(a["ambition"]) >= 13:
 			f.append(_f("Frustrated by the league position",
-				"%s in the table against a squad reputation of %s — an ambitious character notices." %
+				I18n.t("%s in the table against a squad reputation of %s — an ambitious character notices.") %
 				[_ord(pos), _ord(rep_rank)], -5.0))
 
 	# --- recent results (last three matchdays)
@@ -345,29 +345,29 @@ static func happiness(inst: Dictionary, svc: Node, ctx: Dictionary) -> Dictionar
 	if last3.size() >= 3:
 		var tem_edge := 1.0 if int(a["temperament"]) <= 8 else 0.0
 		if last3.all(func(w): return bool(w)):
-			f.append(_f("Riding the winning run", "Three straight wins — spirits are high.", 4.0 + tem_edge))
+			f.append(_f("Riding the winning run", I18n.t("Three straight wins — spirits are high."), 4.0 + tem_edge))
 		elif last3.all(func(w): return not bool(w)):
-			f.append(_f("Weighed down by defeats", "Three straight losses — the mood has darkened.", -4.0 - tem_edge))
+			f.append(_f("Weighed down by defeats", I18n.t("Three straight losses — the mood has darkened."), -4.0 - tem_edge))
 
 	# --- physical state
 	if int(inst.get("condition", 100)) < 45:
 		f.append(_f("Run into the ground",
-			"Condition is down to %d%% — needs rest before resentment builds." % int(inst["condition"]), -4.0))
+			I18n.t("Condition is down to %d%% — needs rest before resentment builds.") % int(inst["condition"]), -4.0))
 
 	# --- settled veteran
 	if int(inst.get("age_months", 48)) >= 84 and int(a["loyalty"]) >= 13:
 		f.append(_f("Settled senior figure",
-			"A loyal veteran, comfortable in their role at the club.", 3.0))
+			I18n.t("A loyal veteran, comfortable in their role at the club."), 3.0))
 
 	# --- recent manager talk
 	var li: Dictionary = svc.last_interaction(uid)
 	if not li.is_empty() and UI.days_between(str(li["date"]), GameState.current_date) <= 8:
 		if int(li["delta"]) > 0:
 			f.append(_f("Buoyed by the manager's praise",
-				"Praised on %s (morale %+d)." % [Season.pretty_date(str(li["date"])), int(li["delta"])], 3.0))
+				I18n.t("Praised on %s (morale %+d).") % [I18n.pretty_date(str(li["date"])), int(li["delta"])], 3.0))
 		else:
 			f.append(_f("Smarting from criticism",
-				"Criticised on %s (morale %+d)." % [Season.pretty_date(str(li["date"])), int(li["delta"])], -3.0))
+				I18n.t("Criticised on %s (morale %+d).") % [I18n.pretty_date(str(li["date"])), int(li["delta"])], -3.0))
 
 	# --- score + concerns
 	var score := 58.0
@@ -386,21 +386,17 @@ static func happiness(inst: Dictionary, svc: Node, ctx: Dictionary) -> Dictionar
 
 ## Multi-line tooltip: every factor as a signed line, FM-style.
 static func factors_tip(h: Dictionary) -> String:
-	var lines: Array = ["%s (%d/100) — %s, %s." % [h["word"], int(h["score"]),
-		(h["arch"] as Dictionary)["name"], (h["status"] as Dictionary)["label"]]]
+	var lines: Array = [I18n.t("%s (%d/100) — %s, %s.") % [I18n.t(h["word"]), int(h["score"]),
+		I18n.t((h["arch"] as Dictionary)["name"]), I18n.t((h["status"] as Dictionary)["label"])]]
 	var fs: Array = (h["factors"] as Array).duplicate()
 	fs.sort_custom(func(x, y): return float(x["w"]) > float(y["w"]))
 	for fac in fs:
 		lines.append("%s %s — %s" % ["+" if float(fac["w"]) >= 0.0 else "-",
-			str(fac["short"]), str(fac["detail"])])
+			I18n.t(str(fac["short"])), I18n.t(str(fac["detail"]))])
 	if fs.is_empty():
-		lines.append("Nothing on their mind — no active happiness factors.")
+		lines.append(I18n.t("Nothing on their mind — no active happiness factors."))
 	return "\n".join(PackedStringArray(lines))
 
 
 static func _ord(n: int) -> String:
-	var suffix := "th"
-	if n % 10 == 1 and n % 100 != 11: suffix = "st"
-	elif n % 10 == 2 and n % 100 != 12: suffix = "nd"
-	elif n % 10 == 3 and n % 100 != 13: suffix = "rd"
-	return str(n) + suffix
+	return I18n.ordinal(n)

@@ -80,31 +80,34 @@ func enrich_existing() -> void:
 			_refresh_urgency(m)
 			continue
 		var title: String = m.get("title", "")
-		if title.begins_with("Match report:"):
+		if title.begins_with("Match report:") or title.begins_with(I18n.t("Match report:")):
 			m["cat"] = "match"
 			m["sender"] = assistant_name()
 			var fid := _player_fixture_id_on(m["date"])
 			if fid != "":
 				m["fid"] = fid
-		elif title.begins_with("Cup draw:"):
+		elif title.begins_with("Cup draw:") or title.begins_with(I18n.t("Cup draw:")):
 			m["cat"] = "cup"
-			m["sender"] = "Indigo League Cup Committee"
+			m["sender"] = I18n.t("Indigo League Cup Committee")
 			for r in range(1, 7):
-				if title.contains(Season.cup_round_name(r)):
+				if title.contains(Season.cup_round_name(r)) or title.contains(I18n.cup_round(r)):
 					m["round"] = r
 					break
-		elif title.begins_with("Welcome to"):
+		elif title.begins_with("Welcome to") or title.begins_with(I18n.t("Welcome to")):
 			m["cat"] = "board"
 			m["uid"] = "board:welcome"
-			m["sender"] = "%s Board of Directors" % pc.get("name", "Club")
+			m["sender"] = I18n.t("%s Board of Directors") % pc.get("name", "Club")
 		elif _is_market_title(title):
 			m["cat"] = "transfer"
 			m["sender"] = _market_sender(title)
-		elif title.begins_with("Scouting:") or title.begins_with("Scout report ready:"):
+		elif title.begins_with("Scouting:") or title.begins_with("Scout report ready:") \
+				or title.begins_with(I18n.t("Scouting:")) or title.begins_with(I18n.t("Scout report ready:")):
 			m["cat"] = "scout"
 			m["sender"] = scout_name()
-		elif title.begins_with("Youth intake day:") or title.contains("promoted to the first team") \
-				or title.contains("released from the academy") or _academy_board_kind(title) != "":
+		elif title.begins_with("Youth intake day:") or title.begins_with(I18n.t("Youth intake day:")) \
+				or title.contains("promoted to the first team") or title.contains(I18n.t("promoted to the first team")) \
+				or title.contains("released from the academy") or title.contains(I18n.t("released from the academy")) \
+				or _academy_board_kind(title) != "":
 			_enrich_academy(m, title)
 		else:
 			m["cat"] = "board"
@@ -126,15 +129,12 @@ func _academy_service() -> Object:
 ## Academy board/facility mails (new ones arrive pre-stamped by the service;
 ## this backfills messages written by older versions).
 func _academy_board_kind(title: String) -> String:
-	match title:
-		"Board considering academy investment":
-			return "board_request"
-		"Board approves academy expansion":
-			return "board_approve"
-		"Board rejects academy request":
-			return "board_reject"
-		"New academy facilities open":
-			return "facility_open"
+	for pair in [["Board considering academy investment", "board_request"],
+			["Board approves academy expansion", "board_approve"],
+			["Board rejects academy request", "board_reject"],
+			["New academy facilities open", "facility_open"]]:
+		if title == pair[0] or title == I18n.t(pair[0]):
+			return pair[1]
 	return ""
 
 
@@ -142,12 +142,12 @@ func _enrich_academy(m: Dictionary, title: String) -> void:
 	var bk := _academy_board_kind(title)
 	if bk != "":
 		m["cat"] = "board"
-		m["sender"] = "%s Board of Directors" % GameState.player_club().get("name", "Club")
+		m["sender"] = I18n.t("%s Board of Directors") % GameState.player_club().get("name", "Club")
 		m["academy_kind"] = bk
 		m["uid"] = "academy:board:%s:%s" % [bk, str(m.get("date", ""))]
 		return
 	m["cat"] = "staff"
-	m["sender"] = "Academy"
+	m["sender"] = I18n.t("Academy")
 	var svc := _academy_service()
 	if svc != null and svc.has_method("head_youth_coach"):
 		m["sender"] = str(svc.head_youth_coach())
@@ -202,12 +202,12 @@ func _snapshot_intake(m: Dictionary, svc: Object) -> void:
 
 func _intake_note(pot_max: int) -> String:
 	if pot_max >= 17:
-		return "could lead the first team for a decade"
+		return I18n.t("could lead the first team for a decade")
 	if pot_max >= 13:
-		return "a genuine prospect worth developing"
+		return I18n.t("a genuine prospect worth developing")
 	if pot_max >= 9:
-		return "solid foundations, needs game time"
-	return "one for the depth chart at best"
+		return I18n.t("solid foundations, needs game time")
+	return I18n.t("one for the depth chart at best")
 
 
 ## Titles produced by the transfers piece's market via add_inbox_message.
@@ -215,11 +215,13 @@ func _is_market_title(title: String) -> bool:
 	for p in ["Transfer offer:", "Transfer interest:", "Improved bid:", "Fee agreed:", "Bid rejected:",
 		"Counter offer:", "Signing completed:", "Sale completed:", "Contract talks:",
 		"Talks collapse:", "Deal collapsed:", "Market news:"]:
-		if title.begins_with(p):
+		if title.begins_with(p) or title.begins_with(I18n.t(p)):
 			return true
-	if title.contains("withdraw interest in"):
+	if title.contains("withdraw interest in") or title.contains(I18n.t("withdraw interest in")):
 		return true
 	if title.contains(" agree ") and title.contains(" for "):
+		return true
+	if title.contains(I18n.t(" agree ")) and title.contains(I18n.t(" for ")):
 		return true
 	return false
 
@@ -231,7 +233,7 @@ func _market_sender(title: String) -> String:
 		if title.begins_with(str(c["short"]) + " ") or title.contains(str(c["name"])):
 			if not GameState.is_player_club(c["id"]):
 				return str(c["name"])
-	return "%s Transfer Centre" % GameState.player_club().get("short", "Club")
+	return I18n.t("%s Transfer Centre") % GameState.player_club().get("short", "Club")
 
 
 func _refresh_urgency(m: Dictionary) -> void:
@@ -312,20 +314,20 @@ func _add(have: Dictionary, uid: String, date: String, title: String, body: Stri
 func _gen_preseason(have: Dictionary, start: String) -> void:
 	var pc: Dictionary = GameState.player_club()
 	_add(have, "board:preseason", start,
-		"Season preview: what the board expects",
-		"The board has set out its expectations for the %s campaign." % GameState.world["meta"]["league_name"],
-		{"cat": "board", "sender": "%s Board of Directors" % pc["name"]})
+		I18n.t("Season preview: what the board expects"),
+		I18n.t("The board has set out its expectations for the %s campaign.") % I18n.t(GameState.world["meta"]["league_name"]),
+		{"cat": "board", "sender": I18n.t("%s Board of Directors") % pc["name"]})
 
 
 func _gen_board_review(have: Dictionary, date: String) -> void:
 	var pc: Dictionary = GameState.player_club()
 	var months := ["", "January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December"]
-	var month_name: String = months[int(date.split("-")[1])]
+	var month_name: String = I18n.t(months[int(date.split("-")[1])])
 	_add(have, "board:%s" % date.substr(0, 7), date,
-		"Board review: %s" % month_name,
-		"The board has met to review the club's progress on and off the pitch.",
-		{"cat": "board", "sender": "%s Board of Directors" % pc["name"]})
+		I18n.t("Board review: %s") % month_name,
+		I18n.t("The board has met to review the club's progress on and off the pitch."),
+		{"cat": "board", "sender": I18n.t("%s Board of Directors") % pc["name"]})
 
 
 func _gen_scout_report(have: Dictionary, date: String, day: int, salt: int) -> void:
@@ -343,7 +345,7 @@ func _gen_scout_report(have: Dictionary, date: String, day: int, salt: int) -> v
 		var mkt := market()
 		if mkt != null and mkt.has_method("grant_knowledge"):
 			mkt.grant_knowledge(str(p["uid"]), 55.0)
-	var title := "Scout report: %s" % display_name(p)
+	var title := I18n.t("Scout report: %s") % display_name(p)
 	if display_name(p) != str(p["species"]):
 		title += " (%s)" % p["species"]
 	var flavors := [
@@ -354,7 +356,7 @@ func _gen_scout_report(have: Dictionary, date: String, day: int, salt: int) -> v
 		"%s writes: \"Done my homework on this one, boss. Worth two minutes of your time.\"",
 		"The scouting desk files another dossier — %s's report is attached.",
 	]
-	var body: String = flavors[rng.randi_range(0, flavors.size() - 1)] % scout_name()
+	var body: String = I18n.t(flavors[rng.randi_range(0, flavors.size() - 1)]) % scout_name()
 	_add(have, uid, date, title, body,
 		{"cat": "scout", "sender": scout_name(), "prospect_uid": p["uid"]})
 
@@ -401,17 +403,17 @@ func _gen_transfer_interest(have: Dictionary, date: String, day: int) -> void:
 	var big: bool = not bool(offer_by_id(oid).get("routine", false))
 	if big:
 		_add(have, uid, date,
-			"Transfer offer: %s bid %s for %s" % [bidder["name"], money(fee), display_name(target)],
-			"%s have submitted a formal offer for %s. The offer expires on %s." %
-				[bidder["name"], display_name(target), Season.pretty_date(deadline)],
+			I18n.t("Transfer offer: %s bid %s for %s") % [bidder["name"], money(fee), display_name(target)],
+			I18n.t("%s have submitted a formal offer for %s. The offer expires on %s.") %
+				[bidder["name"], display_name(target), I18n.pretty_date(deadline)],
 			{"cat": "transfer", "sender": bidder["name"], "bidder": bidder["id"],
 				"target_uid": target["uid"], "fee": fee, "deadline": deadline,
 				"offer_id": oid, "urgent": true})
 	else:
 		_add(have, uid, date,
-			"Transfer interest: %s bid %s for %s" % [bidder["name"], money(fee), display_name(target)],
-			"%s have lodged an offer for %s — around our valuation, nothing that demands an immediate answer. It waits in the Transfer Centre until %s." %
-				[bidder["name"], display_name(target), Season.pretty_date(deadline)],
+			I18n.t("Transfer interest: %s bid %s for %s") % [bidder["name"], money(fee), display_name(target)],
+			I18n.t("%s have lodged an offer for %s — around our valuation, nothing that demands an immediate answer. It waits in the Transfer Centre until %s.") %
+				[bidder["name"], display_name(target), I18n.pretty_date(deadline)],
 			{"cat": "transfer", "sender": bidder["name"], "bidder": bidder["id"],
 				"target_uid": target["uid"], "fee": fee, "deadline": deadline,
 				"offer_id": oid, "urgent": false})
@@ -435,7 +437,7 @@ func _register_market_offer(target: Dictionary, bidder_id: String, fee: int, dat
 		"id": oid, "uid": str(target["uid"]), "club_id": bidder_id,
 		"bid": fee, "ask": 0, "ask_sell_on": 0, "stage": "open",
 		"name": mkt.display_name(target), "respond_on": "", "expires_on": deadline,
-		"log": [{"date": date, "text": "%s bid %s." % [bidder["short"], mkt.fmt_money(fee)]}],
+		"log": [{"date": date, "text": I18n.t("%s bid %s.") % [bidder["short"], mkt.fmt_money(fee)]}],
 	}
 	# v2 markets deal in structured packages; keep "bid" too for older schemas
 	if mkt.has_method("blank_package"):
@@ -536,8 +538,8 @@ func _create_offer_message(o: Dictionary) -> Dictionary:
 	var logs: Array = o.get("log", [])
 	var date: String = str(logs[0]["date"]) if not logs.is_empty() else GameState.current_date
 	GameState.add_inbox_message(date,
-		"Transfer offer: %s bid %s for %s" % [bidder["name"], money(offer_bid(o)), str(o["name"])],
-		"%s have made a formal offer for %s. A decision is required." % [bidder["name"], str(o["name"])])
+		I18n.t("Transfer offer: %s bid %s for %s") % [bidder["name"], money(offer_bid(o)), str(o["name"])],
+		I18n.t("%s have made a formal offer for %s. A decision is required.") % [bidder["name"], str(o["name"])])
 	var m: Dictionary = GameState.inbox[0]
 	m["uid"] = "offerin:%d" % int(o["id"])
 	m["cat"] = "transfer"
@@ -567,11 +569,11 @@ func _gen_prematch(have: Dictionary) -> void:
 		return
 	var we_home: bool = GameState.is_player_club(f["home"])
 	var opp: Dictionary = GameState.club(f["away"] if we_home else f["home"])
-	var comp_label: String = "league" if f["comp"] == "league" else Season.cup_round_name(int(f["round"])) + " cup tie"
+	var comp_label: String = I18n.t("league") if f["comp"] == "league" else I18n.cup_round(int(f["round"])) + I18n.t(" cup tie")
 	_add(have, "prematch:%s" % f["id"], GameState.current_date,
-		"Next match: %s %s (%s)" % ["vs" if we_home else "at", opp["name"], comp_label],
-		"Pre-match briefing prepared ahead of the %s meeting with %s on %s." %
-			[comp_label, opp["name"], Season.pretty_date(f["date"])],
+		I18n.t("Next match: %s %s (%s)") % [I18n.t("vs") if we_home else I18n.t("at"), opp["name"], comp_label],
+		I18n.t("Pre-match briefing prepared ahead of the %s meeting with %s on %s.") %
+			[comp_label, opp["name"], I18n.pretty_date(f["date"])],
 		{"cat": "match", "sender": assistant_name(), "fid": f["id"], "urgent": true})
 
 
@@ -580,9 +582,9 @@ func _gen_cup_first_round(have: Dictionary) -> void:
 	if r1.is_empty():
 		return
 	_add(have, "cupdraw:1", GameState.season_start,
-		"Cup draw: %s" % Season.cup_round_name(1),
-		"The %s draw for the Indigo Cup has been made." % Season.cup_round_name(1),
-		{"cat": "cup", "sender": "Indigo League Cup Committee", "round": 1})
+		I18n.t("Cup draw: %s") % I18n.cup_round(1),
+		I18n.t("The %s draw for the Indigo Cup has been made.") % I18n.cup_round(1),
+		{"cat": "cup", "sender": I18n.t("Indigo League Cup Committee"), "round": 1})
 
 
 # ------------------------------------------------------------- board maths
@@ -604,23 +606,23 @@ func expected_position() -> int:
 func league_expectation_text() -> String:
 	var e := expected_position()
 	if e <= 2:
-		return "challenge for the league title"
+		return I18n.t("challenge for the league title")
 	if e <= 5:
-		return "push for a top-four finish"
+		return I18n.t("push for a top-four finish")
 	if e <= 8:
-		return "finish in the top half of the table"
+		return I18n.t("finish in the top half of the table")
 	if e <= 12:
-		return "secure a comfortable mid-table finish"
-	return "stay well clear of the bottom places"
+		return I18n.t("secure a comfortable mid-table finish")
+	return I18n.t("stay well clear of the bottom places")
 
 
 func cup_expectation_text() -> String:
 	var e := expected_position()
 	if e <= 4:
-		return "reach the Indigo Cup Final"
+		return I18n.t("reach the Indigo Cup Final")
 	if e <= 8:
-		return "reach the Indigo Cup Semi-Final"
-	return "reach the Indigo Cup Quarter-Final"
+		return I18n.t("reach the Indigo Cup Semi-Final")
+	return I18n.t("reach the Indigo Cup Quarter-Final")
 
 
 ## Last n player results, newest first: [{f, won, us, them, opp_name, comp}]
@@ -643,18 +645,18 @@ func cup_status() -> Dictionary:
 	var ours: Array = GameState.fixtures.filter(func(f):
 		return f["comp"] == "cup" and (f["home"] == pid or f["away"] == pid))
 	if ours.is_empty():
-		return {"alive": false, "round": 0, "text": "Not entered"}
+		return {"alive": false, "round": 0, "text": I18n.t("Not entered")}
 	var last: Dictionary = ours.back()
 	var rnd := int(last["round"])
 	if not last["played"]:
-		return {"alive": true, "round": rnd, "text": "In the %s (tie on %s)" % [Season.cup_round_name(rnd), Season.pretty_date(last["date"])]}
+		return {"alive": true, "round": rnd, "text": I18n.t("In the %s (tie on %s)") % [I18n.cup_round_prose(rnd), I18n.pretty_date(last["date"])]}
 	var we_home: bool = GameState.is_player_club(last["home"])
 	var won: bool = (last["score_home"] > last["score_away"]) == we_home
 	if won:
 		if rnd >= 4:
-			return {"alive": false, "round": rnd, "text": "INDIGO CUP WINNERS"}
-		return {"alive": true, "round": rnd + 1, "text": "Through to the %s" % Season.cup_round_name(rnd + 1)}
-	return {"alive": false, "round": rnd, "text": "Eliminated in the %s" % Season.cup_round_name(rnd)}
+			return {"alive": false, "round": rnd, "won": true, "text": I18n.t("INDIGO CUP WINNERS")}
+		return {"alive": true, "round": rnd + 1, "text": I18n.t("Through to the %s") % I18n.cup_round_prose(rnd + 1)}
+	return {"alive": false, "round": rnd, "text": I18n.t("Eliminated in the %s") % I18n.cup_round_prose(rnd)}
 
 
 ## Board confidence 0..100 + descriptor, computed from results vs expectations.
@@ -674,40 +676,40 @@ func board_confidence() -> Dictionary:
 	var cs := cup_status()
 	if cs["alive"]:
 		score += 2.0 + cs["round"]
-	elif cs["round"] >= 1 and cs["text"].begins_with("Eliminated"):
+	elif cs["round"] >= 1 and not cs["alive"] and not cs.get("won", false):
 		score -= (5.0 - cs["round"])
 	score = clampf(score, 4.0, 98.0)
-	var word := "Satisfied"
+	var word := I18n.t("Satisfied")
 	var col: Color = ThemeBuilder.COL_TEXT
 	if score >= 80:
-		word = "Delighted"
+		word = I18n.t("Delighted")
 		col = ThemeBuilder.COL_GOOD
 	elif score >= 65:
-		word = "Pleased"
+		word = I18n.t("Pleased")
 		col = Color("8fd98a")
 	elif score >= 50:
-		word = "Satisfied"
+		word = I18n.t("Satisfied")
 		col = ThemeBuilder.COL_TEXT
 	elif score >= 38:
-		word = "Concerned"
+		word = I18n.t("Concerned")
 		col = ThemeBuilder.COL_WARN
 	elif score >= 25:
-		word = "Worried"
+		word = I18n.t("Worried")
 		col = Color("e08a50")
 	else:
-		word = "Insecure"
+		word = I18n.t("Insecure")
 		col = ThemeBuilder.COL_BAD
 	var statement: String
 	if played == 0:
-		statement = "The board is content to give you time to settle in before judging results."
+		statement = I18n.t("The board is content to give you time to settle in before judging results.")
 	elif pos <= e - 3:
-		statement = "The board is thrilled that the team is far exceeding its league expectations."
+		statement = I18n.t("The board is thrilled that the team is far exceeding its league expectations.")
 	elif pos <= e:
-		statement = "The board notes with approval that results are on course for its stated aims."
+		statement = I18n.t("The board notes with approval that results are on course for its stated aims.")
 	elif pos <= e + 3:
-		statement = "The board expects an improvement on the current league position before long."
+		statement = I18n.t("The board expects an improvement on the current league position before long.")
 	else:
-		statement = "The board is alarmed by results falling well short of what was demanded."
+		statement = I18n.t("The board is alarmed by results falling well short of what was demanded.")
 	return {"score": score, "word": word, "color": col, "pos": pos, "expected": e,
 		"played": played, "statement": statement}
 
@@ -780,8 +782,8 @@ func assistant_name() -> String:
 	var staff: Array = GameState.player_club().get("staff", [])
 	for s in staff:
 		if s["role"] == "coach":
-			return "%s (Assistant)" % s["name"]
-	return "Assistant Manager"
+			return I18n.t("%s (Assistant)") % s["name"]
+	return I18n.t("Assistant Manager")
 
 
 func scout_name() -> String:
@@ -790,14 +792,14 @@ func scout_name() -> String:
 	var best_j := -1
 	for s in staff:
 		if s["role"] == "scout":
-			return "%s (Scout)" % s["name"]
+			return I18n.t("%s (Scout)") % s["name"]
 		var j := int(s["ratings"].get("judging_potential", 0))
 		if j > best_j:
 			best_j = j
 			best = s
 	if not best.is_empty():
-		return "%s (Scout)" % best["name"]
-	return "Chief Scout"
+		return I18n.t("%s (Scout)") % best["name"]
+	return I18n.t("Chief Scout")
 
 
 func display_name(inst: Dictionary) -> String:
@@ -809,14 +811,7 @@ func display_name(inst: Dictionary) -> String:
 
 func money(v: int) -> String:
 	var cur: String = GameState.world["meta"].get("currency", "P$")
-	var neg := v < 0
-	var s := str(absi(v))
-	var out := ""
-	while s.length() > 3:
-		out = "," + s.substr(s.length() - 3) + out
-		s = s.substr(0, s.length() - 3)
-	out = s + out
-	return "%s%s%s" % ["-" if neg else "", cur, out]
+	return "%s%s%s" % ["-" if v < 0 else "", cur, I18n.number(absi(v))]
 
 
 static func _days_between(a: String, b: String) -> int:

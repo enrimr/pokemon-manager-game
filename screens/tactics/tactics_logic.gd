@@ -208,54 +208,54 @@ static func role_score(role: String, a: Dictionary) -> Dictionary:
 	match role:
 		"lead":
 			s = 100.0 * (0.48 * a["n_spe"] + 0.17 * a["n_bulk"])
-			if a["n_spe"] > 0.6: why.append("Fast opener (SPE %d)" % spe)
-			if a["has_sleep"]: s += 22; why.append("Can put the opposing lead to sleep")
-			if a["has_para"]: s += 12; why.append("Spreads paralysis")
-			if a["has_drop"]: s += 8; why.append("Softens up with stat drops")
-			if a["has_screen"]: s += 6; why.append("Sets defensive screens")
-			if a["has_priority"]: s += 5; why.append("Priority move for safe chip damage")
+			if a["n_spe"] > 0.6: why.append(I18n.t("Fast opener (SPE %d)") % spe)
+			if a["has_sleep"]: s += 22; why.append(I18n.t("Can put the opposing lead to sleep"))
+			if a["has_para"]: s += 12; why.append(I18n.t("Spreads paralysis"))
+			if a["has_drop"]: s += 8; why.append(I18n.t("Softens up with stat drops"))
+			if a["has_screen"]: s += 6; why.append(I18n.t("Sets defensive screens"))
+			if a["has_priority"]: s += 5; why.append(I18n.t("Priority move for safe chip damage"))
 		"sweeper":
 			s = 100.0 * (0.38 * a["n_off"] + 0.32 * a["n_spe"])
-			if a["n_off"] > 0.65: why.append("Big attacking stat (%d)" % maxi(int(a["base"]["atk"]), int(a["base"]["spa"])))
-			if a["n_spe"] > 0.6: why.append("Outspeeds most of the league")
-			if a["has_setup"]: s += 18; why.append("Set-up move to snowball")
+			if a["n_off"] > 0.65: why.append(I18n.t("Big attacking stat (%d)") % maxi(int(a["base"]["atk"]), int(a["base"]["spa"])))
+			if a["n_spe"] > 0.6: why.append(I18n.t("Outspeeds most of the league"))
+			if a["has_setup"]: s += 18; why.append(I18n.t("Set-up move to snowball"))
 			s += clampf(a["best_power"], 0, 150) / 150.0 * 14.0
-			if a["best_power"] >= 100: why.append("High-power STAB attack")
-			if a["has_drain"]: s += 4; why.append("Drains HP to stay healthy")
+			if a["best_power"] >= 100: why.append(I18n.t("High-power STAB attack"))
+			if a["has_drain"]: s += 4; why.append(I18n.t("Drains HP to stay healthy"))
 		"wall":
 			s = 100.0 * (0.62 * a["n_bulk"])
-			if a["n_bulk"] > 0.55: why.append("Genuinely bulky (HP/DEF/SPD)")
-			if a["has_heal"]: s += 22; why.append("Reliable recovery")
-			if a["has_tox"]: s += 12; why.append("Wears attackers down with status")
-			if a["has_screen"]: s += 8; why.append("Boosts its own defences")
-			if a["has_drain"]: s += 5; why.append("Drain moves extend its stay")
+			if a["n_bulk"] > 0.55: why.append(I18n.t("Genuinely bulky (HP/DEF/SPD)"))
+			if a["has_heal"]: s += 22; why.append(I18n.t("Reliable recovery"))
+			if a["has_tox"]: s += 12; why.append(I18n.t("Wears attackers down with status"))
+			if a["has_screen"]: s += 8; why.append(I18n.t("Boosts its own defences"))
+			if a["has_drain"]: s += 5; why.append(I18n.t("Drain moves extend its stay"))
 		"pivot":
 			s = 100.0 * (0.32 * a["n_bulk"] + 0.16 * a["n_spe"])
 			s += clampf(a["resists"] * 3.2, 0, 26)
-			if a["resists"] >= 5: why.append("Resists %d attack types" % a["resists"])
-			if a["attack_types"].size() >= 3: s += 10; why.append("Coverage across %d attack types" % a["attack_types"].size())
-			if a["weaks"] <= 2: s += 8; why.append("Few exploitable weaknesses")
-			if a["has_para"] or a["has_drop"]: s += 5; why.append("Disrupts on the switch")
+			if a["resists"] >= 5: why.append(I18n.t("Resists %d attack types") % a["resists"])
+			if a["attack_types"].size() >= 3: s += 10; why.append(I18n.t("Coverage across %d attack types") % a["attack_types"].size())
+			if a["weaks"] <= 2: s += 8; why.append(I18n.t("Few exploitable weaknesses"))
+			if a["has_para"] or a["has_drop"]: s += 5; why.append(I18n.t("Disrupts on the switch"))
 		"revenge":
 			s = 100.0 * (0.46 * a["n_spe"] + 0.24 * a["n_off"])
-			if a["n_spe"] > 0.7: why.append("Elite speed (SPE %d)" % spe)
-			if a["has_priority"]: s += 22; why.append("Priority move beats anything")
+			if a["n_spe"] > 0.7: why.append(I18n.t("Elite speed (SPE %d)") % spe)
+			if a["has_priority"]: s += 22; why.append(I18n.t("Priority move beats anything"))
 			s += clampf(a["best_power"], 0, 150) / 150.0 * 8.0
-			if a["best_power"] >= 100: why.append("Hits hard immediately")
+			if a["best_power"] >= 100: why.append(I18n.t("Hits hard immediately"))
 		"cleric":
 			s = 100.0 * (0.26 * a["n_bulk"] + 0.10 * a["n_spe"])
-			if a["has_heal"]: s += 30; why.append("Recovery keeps it on the field")
-			if a["has_sleep"]: s += 12; why.append("Sleep buys free turns")
-			if a["has_para"]: s += 10; why.append("Paralysis support")
-			if a["has_screen"]: s += 10; why.append("Screens protect the team")
+			if a["has_heal"]: s += 30; why.append(I18n.t("Recovery keeps it on the field"))
+			if a["has_sleep"]: s += 12; why.append(I18n.t("Sleep buys free turns"))
+			if a["has_para"]: s += 10; why.append(I18n.t("Paralysis support"))
+			if a["has_screen"]: s += 10; why.append(I18n.t("Screens protect the team"))
 			s += clampf(a["status_moves"] * 4.0, 0, 12)
-			if a["status_moves"] >= 2: why.append("%d support moves" % a["status_moves"])
+			if a["status_moves"] >= 2: why.append(I18n.t("%d support moves") % a["status_moves"])
 	# battle-depth: the ability and nature shift how well a role fits.
 	for adj in _depth_role_adj(role, a):
 		s += float(adj[0])
 		why.append(str(adj[1]))
 	if why.is_empty():
-		why.append("No attributes that fit this role")
+		why.append(I18n.t("No attributes that fit this role"))
 	return {"score": int(clampf(s, 1, 99)), "why": why}
 
 
@@ -271,41 +271,41 @@ static func _depth_role_adj(role: String, a: Dictionary) -> Array:
 			"on_switch_in":
 				if parts.size() >= 2 and parts[1] == "stat" and role in ["lead", "pivot"]:
 					out.append([10 if role == "lead" else 6,
-						"%s softens whatever it faces on entry" % ab_name])
+						I18n.t("%s softens whatever it faces on entry") % ab_name])
 				elif parts.size() >= 2 and parts[1] == "weather" and role == "lead":
-					out.append([6, "%s sets the weather from turn one" % ab_name])
+					out.append([6, I18n.t("%s sets the weather from turn one") % ab_name])
 			"end_turn_stat":
 				if parts.size() >= 3 and parts[1] == "spe" and role in ["sweeper", "revenge"]:
 					out.append([10 if role == "sweeper" else 5,
-						"%s snowballs its Speed every turn" % ab_name])
+						I18n.t("%s snowballs its Speed every turn") % ab_name])
 			"mult":
 				if parts.size() >= 2 and parts[1] in ["atk", "spa"] and role == "sweeper":
-					out.append([8, "%s multiplies its attacking power" % ab_name])
+					out.append([8, I18n.t("%s multiplies its attacking power") % ab_name])
 			"immune", "absorb":
 				if parts.size() >= 2:
 					immunities.append(str(parts[1]))
 			"heal_status_on_switch":
 				if role in ["pivot", "cleric"]:
-					out.append([6, "%s sheds status on the switch out" % ab_name])
+					out.append([6, I18n.t("%s sheds status on the switch out") % ab_name])
 			"sturdy":
 				if role in ["lead", "wall"]:
 					out.append([5 if role == "lead" else 4,
-						"%s guarantees it survives the first blow" % ab_name])
+						I18n.t("%s guarantees it survives the first blow") % ab_name])
 			"end_turn_cure":
 				if role == "wall":
-					out.append([5, "%s throws off status over time" % ab_name])
+					out.append([5, I18n.t("%s throws off status over time") % ab_name])
 			"no_stat_drop":
 				if role == "wall":
-					out.append([4, "%s can't be softened up" % ab_name])
+					out.append([4, I18n.t("%s can't be softened up") % ab_name])
 			"contact_status", "contact_damage":
 				if role == "wall":
-					out.append([4, "%s punishes physical contact" % ab_name])
+					out.append([4, I18n.t("%s punishes physical contact") % ab_name])
 			"status_boost":
 				if role == "sweeper":
-					out.append([4, "%s turns status against the attacker" % ab_name])
+					out.append([4, I18n.t("%s turns status against the attacker") % ab_name])
 	if not immunities.is_empty() and role in ["pivot", "wall"]:
 		out.append([mini(5 * immunities.size(), 10) if role == "pivot" else 4,
-			"%s grants free switch-ins vs %s" % [ab_name, "/".join(immunities)]])
+			I18n.t("%s grants free switch-ins vs %s") % [ab_name, "/".join(immunities)]])
 	# nature: does the +10%/-10% land on this role's key stats?
 	var off_key := "atk" if int(a["base"]["atk"]) >= int(a["base"]["spa"]) else "spa"
 	var keys: Array = {
@@ -393,14 +393,14 @@ static func weather_plan(analyses: Dictionary, lineup: Array) -> Dictionary:
 		var atk_types: Dictionary = a.get("attack_types", {})
 		if kind == "sun":
 			if atk_types.has("fire"):
-				boosts.append("%s's Fire attacks hit ×1.5" % nm)
+				boosts.append(I18n.t("%s's Fire attacks hit ×1.5") % nm)
 			if atk_types.has("water"):
-				risks.append("%s's Water attacks fall to ×0.5" % nm)
+				risks.append(I18n.t("%s's Water attacks fall to ×0.5") % nm)
 		elif kind == "rain":
 			if atk_types.has("water"):
-				boosts.append("%s's Water attacks hit ×1.5" % nm)
+				boosts.append(I18n.t("%s's Water attacks hit ×1.5") % nm)
 			if atk_types.has("fire"):
-				risks.append("%s's Fire attacks fall to ×0.5" % nm)
+				risks.append(I18n.t("%s's Fire attacks fall to ×0.5") % nm)
 		elif kind == "sand":
 			var types: Array = a.get("types", [])
 			var safe := false
@@ -408,9 +408,9 @@ static func weather_plan(analyses: Dictionary, lineup: Array) -> Dictionary:
 				if str(t) in ["rock", "ground", "steel"]:
 					safe = true
 			if types.has("rock"):
-				boosts.append("%s gains ×1.5 Sp. Def (Rock type)" % nm)
+				boosts.append(I18n.t("%s gains ×1.5 Sp. Def (Rock type)") % nm)
 			if not safe and str(ab) != "sand_veil":
-				risks.append("%s takes 1/16 chip damage each turn" % nm)
+				risks.append(I18n.t("%s takes 1/16 chip damage each turn") % nm)
 	return {"kind": kind, "setters": setters[kind], "boosts": boosts, "risks": risks}
 
 

@@ -1,0 +1,6 @@
+{"title": "Settings", "order": 90, "icon_letter": "G", "tabs": [
+	{"id": "display", "title": "Display"},
+	{"id": "audio", "title": "Audio"},
+	{"id": "gameplay", "title": "Gameplay"},
+	{"id": "language", "title": "Language"}
+]}

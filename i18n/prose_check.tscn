@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7prosecheck01"]
+
+[ext_resource type="Script" path="res://i18n/prose_check.gd" id="1"]
+
+[node name="ProseCheck" type="Node"]
+script = ExtResource("1")

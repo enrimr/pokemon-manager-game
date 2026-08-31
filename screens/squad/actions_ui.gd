@@ -48,25 +48,25 @@ static func open_menu(host: Control, uid: String, at_screen_pos: Vector2,
 	menu.popup_hide.connect(menu.queue_free)
 
 	if open_profile.is_valid():
-		menu.add_item("Open Profile", ID_PROFILE)
+		menu.add_item(I18n.t("Open Profile"), ID_PROFILE)
 		menu.add_separator()
-	menu.add_item("Offer New Contract...", ID_CONTRACT)
+	menu.add_item(I18n.t("Offer New Contract..."), ID_CONTRACT)
 	if svc.talks_locked(uid):
 		menu.set_item_disabled(menu.get_item_index(ID_CONTRACT), true)
 		menu.set_item_text(menu.get_item_index(ID_CONTRACT),
-			"Offer New Contract (talks off until %s)" % Season.pretty_date(svc.talks_locked_until(uid)))
-	menu.add_item(("Remove From Transfer List" if listed else "Add To Transfer List..."), ID_LIST)
+			I18n.t("Offer New Contract (talks off until %s)") % I18n.pretty_date(svc.talks_locked_until(uid)))
+	menu.add_item((I18n.t("Remove From Transfer List") if listed else I18n.t("Add To Transfer List...")), ID_LIST)
 	if not bids.is_empty():
-		menu.add_item("Respond To %d Bid%s..." % [bids.size(), "s" if bids.size() > 1 else ""], ID_OFFERS)
-	menu.add_item("Terminate Contract (Release)...", ID_RELEASE)
+		menu.add_item(I18n.t("Respond To %d Bid%s...") % [bids.size(), "s" if bids.size() > 1 else ""], ID_OFFERS)
+	menu.add_item(I18n.t("Terminate Contract (Release)..."), ID_RELEASE)
 	menu.add_separator("Interaction")
-	menu.add_item("Praise Recent Form", ID_PRAISE)
-	menu.add_item("Criticise Recent Form", ID_DISCIPLINE)
+	menu.add_item(I18n.t("Praise Recent Form"), ID_PRAISE)
+	menu.add_item(I18n.t("Criticise Recent Form"), ID_DISCIPLINE)
 	if not svc.can_interact(uid):
 		for act_id in [ID_PRAISE, ID_DISCIPLINE]:
 			menu.set_item_disabled(menu.get_item_index(act_id), true)
 		menu.set_item_text(menu.get_item_index(ID_DISCIPLINE),
-			"Criticise Recent Form (next chat %s)" % Season.pretty_date(svc.interaction_available_on(uid)))
+			I18n.t("Criticise Recent Form (next chat %s)") % I18n.pretty_date(svc.interaction_available_on(uid)))
 	menu.add_separator("Promises")
 	var open_p: Dictionary = svc.open_promise(uid)
 	for i in PROMISE_KINDS.size():
@@ -77,8 +77,8 @@ static func open_menu(host: Control, uid: String, at_screen_pos: Vector2,
 		if not open_p.is_empty():
 			var mi := menu.get_item_index(ID_PROMISE_BASE + i)
 			menu.set_item_disabled(mi, true)
-			menu.set_item_tooltip(mi, "A promise is already outstanding — deadline %s." %
-				Season.pretty_date(str(open_p["deadline"])))
+			menu.set_item_tooltip(mi, I18n.t("A promise is already outstanding — deadline %s.") %
+				I18n.pretty_date(str(open_p["deadline"])))
 	menu.add_separator("Development")
 	var focus_menu := PopupMenu.new()
 	focus_menu.name = "TrainingFocus"
@@ -88,11 +88,11 @@ static func open_menu(host: Control, uid: String, at_screen_pos: Vector2,
 		focus_menu.add_radio_check_item(FOCUS_LABELS[key], ID_FOCUS_BASE + i)
 		focus_menu.set_item_checked(i, key == current_focus)
 	menu.add_child(focus_menu)
-	menu.add_submenu_item("Set Training Focus", "TrainingFocus")
-	menu.add_item("Set Nickname...", ID_NICKNAME)
+	menu.add_submenu_item(I18n.t("Set Training Focus"), "TrainingFocus")
+	menu.add_item(I18n.t("Set Nickname..."), ID_NICKNAME)
 	if compare.is_valid():
 		menu.add_separator()
-		menu.add_item("Compare With Teammate...", ID_COMPARE)
+		menu.add_item(I18n.t("Compare With Teammate..."), ID_COMPARE)
 
 	var on_id := func(id: int) -> void:
 		if id >= ID_PROMISE_BASE:
@@ -110,7 +110,7 @@ static func open_menu(host: Control, uid: String, at_screen_pos: Vector2,
 				if svc.is_listed(svc.find_instance(uid)):
 					var err: String = svc.unlist(uid)
 					if err != "":
-						notice(host, "Transfer list", err)
+						notice(host, I18n.t("Transfer list"), err)
 				else:
 					open_list_dialog(host, uid)
 			ID_OFFERS: open_offers_dialog(host, uid)
@@ -150,7 +150,7 @@ static func notice(host: Control, title: String, message: String) -> void:
 static func interact(host: Control, uid: String, is_praise: bool) -> void:
 	var svc: Node = Service.ensure()
 	var res: Dictionary = svc.praise(uid) if is_praise else svc.discipline(uid)
-	notice(host, "Praise" if is_praise else "Criticism", str(res["message"]))
+	notice(host, I18n.t("Praise") if is_praise else I18n.t("Criticism"), str(res["message"]))
 
 
 ## Confirm-and-make a tracked promise (battles / new_deal / unlist).
@@ -161,21 +161,21 @@ static func open_promise_dialog(host: Control, uid: String, kind: String) -> voi
 		return
 	var err: String = svc.can_promise(uid, kind)
 	if err != "":
-		notice(host, "Promise", err)
+		notice(host, I18n.t("Promise"), err)
 		return
 	var def: Dictionary = Service.PROMISE_DEFS[kind]
 	var name: String = UI.display_name(inst)
 	var terms: String
 	match kind:
-		"battles": terms = str(def["text"]) % [int(def["target"]), int(def["days"])]
-		_: terms = str(def["text"]) % int(def["days"])
+		"battles": terms = I18n.t(str(def["text"])) % [int(def["target"]), int(def["days"])]
+		_: terms = I18n.t(str(def["text"])) % int(def["days"])
 	var d := ConfirmationDialog.new()
-	d.title = "Make a promise — %s" % name
+	d.title = I18n.t("Make a promise — %s") % name
 	d.dialog_autowrap = true
 	d.min_size = Vector2i(480, 0)
-	d.dialog_text = "Give %s your word: %s.\n\nMorale lifts immediately (+6) and the promise is tracked on this screen with a hard deadline of %s. Keep it and trust deepens across the squad; break it and %s takes a heavy morale hit, contract demands rise for weeks, and the whole squad sees your word devalued." % [
-		name, terms, Season.pretty_date(Season.date_add(GameState.current_date, int(def["days"]))), name]
-	d.get_ok_button().text = "Give Your Word"
+	d.dialog_text = I18n.t("Give %s your word: %s.\n\nMorale lifts immediately (+6) and the promise is tracked on this screen with a hard deadline of %s. Keep it and trust deepens across the squad; break it and %s takes a heavy morale hit, contract demands rise for weeks, and the whole squad sees your word devalued.") % [
+		name, terms, I18n.pretty_date(Season.date_add(GameState.current_date, int(def["days"]))), name]
+	d.get_ok_button().text = I18n.t("Give Your Word")
 	d.confirmed.connect(func() -> void:
 		var res: Dictionary = svc.make_promise(uid, kind)
 		notice(host, "Promise made" if bool(res["ok"]) else "Promise", str(res["message"]))
@@ -226,21 +226,21 @@ static func open_contract_dialog(host: Control, uid: String) -> AcceptDialog:
 		return null
 	var name: String = UI.display_name(inst)
 
-	var pk := _dialog("Contract talks — %s" % name)
+	var pk := _dialog(I18n.t("Contract talks — %s") % name)
 	var d: AcceptDialog = pk[0]
 	var body: VBoxContainer = pk[1]
-	d.get_ok_button().text = "Leave Talks"
+	d.get_ok_button().text = I18n.t("Leave Talks")
 
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("v_separation", 4)
 	body.add_child(grid)
-	_kv(grid, "Current deal", "%s/wk to %s" % [UI.money(int(inst["contract"]["salary"])),
-		Season.pretty_date(inst["contract"]["expiry"])])
-	_kv(grid, "Estimated value", UI.money(UI.est_value(inst)))
-	var demand_lbl := _kv(grid, "Their demand",
-		"%s/wk on a %d-year deal" % [UI.money(int(opened["wage"])), int(opened["years"])], UI.COL_WARN)
-	var bill_lbl := _kv(grid, "Wage bill if agreed", "", UI.COL_TEXT)
+	_kv(grid, I18n.t("Current deal"), I18n.t("%s/wk to %s") % [UI.money(int(inst["contract"]["salary"])),
+		I18n.pretty_date(inst["contract"]["expiry"])])
+	_kv(grid, I18n.t("Estimated value"), UI.money(UI.est_value(inst)))
+	var demand_lbl := _kv(grid, I18n.t("Their demand"),
+		I18n.t("%s/wk on a %d-year deal") % [UI.money(int(opened["wage"])), int(opened["years"])], UI.COL_WARN)
+	var bill_lbl := _kv(grid, I18n.t("Wage bill if agreed"), "", UI.COL_TEXT)
 
 	for f in opened.get("factors", []):
 		var fl := Label.new()
@@ -259,7 +259,7 @@ static func open_contract_dialog(host: Control, uid: String) -> AcceptDialog:
 	body.add_child(offer_grid)
 
 	var wage_l := Label.new()
-	wage_l.text = "Weekly wage"
+	wage_l.text = I18n.t("Weekly wage")
 	wage_l.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	offer_grid.add_child(wage_l)
 	var wage := SpinBox.new()
@@ -272,18 +272,18 @@ static func open_contract_dialog(host: Control, uid: String) -> AcceptDialog:
 	offer_grid.add_child(wage)
 
 	var len_l := Label.new()
-	len_l.text = "Contract length"
+	len_l.text = I18n.t("Contract length")
 	len_l.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	offer_grid.add_child(len_l)
 	var years := OptionButton.new()
 	for y in [1, 2, 3]:
-		years.add_item("%d year%s" % [y, "s" if y > 1 else ""], y)
+		years.add_item(I18n.t("%d year%s") % [y, "s" if y > 1 else ""], y)
 	years.selected = clampi(int(opened["years"]) - 1, 0, 2)
 	years.size_flags_horizontal = Control.SIZE_SHRINK_END | Control.SIZE_EXPAND
 	offer_grid.add_child(years)
 
 	var bonus_l := Label.new()
-	bonus_l.text = "Signing bonus (one-off)"
+	bonus_l.text = I18n.t("Signing bonus (one-off)")
 	bonus_l.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	offer_grid.add_child(bonus_l)
 	var bonus := SpinBox.new()
@@ -298,7 +298,7 @@ static func open_contract_dialog(host: Control, uid: String) -> AcceptDialog:
 	var round_lbl := Label.new()
 	round_lbl.add_theme_font_size_override("font_size", 12)
 	round_lbl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
-	round_lbl.text = "Round %d of %d" % [int(opened["round"]) + 1, Service.MAX_TALK_ROUNDS]
+	round_lbl.text = I18n.t("Round %d of %d") % [int(opened["round"]) + 1, Service.MAX_TALK_ROUNDS]
 	body.add_child(round_lbl)
 
 	var response := Label.new()
@@ -306,13 +306,13 @@ static func open_contract_dialog(host: Control, uid: String) -> AcceptDialog:
 	response.custom_minimum_size = Vector2(430, 56)
 	response.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	response.add_theme_color_override("font_color", UI.COL_TEXT)
-	response.text = "%s's agent is listening. Meet the demand or get close with a bonus." % name
+	response.text = I18n.t("%s's agent is listening. Meet the demand or get close with a bonus.") % name
 	body.add_child(response)
 
-	var submit := d.add_button("Submit Offer", true, "submit")
+	var submit := d.add_button(I18n.t("Submit Offer"), true, "submit")
 	var update_bill := func() -> void:
 		var new_bill: int = svc.wage_bill() - int(inst["contract"]["salary"]) + int(wage.value)
-		bill_lbl.text = "%s/wk of %s/wk budget" % [UI.money(new_bill), UI.money(svc.wage_budget())]
+		bill_lbl.text = I18n.t("%s/wk of %s/wk budget") % [UI.money(new_bill), UI.money(svc.wage_budget())]
 		bill_lbl.add_theme_color_override("font_color",
 			UI.COL_BAD if new_bill > svc.wage_budget() else UI.COL_GOOD)
 	update_bill.call()
@@ -332,14 +332,14 @@ static func open_contract_dialog(host: Control, uid: String) -> AcceptDialog:
 				round_lbl.text = "Agreed"
 			"countered":
 				response.add_theme_color_override("font_color", UI.COL_WARN)
-				demand_lbl.text = "%s/wk on a %d-year deal" % [UI.money(int(res["wage"])), int(res["years"])]
+				demand_lbl.text = I18n.t("%s/wk on a %d-year deal") % [UI.money(int(res["wage"])), int(res["years"])]
 				var again: Dictionary = svc.open_talks(uid)
-				round_lbl.text = "Round %d of %d" % [int(again.get("round", 0)) + 1, Service.MAX_TALK_ROUNDS]
+				round_lbl.text = I18n.t("Round %d of %d") % [int(again.get("round", 0)) + 1, Service.MAX_TALK_ROUNDS]
 			"walked":
 				response.add_theme_color_override("font_color", UI.COL_BAD)
 				submit.disabled = true
 				d.get_ok_button().text = "Done"
-				round_lbl.text = "Talks collapsed"
+				round_lbl.text = I18n.t("Talks collapsed")
 			_:
 				response.add_theme_color_override("font_color", UI.COL_BAD)
 		update_bill.call())
@@ -357,24 +357,24 @@ static func open_list_dialog(host: Control, uid: String) -> void:
 	if inst.is_empty():
 		return
 	var value := UI.est_value(inst)
-	var pk := _dialog("Transfer list — %s" % UI.display_name(inst))
+	var pk := _dialog(I18n.t("Transfer list — %s") % UI.display_name(inst))
 	var d: AcceptDialog = pk[0]
 	var body: VBoxContainer = pk[1]
-	d.get_ok_button().text = "List For Sale"
+	d.get_ok_button().text = I18n.t("List For Sale")
 	d.add_cancel_button("Cancel")
 
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("v_separation", 4)
 	body.add_child(grid)
-	_kv(grid, "Estimated value", UI.money(value))
-	_kv(grid, "Current wage", UI.money(int(inst["contract"]["salary"])) + "/wk")
+	_kv(grid, I18n.t("Estimated value"), UI.money(value))
+	_kv(grid, I18n.t("Current wage"), UI.money(int(inst["contract"]["salary"])) + "/wk")
 
 	var ask_row := HBoxContainer.new()
 	ask_row.add_theme_constant_override("separation", 10)
 	body.add_child(ask_row)
 	var ask_l := Label.new()
-	ask_l.text = "Asking price"
+	ask_l.text = I18n.t("Asking price")
 	ask_l.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	ask_l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	ask_row.add_child(ask_l)
@@ -392,13 +392,13 @@ static func open_list_dialog(host: Control, uid: String) -> void:
 	ask_row.add_child(hint)
 	var update_hint := func() -> void:
 		var ratio: float = ask.value / maxf(float(value), 1.0)
-		hint.text = "Bids likely within days" if ratio <= 1.0 else \
-			("Some interest expected" if ratio <= 1.35 else "Priced to scare buyers off")
+		hint.text = I18n.t("Bids likely within days") if ratio <= 1.0 else \
+			(I18n.t("Some interest expected") if ratio <= 1.35 else I18n.t("Priced to scare buyers off"))
 	update_hint.call()
 	ask.value_changed.connect(func(_v: float) -> void: update_hint.call())
 
 	var warn := Label.new()
-	warn.text = "Listing hurts morale (-8). Rival clubs will bid against this price;\nbids arrive in the inbox and are answered from this screen."
+	warn.text = I18n.t("Listing hurts morale (-8). Rival clubs will bid against this price;\nbids arrive in the inbox and are answered from this screen.")
 	warn.add_theme_font_size_override("font_size", 12)
 	warn.add_theme_color_override("font_color", UI.COL_WARN)
 	body.add_child(warn)
@@ -406,7 +406,7 @@ static func open_list_dialog(host: Control, uid: String) -> void:
 	d.confirmed.connect(func() -> void:
 		var err: String = svc.set_listed(uid, int(ask.value))
 		if err != "":
-			notice(host, "Transfer list", err)
+			notice(host, I18n.t("Transfer list"), err)
 		d.queue_free())
 	host.add_child(d)
 	d.popup_centered()
@@ -416,7 +416,7 @@ static func open_list_dialog(host: Control, uid: String) -> void:
 
 static func open_offers_dialog(host: Control, uid: String = "") -> void:
 	var svc: Node = Service.ensure()
-	var pk := _dialog("Transfer bids")
+	var pk := _dialog(I18n.t("Transfer bids"))
 	var d: AcceptDialog = pk[0]
 	var body: VBoxContainer = pk[1]
 	d.get_ok_button().text = "Close"
@@ -429,7 +429,7 @@ static func open_offers_dialog(host: Control, uid: String = "") -> void:
 		var live: Array = svc.offers_for(uid) if uid != "" else svc.active_offers()
 		if live.is_empty():
 			var none := Label.new()
-			none.text = "No live bids."
+			none.text = I18n.t("No live bids.")
 			none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 			body.add_child(none)
 			return
@@ -441,10 +441,10 @@ static func open_offers_dialog(host: Control, uid: String = "") -> void:
 			var who := Label.new()
 			var ask_note := ""
 			if not inst.is_empty() and inst.has("asking_price"):
-				ask_note = "  (asking %s)" % UI.money(int(inst["asking_price"]))
-			who.text = "%s bid %s for %s%s — expires %s" % [
+				ask_note = I18n.t("  (asking %s)") % UI.money(int(inst["asking_price"]))
+			who.text = I18n.t("%s bid %s for %s%s — expires %s") % [
 				GameState.club(str(o["club_id"])).get("short", "?"), UI.money(int(o["bid"])),
-				o["name"], ask_note, Season.pretty_date(str(o["expires_on"]))]
+				o["name"], ask_note, I18n.pretty_date(str(o["expires_on"]))]
 			who.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			who.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			row.add_child(who)
@@ -454,7 +454,7 @@ static func open_offers_dialog(host: Control, uid: String = "") -> void:
 			acc.pressed.connect(func() -> void:
 				var err: String = svc.accept_offer(offer_id)
 				if err != "":
-					notice(host, "Sale", err)
+					notice(host, I18n.t("Sale"), err)
 				rebuild[0].call())
 			row.add_child(acc)
 			var rej := Button.new()
@@ -478,16 +478,16 @@ static func open_release_dialog(host: Control, uid: String) -> void:
 		return
 	var comp: int = svc.release_compensation(inst)
 	var d := ConfirmationDialog.new()
-	d.title = "Terminate contract"
-	d.dialog_text = "Release %s?\n\nRemaining contract: %s/wk to %s.\nCompensation payout: %s (from balance %s).\nThey join the free-agent pool and squad morale dips." % [
+	d.title = I18n.t("Terminate contract")
+	d.dialog_text = I18n.t("Release %s?\n\nRemaining contract: %s/wk to %s.\nCompensation payout: %s (from balance %s).\nThey join the free-agent pool and squad morale dips.") % [
 		UI.display_name(inst), UI.money(int(inst["contract"]["salary"])),
-		Season.pretty_date(inst["contract"]["expiry"]),
+		I18n.pretty_date(inst["contract"]["expiry"]),
 		UI.money(comp), UI.money(svc.balance())]
 	d.get_ok_button().text = "Release"
 	d.confirmed.connect(func() -> void:
 		var err: String = svc.release(uid)
 		if err != "":
-			notice(host, "Release", err)
+			notice(host, I18n.t("Release"), err)
 		d.queue_free())
 	d.close_requested.connect(d.queue_free)
 	d.canceled.connect(d.queue_free)
@@ -502,14 +502,14 @@ static func open_nickname_dialog(host: Control, uid: String) -> void:
 	var inst: Dictionary = svc.find_instance(uid)
 	if inst.is_empty():
 		return
-	var pk := _dialog("Set nickname — %s" % str(inst["species"]))
+	var pk := _dialog(I18n.t("Set nickname — %s") % str(inst["species"]))
 	var d: AcceptDialog = pk[0]
 	var body: VBoxContainer = pk[1]
 	d.get_ok_button().text = "Save"
 	d.add_cancel_button("Cancel")
 	var edit := LineEdit.new()
 	edit.text = str(inst["nickname"]) if inst.get("nickname") else ""
-	edit.placeholder_text = "Leave empty to use the species name"
+	edit.placeholder_text = I18n.t("Leave empty to use the species name")
 	edit.max_length = 14
 	body.add_child(edit)
 	d.confirmed.connect(func() -> void:

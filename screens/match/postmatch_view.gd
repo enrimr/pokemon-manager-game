@@ -25,9 +25,9 @@ func _ready() -> void:
 	var cols := UI.hbox(10)
 	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(cols)
-	cols.add_child(_build_ratings(runner.player_side, "Your ratings"))
+	cols.add_child(_build_ratings(runner.player_side, tr("Your ratings")))
 	cols.add_child(_build_timeline())
-	cols.add_child(_build_ratings(1 - runner.player_side, "%s ratings" % runner.opponent_club().get("short", "OPP")))
+	cols.add_child(_build_ratings(1 - runner.player_side, tr("%s ratings") % runner.opponent_club().get("short", "OPP")))
 
 	root.add_child(_build_momentum())
 	root.add_child(_build_footer())
@@ -46,10 +46,10 @@ func _build_header() -> Control:
 	big.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mid.add_child(big)
 	var f: Dictionary = runner.fixture
-	var comp_txt: String = ("League Round %d" % int(f["round"])) if f["comp"] == "league" \
-		else "Cup %s" % Season.cup_round_name(int(f["round"]))
-	var verdict := UI.label("FULL TIME  ·  %s  ·  %s  ·  %s" % [comp_txt,
-		Season.pretty_date(str(f["date"])), "VICTORY" if won else "DEFEAT"],
+	var comp_txt: String = (tr("League Round %d") % int(f["round"])) if f["comp"] == "league" \
+		else tr("Cup %s") % I18n.cup_round(int(f["round"]))
+	var verdict := UI.label(tr("FULL TIME  ·  %s  ·  %s  ·  %s") % [comp_txt,
+		I18n.pretty_date(str(f["date"])), tr("VICTORY") if won else tr("DEFEAT")],
 		13, UI.COL_GOOD if won else UI.COL_BAD)
 	verdict.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mid.add_child(verdict)
@@ -61,13 +61,13 @@ func _build_header() -> Control:
 		var mine: bool = int(b["winner"]) == runner.player_side
 		chips.add_child(UI.label("B%d" % (i + 1), 12, UI.COL_DIM))
 		chips.add_child(UI.result_chip(mine))
-		chips.add_child(UI.label("%s · %d turns" % [runner.shorts()[int(b["winner"])], int(b["turns"])],
+		chips.add_child(UI.label(tr("%s · %d turns") % [runner.shorts()[int(b["winner"])], int(b["turns"])],
 			12, UI.COL_TEXT))
 		if i < runner.battles.size() - 1:
 			chips.add_child(UI.label("  ", 12))
 	var motm: Dictionary = runner.man_of_the_match()
 	if not motm.is_empty():
-		chips.add_child(UI.label("    ★ Player of the match: %s (%.1f)" % [motm["name"], motm["rating"]],
+		chips.add_child(UI.label(tr("    ★ Player of the match: %s (%.1f)") % [motm["name"], motm["rating"]],
 			12, UI.COL_WARN))
 	mid.add_child(chips)
 	# items spent across the series (deducted from each club's store)
@@ -77,9 +77,9 @@ func _build_header() -> Control:
 		var parts: Array = []
 		for iid in runner.used_items[runner.player_side]:
 			parts.append("%dx %s" % [int(runner.used_items[runner.player_side][iid]),
-				DataStore.item_name(str(iid))])
-		var mine := ("none" if parts.is_empty() else ", ".join(parts))
-		var il := UI.label("Bag: you used %s  ·  they used %d item%s  ·  stock updated" %
+				I18n.item_name(str(iid))])
+		var mine := (tr("none") if parts.is_empty() else ", ".join(parts))
+		var il := UI.label(tr("Bag: you used %s  ·  they used %d item%s  ·  stock updated") %
 			[mine, them_items, "" if them_items == 1 else "s"], 12, UI.COL_DIM)
 		il.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		mid.add_child(il)
@@ -99,7 +99,7 @@ func _build_ratings(side: int, title: String) -> Control:
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 5)
 	box.add_child(grid)
-	for h in ["POKÉMON", "LV", "DMG OUT", "DMG IN", "KO", "RATING"]:
+	for h in ["POKÉMON", "LV", tr("DMG OUT"), tr("DMG IN"), "KO", "RATING"]:
 		grid.add_child(UI.label(h, 10, UI.COL_DIM))
 	for r in runner.rating_rows(side):
 		grid.add_child(UI.label(str(r["name"]) + ("  ✝" if int(r["fainted"]) > 0 else ""), 13,
@@ -111,7 +111,7 @@ func _build_ratings(side: int, title: String) -> Control:
 		var rating := float(r["rating"])
 		var col := UI.COL_GOOD if rating >= 7.5 else (UI.COL_WARN if rating >= 6.5 else
 			(UI.COL_TEXT if rating >= 6.0 else UI.COL_BAD))
-		var rl := UI.label("%.1f" % rating, 13, Color("11141d"))
+		var rl := UI.label(I18n.decimal(rating, 1), 13, Color("11141d"))
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = col
 		sb.set_corner_radius_all(3)
@@ -124,7 +124,7 @@ func _build_ratings(side: int, title: String) -> Control:
 
 
 func _build_timeline() -> Control:
-	var pair: Array = UI.panel("Key moments")
+	var pair: Array = UI.panel(tr("Key moments"))
 	var p: PanelContainer = pair[0]
 	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	p.size_flags_stretch_ratio = 1.3
@@ -137,16 +137,16 @@ func _build_timeline() -> Control:
 	for k in runner.key_events:
 		if int(k["battle"]) != last_battle:
 			last_battle = int(k["battle"])
-			rt.append_text("[color=#8b91a8]— BATTLE %d —[/color]\n" % last_battle)
+			rt.append_text(tr("[color=#8b91a8]— BATTLE %d —[/color]\n") % last_battle)
 		rt.append_text("[color=#3d4358]T%02d[/color]  %s\n" % [int(k["turn"]), str(k["text"])])
 	if runner.key_events.is_empty():
-		rt.append_text("[color=#8b91a8]A quiet affair — no defining moments.[/color]")
+		rt.append_text(tr("[color=#8b91a8]A quiet affair — no defining moments.[/color]"))
 	pair[1].add_child(rt)
 	return p
 
 
 func _build_momentum() -> Control:
-	var pair: Array = UI.panel("Momentum — full series")
+	var pair: Array = UI.panel(tr("Momentum — full series"))
 	var g := MomentumGraph.new()
 	g.custom_minimum_size = Vector2(0, 110)
 	g.set_data(runner.momentum, runner.faint_marks, runner.shorts(), runner.player_side)
@@ -160,11 +160,11 @@ func _build_footer() -> Control:
 	pair[1].add_child(row)
 	var us: int = runner.wins[runner.player_side]
 	var them: int = runner.wins[1 - runner.player_side]
-	row.add_child(UI.label("Result recorded — %d-%d vs %s. A full report is waiting in your inbox." %
+	row.add_child(UI.label(tr("Result recorded — %d-%d vs %s. A full report is waiting in your inbox.") %
 		[us, them, runner.opponent_club()["name"]], 13, UI.COL_DIM))
 	row.add_child(UI.spacer_h())
 	var btn := Button.new()
-	btn.text = "Continue  ▶"
+	btn.text = tr("Continue  ▶")
 	btn.custom_minimum_size = Vector2(180, 38)
 	btn.add_theme_color_override("font_color", Color.WHITE)
 	var sb := StyleBoxFlat.new()

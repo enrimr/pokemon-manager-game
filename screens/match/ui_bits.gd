@@ -39,7 +39,7 @@ static func panel(title: String = "", alt := false) -> Array:
 	p.add_child(box)
 	if title != "":
 		var t := Label.new()
-		t.text = title.to_upper()
+		t.text = I18n.t(title).to_upper()
 		t.add_theme_font_size_override("font_size", 11)
 		t.add_theme_color_override("font_color", COL_DIM)
 		box.add_child(t)
@@ -56,7 +56,7 @@ static func label(text: String, size := 14, color := COL_TEXT) -> Label:
 
 static func type_badge(type: String, size := 11) -> Label:
 	var l := Label.new()
-	l.text = type.to_upper()
+	l.text = I18n.type_name(type).to_upper()
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", Color("11141d"))
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -153,7 +153,7 @@ static func stage_text(stages: Dictionary) -> String:
 		var v := int(stages.get(k, 0))
 		if v != 0:
 			var arrows := ("▲".repeat(mini(v, 3)) if v > 0 else "▼".repeat(mini(-v, 3)))
-			parts.append("%s%s" % [arrows, names[k]])
+			parts.append("%s%s" % [arrows, I18n.t(names[k])])
 	return "  ".join(parts)
 
 

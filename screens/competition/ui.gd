@@ -71,9 +71,9 @@ static func club_link(club: Dictionary, font_size: int = 13,
 
 static func _default_tooltip(ctx: Dictionary) -> String:
 	match str(ctx.get("kind", "")):
-		"club": return "Go to club profile"
-		"pokemon": return "Go to Pokémon profile"
-		"fixture": return "Go to match report"
+		"club": return I18n.t("Go to club profile")
+		"pokemon": return I18n.t("Go to Pokémon profile")
+		"fixture": return I18n.t("Go to match report")
 	return ""
 
 
@@ -151,7 +151,7 @@ static func type_chip(type_name: String) -> Control:
 	sb.content_margin_bottom = 1
 	p.add_theme_stylebox_override("panel", sb)
 	var l := Label.new()
-	l.text = type_name.to_upper()
+	l.text = I18n.type_name(type_name).to_upper()
 	l.add_theme_font_size_override("font_size", 10)
 	l.add_theme_color_override("font_color", col.lightened(0.3))
 	p.add_child(l)
@@ -287,7 +287,7 @@ static func card(title: String) -> PanelContainer:
 	p.add_child(v)
 	if title != "":
 		var t := Label.new()
-		t.text = title.to_upper()
+		t.text = I18n.t(title).to_upper()
 		t.add_theme_font_size_override("font_size", 11)
 		t.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
 		v.add_child(t)
@@ -358,7 +358,7 @@ static func form_pips(form: Array, pip: int = 16) -> HBoxContainer:
 		sb.set_corner_radius_all(2)
 		p.add_theme_stylebox_override("panel", sb)
 		var l := Label.new()
-		l.text = str(r)
+		l.text = I18n.t(str(r))
 		l.add_theme_font_size_override("font_size", 10)
 		l.add_theme_color_override("font_color", col.lightened(0.3))
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -378,7 +378,7 @@ static func vspace(px: int = 6) -> Control:
 static func short_date(date_str: String) -> String:
 	var months := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 	var parts := date_str.split("-")
-	return "%d %s" % [int(parts[2]), months[int(parts[1]) - 1]]
+	return "%d %s" % [int(parts[2]), I18n.t(months[int(parts[1]) - 1])]
 
 
 static func weekday(date_str: String) -> String:
@@ -388,4 +388,4 @@ static func weekday(date_str: String) -> String:
 	var unix := Time.get_unix_time_from_datetime_dict(dict)
 	var d := Time.get_datetime_dict_from_unix_time(unix)
 	var names := ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-	return names[int(d["weekday"])]
+	return I18n.t(names[int(d["weekday"])])

@@ -81,23 +81,23 @@ static func _plan() -> Dictionary:
 ## Per-mon picked info: {kind: starter|sub, text, rank, color, tip, role}
 static func pick_info(uid: String, sel: Dictionary) -> Dictionary:
 	var role := str((sel.get("roles", {}) as Dictionary).get(uid, ""))
-	var role_name := str(ROLE_NAMES.get(role, ""))
-	var plan_note := "the saved tactic '%s'" % sel["name"] if sel["source"] == "tactic" \
-		else "the auto-picked six (no tactic saved yet: best available by level and condition)"
+	var role_name := I18n.t(str(ROLE_NAMES.get(role, "")))
+	var plan_note := I18n.t("the saved tactic '%s'") % sel["name"] if sel["source"] == "tactic" \
+		else I18n.t("the auto-picked six (no tactic saved yet: best available by level and condition)")
 	if (sel["slot"] as Dictionary).has(uid):
 		var n := int(sel["slot"][uid])
 		var abbr := str(ROLE_ABBR.get(role, ""))
 		return {"kind": "starter", "rank": n, "role": role_name,
 			"text": ("%d · %s" % [n, abbr]) if abbr != "" else str(n),
 			"color": COL_STARTER,
-			"tip": "Starts Saturday: slot %d of %s%s.%s" % [n, plan_note,
-				(" as the %s" % role_name) if role_name != "" else "",
-				"\nSlot 1 opens the battle; the order sets who the engine leans on." if n == 1 else ""]}
+			"tip": I18n.t("Starts Saturday: slot %d of %s%s.%s") % [n, plan_note,
+				(I18n.t(" as the %s") % role_name) if role_name != "" else "",
+				I18n.t("\nSlot 1 opens the battle; the order sets who the engine leans on.") if n == 1 else ""]}
 	var s := int((sel["sub"] as Dictionary).get(uid, 99))
 	return {"kind": "sub", "rank": 10 + s, "role": role_name,
 		"text": "S%d" % s, "color": COL_SUB,
-		"tip": "Not in the picked six — bench slot %d of %s%s. Bench order is the substitution order when a starter is unavailable." %
-			[s, plan_note, (", trained as a %s" % role_name) if role_name != "" else ""]}
+		"tip": I18n.t("Not in the picked six — bench slot %d of %s%s. Bench order is the substitution order when a starter is unavailable.") %
+			[s, plan_note, (I18n.t(", trained as a %s") % role_name) if role_name != "" else ""]}
 
 
 ## Availability flags: [{code, sev(1 warn|2 bad), color, tip}]. Empty = fully available.
@@ -108,28 +108,28 @@ static func flags(inst: Dictionary) -> Array:
 	var morale := int(inst.get("morale", 100))
 	if cond < 45:
 		out.append({"code": "EXH", "sev": 2, "color": UI.COL_BAD,
-			"tip": "Exhausted — condition %d%%. Battling now invites a poor rating; rest before picking." % cond})
+			"tip": I18n.t("Exhausted — condition %d%%. Battling now invites a poor rating; rest before picking.") % cond})
 	elif cond < 70:
 		out.append({"code": "TRD", "sev": 1, "color": UI.COL_WARN,
-			"tip": "Tired — condition %d%%, below matchday freshness." % cond})
+			"tip": I18n.t("Tired — condition %d%%, below matchday freshness.") % cond})
 	if fit < 50:
 		out.append({"code": "UNF", "sev": 2, "color": UI.COL_BAD,
-			"tip": "Unfit — fitness %d%%. Needs training time before competitive battles." % fit})
+			"tip": I18n.t("Unfit — fitness %d%%. Needs training time before competitive battles.") % fit})
 	elif fit < 72:
 		out.append({"code": "FIT", "sev": 1, "color": UI.COL_WARN,
-			"tip": "Short of match fitness (%d%%)." % fit})
+			"tip": I18n.t("Short of match fitness (%d%%).") % fit})
 	var ail := str(inst.get("status", ""))
 	if ail != "" and ail != "none" and ail != "<null>":
 		out.append({"code": ail.substr(0, 3).to_upper(), "sev": 2, "color": UI.COL_BAD,
-			"tip": "Carrying a %s ailment into the next match." % ail})
+			"tip": I18n.t("Carrying a %s ailment into the next match.") % I18n.t(ail)})
 	if bool(inst.get("transfer_listed", false)):
 		out.append({"code": "LST", "sev": 1, "color": UI.COL_WARN,
-			"tip": "Transfer listed at %s — expects to leave the club." % UI.money(int(inst.get("asking_price", 0)))})
+			"tip": I18n.t("Transfer listed at %s — expects to leave the club.") % UI.money(int(inst.get("asking_price", 0)))})
 	if morale < 55:
 		var bad := morale < 30
 		out.append({"code": "UNH", "sev": 2 if bad else 1,
 			"color": UI.COL_BAD if bad else UI.COL_WARN,
-			"tip": "Unhappy — morale %s (%d). Performances suffer until it lifts." % [UI.morale_word(morale), morale]})
+			"tip": I18n.t("Unhappy — morale %s (%d). Performances suffer until it lifts.") % [UI.morale_word(morale), morale]})
 	return out
 
 
@@ -152,5 +152,5 @@ static func flags_text(flag_list: Array) -> String:
 
 static func flags_tip(flag_list: Array) -> String:
 	if flag_list.is_empty():
-		return "Fully available for selection."
+		return I18n.t("Fully available for selection.")
 	return "\n".join(flag_list.map(func(fl): return str(fl["tip"])))

@@ -49,7 +49,7 @@ func _ready() -> void:
 func _build_controls() -> void:
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 6)
-	for entry in [["all", "All Competitions"], ["league", GameState.league_name()], ["cup", GameState.cup_name()]]:
+	for entry in [["all", tr("All Competitions")], ["league", tr(GameState.league_name())], ["cup", tr(GameState.cup_name())]]:
 		var b := Button.new()
 		b.text = entry[1]
 		b.toggle_mode = true
@@ -114,8 +114,8 @@ func refresh() -> void:
 	_row_buttons.clear()
 	_current_round_anchor = null
 
-	_filter_buttons["league"].text = GameState.league_name(_lg())
-	_filter_buttons["cup"].text = GameState.cup_name()
+	_filter_buttons["league"].text = tr(GameState.league_name(_lg()))
+	_filter_buttons["cup"].text = tr(GameState.cup_name())
 	var pid: String = GameState.world["meta"]["player_club_id"]
 	var fixtures: Array = GameState.fixtures.filter(func(f):
 		if _comp_filter != "all" and f["comp"] != _comp_filter:
@@ -194,15 +194,15 @@ func _group_header(g: Dictionary) -> Control:
 	p.add_child(h)
 	var title := ""
 	if g["comp"] == "league":
-		title = "%s · MATCHDAY %d" % [GameState.league_name(_lg()).to_upper(), g["round"]]
+		title = I18n.t("%s · MATCHDAY %d") % [I18n.t(GameState.league_name(_lg())).to_upper(), g["round"]]
 	elif g["comp"] == "playoff":
-		title = "%s · %s" % [Season.PLAYOFF_NAME.to_upper(), Season.playoff_round_name(g["round"]).to_upper()]
+		title = "%s · %s" % [I18n.t(Season.PLAYOFF_NAME).to_upper(), I18n.playoff_round(int(g["round"])).to_upper()]
 	else:
-		title = "%s · %s" % [GameState.cup_name().to_upper(), Season.cup_round_name(g["round"]).to_upper()]
+		title = "%s · %s" % [I18n.t(GameState.cup_name()).to_upper(), I18n.cup_round(int(g["round"])).to_upper()]
 	var l := UI.label(title, 12, TB.COL_TEXT)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(l)
-	h.add_child(UI.dim("%s %s" % [UI.weekday(g["date"]), Season.pretty_date(g["date"])], 12))
+	h.add_child(UI.dim("%s %s" % [UI.weekday(g["date"]), I18n.pretty_date(g["date"])], 12))
 	return p
 
 
@@ -266,7 +266,7 @@ func _fixture_row(f: Dictionary) -> Button:
 	away_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(away_l)
 
-	var tag := UI.dim("FT" if played else UI.short_date(f["date"]), 11)
+	var tag := UI.dim(tr("FT") if played else UI.short_date(f["date"]), 11)
 	tag.custom_minimum_size.x = 46
 	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	h.add_child(tag)
@@ -364,8 +364,8 @@ func _render_detail() -> void:
 	var home: Dictionary = GameState.club(f["home"])
 	var away: Dictionary = GameState.club(f["away"])
 
-	var comp_name: String = Season.comp_label(f)
-	_detail_body.add_child(UI.dim("%s · %s %s" % [comp_name, UI.weekday(f["date"]), Season.pretty_date(f["date"])], 12))
+	var comp_name: String = I18n.comp_label(f)
+	_detail_body.add_child(UI.dim("%s · %s %s" % [comp_name, UI.weekday(f["date"]), I18n.pretty_date(f["date"])], 12))
 	_detail_body.add_child(UI.vspace(2))
 
 	# scoreline header
@@ -413,14 +413,14 @@ func _render_report(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 		var wclub: Dictionary = home if int(b["winner"]) == 0 else away
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
-		var lab := UI.label("Battle %d" % (i + 1), 13, TB.COL_TEXT_DIM)
+		var lab := UI.label(tr("Battle %d") % (i + 1), 13, TB.COL_TEXT_DIM)
 		lab.custom_minimum_size.x = 64
 		row.add_child(lab)
-		var win := UI.label("%s win" % wclub["short"], 13,
+		var win := UI.label(tr("%s win") % wclub["short"], 13,
 			TB.COL_ACCENT.lightened(0.35) if GameState.is_player_club(wclub["id"]) else Color.WHITE)
 		win.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(win)
-		row.add_child(UI.dim("%d turns" % int(b["turns"]), 12))
+		row.add_child(UI.dim(I18n.t("%d turns") % int(b["turns"]), 12))
 		_detail_body.add_child(row)
 
 	_detail_body.add_child(UI.vspace(4))
@@ -460,14 +460,14 @@ func _render_report(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 		item.set_text(0, str(r["name"]))
 		item.set_icon(0, UI.badge_texture(UI.club_color(club), 10))
 		UI.cell_link(item, 0, {"kind": "pokemon", "id": r["uid"]},
-			"%s — view Pokémon profile" % r["name"])
+			I18n.t("%s — view Pokémon profile") % r["name"])
 		item.set_text(1, str(club["short"]))
 		item.set_custom_color(1, TB.COL_TEXT_DIM)
 		UI.cell_link(item, 1, {"kind": "club", "id": str(club["id"])},
 			"%s — view club profile" % club["name"])
 		item.set_text(2, str(r["kos"]))
 		item.set_text(3, str(r["dmg"]))
-		item.set_text(4, "%.1f" % r["rating"])
+		item.set_text(4, I18n.decimal(float(r["rating"]), 1))
 		item.set_custom_color(4, _rating_color(r["rating"]))
 		for c in [2, 3, 4]:
 			item.set_text_alignment(c, HORIZONTAL_ALIGNMENT_CENTER)
@@ -492,8 +492,8 @@ func _render_report(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 
 func _render_preview(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 	var days := Season.days_between(GameState.current_date, f["date"])
-	_detail_body.add_child(UI.kv_row("Kick-off", "%s · in %d day%s" % [
-		Season.pretty_date(f["date"]), days, "" if days == 1 else "s"]))
+	_detail_body.add_child(UI.kv_row("Kick-off", tr("%s · in %d day%s") % [
+		I18n.pretty_date(f["date"]), days, "" if days == 1 else "s"]))
 	# each club's standing in ITS OWN championship (cup ties cross leagues)
 	var lg_h := GameState.league_of(str(f["home"]))
 	var lg_a := GameState.league_of(str(f["away"]))
@@ -511,9 +511,9 @@ func _render_preview(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 	for entry in [[home, f["home"]], [away, f["away"]]]:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
-		var l := UI.link("%s form" % entry[0]["short"], 12, TB.COL_TEXT_DIM,
+		var l := UI.link(tr("%s form") % entry[0]["short"], 12, TB.COL_TEXT_DIM,
 			{"kind": "club", "id": str(entry[1])},
-			"%s — view club profile" % entry[0]["name"])
+			tr("%s — view club profile") % entry[0]["name"])
 		l.custom_minimum_size.x = 90
 		row.add_child(l)
 		var form := Season.club_form(entry[1], GameState.fixtures, 5)
@@ -534,7 +534,7 @@ func _render_preview(f: Dictionary, home: Dictionary, away: Dictionary) -> void:
 			var am: Dictionary = GameState.club(m["away"])
 			var mlink := UI.link("%s  %s %d - %d %s" % [UI.short_date(m["date"]),
 				hm["short"], m["score_home"], m["score_away"], am["short"]], 13,
-				TB.COL_TEXT, {"kind": "fixture", "id": str(m["id"])}, "Go to this match report")
+				TB.COL_TEXT, {"kind": "fixture", "id": str(m["id"])}, tr("Go to this match report"))
 			_detail_body.add_child(mlink)
 
 
@@ -551,10 +551,4 @@ func _rating_color(r: float) -> Color:
 func _ord(n: int) -> String:
 	if n <= 0:
 		return "-"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

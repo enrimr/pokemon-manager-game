@@ -222,21 +222,21 @@ func _option_gap(inst: Dictionary, o: Dictionary) -> String:
 	match str(o["method"]):
 		"level":
 			if not _cond_holds(inst, str(o.get("cond", ""))):
-				return "wrong stat balance (%s)" % str(o["cond"])
+				return I18n.t("wrong stat balance (%s)") % str(o["cond"])
 			var eff := effective_level(inst)
 			if eff < int(o["level"]):
-				return "needs Lv %d (now %d+%d from training)" % [
+				return I18n.t("needs Lv %d (now %d+%d from training)") % [
 					int(o["level"]), int(inst.get("level", 1)), dev_levels(uid)]
 			return ""
 		"development":
 			var need_dev := int(o.get("dev", 0))
 			var have_dev := dev_points(uid)
 			if have_dev < need_dev:
-				return "needs %d development points from training (has %d)" % [need_dev, have_dev]
+				return I18n.t("needs %d development points from training (has %d)") % [need_dev, have_dev]
 			if int(inst.get("level", 1)) < int(o.get("level", 0)):
-				return "needs Lv %d" % int(o["level"])
+				return I18n.t("needs Lv %d") % int(o["level"])
 			if inst.get("morale", 100) < int(o.get("morale", 0)):
-				return "needs %d morale (bond)" % int(o["morale"])
+				return I18n.t("needs %d morale (bond)") % int(o["morale"])
 			return ""
 		"stone":
 			var iid := str(o["stone"])
@@ -244,7 +244,7 @@ func _option_gap(inst: Dictionary, o: Dictionary) -> String:
 			if int(inv.get(iid, 0)) <= 0:
 				return "needs a %s in stock" % str(DataStore.item(iid).get("name", iid))
 			return ""
-	return "unknown method"
+	return I18n.t("unknown method")
 
 
 ## Tyrogue-style branch conditions: base stat + IV comparison.
@@ -268,19 +268,19 @@ func _cond_holds(inst: Dictionary, cond: String) -> bool:
 func approve(uid: String) -> String:
 	var e := pending_for(uid)
 	if e.is_empty():
-		return "no evolution pending for this Pokémon"
+		return I18n.t("no evolution pending for this Pokémon")
 	var inst := _player_instance(uid)
 	if inst.is_empty():
-		return "Pokémon is no longer in the squad"
+		return I18n.t("Pokémon is no longer in the squad")
 	var old_name := _display_name(inst)
 	_transform(inst, int(e["to_id"]), str(_gs.world["meta"]["player_club_id"]),
 			str(e["method"]), _gs.current_date)
 	_pending.erase(e)
 	_postponed.erase(uid)
-	_gs.add_inbox_message(_gs.current_date, "%s has evolved into %s!" % [old_name, str(inst["species"])],
-		"The whole squad gathered to watch. %s is transformed — new presence, new power, and a fresh set of techniques it can now be drilled in. Morale is up." % str(inst["species"]))
+	_gs.add_inbox_message(_gs.current_date, I18n.t("%s has evolved into %s!") % [old_name, str(inst["species"])],
+		I18n.t("The whole squad gathered to watch. %s is transformed — new presence, new power, and a fresh set of techniques it can now be drilled in. Morale is up.") % str(inst["species"]))
 	_tag_last_message({"cat": "staff", "uid": "evo:done:%s|%s" % [uid, _gs.current_date],
-		"sender": "Coaching staff", "kind": "evo_done", "evo_uid": uid,
+		"sender": I18n.t("Coaching staff"), "kind": "evo_done", "evo_uid": uid,
 		"evo_from": int(e["from_id"]), "evo_to": int(e["to_id"]),
 		"evo_method": str(e["method"])})
 	_resolve_ready_messages(uid, "approved")
@@ -294,7 +294,7 @@ func approve(uid: String) -> String:
 func postpone(uid: String) -> String:
 	var e := pending_for(uid)
 	if e.is_empty():
-		return "no evolution pending for this Pokémon"
+		return I18n.t("no evolution pending for this Pokémon")
 	var inst := _player_instance(uid)
 	if not inst.is_empty():
 		inst["morale"] = maxi(0, int(inst.get("morale", 70)) - POSTPONE_MORALE_COST)
@@ -310,10 +310,10 @@ func postpone(uid: String) -> String:
 ## Returns "" on success, else an error string.
 func use_stone(uid: String, item_id: String) -> String:
 	if _gs == null:
-		return "no career running"
+		return I18n.t("no career running")
 	var inst := _player_instance(uid)
 	if inst.is_empty():
-		return "Pokémon is not in the squad"
+		return I18n.t("Pokémon is not in the squad")
 	var opt := {}
 	for o in chain_of(int(inst["species_id"])):
 		if str(o["method"]) == "stone" and str(o["stone"]) == item_id:
@@ -333,11 +333,11 @@ func use_stone(uid: String, item_id: String) -> String:
 	_postponed.erase(uid)
 	var from_id_used := int(inst["species_id"])
 	_transform(inst, int(opt["to"]), pid, "stone", _gs.current_date)
-	_gs.add_inbox_message(_gs.current_date, "%s has evolved into %s!" % [old_name, str(inst["species"])],
-		"The %s glowed, was consumed, and %s stands transformed. New typing, new power — and a fresh set of techniques it can now be drilled in." %
+	_gs.add_inbox_message(_gs.current_date, I18n.t("%s has evolved into %s!") % [old_name, str(inst["species"])],
+		I18n.t("The %s glowed, was consumed, and %s stands transformed. New typing, new power — and a fresh set of techniques it can now be drilled in.") %
 		[str(DataStore.item(item_id).get("name", item_id)), str(inst["species"])])
 	_tag_last_message({"cat": "staff", "uid": "evo:done:%s|%s" % [uid, _gs.current_date],
-		"sender": "Coaching staff", "kind": "evo_done", "evo_uid": uid,
+		"sender": I18n.t("Coaching staff"), "kind": "evo_done", "evo_uid": uid,
 		"evo_from": from_id_used, "evo_to": int(opt["to"]),
 		"evo_method": "stone", "evo_stone": item_id})
 	_resolve_ready_messages(uid, "evolved via %s" % str(DataStore.item(item_id).get("name", item_id)))
@@ -418,16 +418,16 @@ func _offer(inst: Dictionary, o: Dictionary, date: String) -> void:
 	var how := ""
 	match str(o["method"]):
 		"level":
-			how = "Its training has pushed it past the threshold (effective Lv %d)." % effective_level(inst)
+			how = I18n.t("Its training has pushed it past the threshold (effective Lv %d).") % effective_level(inst)
 		"development":
-			how = ("It has hit a major development milestone (%d development points)." % dev_points(str(inst["uid"]))) \
+			how = (I18n.t("It has hit a major development milestone (%d development points).") % dev_points(str(inst["uid"]))) \
 				if str(o.get("kind", "")) == "trade" \
-				else "Its development and bond with the staff have blossomed."
-	_gs.add_inbox_message(date, "%s is ready to evolve into %s" % [entry["name"], entry["to_name"]],
-		"%s The coaches await your decision — approve the evolution or postpone it. Postponing costs a little morale (-%d); the offer returns in %d days." %
+				else I18n.t("Its development and bond with the staff have blossomed.")
+	_gs.add_inbox_message(date, I18n.t("%s is ready to evolve into %s") % [entry["name"], entry["to_name"]],
+		I18n.t("%s The coaches await your decision — approve the evolution or postpone it. Postponing costs a little morale (-%d); the offer returns in %d days.") %
 		[how, POSTPONE_MORALE_COST, REOFFER_DAYS])
 	_tag_last_message({"cat": "staff", "uid": "evo:ready:%s|%s" % [entry["uid"], date],
-		"sender": "Coaching staff", "urgent": true, "kind": "evo_ready",
+		"sender": I18n.t("Coaching staff"), "urgent": true, "kind": "evo_ready",
 		"evo_uid": str(entry["uid"]), "evo_from": int(entry["from_id"]),
 		"evo_to": int(entry["to_id"]), "evo_to_name": str(entry["to_name"]),
 		"evo_method": str(entry["method"])})
@@ -443,11 +443,11 @@ func _maybe_announce_stone(inst: Dictionary, o: Dictionary, date: String) -> voi
 	_announced[key] = true
 	var iname := str(DataStore.item(str(o["stone"])).get("name", str(o["stone"])))
 	var to_name := str(DataStore.species(int(o["to"])).get("name", "?"))
-	_gs.add_inbox_message(date, "%s could evolve with a %s" % [_display_name(inst), iname],
-		"Our staff report that %s would evolve into %s if exposed to a %s. Stones are stocked in the club shop; use one from the storeroom whenever you choose." %
+	_gs.add_inbox_message(date, I18n.t("%s could evolve with a %s") % [_display_name(inst), iname],
+		I18n.t("Our staff report that %s would evolve into %s if exposed to a %s. Stones are stocked in the club shop; use one from the storeroom whenever you choose.") %
 		[_display_name(inst), to_name, iname])
 	_tag_last_message({"cat": "staff", "uid": "evo:stone:%s" % key,
-		"sender": "Coaching staff", "kind": "evo_stone",
+		"sender": I18n.t("Coaching staff"), "kind": "evo_stone",
 		"evo_uid": str(inst["uid"]), "evo_stone": str(o["stone"]),
 		"evo_from": int(inst["species_id"]), "evo_to": int(o["to"]),
 		"evo_to_name": to_name})
@@ -545,7 +545,7 @@ func _retro_tag_inbox() -> void:
 		var title := str(m.get("title", ""))
 		if title.contains(" is ready to evolve into "):
 			m["cat"] = "staff"
-			m["sender"] = "Coaching staff"
+			m["sender"] = I18n.t("Coaching staff")
 			m["kind"] = "evo_ready"
 			m["uid"] = "evo:ready:legacy%d" % i
 			var matched := false
@@ -563,12 +563,12 @@ func _retro_tag_inbox() -> void:
 				m["decided"] = "resolved"
 		elif title.contains(" has evolved into "):
 			m["cat"] = "staff"
-			m["sender"] = "Coaching staff"
+			m["sender"] = I18n.t("Coaching staff")
 			m["kind"] = "evo_done"
 			m["uid"] = "evo:done:legacy%d" % i
 		elif title.contains(" could evolve with a "):
 			m["cat"] = "staff"
-			m["sender"] = "Coaching staff"
+			m["sender"] = I18n.t("Coaching staff")
 			m["kind"] = "evo_stone"
 			m["uid"] = "evo:stone:legacy%d" % i
 			for inst in _gs.player_club().get("squad", []):
@@ -578,7 +578,7 @@ func _retro_tag_inbox() -> void:
 					if str(o["method"]) != "stone":
 						continue
 					var iname := str(DataStore.item(str(o["stone"])).get("name", ""))
-					if title.ends_with("with a %s" % iname):
+					if title.ends_with(I18n.t("with a %s") % iname):
 						m["evo_uid"] = str(inst["uid"])
 						m["evo_stone"] = str(o["stone"])
 						m["evo_from"] = int(inst["species_id"])
@@ -606,7 +606,7 @@ func _prune_pending() -> void:
 	if _pending.size() != before.size():
 		for e in before:
 			if not _pending.has(e):
-				_resolve_ready_messages(str(e["uid"]), "no longer available")
+				_resolve_ready_messages(str(e["uid"]), I18n.t("no longer available"))
 		pending_changed.emit()
 
 

@@ -69,11 +69,11 @@ func _build(squad: Array, idx: int) -> void:
 	nav.add_theme_constant_override("separation", 8)
 	root.add_child(nav)
 	var back := Button.new()
-	back.text = "<  Squad"
+	back.text = tr("<  Squad")
 	back.pressed.connect(func(): back_requested.emit())
 	nav.add_child(back)
 	var crumbs := Label.new()
-	crumbs.text = "Squad  /  %s  /  Profile" % UI.display_name(inst)
+	crumbs.text = tr("Squad  /  %s  /  Profile") % UI.display_name(inst)
 	crumbs.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	crumbs.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	nav.add_child(crumbs)
@@ -81,16 +81,16 @@ func _build(squad: Array, idx: int) -> void:
 	nsp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nav.add_child(nsp)
 	var pos_lbl := Label.new()
-	pos_lbl.text = "%d of %d in squad" % [idx + 1, squad.size()]
+	pos_lbl.text = tr("%d of %d in squad") % [idx + 1, squad.size()]
 	pos_lbl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	pos_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	nav.add_child(pos_lbl)
 	var prev := Button.new()
-	prev.text = "< Prev"
+	prev.text = tr("< Prev")
 	prev.pressed.connect(func(): open(squad[(idx - 1 + squad.size()) % squad.size()]["uid"]))
 	nav.add_child(prev)
 	var next := Button.new()
-	next.text = "Next >"
+	next.text = tr("Next >")
 	next.pressed.connect(func(): open(squad[(idx + 1) % squad.size()]["uid"]))
 	nav.add_child(next)
 
@@ -165,8 +165,8 @@ func _tab_bar(inst: Dictionary) -> Control:
 	var hist: Node = History.ensure()
 	var joined: String = hist.joined_on(inst["uid"])
 	var note := Label.new()
-	note.text = ("Career records kept since %s" % Season.pretty_date(joined)) if joined != "" \
-		else "Career records begin today"
+	note.text = ("Career records kept since %s" % I18n.pretty_date(joined)) if joined != "" \
+		else tr("Career records begin today")
 	note.add_theme_font_size_override("font_size", 12)
 	note.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -206,7 +206,7 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	ab_tag.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.3))
 	ab_tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	ab_tag.mouse_filter = Control.MOUSE_FILTER_STOP
-	ab_tag.tooltip_text = "Battle ability (passive, always active in battle):\n%s" % UI.ability_tip(inst)
+	ab_tag.tooltip_text = tr("Battle ability (passive, always active in battle):\n%s") % UI.ability_tip(inst)
 	name_row.add_child(ab_tag)
 	var nat_tag := Label.new()
 	nat_tag.text = UI.nature_text(inst).to_upper()
@@ -223,7 +223,7 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	var pick: Dictionary = Selection.pick_info(str(inst["uid"]), sel)
 	var pick_tag := Label.new()
 	pick_tag.text = ("PICKED  %s" % pick["text"]) if pick["kind"] == "starter" \
-		else "BENCH  %s" % pick["text"]
+		else tr("BENCH  %s") % pick["text"]
 	pick_tag.add_theme_font_size_override("font_size", 11)
 	pick_tag.add_theme_color_override("font_color",
 		UI.COL_ACCENT.lightened(0.3) if pick["kind"] == "starter" else UI.COL_TEXT_DIM)
@@ -243,7 +243,7 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 		name_row.add_child(av_tag)
 	if Service.ensure().is_listed(inst):
 		var tag := Label.new()
-		tag.text = "TRANSFER LISTED · %s" % UI.money(int(inst.get("asking_price", 0)))
+		tag.text = tr("TRANSFER LISTED · %s") % UI.money(int(inst.get("asking_price", 0)))
 		tag.add_theme_font_size_override("font_size", 11)
 		tag.add_theme_color_override("font_color", UI.COL_BAD)
 		tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -255,22 +255,22 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	arch_tag.text = str((happy["arch"] as Dictionary)["name"])
 	arch_tag.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.3))
 	arch_tag.mouse_filter = Control.MOUSE_FILTER_STOP
-	arch_tag.tooltip_text = "%s\nCoach's read: %s." % [str((happy["arch"] as Dictionary)["desc"]),
+	arch_tag.tooltip_text = I18n.t("%s\nCoach's read: %s.") % [str((happy["arch"] as Dictionary)["desc"]),
 		Personality.attrs_line(happy["attrs"])]
 	sub_row.add_child(arch_tag)
 	var sub := Label.new()
 	var nick_note := ""
 	if inst.get("nickname"):
 		nick_note = "%s  ·  " % inst["species"]
-	sub.text = "  ·  %sLevel %d  ·  Age %s  ·  %s  ·  #%03d" % [
+	sub.text = tr("  ·  %sLevel %d  ·  Age %s  ·  %s  ·  #%03d") % [
 		nick_note, int(inst["level"]), UI.age_str(int(inst["age_months"])),
 		UI.age_stage(int(inst["age_months"])), int(sp["id"])]
 	sub.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	sub_row.add_child(sub)
 	var sub2 := Label.new()
 	var club: Dictionary = GameState.player_club()
-	sub2.text = "%s  ·  Contract to %s  ·  %s/wk" % [club["name"],
-		Season.pretty_date(inst["contract"]["expiry"]),
+	sub2.text = tr("%s  ·  Contract to %s  ·  %s/wk") % [club["name"],
+		I18n.pretty_date(inst["contract"]["expiry"]),
 		UI.money(int(inst["contract"]["salary"]))]
 	sub2.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	id_box.add_child(sub2)
@@ -282,26 +282,26 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	var rep: Dictionary = Ability.report(inst)
 	var cur_stars := _big_stars("ABILITY", Ability.stars_icon(float(rep["now"]), -1.0, Ability.COL_STARS_NOW, 14),
 		Ability.ability_word(float(rep["now"])))
-	cur_stars.tooltip_text = "Coach report by %s (judging ability %d/20): top %d%% of the league's %d battlers." % [
+	cur_stars.tooltip_text = tr("Coach report by %s (judging ability %d/20): top %d%% of the league's %d battlers.") % [
 		rep["ja_name"], int(rep["ja"]),
 		maxi(int(round((1.0 - float(rep["pct_now"])) * 100.0)), 1), int(rep["league_n"])]
 	hb.add_child(cur_stars)
 	var pot_stars := _big_stars("POTENTIAL",
 		Ability.stars_icon(float(rep["pot_lo"]), float(rep["pot_hi"]), Ability.COL_STARS_POT, 14),
-		"%s stars, %s conf." % [Ability.stars_range_text(float(rep["pot_lo"]), float(rep["pot_hi"])), rep["confidence"]])
-	pot_stars.tooltip_text = "Judged by %s (judging potential %d/20). Ceiling from trainable IVs and the full learnset — see the Coach Report panel." % [
+		tr("%s stars, %s conf.") % [Ability.stars_range_text(float(rep["pot_lo"]), float(rep["pot_hi"])), rep["confidence"]])
+	pot_stars.tooltip_text = tr("Judged by %s (judging potential %d/20). Ceiling from trainable IVs and the full learnset — see the Coach Report panel.") % [
 		rep["jp_name"], int(rep["jp"])]
 	hb.add_child(pot_stars)
 	var apps := SeasonStats.stat_of(inst["uid"], "battles")
 	var rat := SeasonStats.avg_rating(inst["uid"])
-	hb.add_child(_big_stat("AV RATING", "%.2f" % rat if apps > 0 else "-",
+	hb.add_child(_big_stat(tr("AV RATING"), I18n.decimal(rat, 2) if apps > 0 else "-",
 		UI.rating_color(rat) if apps > 0 else UI.COL_TEXT_DIM))
 	hb.add_child(_big_stat("BATTLES", str(apps), UI.COL_TEXT))
 	var dev_gain: int = History.ensure().dev_gain(inst["uid"], inst, DEV_WINDOW_DAYS)
-	var dev_stat := _big_stat("DEV %dD" % DEV_WINDOW_DAYS,
-		("+%d IV" % dev_gain) if dev_gain > 0 else "=",
+	var dev_stat := _big_stat(tr("DEV %dD") % DEV_WINDOW_DAYS,
+		(tr("+%d IV") % dev_gain) if dev_gain > 0 else "=",
 		UI.COL_GOOD if dev_gain > 0 else UI.COL_TEXT_DIM)
-	dev_stat.tooltip_text = "IV points gained from training in the last %d days — see the History tab" % DEV_WINDOW_DAYS
+	dev_stat.tooltip_text = tr("IV points gained from training in the last %d days — see the History tab") % DEV_WINDOW_DAYS
 	hb.add_child(dev_stat)
 	hb.add_child(_big_stat("CONDITION", "%d%%" % int(inst["condition"]),
 		UI.pct_color(int(inst["condition"]))))
@@ -316,15 +316,15 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 
 
 func _mood_ledger_tip(uid: String, morale: int, happy: Dictionary) -> String:
-	var lines: Array = ["Morale %s (%d) — day-to-day mood. Recent events:" % [UI.morale_word(morale), morale]]
+	var lines: Array = [tr("Morale %s (%d) — day-to-day mood. Recent events:") % [UI.morale_word(morale), morale]]
 	var log: Array = Service.ensure().mood_log(uid)
 	if log.is_empty():
-		lines.append("  none recorded yet")
+		lines.append(tr("  none recorded yet"))
 	for e in log.slice(0, 7):
-		lines.append("  %s  %+d  %s" % [Season.pretty_date(str(e["d"])), int(e["delta"]), str(e["why"])])
+		lines.append("  %s  %+d  %s" % [I18n.pretty_date(str(e["d"])), int(e["delta"]), str(e["why"])])
 	var gap: int = int(happy["score"]) - morale
 	if absi(gap) > 6:
-		lines.append("Drifting %s toward underlying happiness (%s, %d/100)." %
+		lines.append(tr("Drifting %s toward underlying happiness (%s, %d/100).") %
 			["up" if gap > 0 else "down", str(happy["word"]), int(happy["score"])])
 	return "\n".join(PackedStringArray(lines))
 
@@ -351,21 +351,21 @@ func _action_bar(inst: Dictionary) -> Control:
 	hb.add_child(lbl)
 
 	var contract_b := Button.new()
-	contract_b.text = "Offer New Contract"
+	contract_b.text = tr("Offer New Contract")
 	if svc.talks_locked(uid):
 		contract_b.disabled = true
-		contract_b.text = "Talks Off Until %s" % Season.pretty_date(svc.talks_locked_until(uid))
+		contract_b.text = tr("Talks Off Until %s") % I18n.pretty_date(svc.talks_locked_until(uid))
 	contract_b.pressed.connect(func() -> void: Actions.open_contract_dialog(_host(), uid))
 	hb.add_child(contract_b)
 
 	var listed: bool = svc.is_listed(inst)
 	var list_b := Button.new()
-	list_b.text = "Remove From Transfer List" if listed else "Add To Transfer List"
+	list_b.text = tr("Remove From Transfer List") if listed else tr("Add To Transfer List")
 	list_b.pressed.connect(func() -> void:
 		if svc.is_listed(svc.find_instance(uid)):
 			var err: String = svc.unlist(uid)
 			if err != "":
-				Actions.notice(_host(), "Transfer list", err)
+				Actions.notice(_host(), tr("Transfer list"), err)
 		else:
 			Actions.open_list_dialog(_host(), uid))
 	hb.add_child(list_b)
@@ -373,24 +373,24 @@ func _action_bar(inst: Dictionary) -> Control:
 	var bids: Array = svc.offers_for(uid)
 	if not bids.is_empty():
 		var bids_b := Button.new()
-		bids_b.text = "Respond To %d Bid%s" % [bids.size(), "s" if bids.size() > 1 else ""]
+		bids_b.text = tr("Respond To %d Bid%s") % [bids.size(), "s" if bids.size() > 1 else ""]
 		bids_b.add_theme_color_override("font_color", UI.COL_WARN)
 		bids_b.pressed.connect(func() -> void: Actions.open_offers_dialog(_host(), uid))
 		hb.add_child(bids_b)
 
 	var can_chat: bool = svc.can_interact(uid)
 	var praise_b := Button.new()
-	praise_b.text = "Praise Form"
+	praise_b.text = tr("Praise Form")
 	praise_b.disabled = not can_chat
-	praise_b.tooltip_text = "Morale boost if recent form deserves it — hollow praise backfires" \
-		if can_chat else "Next chat available %s" % Season.pretty_date(svc.interaction_available_on(uid))
+	praise_b.tooltip_text = tr("Morale boost if recent form deserves it — hollow praise backfires") \
+		if can_chat else tr("Next chat available %s") % I18n.pretty_date(svc.interaction_available_on(uid))
 	praise_b.pressed.connect(func() -> void: Actions.interact(_host(), uid, true))
 	hb.add_child(praise_b)
 	var disc_b := Button.new()
-	disc_b.text = "Criticise Form"
+	disc_b.text = tr("Criticise Form")
 	disc_b.disabled = not can_chat
-	disc_b.tooltip_text = "A justified dressing-down keeps standards; an unfair one enrages" \
-		if can_chat else "Next chat available %s" % Season.pretty_date(svc.interaction_available_on(uid))
+	disc_b.tooltip_text = tr("A justified dressing-down keeps standards; an unfair one enrages") \
+		if can_chat else tr("Next chat available %s") % I18n.pretty_date(svc.interaction_available_on(uid))
 	disc_b.pressed.connect(func() -> void: Actions.interact(_host(), uid, false))
 	hb.add_child(disc_b)
 
@@ -404,9 +404,9 @@ func _action_bar(inst: Dictionary) -> Control:
 	hb.add_child(spacer)
 
 	var release_b := Button.new()
-	release_b.text = "Terminate Contract"
+	release_b.text = tr("Terminate Contract")
 	release_b.add_theme_color_override("font_color", UI.COL_BAD)
-	release_b.tooltip_text = "Release into free agency, paying off half the remaining deal"
+	release_b.tooltip_text = tr("Release into free agency, paying off half the remaining deal")
 	release_b.pressed.connect(func() -> void: Actions.open_release_dialog(_host(), uid))
 	hb.add_child(release_b)
 	return panel
@@ -511,7 +511,7 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 	head.columns = 6
 	head.add_theme_constant_override("h_separation", 10)
 	v.add_child(head)
-	for h in ["", "BASE", "", "CURRENT (LV %d)" % int(inst["level"]), "IV", "SQUAD"]:
+	for h in ["", "BASE", "", tr("CURRENT (LV %d)") % int(inst["level"]), "IV", "SQUAD"]:
 		var l := Label.new()
 		l.text = h
 		l.add_theme_font_size_override("font_size", 10)
@@ -555,7 +555,7 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 		b_num.custom_minimum_size = Vector2(24, 0)
 		b_num.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		b_num.add_theme_color_override("font_color", UI.attr_color(b20))
-		b_num.tooltip_text = "Species base %s: %d (scaled to 1-20)" % [STAT_NAMES[k], int(base[k])]
+		b_num.tooltip_text = tr("Species base %s: %d (scaled to 1-20)") % [STAT_NAMES[k], int(base[k])]
 		grid.add_child(b_num)
 		grid.add_child(_bar(b20 / 20.0, UI.attr_color(b20)))
 
@@ -589,7 +589,7 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 			UI.COL_GOOD if iv_gain > 0 else
 			(Color("b9c96a") if int(ivs.get(k, 8)) >= 12 else UI.COL_TEXT_DIM))
 		if iv_gain > 0:
-			iv_l.tooltip_text = "%s IV up %d in the last %d days (training) — full record on the History tab" % \
+			iv_l.tooltip_text = tr("%s IV up %d in the last %d days (training) — full record on the History tab") % \
 				[STAT_NAMES[k], iv_gain, DEV_WINDOW_DAYS]
 		grid.add_child(iv_l)
 
@@ -602,7 +602,7 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 		rank_l.add_theme_font_size_override("font_size", 12)
 		rank_l.add_theme_color_override("font_color",
 			UI.COL_GOOD if rank <= 2 else UI.COL_TEXT_DIM)
-		rank_l.tooltip_text = "Rank in squad for %s" % STAT_NAMES[k]
+		rank_l.tooltip_text = tr("Rank in squad for %s") % STAT_NAMES[k]
 		grid.add_child(rank_l)
 
 	# totals + compare picker
@@ -616,7 +616,7 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 	foot.add_theme_constant_override("separation", 10)
 	v.add_child(foot)
 	var tot_l := Label.new()
-	tot_l.text = "Base total %d  ·  Current total %d  ·  %s nature applied" % [bst, tot, UI.nature_name(inst)]
+	tot_l.text = tr("Base total %d  ·  Current total %d  ·  %s nature applied") % [bst, tot, UI.nature_name(inst)]
 	tot_l.mouse_filter = Control.MOUSE_FILTER_STOP
 	tot_l.tooltip_text = UI.nature_tip(inst) + "\nCURRENT figures are battle-real — identical to what the match engine uses."
 	tot_l.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
@@ -626,14 +626,14 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 	fsp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	foot.add_child(fsp)
 	var cmp := OptionButton.new()
-	cmp.add_item("Compare with...", 0)
+	cmp.add_item(tr("Compare with..."), 0)
 	var sel_idx := 0
 	var oid := 1
 	var uid_by_id := {}
 	for m in squad:
 		if m["uid"] == inst["uid"]:
 			continue
-		cmp.add_item("%s (Lv %d)" % [UI.display_name(m), int(m["level"])], oid)
+		cmp.add_item(tr("%s (Lv %d)") % [UI.display_name(m), int(m["level"])], oid)
 		uid_by_id[oid] = m["uid"]
 		if m["uid"] == _compare_uid:
 			sel_idx = cmp.item_count - 1
@@ -646,7 +646,7 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 	foot.add_child(cmp)
 	if not cmp_inst.is_empty():
 		var note := Label.new()
-		note.text = "vs %s" % UI.display_name(cmp_inst)
+		note.text = tr("vs %s") % UI.display_name(cmp_inst)
 		note.add_theme_color_override("font_color", UI.COL_WARN)
 		note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		foot.add_child(note)
@@ -654,11 +654,7 @@ func _attributes_panel(inst: Dictionary, sp: Dictionary, stats: Dictionary, squa
 
 
 func _ordinal(n: int) -> String:
-	var suffix := "th"
-	if n % 10 == 1 and n % 100 != 11: suffix = "st"
-	elif n % 10 == 2 and n % 100 != 12: suffix = "nd"
-	elif n % 10 == 3 and n % 100 != 13: suffix = "rd"
-	return str(n) + suffix
+	return I18n.ordinal(n)
 
 
 # ------------------------------------------------------------------ moves
@@ -676,14 +672,14 @@ func _moves_panel(inst: Dictionary, sp: Dictionary) -> Control:
 		if not known.has(m):
 			learnable.append(m)
 	var sub := Label.new()
-	sub.text = "LEARNABLE THROUGH TRAINING  (%d in learnset)" % learnable.size()
+	sub.text = tr("LEARNABLE THROUGH TRAINING  (%d in learnset)") % learnable.size()
 	sub.add_theme_font_size_override("font_size", 11)
 	sub.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	v.add_child(sub)
 	v.add_child(HSeparator.new())
 	if learnable.is_empty():
 		var none := Label.new()
-		none.text = "Full learnset already mastered."
+		none.text = tr("Full learnset already mastered.")
 		none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		v.add_child(none)
 	else:
@@ -749,7 +745,7 @@ func _num_cell(text: String, dim: bool) -> Label:
 
 
 func _matchups_panel(inst: Dictionary, sp: Dictionary) -> Control:
-	var pk := _panel("Defensive Matchups")
+	var pk := _panel(tr("Defensive Matchups"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	var ability := UI.ability_id(inst)
@@ -768,8 +764,8 @@ func _matchups_panel(inst: Dictionary, sp: Dictionary) -> Control:
 			resist.append([t, mult])
 	weak.sort_custom(func(a, b): return a[1] > b[1])
 	resist.sort_custom(func(a, b): return a[1] < b[1])
-	for group in [["WEAK TO", weak, UI.COL_BAD], ["RESISTS", resist, UI.COL_GOOD],
-			["IMMUNE TO", immune, UI.COL_ACCENT]]:
+	for group in [[tr("WEAK TO"), weak, UI.COL_BAD], ["RESISTS", resist, UI.COL_GOOD],
+			[tr("IMMUNE TO"), immune, UI.COL_ACCENT]]:
 		if (group[1] as Array).is_empty():
 			continue
 		var row := HBoxContainer.new()
@@ -787,7 +783,7 @@ func _matchups_panel(inst: Dictionary, sp: Dictionary) -> Control:
 		wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		for pair in group[1]:
 			var b := UI.type_badge(pair[0], 9)
-			b.tooltip_text = "x%s damage taken from %s moves" % [
+			b.tooltip_text = tr("x%s damage taken from %s moves") % [
 				String.num(pair[1], 2).rstrip("0").rstrip("."), pair[0]]
 			if float(pair[1]) >= 4.0 or (float(pair[1]) > 0.0 and float(pair[1]) <= 0.25):
 				var mark := Label.new()
@@ -806,8 +802,8 @@ func _matchups_panel(inst: Dictionary, sp: Dictionary) -> Control:
 	var imm_types := UI.ability_immunities(ability)
 	if not imm_types.is_empty():
 		var note := Label.new()
-		note.text = "%s: immune to %s — folded into the chart above." % [UI.ability_label(inst),
-			" & ".join(imm_types.map(func(t): return str(t).capitalize()))]
+		note.text = tr("%s: immune to %s — folded into the chart above.") % [UI.ability_label(inst),
+			" & ".join(imm_types.map(func(t): return I18n.t(str(t).capitalize())))]
 		note.add_theme_font_size_override("font_size", 11)
 		note.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.2))
 		note.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -817,13 +813,13 @@ func _matchups_panel(inst: Dictionary, sp: Dictionary) -> Control:
 
 
 func _form_panel(inst: Dictionary) -> Control:
-	var pk := _panel("Recent Form")
+	var pk := _panel(tr("Recent Form"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	var entries: Array = SeasonStats.form_of(inst["uid"])
 	if entries.is_empty():
 		var none := Label.new()
-		none.text = "No appearances yet this season."
+		none.text = tr("No appearances yet this season.")
 		none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		v.add_child(none)
 		return panel
@@ -843,7 +839,7 @@ func _form_panel(inst: Dictionary) -> Control:
 	for e in entries.slice(0, 8):
 		var won: bool = int(e["us"]) > int(e["them"])
 		var d := Label.new()
-		d.text = Season.pretty_date(e["date"])
+		d.text = I18n.pretty_date(e["date"])
 		d.add_theme_font_size_override("font_size", 12)
 		d.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		grid.add_child(d)
@@ -864,7 +860,7 @@ func _form_panel(inst: Dictionary) -> Control:
 		grid.add_child(_num_cell(str(int(e["kos"])), false))
 		grid.add_child(_num_cell(str(int(e["dmg"])), false))
 		var r := Label.new()
-		r.text = "%.2f" % float(e["rating"])
+		r.text = I18n.decimal(float(e["rating"]), 2)
 		r.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		r.add_theme_font_size_override("font_size", 12)
 		r.add_theme_color_override("font_color", UI.rating_color(float(e["rating"])))
@@ -892,7 +888,7 @@ func _kv_row(grid: GridContainer, key: String, value: String, col: Color = UI.CO
 ## row, actionable concerns get a resolve button), tracked promises and the
 ## recent-morale-events log.
 func _mind_panel(inst: Dictionary) -> Control:
-	var pk := _panel("Personality & Happiness")
+	var pk := _panel(tr("Personality & Happiness"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	var svc: Node = Service.ensure()
@@ -919,7 +915,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 	attrs_l.add_theme_font_size_override("font_size", 11)
 	attrs_l.add_theme_color_override("font_color", UI.COL_TEXT)
 	attrs_l.mouse_filter = Control.MOUSE_FILTER_STOP
-	attrs_l.tooltip_text = "The coaches' read of the hidden character attributes. They scale contract demands, praise/criticism reactions, result swings and promise fallout."
+	attrs_l.tooltip_text = tr("The coaches' read of the hidden character attributes. They scale contract demands, praise/criticism reactions, result swings and promise fallout.")
 	v.add_child(attrs_l)
 
 	# --- squad status expectation
@@ -927,7 +923,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 	st_row.add_theme_constant_override("separation", 8)
 	v.add_child(st_row)
 	var st_k := Label.new()
-	st_k.text = "SQUAD STATUS"
+	st_k.text = tr("SQUAD STATUS")
 	st_k.add_theme_font_size_override("font_size", 10)
 	st_k.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	st_k.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -937,7 +933,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 	st_v.add_theme_font_size_override("font_size", 13)
 	st_v.add_theme_color_override("font_color", st["color"])
 	st_v.mouse_filter = Control.MOUSE_FILTER_STOP
-	st_v.tooltip_text = "Rated %d of %d in the squad." % [int(st["rank"]), int(st["n"])]
+	st_v.tooltip_text = tr("Rated %d of %d in the squad.") % [int(st["rank"]), int(st["n"])]
 	st_row.add_child(st_v)
 	var expect := Label.new()
 	expect.text = str(st["expect"])
@@ -983,7 +979,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 	facs.sort_custom(func(x, y): return float(x["w"]) < float(y["w"]))
 	if facs.is_empty():
 		var none := Label.new()
-		none.text = "Nothing on their mind — no active happiness factors."
+		none.text = tr("Nothing on their mind — no active happiness factors.")
 		none.add_theme_font_size_override("font_size", 11)
 		none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		v.add_child(none)
@@ -1011,7 +1007,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 			ab.add_theme_font_size_override("font_size", 11)
 			match act:
 				"contract":
-					ab.text = "Offer Deal"
+					ab.text = tr("Offer Deal")
 					ab.disabled = svc.talks_locked(uid)
 					ab.pressed.connect(func() -> void: Actions.open_contract_dialog(_host(), uid))
 				"unlist":
@@ -1019,11 +1015,11 @@ func _mind_panel(inst: Dictionary) -> Control:
 					ab.pressed.connect(func() -> void:
 						var err: String = svc.unlist(uid)
 						if err != "":
-							Actions.notice(_host(), "Transfer list", err))
+							Actions.notice(_host(), tr("Transfer list"), err))
 				"promise_battles":
 					ab.text = "Promise"
 					ab.disabled = not svc.open_promise(uid).is_empty()
-					ab.tooltip_text = "Promise a run of battles — tracked with a deadline and real consequences"
+					ab.tooltip_text = tr("Promise a run of battles — tracked with a deadline and real consequences")
 					ab.pressed.connect(func() -> void: Actions.open_promise_dialog(_host(), uid, "battles"))
 			row.add_child(ab)
 
@@ -1039,11 +1035,11 @@ func _mind_panel(inst: Dictionary) -> Control:
 	p_t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	p_head.add_child(p_t)
 	var pm := MenuButton.new()
-	pm.text = "Make A Promise..."
+	pm.text = tr("Make A Promise...")
 	pm.flat = false
 	pm.disabled = not svc.open_promise(uid).is_empty()
 	if pm.disabled:
-		pm.tooltip_text = "A promise is already outstanding — one at a time."
+		pm.tooltip_text = tr("A promise is already outstanding — one at a time.")
 	var pop := pm.get_popup()
 	for i in Actions.PROMISE_KINDS.size():
 		var kind: String = Actions.PROMISE_KINDS[i]
@@ -1058,7 +1054,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 	var pledges: Array = svc.inbox_pledges(uid).filter(func(pl): return str(pl.get("status", "")) == "open")
 	if plist.is_empty() and pledges.is_empty():
 		var pn := Label.new()
-		pn.text = "None made. A tracked promise (battles, a new deal, unlisting) is the strongest lever on an unhappy battler — and the costliest to break."
+		pn.text = tr("None made. A tracked promise (battles, a new deal, unlisting) is the strongest lever on an unhappy battler — and the costliest to break.")
 		pn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		pn.add_theme_font_size_override("font_size", 11)
 		pn.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
@@ -1071,16 +1067,16 @@ func _mind_panel(inst: Dictionary) -> Control:
 		pr.text = "%s %s — %s" % [
 			{"open": "OPEN", "kept": "KEPT", "broken": "BROKEN", "void": "VOID"}.get(status, "?"),
 			str(p["text"]).trim_suffix("."),
-			("deadline %s" % Season.pretty_date(str(p["deadline"]))) if status == "open"
-			else ("resolved %s" % Season.pretty_date(str(p["resolved_on"])))]
+			("deadline %s" % I18n.pretty_date(str(p["deadline"]))) if status == "open"
+			else (I18n.t("resolved %s") % I18n.pretty_date(str(p["resolved_on"])))]
 		pr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		pr.add_theme_font_size_override("font_size", 11)
 		pr.add_theme_color_override("font_color", col)
 		v.add_child(pr)
 	for pl in pledges:
 		var il := Label.new()
-		il.text = "OPEN (via coach, Inbox) — %d battles by %s" % [int(pl.get("target", 4)),
-			Season.pretty_date(str(pl.get("deadline", GameState.current_date)))]
+		il.text = tr("OPEN (via coach, Inbox) — %d battles by %s") % [int(pl.get("target", 4)),
+			I18n.pretty_date(str(pl.get("deadline", GameState.current_date)))]
 		il.add_theme_font_size_override("font_size", 11)
 		il.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.25))
 		v.add_child(il)
@@ -1090,7 +1086,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 	if not log.is_empty():
 		v.add_child(HSeparator.new())
 		var m_t := Label.new()
-		m_t.text = "RECENT MORALE EVENTS"
+		m_t.text = tr("RECENT MORALE EVENTS")
 		m_t.add_theme_font_size_override("font_size", 10)
 		m_t.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		v.add_child(m_t)
@@ -1099,7 +1095,7 @@ func _mind_panel(inst: Dictionary) -> Control:
 			er.add_theme_constant_override("separation", 8)
 			v.add_child(er)
 			var ed := Label.new()
-			ed.text = Season.pretty_date(str(e["d"]))
+			ed.text = I18n.pretty_date(str(e["d"]))
 			ed.custom_minimum_size = Vector2(78, 0)
 			ed.add_theme_font_size_override("font_size", 11)
 			ed.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
@@ -1122,17 +1118,17 @@ func _mind_panel(inst: Dictionary) -> Control:
 
 
 func _coach_report_panel(inst: Dictionary) -> Control:
-	var pk := _panel("Coach Report")
+	var pk := _panel(tr("Coach Report"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	var rep: Dictionary = Ability.report(inst)
 
 	# star rows
 	for row_def in [
-			["Current ability", Ability.stars_icon(float(rep["now"]), -1.0, Ability.COL_STARS_NOW, 13),
+			[tr("Current ability"), Ability.stars_icon(float(rep["now"]), -1.0, Ability.COL_STARS_NOW, 13),
 				Ability.ability_word(float(rep["now"]))],
 			["Potential", Ability.stars_icon(float(rep["pot_lo"]), float(rep["pot_hi"]), Ability.COL_STARS_POT, 13),
-				Ability.stars_range_text(float(rep["pot_lo"]), float(rep["pot_hi"])) + " stars"]]:
+				Ability.stars_range_text(float(rep["pot_lo"]), float(rep["pot_hi"])) + tr(" stars")]]:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
 		var l := Label.new()
@@ -1189,18 +1185,18 @@ func _coach_report_panel(inst: Dictionary) -> Control:
 	v.add_child(grid)
 	var top_now := maxi(int(round((1.0 - float(rep["pct_now"])) * 100.0)), 1)
 	var top_pot := maxi(int(round((1.0 - float(rep["pct_pot"])) * 100.0)), 1)
-	_kv_row(grid, "League standing now", "top %d%% of %d" % [top_now, int(rep["league_n"])],
+	_kv_row(grid, tr("League standing now"), tr("top %d%% of %d") % [top_now, int(rep["league_n"])],
 		UI.COL_GOOD if top_now <= 20 else UI.COL_TEXT)
-	_kv_row(grid, "Standing at peak", "top %d%% of %d" % [top_pot, int(rep["league_n"])],
+	_kv_row(grid, tr("Standing at peak"), tr("top %d%% of %d") % [top_pot, int(rep["league_n"])],
 		UI.COL_GOOD if top_pot <= 20 else UI.COL_TEXT)
-	_kv_row(grid, "IV ceiling", "%d%% -> ~%d%%" % [int(rep["iv_pct"]), int(rep["iv_pct_peak"])],
+	_kv_row(grid, tr("IV ceiling"), "%d%% -> ~%d%%" % [int(rep["iv_pct"]), int(rep["iv_pct_peak"])],
 		UI.COL_GOOD if int(rep["iv_pct_peak"]) - int(rep["iv_pct"]) >= 10 else UI.COL_TEXT)
-	_kv_row(grid, "Headroom realisable", "%d%% (age/growth)" % int(round(float(rep["realise"]) * 100.0)))
+	_kv_row(grid, tr("Headroom realisable"), tr("%d%% (age/growth)") % int(round(float(rep["realise"]) * 100.0)))
 	_kv_row(grid, "Best move now", str(rep["move_now"]))
 	if str(rep["move_ceiling"]) != str(rep["move_now"]):
 		_kv_row(grid, "Learnset ceiling", str(rep["move_ceiling"]), UI.COL_ACCENT.lightened(0.25))
 	var foot := Label.new()
-	foot.text = "%s confidence — ability judged by %s (%d/20), potential by %s (%d/20). Stars are relative to every battler in the league today." % [
+	foot.text = tr("%s confidence — ability judged by %s (%d/20), potential by %s (%d/20). Stars are relative to every battler in the league today.") % [
 		rep["confidence"], rep["ja_name"], int(rep["ja"]), rep["jp_name"], int(rep["jp"])]
 	foot.add_theme_font_size_override("font_size", 11)
 	foot.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
@@ -1210,7 +1206,7 @@ func _coach_report_panel(inst: Dictionary) -> Control:
 
 
 func _season_panel(inst: Dictionary) -> Control:
-	var pk := _panel("Season %s" % GameState.season_start.substr(0, 4))
+	var pk := _panel(I18n.t("Season %s") % GameState.season_start.substr(0, 4))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	var uid: String = inst["uid"]
@@ -1220,18 +1216,18 @@ func _season_panel(inst: Dictionary) -> Control:
 	grid.add_theme_constant_override("v_separation", 4)
 	v.add_child(grid)
 	_kv_row(grid, "Battles", str(apps))
-	_kv_row(grid, "Team wins when used", "%d" % SeasonStats.stat_of(uid, "wins"))
+	_kv_row(grid, tr("Team wins when used"), "%d" % SeasonStats.stat_of(uid, "wins"))
 	_kv_row(grid, "Knockouts", str(SeasonStats.stat_of(uid, "kos")), UI.COL_GOOD if SeasonStats.stat_of(uid, "kos") > 0 else UI.COL_TEXT)
 	_kv_row(grid, "Damage dealt", str(SeasonStats.stat_of(uid, "dmg")))
 	_kv_row(grid, "Damage taken", str(SeasonStats.stat_of(uid, "taken")))
 	_kv_row(grid, "Times fainted", str(SeasonStats.stat_of(uid, "faints")),
 		UI.COL_BAD if SeasonStats.stat_of(uid, "faints") > 0 else UI.COL_TEXT)
 	var rat := SeasonStats.avg_rating(uid)
-	_kv_row(grid, "Average rating", "%.2f" % rat if apps > 0 else "-",
+	_kv_row(grid, tr("Average rating"), I18n.decimal(rat, 2) if apps > 0 else "-",
 		UI.rating_color(rat) if apps > 0 else UI.COL_TEXT_DIM)
 	if apps == 0:
 		var note := Label.new()
-		note.text = "No competitive battles yet this season."
+		note.text = tr("No competitive battles yet this season.")
 		note.add_theme_font_size_override("font_size", 12)
 		note.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		v.add_child(note)
@@ -1239,7 +1235,7 @@ func _season_panel(inst: Dictionary) -> Control:
 
 
 func _condition_panel(inst: Dictionary) -> Control:
-	var pk := _panel("Condition & Morale")
+	var pk := _panel(tr("Condition & Morale"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	for pair in [["Condition", int(inst["condition"])], ["Fitness", int(inst["fitness"])],
@@ -1261,14 +1257,14 @@ func _condition_panel(inst: Dictionary) -> Control:
 
 
 func _item_panel(inst: Dictionary) -> Control:
-	var pk := _panel("Held Item")
+	var pk := _panel(tr("Held Item"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	var item_id := str(inst.get("held_item")) if inst.get("held_item") else ""
 	var item: Dictionary = DataStore.item(item_id) if item_id != "" else {}
 	if item.is_empty():
 		var none := Label.new()
-		none.text = "Not holding anything. A held item works passively in every battle — Leftovers, a Choice item, a pinch berry..."
+		none.text = tr("Not holding anything. A held item works passively in every battle — Leftovers, a Choice item, a pinch berry...")
 		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		none.add_theme_font_size_override("font_size", 12)
 		none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
@@ -1311,7 +1307,7 @@ func _item_panel(inst: Dictionary) -> Control:
 	foot.add_theme_constant_override("separation", 8)
 	v.add_child(foot)
 	var hint := Label.new()
-	hint.text = "Buy, equip and swap held items in the club storeroom."
+	hint.text = tr("Buy, equip and swap held items in the club storeroom.")
 	hint.add_theme_font_size_override("font_size", 11)
 	hint.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1319,8 +1315,8 @@ func _item_panel(inst: Dictionary) -> Control:
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	foot.add_child(hint)
 	var go := Button.new()
-	go.text = "Items Screen >"
-	go.tooltip_text = "Open the Items screen: shop catalog + squad equipment board"
+	go.text = tr("Items Screen >")
+	go.tooltip_text = tr("Open the Items screen: shop catalog + squad equipment board")
 	go.pressed.connect(_goto_items)
 	foot.add_child(go)
 	return panel
@@ -1347,16 +1343,16 @@ func _development_panel(inst: Dictionary, sp: Dictionary) -> Control:
 	for k in ivs:
 		iv_sum += int(ivs[k])
 	var iv_pct := int(round(float(iv_sum) / 90.0 * 100.0))
-	_kv_row(grid, "Growth curve", UI.growth_label(sp.get("growth", "")))
-	_kv_row(grid, "Career stage", UI.age_stage(int(inst["age_months"])))
-	_kv_row(grid, "Genetic potential (IVs)", "%d%%" % iv_pct,
+	_kv_row(grid, tr("Growth curve"), UI.growth_label(sp.get("growth", "")))
+	_kv_row(grid, tr("Career stage"), UI.age_stage(int(inst["age_months"])))
+	_kv_row(grid, tr("Genetic potential (IVs)"), "%d%%" % iv_pct,
 		UI.COL_GOOD if iv_pct >= 65 else (UI.COL_WARN if iv_pct < 40 else UI.COL_TEXT))
-	_kv_row(grid, "Learnset size", "%d moves" % (sp.get("learnset", []) as Array).size())
+	_kv_row(grid, tr("Learnset size"), tr("%d moves") % (sp.get("learnset", []) as Array).size())
 	var next_fx: Dictionary = GameState.next_player_fixture()
 	if not next_fx.is_empty():
 		var opp_id: String = next_fx["away"] if GameState.is_player_club(next_fx["home"]) else next_fx["home"]
-		_kv_row(grid, "Next fixture", "%s, %s" % [GameState.club(opp_id).get("short", "?"),
-			Season.pretty_date(next_fx["date"])])
+		_kv_row(grid, tr("Next fixture"), "%s, %s" % [GameState.club(opp_id).get("short", "?"),
+			I18n.pretty_date(next_fx["date"])])
 
 	# Individual training focus, wired to the training model.
 	var svc: Node = Service.ensure()
@@ -1365,7 +1361,7 @@ func _development_panel(inst: Dictionary, sp: Dictionary) -> Control:
 	focus_row.add_theme_constant_override("separation", 8)
 	v.add_child(focus_row)
 	var fl := Label.new()
-	fl.text = "Training focus"
+	fl.text = tr("Training focus")
 	fl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	fl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	focus_row.add_child(fl)
@@ -1442,27 +1438,27 @@ func _evolution_panel(inst: Dictionary) -> Control:
 		for s in stones:
 			var b := Button.new()
 			var owned := int(s["owned"])
-			b.text = "Use %s (%d in stock)" % [str(s["item_name"]), owned] if owned > 0 \
-				else "%s: none in stock" % str(s["item_name"])
+			b.text = I18n.t("Use %s (%d in stock)") % [str(s["item_name"]), owned] if owned > 0 \
+				else I18n.t("%s: none in stock") % str(s["item_name"])
 			b.disabled = owned <= 0
-			b.tooltip_text = ("Evolves %s into %s immediately — using the stone is the approval." %
+			b.tooltip_text = (tr("Evolves %s into %s immediately — using the stone is the approval.") %
 				[UI.display_name(inst), str(s["to_name"])]) if owned > 0 \
-				else "Buy one in the League Store (Items screen)."
+				else tr("Buy one in the League Store (Items screen).")
 			var iid := str(s["item_id"])
 			b.pressed.connect(func() -> void: _evo_act(svc.use_stone(uid, iid)))
 			srow.add_child(b)
 		if stones.all(func(s2): return int(s2["owned"]) <= 0):
 			var shop := Button.new()
-			shop.text = "League Store >"
+			shop.text = tr("League Store >")
 			shop.pressed.connect(_goto_items)
 			srow.add_child(shop)
 
 	var foot := Label.new()
-	foot.text = "Effective Lv %d  (Lv %d + %d from %d training development pts)" % \
+	foot.text = tr("Effective Lv %d  (Lv %d + %d from %d training development pts)") % \
 		[svc.effective_level(inst), int(inst["level"]), svc.dev_levels(uid), svc.dev_points(uid)]
 	foot.add_theme_font_size_override("font_size", 11)
 	foot.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
-	foot.tooltip_text = "Levels are static in this league — training development is what pushes a Pokémon past evolution thresholds (6 dev pts = 1 effective level)."
+	foot.tooltip_text = tr("Levels are static in this league — training development is what pushes a Pokémon past evolution thresholds (6 dev pts = 1 effective level).")
 	v.add_child(foot)
 	return panel
 
@@ -1484,7 +1480,7 @@ func _evo_pending_box(inst: Dictionary, pend: Dictionary, svc: RefCounted) -> Co
 	bv.add_theme_constant_override("separation", 6)
 	box.add_child(bv)
 	var head := Label.new()
-	head.text = "READY TO EVOLVE INTO %s — AWAITING YOUR APPROVAL" % str(pend["to_name"]).to_upper()
+	head.text = I18n.t("READY TO EVOLVE INTO %s — AWAITING YOUR APPROVAL") % str(pend["to_name"]).to_upper()
 	head.add_theme_font_size_override("font_size", 12)
 	head.add_theme_color_override("font_color", UI.COL_GOOD)
 	head.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1494,14 +1490,14 @@ func _evo_pending_box(inst: Dictionary, pend: Dictionary, svc: RefCounted) -> Co
 	btns.add_theme_constant_override("separation", 8)
 	bv.add_child(btns)
 	var ok_b := Button.new()
-	ok_b.text = "Approve Evolution"
-	ok_b.tooltip_text = "Transform %s into %s now: +%d morale, old learnset stays trainable." % \
+	ok_b.text = tr("Approve Evolution")
+	ok_b.tooltip_text = tr("Transform %s into %s now: +%d morale, old learnset stays trainable.") % \
 		[UI.display_name(inst), str(pend["to_name"]), EvoSvc.EVOLVE_MORALE_BOOST]
 	ok_b.pressed.connect(func() -> void: _evo_act(svc.approve(uid)))
 	btns.add_child(ok_b)
 	var no_b := Button.new()
-	no_b.text = "Postpone (-%d morale)" % EvoSvc.POSTPONE_MORALE_COST
-	no_b.tooltip_text = "Hold it back: costs %d morale, the offer returns in %d days if still eligible." % \
+	no_b.text = tr("Postpone (-%d morale)") % EvoSvc.POSTPONE_MORALE_COST
+	no_b.tooltip_text = tr("Hold it back: costs %d morale, the offer returns in %d days if still eligible.") % \
 		[EvoSvc.POSTPONE_MORALE_COST, EvoSvc.REOFFER_DAYS]
 	no_b.pressed.connect(func() -> void: _evo_act(svc.postpone(uid)))
 	btns.add_child(no_b)
@@ -1544,35 +1540,35 @@ func _contract_panel(inst: Dictionary) -> Control:
 	var expiry: String = inst["contract"]["expiry"]
 	var days := UI.days_between(GameState.current_date, expiry)
 	_kv_row(grid, "Wage", UI.money(salary) + "/wk")
-	_kv_row(grid, "Expires", Season.pretty_date(expiry),
+	_kv_row(grid, "Expires", I18n.pretty_date(expiry),
 		UI.COL_BAD if days < 90 else (UI.COL_WARN if days < 240 else UI.COL_TEXT))
-	_kv_row(grid, "Time remaining", "%d days" % maxi(days, 0))
-	_kv_row(grid, "Share of wage bill", "%.1f%%" % (float(salary) / maxf(wage_bill, 1.0) * 100.0))
-	_kv_row(grid, "Estimated value", UI.money(UI.est_value(inst)), UI.COL_GOOD)
+	_kv_row(grid, tr("Time remaining"), tr("%d days") % maxi(days, 0))
+	_kv_row(grid, tr("Share of wage bill"), I18n.decimal(float(salary) / maxf(wage_bill, 1.0) * 100.0, 1) + "%")
+	_kv_row(grid, tr("Estimated value"), UI.money(UI.est_value(inst)), UI.COL_GOOD)
 
 	var svc: Node = Service.ensure()
 	var uid: String = inst["uid"]
 	var demand: Dictionary = svc.contract_demand(inst)
-	_kv_row(grid, "Renewal demand", "~%s/wk, %d-year deal" %
+	_kv_row(grid, tr("Renewal demand"), tr("~%s/wk, %d-year deal") %
 		[UI.money(int(demand["wage"])), int(demand["years"])],
 		UI.COL_WARN if int(demand["wage"]) > salary * 2 else UI.COL_TEXT)
 	if svc.is_listed(inst):
-		_kv_row(grid, "Transfer status", "Listed at %s" % UI.money(int(inst.get("asking_price", 0))), UI.COL_BAD)
+		_kv_row(grid, tr("Transfer status"), tr("Listed at %s") % UI.money(int(inst.get("asking_price", 0))), UI.COL_BAD)
 		var bids: Array = svc.offers_for(uid)
 		if not bids.is_empty():
-			_kv_row(grid, "Live bids", "%d (best %s)" % [bids.size(),
+			_kv_row(grid, tr("Live bids"), tr("%d (best %s)") % [bids.size(),
 				UI.money(bids.map(func(o): return int(o["bid"])).max())], UI.COL_WARN)
 	if svc.talks_locked(uid):
 		var note := Label.new()
-		note.text = "Talks broke down — no renegotiation before %s." % \
-			Season.pretty_date(svc.talks_locked_until(uid))
+		note.text = tr("Talks broke down — no renegotiation before %s.") % \
+			I18n.pretty_date(svc.talks_locked_until(uid))
 		note.add_theme_font_size_override("font_size", 12)
 		note.add_theme_color_override("font_color", UI.COL_BAD)
 		note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		v.add_child(note)
 	else:
 		var offer_b := Button.new()
-		offer_b.text = "Offer New Contract"
+		offer_b.text = tr("Offer New Contract")
 		offer_b.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		offer_b.pressed.connect(func() -> void: Actions.open_contract_dialog(_host(), uid))
 		v.add_child(offer_b)
@@ -1602,19 +1598,19 @@ func _build_history_body(root: VBoxContainer, inst: Dictionary) -> void:
 	right.add_theme_constant_override("separation", 8)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_child(right)
-	var contracts := _events_panel(hist, uid, "Transfers & Contracts",
-		History.CONTRACT_TYPES, "No contract or transfer events recorded yet.")
+	var contracts := _events_panel(hist, uid, tr("Transfers & Contracts"),
+		History.CONTRACT_TYPES, tr("No contract or transfer events recorded yet."))
 	contracts.size_flags_stretch_ratio = 0.4
 	right.add_child(contracts)
-	var devlog := _events_panel(hist, uid, "Development Log",
+	var devlog := _events_panel(hist, uid, tr("Development Log"),
 		History.DEV_TYPES,
-		"No development recorded yet — attribute gains, learned moves and level changes will appear here.")
+		tr("No development recorded yet — attribute gains, learned moves and level changes will appear here."))
 	devlog.size_flags_stretch_ratio = 0.6
 	right.add_child(devlog)
 
 
 func _career_stats_panel(hist: Node, uid: String) -> Control:
-	var pk := _panel("Career Stats — Season By Season")
+	var pk := _panel(tr("Career Stats — Season By Season"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	var rows: Array = hist.season_rows(uid)
@@ -1623,7 +1619,7 @@ func _career_stats_panel(hist: Node, uid: String) -> Control:
 	grid.add_theme_constant_override("h_separation", 16)
 	grid.add_theme_constant_override("v_separation", 5)
 	v.add_child(grid)
-	for h in ["SEASON", "CLUB", "APPS", "WON", "KOS", "DMG", "TKN", "FNT", "AV RAT"]:
+	for h in ["SEASON", "CLUB", "APPS", "WON", "KOS", "DMG", "TKN", "FNT", tr("AV RAT")]:
 		var l := Label.new()
 		l.text = h
 		l.add_theme_font_size_override("font_size", 10)
@@ -1636,7 +1632,7 @@ func _career_stats_panel(hist: Node, uid: String) -> Control:
 		var is_current: bool = str(row["season"]) == current_label
 		var s := Label.new()
 		s.text = str(row["season"]) + ("  ·" if is_current else "")
-		s.tooltip_text = "Current season (live)" if is_current else ""
+		s.tooltip_text = tr("Current season (live)") if is_current else ""
 		s.add_theme_font_size_override("font_size", 13)
 		s.add_theme_color_override("font_color", Color.WHITE if is_current else UI.COL_TEXT)
 		grid.add_child(s)
@@ -1649,7 +1645,7 @@ func _career_stats_panel(hist: Node, uid: String) -> Control:
 		for k in ["apps", "wins", "kos", "dmg", "taken", "faints"]:
 			grid.add_child(_num_cell(str(int(row[k])) if apps > 0 else "-", apps == 0))
 		var r := Label.new()
-		r.text = ("%.2f" % float(row["rat"])) if apps > 0 else "-"
+		r.text = I18n.decimal(float(row["rat"]), 2) if apps > 0 else "-"
 		r.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		r.add_theme_font_size_override("font_size", 13)
 		r.add_theme_color_override("font_color",
@@ -1664,7 +1660,7 @@ func _career_stats_panel(hist: Node, uid: String) -> Control:
 		tl.add_theme_color_override("font_color", Color.WHITE)
 		grid.add_child(tl)
 		var tc := Label.new()
-		tc.text = "%d season%s" % [int(tot["seasons"]), "s" if int(tot["seasons"]) != 1 else ""]
+		tc.text = tr("%d season%s") % [int(tot["seasons"]), "s" if int(tot["seasons"]) != 1 else ""]
 		tc.add_theme_font_size_override("font_size", 12)
 		tc.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		grid.add_child(tc)
@@ -1673,16 +1669,16 @@ func _career_stats_panel(hist: Node, uid: String) -> Control:
 			n.add_theme_color_override("font_color", Color.WHITE)
 			grid.add_child(n)
 		var tr := Label.new()
-		tr.text = ("%.2f" % float(tot["rat"])) if int(tot["apps"]) > 0 else "-"
+		tr.text = I18n.decimal(float(tot["rat"]), 2) if int(tot["apps"]) > 0 else "-"
 		tr.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		tr.add_theme_font_size_override("font_size", 12)
 		tr.add_theme_color_override("font_color",
 			UI.rating_color(float(tot["rat"])) if int(tot["apps"]) > 0 else UI.COL_TEXT_DIM)
 		grid.add_child(tr)
 	var foot := Label.new()
-	foot.text = "Aggregated from every competitive fixture; the current season updates live and is frozen at season end." \
+	foot.text = tr("Aggregated from every competitive fixture; the current season updates live and is frozen at season end.") \
 		if rows.size() <= 1 else \
-		"Past seasons are frozen records; the current season (·) updates live from competitive fixtures."
+		tr("Past seasons are frozen records; the current season (·) updates live from competitive fixtures.")
 	foot.add_theme_font_size_override("font_size", 11)
 	foot.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	foot.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1691,7 +1687,7 @@ func _career_stats_panel(hist: Node, uid: String) -> Control:
 
 
 func _progression_panel(hist: Node, inst: Dictionary) -> Control:
-	var pk := _panel("Attribute Progression")
+	var pk := _panel(tr("Attribute Progression"))
 	var panel: PanelContainer = pk[0]
 	var v: VBoxContainer = pk[1]
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1699,7 +1695,7 @@ func _progression_panel(hist: Node, inst: Dictionary) -> Control:
 	var d: Dictionary = hist.delta_since(uid, inst, DEV_WINDOW_DAYS)
 	if not bool(d.get("has", false)):
 		var none := Label.new()
-		none.text = "No snapshots recorded yet."
+		none.text = tr("No snapshots recorded yet.")
 		none.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 		v.add_child(none)
 		return panel
@@ -1711,8 +1707,8 @@ func _progression_panel(hist: Node, inst: Dictionary) -> Control:
 	grid.add_theme_constant_override("h_separation", 16)
 	grid.add_theme_constant_override("v_separation", 5)
 	v.add_child(grid)
-	var from_pretty: String = Season.pretty_date(str(d["from"]))
-	for h in ["ATTRIBUTE", "IV %s" % from_pretty.to_upper(), "IV NOW", "CHANGE", "EFF THEN", "EFF NOW"]:
+	var from_pretty: String = I18n.pretty_date(str(d["from"]))
+	for h in ["ATTRIBUTE", tr("IV %s") % from_pretty.to_upper(), tr("IV NOW"), "CHANGE", tr("EFF THEN"), tr("EFF NOW")]:
 		var l := Label.new()
 		l.text = h
 		l.add_theme_font_size_override("font_size", 10)
@@ -1761,14 +1757,14 @@ func _progression_panel(hist: Node, inst: Dictionary) -> Control:
 		cur_tot += int(stats[k])
 	tot_series.append(cur_tot)
 	val_series.append(UI.est_value(inst))
-	_spark_row(v, "Total effective stats", tot_series,
+	_spark_row(v, tr("Total effective stats"), tot_series,
 		str(tot_series[0]), str(cur_tot), UI.COL_ACCENT.lightened(0.2))
-	_spark_row(v, "Market value", val_series,
+	_spark_row(v, tr("Market value"), val_series,
 		UI.money(int(val_series[0])), UI.money(UI.est_value(inst)), UI.COL_GOOD)
 	var foot := Label.new()
-	foot.text = "%d snapshot%s since %s (weekly + on every attribute change). Development window: last %d days." % [
+	foot.text = tr("%d snapshot%s since %s (weekly + on every attribute change). Development window: last %d days.") % [
 		snaps.size(), "" if snaps.size() == 1 else "s",
-		Season.pretty_date(hist.joined_on(uid)), DEV_WINDOW_DAYS]
+		I18n.pretty_date(hist.joined_on(uid)), DEV_WINDOW_DAYS]
 	foot.add_theme_font_size_override("font_size", 11)
 	foot.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	foot.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1828,7 +1824,7 @@ func _events_panel(hist: Node, uid: String, title: String, types: Array, empty_t
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var events: Array = hist.events_for(uid, types)
 	var count := Label.new()
-	count.text = "%d event%s on record" % [events.size(), "" if events.size() == 1 else "s"]
+	count.text = tr("%d event%s on record") % [events.size(), "" if events.size() == 1 else "s"]
 	count.add_theme_font_size_override("font_size", 11)
 	count.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	v.add_child(count)
@@ -1852,7 +1848,7 @@ func _events_panel(hist: Node, uid: String, title: String, types: Array, empty_t
 		row.add_theme_constant_override("separation", 10)
 		list.add_child(row)
 		var date := Label.new()
-		date.text = Season.pretty_date(str(e["date"]))
+		date.text = I18n.pretty_date(str(e["date"]))
 		date.custom_minimum_size = Vector2(84, 0)
 		date.add_theme_font_size_override("font_size", 12)
 		date.add_theme_color_override("font_color", UI.COL_TEXT_DIM)

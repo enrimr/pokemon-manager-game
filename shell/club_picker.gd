@@ -201,7 +201,7 @@ func _build_tabs() -> Control:
 	for lg in _leagues:
 		var lid: String = str(lg["id"])
 		var b := Button.new()
-		b.text = str(lg["name"]).to_upper()
+		b.text = tr(str(lg["name"])).to_upper()
 		b.toggle_mode = true
 		b.focus_mode = Control.FOCUS_NONE
 		b.custom_minimum_size = Vector2(220, 38)
@@ -335,7 +335,7 @@ func _club_row(s: Dictionary) -> Control:
 	nm.add_theme_color_override("font_color", Color.WHITE)
 	name_col.add_child(nm)
 	var sub := Label.new()
-	sub.text = "%s · %d in squad" % [str(s["short"]), int(s["squad_n"])]
+	sub.text = tr("%s · %d in squad") % [str(s["short"]), int(s["squad_n"])]
 	sub.add_theme_font_size_override("font_size", 11)
 	sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	name_col.add_child(sub)
@@ -385,7 +385,7 @@ func _club_row(s: Dictionary) -> Control:
 	stars.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 	str_cell.add_child(stars)
 	var avg := Label.new()
-	avg.text = "top six avg Lv %.0f" % float(s["avg6"])
+	avg.text = tr("top six avg Lv %.0f") % float(s["avg6"])
 	avg.add_theme_font_size_override("font_size", 12)
 	avg.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	str_cell.add_child(avg)
@@ -401,7 +401,7 @@ func _select_club(cid: String) -> void:
 	if _start_btn != null:
 		_start_btn.disabled = s.is_empty()
 		if not s.is_empty():
-			_start_btn.text = "Start at %s" % str(s["name"])
+			_start_btn.text = tr("Start at %s") % str(s["name"])
 	_apply_selection_styles()
 
 
@@ -462,9 +462,4 @@ func _meter(frac: float, col: Color) -> Control:
 
 
 func _thousands(n: int) -> String:
-	var s := str(absi(n))
-	var out := ""
-	while s.length() > 3:
-		out = "," + s.substr(s.length() - 3) + out
-		s = s.substr(0, s.length() - 3)
-	return ("-" if n < 0 else "") + s + out
+	return ("-" if n < 0 else "") + I18n.number(absi(n))

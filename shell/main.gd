@@ -122,10 +122,12 @@ var _toast_panel: PanelContainer
 var _toast_label: Label
 var _menu_btn: MenuButton
 const ClubPicker := preload("res://shell/club_picker.gd")
+const GameOverScreen := preload("res://shell/game_over.gd")
 
 var _load_confirm: ConfirmationDialog
 var _new_confirm: ConfirmationDialog   # unused since the club picker took over
 var _club_picker: Control = null       # new-career club selector overlay
+var _game_over: Control = null         # sacking / career-summary overlay
 var _foot_label: Label = null          # sidebar footer (league name follows career)
 
 # fonts (real typography via system fonts; no bundled assets)
@@ -142,9 +144,36 @@ var _search_index: Array = []
 var _search_results: Array = []
 var _type_icon_cache: Dictionary = {}
 var _toast_tween: Tween
+var _shortcut_count := 1                # sidebar screen count (shortcut hints)
+
+
+func _notification(what: int) -> void:
+	## Language switched mid-career (Settings): static Control text retranslates
+	## on its own, but code-composed chrome strings (footer, shortcut hints, top
+	## bar, identity block) hold rendered text — refresh them live so the
+	## "changes apply immediately" promise holds for the whole shell.
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		_retranslate_chrome()
+
+
+func _retranslate_chrome() -> void:
+	if _foot_label == null or GameState.world.is_empty():
+		return
+	_foot_label.text = "TRAINER MANAGER · %s" % tr(GameState.world["meta"]["league_name"])
+	var side_hint: Node = find_child("SidebarHint", true, false)
+	if side_hint is Label:
+		side_hint.text = tr("Space = Continue · %d–%d = screens · Ctrl+1–9 = sections") % [1, _shortcut_count]
+	var top_hint: Node = find_child("ShortcutHint", true, false)
+	if top_hint is Label:
+		top_hint.text = tr("1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search") % _shortcut_count
+	_refresh_identity()
+	_refresh_topbar()
+	_update_subnav()
+	_rebuild_search_index()
 
 
 func _ready() -> void:
+	add_child(load("res://shared/audio/audio_manager.tscn").instantiate())  # audio piece
 	theme = ThemeBuilder.build()
 	_make_fonts()
 	_build_chrome()
@@ -158,6 +187,11 @@ func _ready() -> void:
 	GameState.inbox_updated.connect(_refresh_badges)
 	GameState.inventory_changed.connect(_refresh_topbar)
 	GameState.career_started.connect(_on_career_started)
+	# The sacking arc: the board fires the manager -> full-screen career
+	# summary + job offers (or a loaded save that ended that way).
+	GameState.game_over.connect(func(_info): _open_game_over())
+	if GameState.is_game_over():
+		_open_game_over.call_deferred()
 	# Balance/wages can be mutated by any piece mid-day (transfer fees, board
 	# settlements, shop purchases) — a light poll keeps the top bar honest.
 	var money_sync := Timer.new()
@@ -224,6 +258,7 @@ func navigate_to(screen_name: String, context: Dictionary = {}) -> bool:
 	var inst := packed.instantiate()
 	_content.add_child(inst)
 	current_screen_name = screen_name
+	AudioManager.on_screen_changed(screen_name)  # audio piece: music/ambience
 	current_tab_id = ""
 	for n in _nav_buttons:
 		_nav_buttons[n].button_pressed = (n == screen_name)
@@ -389,7 +424,7 @@ func _reset_history() -> void:
 
 
 func _history_label(e: Dictionary) -> String:
-	var t: String = str(screens.get(e["screen"], {}).get("title", e["screen"]))
+	var t: String = tr(str(screens.get(e["screen"], {}).get("title", e["screen"])))
 	var ctx: Dictionary = e["context"]
 	if ctx.has("label"):
 		t += " · %s" % str(ctx["label"])
@@ -403,10 +438,10 @@ func _update_history_buttons() -> void:
 	var can_fwd := _history_pos < _history.size() - 1
 	_back_btn.disabled = not can_back
 	_fwd_btn.disabled = not can_fwd
-	_back_btn.tooltip_text = ("Back to %s   (Alt+← / mouse-4)" % _history_label(_history[_history_pos - 1])) \
-		if can_back else "Back   (Alt+← — nowhere to go)"
-	_fwd_btn.tooltip_text = ("Forward to %s   (Alt+→ / mouse-5)" % _history_label(_history[_history_pos + 1])) \
-		if can_fwd else "Forward   (Alt+→ — nowhere to go)"
+	_back_btn.tooltip_text = (tr("Back to %s   (Alt+← / mouse-4)") % _history_label(_history[_history_pos - 1])) \
+		if can_back else tr("Back   (Alt+← — nowhere to go)")
+	_fwd_btn.tooltip_text = (tr("Forward to %s   (Alt+→ / mouse-5)") % _history_label(_history[_history_pos + 1])) \
+		if can_fwd else tr("Forward   (Alt+→ — nowhere to go)")
 
 
 func _current_screen_instance() -> Node:
@@ -612,6 +647,7 @@ func _build_topbar() -> Control:
 	_continue_btn.add_theme_stylebox_override("disabled",
 		ThemeBuilder._flat(Color("3a3570"), ThemeBuilder.COL_ACCENT_DIM, 5, 12, 4))
 	_continue_btn.pressed.connect(_on_continue)
+	_continue_btn.set_meta("no_sfx", true)  # audio: whoosh in _on_continue instead of the generic click
 	var cbox := VBoxContainer.new()
 	cbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	cbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -704,7 +740,7 @@ func _on_balance_block_clicked() -> void:
 func _on_date_block_clicked() -> void:
 	if screens.has("competition"):
 		navigate_to("competition", {"kind": "calendar", "id": GameState.current_date,
-			"label": Season.pretty_date(GameState.current_date), "tab": "fixtures"})
+			"label": I18n.pretty_date(GameState.current_date), "tab": "fixtures"})
 
 
 func _vsep() -> Control:
@@ -846,7 +882,7 @@ func _build_breadcrumb() -> Control:
 	row.add_child(sp)
 
 	var hint := Label.new()
-	hint.text = "1–%d screens   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search   ·   Ctrl+S  Save" % 7
+	hint.text = tr("1–%d screens   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search   ·   Ctrl+S  Save") % 7
 	hint.name = "ShortcutHint"
 	hint.add_theme_font_size_override("font_size", 10)
 	hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -960,7 +996,7 @@ func _make_crest(c: Dictionary, px: int) -> Control:
 	letter.add_theme_constant_override("shadow_offset_y", 1)
 	letter.text = str(c.get("short", "TM"))
 	crest.add_child(letter)
-	crest.tooltip_text = "%s · %s-type core" % [c.get("name", ""), t]
+	crest.tooltip_text = tr("%s · %s-type core") % [c.get("name", ""), tr(t)]
 	return crest
 
 
@@ -1002,21 +1038,23 @@ func _build_nav() -> void:
 			_add_subnav(list, n)
 
 	_nav_box.add_child(_thin_sep())
+	_shortcut_count = maxi(shortcut, 1)
 	_foot_label = Label.new()
-	_foot_label.text = "TRAINER MANAGER · %s" % GameState.world["meta"]["league_name"]
+	_foot_label.text = "TRAINER MANAGER · %s" % tr(GameState.world["meta"]["league_name"])
 	_foot_label.add_theme_font_size_override("font_size", 9)
 	_foot_label.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_nav_box.add_child(_foot_label)
 
 	var hint := Label.new()
-	hint.text = "Space = Continue · %d–%d = screens · Ctrl+1–9 = sections" % [1, maxi(shortcut, 1)]
+	hint.name = "SidebarHint"
+	hint.text = tr("Space = Continue · %d–%d = screens · Ctrl+1–9 = sections") % [1, maxi(shortcut, 1)]
 	hint.add_theme_font_size_override("font_size", 9)
 	hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_nav_box.add_child(hint)
 
 	var hint_node: Node = find_child("ShortcutHint", true, false)
 	if hint_node is Label:
-		hint_node.text = "1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search" % maxi(shortcut, 1)
+		hint_node.text = tr("1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+←/→  Back/Fwd   ·   Ctrl+F  Search") % maxi(shortcut, 1)
 	_update_subnav()
 
 
@@ -1040,7 +1078,7 @@ func _nav_button(n: String, shortcut: int) -> Button:
 	btn.toggle_mode = true
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.custom_minimum_size.y = 36
-	btn.tooltip_text = "%s  (press %d)" % [meta["title"], shortcut]
+	btn.tooltip_text = tr("%s  (press %d)") % [tr(str(meta["title"])), shortcut]
 	var normal := ThemeBuilder._flat(ThemeBuilder.COL_PANEL, ThemeBuilder.COL_PANEL, 5, 8, 4)
 	var hover := ThemeBuilder._flat(Color("232a42"), Color("232a42"), 5, 8, 4)
 	var active := ThemeBuilder._flat(Color("2c2f56"), Color("2c2f56"), 5, 8, 4)
@@ -1122,7 +1160,7 @@ func _nav_button(n: String, shortcut: int) -> Button:
 		chev.custom_minimum_size = Vector2(18, 22)
 		chev.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		chev.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		chev.tooltip_text = "Show %s sections" % str(meta["title"])
+		chev.tooltip_text = tr("Show %s sections") % tr(str(meta["title"]))
 		chev.add_theme_font_size_override("font_size", 10)
 		chev.add_theme_color_override("font_color", Color("6a7290"))
 		chev.add_theme_color_override("font_hover_color", ThemeBuilder.COL_ACCENT)
@@ -1155,7 +1193,7 @@ func _add_subnav(list: VBoxContainer, n: String) -> void:
 		b.focus_mode = Control.FOCUS_NONE
 		b.custom_minimum_size.y = 26
 		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		b.tooltip_text = "%s → %s" % [str(screens[n]["title"]), str(t["title"])]
+		b.tooltip_text = "%s → %s" % [tr(str(screens[n]["title"])), tr(str(t["title"]))]
 		b.pressed.connect(_on_subnav_pressed.bind(n, tab_id))
 		var row := HBoxContainer.new()
 		row.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1235,8 +1273,8 @@ func _update_subnav() -> void:
 		if _nav_expanders.has(n):
 			var chev: Button = _nav_expanders[n]
 			chev.text = "▾" if open else "▸"
-			chev.tooltip_text = ("Collapse %s sections" if _nav_pinned.get(n, false) \
-				else ("Hide %s sections" if open else "Show %s sections")) % str(screens[n]["title"])
+			chev.tooltip_text = tr("Collapse %s sections" if _nav_pinned.get(n, false) \
+				else ("Hide %s sections" if open else "Show %s sections")) % tr(str(screens[n]["title"]))
 		_style_subnav_button_states(n)
 
 
@@ -1244,7 +1282,7 @@ func _update_subnav() -> void:
 
 func _on_career_started() -> void:
 	if _foot_label != null:   # league can change with the chosen club
-		_foot_label.text = "TRAINER MANAGER · %s" % GameState.world["meta"]["league_name"]
+		_foot_label.text = "TRAINER MANAGER · %s" % tr(GameState.world["meta"]["league_name"])
 	_refresh_identity()
 	_refresh_topbar()
 	_refresh_badges()
@@ -1259,21 +1297,21 @@ func _refresh_identity() -> void:
 	crest.set_anchors_preset(Control.PRESET_FULL_RECT)
 	crest.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_crest_holder.add_child(crest)
-	_ident_block.tooltip_text = "Open Squad — %s" % pc.get("name", "")
+	_ident_block.tooltip_text = tr("Open Squad — %s") % pc.get("name", "")
 	_club_name_label.text = str(pc.get("name", "—"))
 	_club_sub_label.text = str(pc.get("manager", ""))
-	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), GameState.world["meta"]["league_name"]]
+	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), tr(GameState.world["meta"]["league_name"])]
 
 
 func _refresh_topbar() -> void:
 	var pc := GameState.player_club()
 	# date block
-	_date_value.text = Season.pretty_date(GameState.current_date)
-	_date_caption.text = "%s · Week %d" % [_weekday(GameState.current_date), _season_week()]
+	_date_value.text = I18n.pretty_date(GameState.current_date)
+	_date_caption.text = tr("%s · Week %d") % [_weekday(GameState.current_date), _season_week()]
 	# balance block: bank balance headline, board's budget split underneath
 	var cur: String = GameState.world["meta"].get("currency", "P$")
 	_balance_value.text = "%s%s" % [cur, _thousands(int(pc["finances"]["balance"]))]
-	_balance_caption.text = "T. budget %s%s · wages %s%s/w" % [
+	_balance_caption.text = tr("T. budget %s%s · wages %s%s/w") % [
 		cur, _thousands(maxi(0, int(pc["finances"].get("transfer_budget", 0)))),
 		cur, _thousands(int(pc["finances"]["wage_budget"]))]
 	# next fixture block
@@ -1286,12 +1324,12 @@ func _refresh_topbar() -> void:
 		var we_home: bool = GameState.is_player_club(nf["home"])
 		var opp := GameState.club(nf["away"] if we_home else nf["home"])
 		var days := _days_until(nf["date"])
-		_fixture_value.text = "vs %s (%s)" % [opp.get("name", "?"), "H" if we_home else "A"]
+		_fixture_value.text = tr("vs %s (H)" if we_home else "vs %s (A)") % opp.get("name", "?")
 		_fixture_caption.text = "%s · %s" % [_comp_name(nf), _days_phrase(days)]
-		_fixture_block.tooltip_text = ("Go to matchday vs %s" % opp.get("name", "?")) if days <= 0 \
-			else "Open fixture — %s, %s (%s)" % [opp.get("name", "?"), Season.pretty_date(nf["date"]), _comp_name(nf)]
+		_fixture_block.tooltip_text = (tr("Go to matchday vs %s") % opp.get("name", "?")) if days <= 0 \
+			else tr("Open fixture — %s, %s (%s)") % [opp.get("name", "?"), I18n.pretty_date(nf["date"]), _comp_name(nf)]
 	# position line under club name ("—" until a league match is played)
-	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), GameState.world["meta"]["league_name"]]
+	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), tr(GameState.world["meta"]["league_name"])]
 	_refresh_continue_label()
 	_refresh_badges()
 
@@ -1300,7 +1338,7 @@ func _refresh_topbar() -> void:
 func _league_pos_text() -> String:
 	for r in GameState.league_table():
 		if GameState.is_player_club(r["club_id"]):
-			return "—" if int(r.get("played", 0)) == 0 else _ordinal(GameState.player_table_position())
+			return "—" if int(r.get("played", 0)) == 0 else I18n.ordinal(GameState.player_table_position())
 	return "—"
 
 
@@ -1310,20 +1348,20 @@ func _refresh_continue_label() -> void:
 	var nf := GameState.next_player_fixture()
 	if nf.is_empty():
 		_continue_main.text = "CONTINUE  ▶"
-		_continue_sub.text = "Advance %d days" % ADVANCE_CAP
+		_continue_sub.text = tr("Advance %d days") % ADVANCE_CAP
 		return
 	var we_home: bool = GameState.is_player_club(nf["home"])
 	var opp := GameState.club(nf["away"] if we_home else nf["home"])
 	var days := _days_until(nf["date"])
 	if days <= 0:
 		_continue_main.text = "MATCHDAY  ▶"
-		_continue_sub.text = "vs %s · go to match" % opp.get("name", "?")
+		_continue_sub.text = tr("vs %s · go to match") % opp.get("name", "?")
 	elif days == 1:
 		_continue_main.text = "CONTINUE  ▶"
-		_continue_sub.text = "Matchday vs %s" % opp.get("name", "?")
+		_continue_sub.text = tr("Matchday vs %s") % opp.get("name", "?")
 	else:
 		_continue_main.text = "CONTINUE  ▶"
-		_continue_sub.text = "Advance %d days · vs %s" % [mini(days, ADVANCE_CAP), opp.get("short", "?")]
+		_continue_sub.text = tr("Advance %d days · vs %s") % [mini(days, ADVANCE_CAP), opp.get("short", "?")]
 
 
 func _refresh_badges() -> void:
@@ -1349,9 +1387,9 @@ func _refresh_breadcrumb() -> void:
 	var league := str(GameState.world["meta"]["league_name"])
 	var club := str(GameState.player_club().get("name", ""))
 	_crumb_league_btn.text = league
-	_crumb_league_btn.tooltip_text = "Open Competition — %s table & fixtures" % league
+	_crumb_league_btn.tooltip_text = tr("Open Competition — %s table & fixtures") % tr(league)
 	_crumb_club_btn.text = club
-	_crumb_club_btn.tooltip_text = "Open Squad — %s" % club
+	_crumb_club_btn.tooltip_text = tr("Open Squad — %s") % club
 	_crumb_title.text = str(meta["title"])
 	var has_tab := current_tab_id != "" and _tab_index(current_screen_name, current_tab_id) >= 0
 	_crumb_tab_sep.visible = has_tab
@@ -1365,6 +1403,7 @@ func _refresh_breadcrumb() -> void:
 func _on_continue() -> void:
 	if _advancing:
 		return
+	AudioManager.play("continue")  # audio piece
 	var nf := GameState.next_player_fixture()
 	# A match is due today and being held for interactive play -> go there.
 	if not nf.is_empty() and nf["date"] == GameState.current_date and not nf.get("played", false) \
@@ -1391,11 +1430,12 @@ func _on_continue() -> void:
 		var new_count: int = GameState.inbox.size() - inbox_before
 		for j in new_count:
 			var m: Dictionary = GameState.inbox[j]
-			if m.get("urgent", false) or str(m.get("title", "")).begins_with("Cup draw"):
+			if m.get("urgent", false) or str(m.get("title", "")).begins_with("Cup draw") \
+					or str(m.get("title", "")).begins_with(tr("Cup draw:")):
 				if stop_reason == "":
 					stop_reason = "urgent"
-		_continue_main.text = "%s  ADVANCING" % spinner[i % spinner.size()]
-		_continue_sub.text = Season.pretty_date(GameState.current_date)
+		_continue_main.text = tr("%s  ADVANCING") % spinner[i % spinner.size()]
+		_continue_sub.text = I18n.pretty_date(GameState.current_date)
 		await get_tree().create_timer(0.06).timeout
 		if stop_reason != "":
 			break
@@ -1407,21 +1447,22 @@ func _on_continue() -> void:
 		"match_due":
 			if screens.has("match"):
 				navigate_to("match")
-			_toast("Matchday — your fixture is due today")
+			_toast(tr("Matchday — your fixture is due today"))
 		"played":
 			_renavigate_current()
 			var we_home: bool = GameState.is_player_club(played_fixture.get("home", ""))
 			var us: int = int(played_fixture.get("score_home", 0)) if we_home else int(played_fixture.get("score_away", 0))
 			var them: int = int(played_fixture.get("score_away", 0)) if we_home else int(played_fixture.get("score_home", 0))
 			var opp := GameState.club(played_fixture.get("away", "") if we_home else played_fixture.get("home", ""))
-			_toast("Full time: %s %d–%d vs %s — report in Inbox" % ["Won" if us > them else "Lost", us, them, opp.get("name", "?")])
+			_toast(tr("Full time: won %d–%d vs %s — report in Inbox" if us > them
+				else "Full time: lost %d–%d vs %s — report in Inbox") % [us, them, opp.get("name", "?")])
 		"urgent":
 			if screens.has("inbox"):
 				navigate_to("inbox")
-			_toast("News needs your attention")
+			_toast(tr("News needs your attention"))
 		_:
 			_renavigate_current()
-			_toast("Advanced to %s · game saved" % Season.pretty_date(GameState.current_date))
+			_toast(tr("Advanced to %s · game saved") % I18n.pretty_date(GameState.current_date))
 
 
 func _renavigate_current() -> void:
@@ -1438,14 +1479,14 @@ func _on_menu_id(id: int) -> void:
 	match id:
 		0:
 			if GameState.save_game():
-				_toast("Career saved · %s" % Season.pretty_date(GameState.current_date))
+				_toast(tr("Career saved · %s") % I18n.pretty_date(GameState.current_date))
 			else:
-				_toast("Save failed")
+				_toast(tr("Save failed"))
 		1:
 			if FileAccess.file_exists(GameState.SAVE_PATH):
 				_load_confirm.popup_centered()
 			else:
-				_toast("No save file found")
+				_toast(tr("No save file found"))
 		2:
 			_open_club_picker()
 
@@ -1460,9 +1501,9 @@ func _build_dialogs() -> void:
 			_reset_history()
 			if not screens.is_empty():
 				navigate_to(screens.keys().front())
-			_toast("Career loaded · %s" % Season.pretty_date(GameState.current_date))
+			_toast(tr("Career loaded · %s") % I18n.pretty_date(GameState.current_date))
 		else:
-			_toast("Load failed"))
+			_toast(tr("Load failed")))
 	add_child(_load_confirm)
 
 	# "New Career" opens the FM-style club picker overlay instead of a plain
@@ -1487,10 +1528,42 @@ func _open_club_picker() -> void:
 		_reset_history()
 		if not screens.is_empty():
 			navigate_to(screens.keys().front())
-		_toast("New career started at %s · %s" %
-			[GameState.player_club().get("name", ""), GameState.league_name()]))
+		_toast(tr("New career started at %s · %s") %
+			[GameState.player_club().get("name", ""), tr(GameState.league_name())]))
 	_club_picker.cancelled.connect(func(): _club_picker = null)
 	add_child(_club_picker)
+
+
+## The sacking moment (polish piece): modal career-summary overlay. The career
+## continues at an offering club (GameState.accept_job_offer) or starts fresh
+## through the normal club picker.
+func _open_game_over() -> void:
+	if _game_over != null and is_instance_valid(_game_over):
+		return
+	if not GameState.is_game_over():
+		return
+	_game_over = GameOverScreen.new()
+	_game_over.setup(_font_bold, _font_semibold, _font_header)
+	_game_over.offer_accepted.connect(func(club_id: String):
+		var err: String = GameState.accept_job_offer(club_id)
+		if err != "":
+			return
+		if _game_over != null and is_instance_valid(_game_over):
+			_game_over.queue_free()
+			_game_over = null
+		_reset_history()
+		if screens.has("inbox"):
+			navigate_to("inbox")
+		elif not screens.is_empty():
+			navigate_to(screens.keys().front())
+		_toast(tr("You take over at %s · %s") %
+			[GameState.player_club().get("name", ""), tr(GameState.league_name())]))
+	_game_over.start_fresh.connect(func():
+		if _game_over != null and is_instance_valid(_game_over):
+			_game_over.queue_free()
+			_game_over = null
+		_open_club_picker())
+	add_child(_game_over)
 
 
 # ------------------------------------------------------------------ global search
@@ -1517,16 +1590,16 @@ func _rebuild_search_index() -> void:
 	for n in screens:
 		var meta: Dictionary = screens[n]
 		_search_index.append({
-			"label": str(meta["title"]),
-			"sub": "Screen",
+			"label": tr(str(meta["title"])),
+			"sub": tr("Screen"),
 			"screen": n,
 			"color": ThemeBuilder.COL_ACCENT,
 			"kind": "screen", "id": n,
 		})
 		for t in meta.get("tabs", []):
 			_search_index.append({
-				"label": str(t["title"]),
-				"sub": "Section · %s" % str(meta["title"]),
+				"label": tr(str(t["title"])),
+				"sub": tr("Section · %s") % tr(str(meta["title"])),
 				"screen": n,
 				"color": ThemeBuilder.COL_ACCENT_DIM,
 				"kind": "tab", "id": "%s/%s" % [n, t["id"]], "tab": str(t["id"]),
@@ -1535,7 +1608,7 @@ func _rebuild_search_index() -> void:
 		var mine: bool = GameState.is_player_club(c["id"])
 		_search_index.append({
 			"label": str(c["name"]),
-			"sub": "Club · %s · manager %s · rep %d" % [c["short"], c["manager"], int(c["reputation"])],
+			"sub": tr("Club · %s · manager %s · rep %d") % [c["short"], c["manager"], int(c["reputation"])],
 			"screen": "competition",
 			"color": DataStore.type_color(_club_primary_type(c)),
 			"kind": "club", "id": c["id"], "tab": "table",
@@ -1543,12 +1616,12 @@ func _rebuild_search_index() -> void:
 		for inst in c["squad"]:
 			_search_index.append(_pokemon_entry(inst,
 				"squad" if mine else "competition",
-				("%s · your squad" % c["short"]) if mine else str(c["name"]),
+				(tr("%s · your squad") % c["short"]) if mine else str(c["name"]),
 				"General" if mine else "table"))
 	for inst in GameState.free_agents():
-		_search_index.append(_pokemon_entry(inst, "transfers", "Free agent", "search"))
+		_search_index.append(_pokemon_entry(inst, "transfers", tr("Free agent"), "search"))
 	for inst in GameState.prospects():
-		_search_index.append(_pokemon_entry(inst, "transfers", "Youth prospect", "scouting"))
+		_search_index.append(_pokemon_entry(inst, "transfers", tr("Youth prospect"), "scouting"))
 
 
 func _pokemon_entry(inst: Dictionary, screen: String, where: String, tab: String = "") -> Dictionary:
@@ -1558,7 +1631,7 @@ func _pokemon_entry(inst: Dictionary, screen: String, where: String, tab: String
 	var types: Array = sp.get("types", ["Normal"])
 	var entry := {
 		"label": display,
-		"sub": "Lv %d %s · %s · %s" % [int(inst["level"]), inst["species"], "/".join(types), where],
+		"sub": tr("Lv %d %s · %s · %s") % [int(inst["level"]), inst["species"], I18n.types_join(types), where],
 		"screen": screen,
 		"color": DataStore.type_color(str(types[0])),
 		"kind": "pokemon", "id": inst["uid"],
@@ -1592,14 +1665,14 @@ func _on_search_text(text: String) -> void:
 			if _search_results.size() >= 9:
 				break
 	if _search_results.is_empty():
-		_search_list.add_item("No results for \"%s\"" % text, null, false)
+		_search_list.add_item(tr("No results for \"%s\"") % text, null, false)
 	else:
 		for entry in _search_results:
 			var idx := _search_list.add_item("%s    —  %s" % [entry["label"], entry["sub"]], _type_icon(entry["color"]))
-			var dest: String = str(screens.get(entry["screen"], {}).get("title", entry["screen"]))
+			var dest: String = tr(str(screens.get(entry["screen"], {}).get("title", entry["screen"])))
 			if entry.has("tab"):
-				dest += " ▸ %s" % _tab_title(entry["screen"], str(entry["tab"]))
-			_search_list.set_item_tooltip(idx, "Open %s" % dest)
+				dest += " ▸ %s" % tr(_tab_title(entry["screen"], str(entry["tab"])))
+			_search_list.set_item_tooltip(idx, tr("Open %s") % dest)
 	if not _search_results.is_empty():
 		_search_list.select(0)
 	var rows: int = maxi(_search_list.item_count, 1)
@@ -1643,12 +1716,12 @@ func _activate_search_index(idx: int) -> void:
 	var entry: Dictionary = _search_results[idx]
 	_close_search()
 	if not screens.has(entry["screen"]):
-		_toast("No screen available for %s yet" % entry["label"])
+		_toast(tr("No screen available for %s yet") % entry["label"])
 		return
 	navigate_to(entry["screen"], entry)
-	var dest: String = str(screens[entry["screen"]]["title"])
+	var dest: String = tr(str(screens[entry["screen"]]["title"]))
 	if entry.has("tab"):
-		dest += " ▸ %s" % _tab_title(entry["screen"], str(entry["tab"]))
+		dest += " ▸ %s" % tr(_tab_title(entry["screen"], str(entry["tab"])))
 	_toast("%s  →  %s" % [entry["label"], dest])
 
 
@@ -1763,7 +1836,7 @@ func _unix(date: String) -> int:
 
 func _weekday(date: String) -> String:
 	var d := Time.get_datetime_dict_from_unix_time(_unix(date))
-	return WEEKDAYS[int(d["weekday"]) % 7]
+	return tr(WEEKDAYS[int(d["weekday"]) % 7])
 
 
 func _season_week() -> int:
@@ -1776,39 +1849,25 @@ func _days_until_from(a: String, b: String) -> int:
 
 func _days_phrase(days: int) -> String:
 	if days <= 0:
-		return "TODAY"
+		return tr("TODAY")
 	if days == 1:
-		return "tomorrow"
-	return "in %d days" % days
+		return tr("tomorrow")
+	return tr("in %d days") % days
 
 
 func _comp_name(f: Dictionary) -> String:
 	if str(f.get("comp", "")) == "cup":   # name the competition, not just the round
-		return "%s %s" % [GameState.cup_name(), Season.cup_round_name(int(f.get("round", 1)))]
+		return "%s %s" % [tr(GameState.cup_name()), I18n.cup_round(int(f.get("round", 1)))]
 	if str(f.get("comp", "")) == "playoff":   # Championship Series (season-end playoff)
-		return "CS %s" % Season.playoff_round_name(int(f.get("round", 1)))
-	return GameState.world["meta"]["league_name"]
+		return tr("CS %s") % I18n.playoff_round(int(f.get("round", 1)))
+	return tr(GameState.world["meta"]["league_name"])
 
 
 func _thousands(n: int) -> String:
-	var s := str(absi(n))
-	var out := ""
-	var count := 0
-	for i in range(s.length() - 1, -1, -1):
-		out = s[i] + out
-		count += 1
-		if count % 3 == 0 and i > 0:
-			out = "," + out
-	return ("-" if n < 0 else "") + out
+	return ("-" if n < 0 else "") + I18n.number(absi(n))
 
 
 func _ordinal(n: int) -> String:
 	if n <= 0:
 		return "—"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

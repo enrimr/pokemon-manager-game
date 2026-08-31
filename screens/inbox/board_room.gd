@@ -132,22 +132,22 @@ func request_defs() -> Array:
 	var w_mod := _round_money(int(budget * 0.10), 100)
 	var w_amb := _round_money(int(budget * 0.25), 100)
 	defs.append({"kind": KIND_WAGE, "title": kind_title(KIND_WAGE),
-		"desc": "Raise the monthly wage budget so we can afford better contracts.",
-		"options": [{"label": "+%s /mo" % news.money(w_mod), "amount": w_mod},
-			{"label": "+%s /mo" % news.money(w_amb), "amount": w_amb}]})
+		"desc": I18n.t("Raise the monthly wage budget so we can afford better contracts."),
+		"options": [{"label": I18n.t("+%s /mo") % news.money(w_mod), "amount": w_mod},
+			{"label": I18n.t("+%s /mo") % news.money(w_amb), "amount": w_amb}]})
 
 	var f_mod := _round_money(rep * 9000, 1000)
 	var f_amb := _round_money(rep * 22000, 1000)
 	defs.append({"kind": KIND_FUNDS, "title": kind_title(KIND_FUNDS),
-		"desc": "Ask the owners to put their own money into the transfer kitty.",
+		"desc": I18n.t("Ask the owners to put their own money into the transfer kitty."),
 		"options": [{"label": news.money(f_mod), "amount": f_mod},
 			{"label": news.money(f_amb), "amount": f_amb}]})
 
 	var s_cost := _round_money(rep * 5000, 1000)
 	defs.append({"kind": KIND_SCOUT, "title": kind_title(KIND_SCOUT),
-		"desc": "Spend %s of club funds: +%d%% knowledge on all %d prospect files." %
+		"desc": I18n.t("Spend %s of club funds: +%d%% knowledge on all %d prospect files.") %
 			[news.money(s_cost), SCOUT_KNOWLEDGE_GAIN, GameState.prospects().size()],
-		"options": [{"label": "Invest %s" % news.money(s_cost), "amount": s_cost}]})
+		"options": [{"label": I18n.t("Invest %s") % news.money(s_cost), "amount": s_cost}]})
 
 	for d in defs:
 		for o in d["options"]:
@@ -160,12 +160,12 @@ func _hint_for_score(score: float, reasons: Array) -> Dictionary:
 	# dry-run (no roll) receptiveness — FM-style "how will this land?"
 	for rs in reasons:
 		if str(rs).begins_with("HARD:"):
-			return {"word": "will refuse", "color": ThemeBuilder.COL_BAD}
+			return {"word": I18n.t("will refuse"), "color": ThemeBuilder.COL_BAD}
 	if score >= 62.0:
-		return {"word": "receptive", "color": ThemeBuilder.COL_GOOD}
+		return {"word": I18n.t("receptive"), "color": ThemeBuilder.COL_GOOD}
 	if score >= 47.0:
-		return {"word": "could go either way", "color": ThemeBuilder.COL_WARN}
-	return {"word": "likely to refuse", "color": ThemeBuilder.COL_BAD}
+		return {"word": I18n.t("could go either way"), "color": ThemeBuilder.COL_WARN}
+	return {"word": I18n.t("likely to refuse"), "color": ThemeBuilder.COL_BAD}
 
 
 # ------------------------------------------------------------------ submit
@@ -173,12 +173,12 @@ func _hint_for_score(score: float, reasons: Array) -> Dictionary:
 ## Submit a request. Returns "" on success or an error string.
 func submit(kind: String, amount: int) -> String:
 	if not pending_request().is_empty():
-		return "The board is already considering a request — wait for its answer."
+		return I18n.t("The board is already considering a request — wait for its answer.")
 	if amount <= 0:
-		return "Nothing requested."
+		return I18n.t("Nothing requested.")
 	var pc: Dictionary = GameState.player_club()
 	if kind == KIND_SCOUT and int(pc["finances"]["balance"]) < amount:
-		return "The club cannot cover a %s investment right now." % news.money(amount)
+		return I18n.t("The club cannot cover a %s investment right now.") % news.money(amount)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = GameState.career_seed + _next_id * 7919 + 3
 	var decide_on := Season.date_add(GameState.current_date, 2 + rng.randi_range(0, 2))
@@ -194,14 +194,14 @@ func submit(kind: String, amount: int) -> String:
 	save_state()
 
 	GameState.add_inbox_message(GameState.current_date,
-		"Board request submitted: %s" % kind_title(kind).to_lower(),
-		"Your request has been tabled for the board's next sitting. A decision is expected by %s." %
-			Season.pretty_date(decide_on))
+		I18n.t("Board request submitted: %s") % I18n.t(kind_title(kind)).to_lower(),
+		I18n.t("Your request has been tabled for the board's next sitting. A decision is expected by %s.") %
+			I18n.pretty_date(decide_on))
 	var m: Dictionary = GameState.inbox[0]
 	m["cat"] = "board"
 	m["uid"] = "boardreq:%d" % int(r["id"])
 	m["req_id"] = int(r["id"])
-	m["sender"] = "%s Club Secretary" % pc["name"]
+	m["sender"] = I18n.t("%s Club Secretary") % pc["name"]
 	return ""
 
 
@@ -270,7 +270,7 @@ func _apply_grant(r: Dictionary) -> void:
 				fin["wage_budget"] = int(fin["wage_budget"]) + granted
 				ledger.push_front({"date": GameState.current_date, "amount": 0,
 					"kind": "wage_budget",
-					"text": "Board raised wage budget by %s /mo" % news.money(granted)})
+					"text": I18n.t("Board raised wage budget by %s /mo") % news.money(granted)})
 			r["after"] = int(fin["wage_budget"])
 		KIND_FUNDS:
 			r["before"] = int(fin["balance"])
@@ -281,7 +281,7 @@ func _apply_grant(r: Dictionary) -> void:
 				fin["transfer_budget"] = int(fin.get("transfer_budget", 0)) + granted
 				ledger.push_front({"date": GameState.current_date, "amount": granted,
 					"kind": "injection",
-					"text": "Board funds injection (transfer budget +%s)" % news.money(granted)})
+					"text": I18n.t("Board funds injection (transfer budget +%s)") % news.money(granted)})
 			r["after"] = int(fin["balance"])
 		KIND_SCOUT:
 			r["before"] = int(fin["balance"])
@@ -294,7 +294,7 @@ func _apply_grant(r: Dictionary) -> void:
 				r["prospects_updated"] = touched
 				ledger.push_front({"date": GameState.current_date, "amount": -granted,
 					"kind": "scouting",
-					"text": "Scouting network investment (%d prospect files +%d%%)" % [touched, SCOUT_KNOWLEDGE_GAIN]})
+					"text": I18n.t("Scouting network investment (%d prospect files +%d%%)") % [touched, SCOUT_KNOWLEDGE_GAIN]})
 			r["after"] = int(fin["balance"])
 
 
@@ -305,20 +305,20 @@ func _send_decision_mail(r: Dictionary) -> void:
 	var body: String
 	match status:
 		"granted":
-			title = "Board approves your request: %s" % kind_title(str(r["kind"])).to_lower()
-			body = "The board has agreed to your request in full."
+			title = I18n.t("Board approves your request: %s") % I18n.t(kind_title(str(r["kind"]))).to_lower()
+			body = I18n.t("The board has agreed to your request in full.")
 		"partial":
-			title = "Board partially grants your request: %s" % kind_title(str(r["kind"])).to_lower()
-			body = "The board cannot stretch to the full amount but has made a counter-offer."
+			title = I18n.t("Board partially grants your request: %s") % I18n.t(kind_title(str(r["kind"]))).to_lower()
+			body = I18n.t("The board cannot stretch to the full amount but has made a counter-offer.")
 		_:
-			title = "Board rejects your request: %s" % kind_title(str(r["kind"])).to_lower()
-			body = "The board has turned down your request."
+			title = I18n.t("Board rejects your request: %s") % I18n.t(kind_title(str(r["kind"]))).to_lower()
+			body = I18n.t("The board has turned down your request.")
 	GameState.add_inbox_message(str(r["decided_on"]), title, body)
 	var m: Dictionary = GameState.inbox[0]
 	m["cat"] = "board"
 	m["uid"] = "boarddec:%d" % int(r["id"])
 	m["req_id"] = int(r["id"])
-	m["sender"] = "%s Board of Directors" % pc["name"]
+	m["sender"] = I18n.t("%s Board of Directors") % pc["name"]
 	m["urgent"] = true
 
 
@@ -332,7 +332,7 @@ func _assess(kind: String, amount: int) -> Dictionary:
 	var pc: Dictionary = GameState.player_club()
 	var score := float(conf["score"])
 	var reasons: Array = []
-	reasons.append("Board confidence stands at %d%% (%s)." % [int(conf["score"]), str(conf["word"]).to_lower()])
+	reasons.append(I18n.t("Board confidence stands at %d%% (%s).") % [int(conf["score"]), I18n.t(str(conf["word"])).to_lower()])
 
 	# request fatigue — boards tire of managers who keep coming back
 	var recent := 0
@@ -347,11 +347,11 @@ func _assess(kind: String, amount: int) -> Dictionary:
 			denied_recent += 1
 	if recent > 0:
 		score -= recent * 10.0
-		reasons.append("You have made %d request%s in the last 60 days — patience is wearing thin." %
+		reasons.append(I18n.t("You have made %d request%s in the last 60 days — patience is wearing thin.") %
 			[recent, "" if recent == 1 else "s"])
 	if denied_recent > 0:
 		score -= denied_recent * 6.0
-		reasons.append("A recently refused request still colours the discussion.")
+		reasons.append(I18n.t("A recently refused request still colours the discussion."))
 
 	var balance := int(fin["balance"])
 	var avg := int(fin["league_avg_balance"])
@@ -360,44 +360,44 @@ func _assess(kind: String, amount: int) -> Dictionary:
 			var usage := float(fin["wage_bill"]) / maxf(1.0, float(fin["wage_budget"]))
 			if usage >= 0.92:
 				score += 14.0
-				reasons.append("The wage bill (%d%% of budget) presses hard against the ceiling — a rise is justifiable." % int(usage * 100))
+				reasons.append(I18n.t("The wage bill (%d%% of budget) presses hard against the ceiling — a rise is justifiable.") % int(usage * 100))
 			elif usage >= 0.75:
 				score += 4.0
-				reasons.append("Wage spending (%d%% of budget) leaves only modest headroom." % int(usage * 100))
+				reasons.append(I18n.t("Wage spending (%d%% of budget) leaves only modest headroom.") % int(usage * 100))
 			else:
 				score -= 22.0
-				reasons.append("Only %d%% of the existing wage budget is being used — the board sees no need for more." % int(usage * 100))
+				reasons.append(I18n.t("Only %d%% of the existing wage budget is being used — the board sees no need for more.") % int(usage * 100))
 			var ar := float(amount) / maxf(1.0, float(fin["wage_budget"]))
 			if ar > 0.12:
 				score -= (ar - 0.12) * 90.0
-				reasons.append("A %d%% rise is an aggressive ask." % int(ar * 100))
+				reasons.append(I18n.t("A %d%% rise is an aggressive ask.") % int(ar * 100))
 			if balance < int(avg * 0.6):
 				score -= 10.0
-				reasons.append("The club's weak cash position argues against higher fixed commitments.")
+				reasons.append(I18n.t("The club's weak cash position argues against higher fixed commitments."))
 		KIND_FUNDS:
 			var cap := int(pc["reputation"]) * 25000
 			if amount > cap:
-				reasons.append("HARD:An injection of %s is simply beyond the owners' means (they could stretch to about %s)." %
+				reasons.append("HARD:" + I18n.t("An injection of %s is simply beyond the owners' means (they could stretch to about %s).") %
 					[news.money(amount), news.money(cap)])
 			if balance < 0:
 				score += 20.0
-				reasons.append("The club is in the red — the owners accept the need to act.")
+				reasons.append(I18n.t("The club is in the red — the owners accept the need to act."))
 			elif balance < int(avg * 0.75):
 				score += 10.0
-				reasons.append("Reserves sit below the league average of %s." % news.money(avg))
+				reasons.append(I18n.t("Reserves sit below the league average of %s.") % news.money(avg))
 			elif balance > int(avg * 1.3):
 				score -= 18.0
-				reasons.append("With %s in the bank the owners see no case for reaching into their own pockets." % news.money(balance))
+				reasons.append(I18n.t("With %s in the bank the owners see no case for reaching into their own pockets.") % news.money(balance))
 			else:
-				reasons.append("The bank balance of %s is broadly in line with the league." % news.money(balance))
+				reasons.append(I18n.t("The bank balance of %s is broadly in line with the league.") % news.money(balance))
 			score -= (float(amount) / maxf(1.0, float(cap))) * 18.0
 		KIND_SCOUT:
 			if balance - amount >= int(fin["wage_bill"]) * 4:
 				score += 8.0
-				reasons.append("The investment is comfortably affordable from club funds.")
+				reasons.append(I18n.t("The investment is comfortably affordable from club funds."))
 			else:
 				score -= 25.0
-				reasons.append("Spending %s would cut dangerously into working capital." % news.money(amount))
+				reasons.append(I18n.t("Spending %s would cut dangerously into working capital.") % news.money(amount))
 	return {"score": score, "reasons": reasons}
 
 
@@ -424,10 +424,10 @@ func ledger_rows(limit: int = 12) -> Array:
 				continue
 			if str(d.get("from", "")) == us:
 				rows.append({"date": str(d["date"]), "amount": fee, "kind": "sale",
-					"text": "Sold %s to %s" % [str(d["name"]), str(d["to"])]})
+					"text": I18n.t("Sold %s to %s") % [str(d["name"]), str(d["to"])]})
 			elif str(d.get("to", "")) == us:
 				rows.append({"date": str(d["date"]), "amount": -fee, "kind": "signing",
-					"text": "Signed %s from %s" % [str(d["name"]), str(d["from"])]})
+					"text": I18n.t("Signed %s from %s") % [str(d["name"]), str(d["from"])]})
 	rows.sort_custom(func(a, b): return str(a["date"]) > str(b["date"]))
 	return rows.slice(0, limit)
 

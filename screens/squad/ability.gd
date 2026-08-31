@@ -263,15 +263,15 @@ static func report(inst: Dictionary) -> Dictionary:
 
 
 static func ability_word(stars: float) -> String:
-	if stars >= 5.0: return "Elite for this league"
-	if stars >= 4.5: return "Leading battler"
-	if stars >= 4.0: return "Excellent"
-	if stars >= 3.5: return "Good league level"
-	if stars >= 3.0: return "Decent"
-	if stars >= 2.5: return "Fair"
-	if stars >= 2.0: return "Weak"
-	if stars >= 1.5: return "Poor"
-	return "Far below league level"
+	if stars >= 5.0: return I18n.t("Elite for this league")
+	if stars >= 4.5: return I18n.t("Leading battler")
+	if stars >= 4.0: return I18n.t("Excellent")
+	if stars >= 3.5: return I18n.t("Good league level")
+	if stars >= 3.0: return I18n.t("Decent")
+	if stars >= 2.5: return I18n.t("Fair")
+	if stars >= 2.0: return I18n.t("Weak")
+	if stars >= 1.5: return I18n.t("Poor")
+	return I18n.t("Far below league level")
 
 
 ## Keep / develop / sell call from perceived ratings, age and headroom.
@@ -282,22 +282,22 @@ static func _verdict(r: Dictionary, inst: Dictionary) -> Dictionary:
 	var top_pct := int(round((1.0 - float(r["pct_now"])) * 100.0))
 	if now >= 4.25:
 		return {"word": "Key battler", "color": UI.COL_GOOD, "reason":
-			"Top %d%% of the league's %d battlers right now — build the side around them." % [maxi(top_pct, 1), int(r["league_n"])]}
+			I18n.t("Top %d%% of the league's %d battlers right now — build the side around them.") % [maxi(top_pct, 1), int(r["league_n"])]}
 	if pot - now >= 1.0 and age < 48:
 		return {"word": "Develop", "color": UI.COL_ACCENT.lightened(0.25), "reason":
-			"Clear headroom (%s -> %s potential): young enough to realise ~%d%% of the remaining IV ceiling. Give battles and focused training." %
+			I18n.t("Clear headroom (%s -> %s potential): young enough to realise ~%d%% of the remaining IV ceiling. Give battles and focused training.") %
 			[stars_text(now), stars_range_text(float(r["pot_lo"]), float(r["pot_hi"])), int(round(float(r["realise"]) * 100.0))]}
 	if now >= 3.5:
 		return {"word": "First team", "color": Color("a8c96a"), "reason":
-			"Comfortably first-team level (top %d%% of the league). A regular starter." % maxi(top_pct, 1)}
+			I18n.t("Comfortably first-team level (top %d%% of the league). A regular starter.") % maxi(top_pct, 1)}
 	if age >= 84 and now < 3.5:
 		return {"word": "Aging", "color": UI.COL_WARN, "reason":
-			"Veteran at %s with almost no development left — plan a succession and consider cashing in." % UI.age_str(age)}
+			I18n.t("Veteran at %s with almost no development left — plan a succession and consider cashing in.") % UI.age_str(age)}
 	if now >= 2.5:
 		return {"word": "Squad depth", "color": UI.COL_TEXT, "reason":
 			"Useful rotation piece, but not first-team quality and limited headroom."}
 	return {"word": "Surplus", "color": UI.COL_BAD, "reason":
-		"Below league level (bottom %d%%) with little realistic improvement — a candidate to sell or release." % maxi(100 - top_pct, 1)}
+		I18n.t("Below league level (bottom %d%%) with little realistic improvement — a candidate to sell or release.") % maxi(100 - top_pct, 1)}
 
 
 # ================================================================ formatting

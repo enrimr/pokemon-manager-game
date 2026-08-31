@@ -111,9 +111,9 @@ func _club_header(club: Dictionary, pos: int, row: Dictionary) -> Control:
 	name_row.add_theme_constant_override("separation", 10)
 	name_row.add_child(UI.label(str(club["name"]), 20, Color.WHITE))
 	var lg_id := GameState.league_of(str(club["id"]))
-	var lg_link := UI.link(GameState.league_name(lg_id), 12,
+	var lg_link := UI.link(I18n.t(GameState.league_name(lg_id)), 12,
 		UI.league_color(lg_id).lightened(0.25), {"kind": "league", "id": lg_id},
-		"Browse the %s" % GameState.league_name(lg_id))
+		I18n.t("Browse the %s") % I18n.t(GameState.league_name(lg_id)))
 	lg_link.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	name_row.add_child(lg_link)
 	if GameState.is_player_club(str(club["id"])):
@@ -122,7 +122,7 @@ func _club_header(club: Dictionary, pos: int, row: Dictionary) -> Control:
 		name_row.add_child(yours)
 	v.add_child(name_row)
 	var cur: String = str(GameState.world["meta"].get("currency", "P$"))
-	v.add_child(UI.dim("Manager %s  ·  Reputation %d/20  ·  Balance %s%s  ·  Wage budget %s%s/m" % [
+	v.add_child(UI.dim(I18n.t("Manager %s  ·  Reputation %d/20  ·  Balance %s%s  ·  Wage budget %s%s/m") % [
 		club["manager"], int(club["reputation"]), cur, _thousands(int(club["finances"]["balance"])),
 		cur, _thousands(int(club["finances"]["wage_budget"]))], 12))
 	h.add_child(v)
@@ -180,10 +180,10 @@ func _squad_card(club: Dictionary) -> PanelContainer:
 		item.set_text(0, UI.display_name(inst))
 		item.set_custom_color(0, Color.WHITE)
 		UI.cell_link(item, 0, {"kind": "pokemon", "id": uid},
-			"%s — view Pokémon profile" % UI.display_name(inst))
+			I18n.t("%s — view Pokémon profile") % UI.display_name(inst))
 		item.set_text(1, str(int(inst["level"])))
 		var types: Array = sp.get("types", [])
-		item.set_text(2, "/".join(PackedStringArray(types)))
+		item.set_text(2, I18n.types_join(types))
 		if not types.is_empty():
 			item.set_custom_color(2, DataStore.type_color(str(types[0])).lightened(0.15))
 		item.set_text(3, _age(int(inst.get("age_months", 0))))
@@ -201,7 +201,7 @@ func _squad_card(club: Dictionary) -> PanelContainer:
 			item.set_text(5, str(int(s["kos"])))
 			item.set_text(6, str(int(s["dmg"])))
 			var rat := float(s["rating_sum"]) / maxi(apps, 1)
-			item.set_text(7, "%.2f" % rat)
+			item.set_text(7, I18n.decimal(rat, 2))
 			item.set_custom_color(7, _rating_color(rat))
 		for c in [1, 3, 4, 5, 6, 7]:
 			item.set_text_alignment(c, HORIZONTAL_ALIGNMENT_CENTER)
@@ -232,7 +232,7 @@ func _staff_card(club: Dictionary) -> PanelContainer:
 			if int(r[k]) > best_v:
 				best_v = int(r[k])
 				best_k = k
-		h.add_child(UI.dim("best: %s %d/20" % [str(best_k).capitalize(), best_v], 12))
+		h.add_child(UI.dim(I18n.t("best: %s %d/20") % [str(best_k).capitalize(), best_v], 12))
 		body.add_child(h)
 	return card
 
@@ -242,7 +242,7 @@ func _club_season_card(club: Dictionary, pos: int, row: Dictionary, fixtures: Ar
 	var body := UI.card_body(card)
 	var cid: String = str(club["id"])
 	var lg_id := GameState.league_of(cid)
-	body.add_child(UI.kv_row("%s position" % GameState.league_name(lg_id), _ord(pos),
+	body.add_child(UI.kv_row(I18n.t("%s position") % I18n.t(GameState.league_name(lg_id)), _ord(pos),
 		TB.COL_ACCENT.lightened(0.35) if GameState.is_player_club(cid) else TB.COL_TEXT))
 	body.add_child(UI.kv_row("Record (W-L)", "%d-%d" % [int(row.get("won", 0)), int(row.get("lost", 0))]))
 	var diff := int(row.get("bf", 0)) - int(row.get("ba", 0))
@@ -271,7 +271,7 @@ func _club_season_card(club: Dictionary, pos: int, row: Dictionary, fixtures: Ar
 		spark.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var labels: Array = []
 		for i in vals.size():
-			labels.append("After MD %d" % (i + 1))
+			labels.append(I18n.t("After MD %d") % (i + 1))
 		spark.set_data(vals, labels)
 		h.add_child(spark)
 		var trend := UI.dim("%s → %s" % [_ord(int(vals[0])), _ord(int(vals[vals.size() - 1]))], 11)
@@ -308,8 +308,8 @@ func _cup_status(cid: String, fixtures: Array) -> String:
 	var out := ""
 	for f in ties:
 		if f["played"] and Season.fixture_winner(f) != cid:
-			return "Out in %s" % Season.cup_round_name(int(f["round"]))
-		out = Season.cup_round_name(int(f["round"]))
+			return I18n.t("Out in %s") % I18n.cup_round(int(f["round"]))
+		out = I18n.cup_round(int(f["round"]))
 	var max_round := 0
 	for f in ties:
 		max_round = maxi(max_round, int(f["round"]))
@@ -323,7 +323,7 @@ func _cup_status(cid: String, fixtures: Array) -> String:
 		total_rounds += 1
 	if max_round >= total_rounds and ties.back()["played"]:
 		return "CHAMPIONS"
-	return "In the %s" % out
+	return I18n.t("In the %s") % out
 
 
 func _club_results_card(club: Dictionary, fixtures: Array) -> PanelContainer:
@@ -349,8 +349,8 @@ func _club_results_card(club: Dictionary, fixtures: Array) -> PanelContainer:
 		var d := UI.dim(UI.short_date(f["date"]), 11)
 		d.custom_minimum_size.x = 46
 		h.add_child(d)
-		var comp := UI.dim("LGE %d" % int(f["round"]) if f["comp"] == "league"
-			else Season.cup_round_name(int(f["round"])).left(5).to_upper(), 11)
+		var comp := UI.dim(tr("LGE %d") % int(f["round"]) if f["comp"] == "league"
+			else I18n.cup_round(int(f["round"])).left(5).to_upper(), 11)
 		comp.custom_minimum_size.x = 56
 		h.add_child(comp)
 		var ha := UI.dim("H" if we_home else "A", 11)
@@ -362,7 +362,7 @@ func _club_results_card(club: Dictionary, fixtures: Array) -> PanelContainer:
 		if f["played"]:
 			var us := int(f["score_home"]) if we_home else int(f["score_away"])
 			var them := int(f["score_away"]) if we_home else int(f["score_home"])
-			var res := UI.link("%s %d-%d" % ["W" if us > them else "L", us, them], 12,
+			var res := UI.link("%s %d-%d" % [tr("W") if us > them else tr("L"), us, them], 12,
 				UI.COL_WIN if us > them else UI.COL_LOSS, {"kind": "fixture", "id": str(f["id"])})
 			res.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			res.custom_minimum_size.x = 52
@@ -465,7 +465,7 @@ func _pokemon_header(inst: Dictionary, sp: Dictionary, club: Dictionary, stats: 
 	var name_row := HBoxContainer.new()
 	name_row.add_theme_constant_override("separation", 8)
 	name_row.add_child(UI.label(UI.display_name(inst), 20, Color.WHITE))
-	var lv_txt := "Lv %d" % int(inst["level"])
+	var lv_txt := tr("Lv %d") % int(inst["level"])
 	if UI.display_name(inst) != str(inst["species"]):
 		lv_txt += " %s" % inst["species"]
 	var lv := UI.dim(lv_txt, 13)
@@ -485,10 +485,10 @@ func _pokemon_header(inst: Dictionary, sp: Dictionary, club: Dictionary, stats: 
 		sub.add_child(cl)
 	var cur: String = str(GameState.world["meta"].get("currency", "P$"))
 	var contract: Dictionary = inst.get("contract", {})
-	sub.add_child(UI.dim("·  Age %s  ·  %s%s/m until %s" % [
+	sub.add_child(UI.dim(I18n.t("·  Age %s  ·  %s%s/m until %s") % [
 		_age(int(inst.get("age_months", 0))), cur,
 		_thousands(int(contract.get("salary", 0))),
-		str(contract.get("expiry", "?"))], 12))
+		I18n.pretty_date(str(contract.get("expiry", "?")))], 12))
 	v.add_child(sub)
 	h.add_child(v)
 
@@ -497,7 +497,7 @@ func _pokemon_header(inst: Dictionary, sp: Dictionary, club: Dictionary, stats: 
 	for stat in [
 		["APPS", str(apps), TB.COL_TEXT],
 		["KOs", str(int(stats.get("kos", 0))), TB.COL_TEXT],
-		["AVG RATING", "%.2f" % rat if apps > 0 else "-",
+		["AVG RATING", I18n.decimal(rat, 2) if apps > 0 else "-",
 			_rating_color(rat) if apps > 0 else TB.COL_TEXT_DIM],
 	]:
 		h.add_child(VSeparator.new())
@@ -632,14 +632,14 @@ func _pokemon_season_card(uid: String, club: Dictionary, stats: Dictionary) -> P
 		["Battle apps", str(apps)],
 		["Battles won", "%d (%d%%)" % [wins, int(round(100.0 * wins / maxi(apps, 1)))]],
 		["KOs", str(int(stats["kos"]))],
-		["KOs / app", "%.2f" % (float(stats["kos"]) / maxi(apps, 1))],
+		["KOs / app", I18n.decimal(float(stats["kos"]) / maxi(apps, 1), 2)],
 		["Damage dealt", str(int(stats["dmg"]))],
 		["Damage taken", str(int(stats["taken"]))],
 		["Times fainted", str(int(stats["faints"]))],
-		["Avg rating", "%.2f" % rat],
-		["Accuracy", "%d%% (%d of %d)" % [roundi(100.0 * hits / maxf(hits + misses, 1.0)),
+		["Avg rating", I18n.decimal(rat, 2)],
+		["Accuracy", tr("%d%% (%d of %d)") % [roundi(100.0 * hits / maxf(hits + misses, 1.0)),
 			hits, hits + misses]],
-		["Super-effective", "%d hits (%d%%)" % [int(stats.get("se", 0)),
+		["Super-effective", tr("%d hits (%d%%)") % [int(stats.get("se", 0)),
 			roundi(100.0 * float(stats.get("se", 0)) / maxf(hits, 1.0))]],
 	]:
 		var row := UI.kv_row(str(pair[0]), str(pair[1]),
@@ -776,13 +776,13 @@ func _match_log_card(uid: String, club: Dictionary) -> PanelContainer:
 		item.set_text(2, "%s %s" % ["vs" if e["we_home"] else "at", opp.get("name", e["opp"])])
 		item.set_custom_color(2, TB.COL_TEXT)
 		UI.cell_link(item, 2, {"kind": "club", "id": str(e["opp"])},
-			"%s — view club profile" % opp.get("name", "?"))
+			tr("%s — view club profile") % opp.get("name", "?"))
 		item.set_text(3, "%s %d-%d" % ["W" if e["won"] else "L", int(e["us"]), int(e["them"])])
 		item.set_custom_color(3, UI.COL_WIN if e["won"] else UI.COL_LOSS)
 		UI.cell_link(item, 3, {"kind": "fixture", "id": str(e["fid"])}, "Go to match report")
 		item.set_text(4, str(int(e["kos"])))
 		item.set_text(5, str(int(e["dmg"])))
-		item.set_text(6, "%.1f" % float(e["rating"]))
+		item.set_text(6, I18n.decimal(float(e["rating"]), 1))
 		item.set_custom_color(6, _rating_color(float(e["rating"])))
 		for c in [0, 1, 3, 4, 5, 6]:
 			item.set_text_alignment(c, HORIZONTAL_ALIGNMENT_CENTER)
@@ -813,28 +813,14 @@ func _stat_color(v: int) -> Color:
 
 
 func _age(months: int) -> String:
-	return "%dy %dm" % [int(months / 12.0), months % 12]
+	return tr("%dy %dm") % [int(months / 12.0), months % 12]
 
 
 func _thousands(n: int) -> String:
-	var s := str(n)
-	var out := ""
-	var cnt := 0
-	for i in range(s.length() - 1, -1, -1):
-		out = s[i] + out
-		cnt += 1
-		if cnt % 3 == 0 and i > 0:
-			out = "," + out
-	return out
+	return I18n.number(n)
 
 
 func _ord(n: int) -> String:
 	if n <= 0:
 		return "-"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

@@ -85,6 +85,7 @@ func _process(delta: float) -> void:
 			_on_stream_stalled()
 			return
 		_after_event(e)
+		AudioManager.on_battle_event(e)  # audio piece: SFX + crowd reactions
 		var d: float = DELAYS.get(str(e.get("t", "")), 0.4)
 		if _key_only and not Commentary.is_key_event(e):
 			d *= 0.05
@@ -197,7 +198,7 @@ func _build_card(col: int) -> Control:
 	## col 0 = home side, col 1 = away side. Holds one block per ACTIVE SLOT
 	## (1 in singles, 2 in doubles — rebuilt when the format changes mid-tie).
 	var pair: Array = UI.panel(str(runner.club_for_side(col).get("name", "")).to_upper()
-		+ ("  ·  YOU" if col == runner.player_side else ""))
+		+ (tr("  ·  YOU") if col == runner.player_side else ""))
 	var p: PanelContainer = pair[0]
 	var box: VBoxContainer = pair[1]
 	p.custom_minimum_size.x = 252
@@ -315,27 +316,27 @@ func _build_touchline() -> Control:
 		row1.add_child(b)
 		_speed_btns[float(spec[1])] = b
 	var skip_b := Button.new()
-	skip_b.text = "Sim rest of battle ⏭"
+	skip_b.text = tr("Sim rest of battle ⏭")
 	skip_b.pressed.connect(_on_skip_battle)
 	row1.add_child(skip_b)
 	var skip_s := Button.new()
-	skip_s.text = "Sim to result ⏭⏭"
+	skip_s.text = tr("Sim to result ⏭⏭")
 	skip_s.pressed.connect(_on_skip_series)
 	row1.add_child(skip_s)
 	row1.add_child(UI.spacer_h())
 	_key_toggle = CheckButton.new()
-	_key_toggle.text = "Key moments only"
+	_key_toggle.text = tr("Key moments only")
 	_key_toggle.add_theme_font_size_override("font_size", 13)
 	_key_toggle.toggled.connect(func(v): _key_only = v)
 	row1.add_child(_key_toggle)
 	_ctl_toggle = CheckButton.new()
-	_ctl_toggle.text = "Auto-pilot (coach decides)"
-	_ctl_toggle.tooltip_text = "On: the AI coach follows your touchline instructions and may use the bag.\nOff: you call every move, switch and item yourself."
+	_ctl_toggle.text = tr("Auto-pilot (coach decides)")
+	_ctl_toggle.tooltip_text = tr("On: the AI coach follows your touchline instructions and may use the bag.\nOff: you call every move, switch and item yourself.")
 	_ctl_toggle.add_theme_font_size_override("font_size", 13)
 	_ctl_toggle.button_pressed = not bool(runner.policy["full_control"])
 	_ctl_toggle.toggled.connect(func(v):
 		runner.set_policy("full_control", not v)
-		runner.add_note("you %s." % ("delegate to the coach" if v else "take charge of every call"))
+		runner.add_note(tr("you %s.") % (tr("delegate to the coach") if v else tr("take charge of every call")))
 		_tl_row2.visible = v or not _action_bar.visible
 		if v:
 			_action_bar.visible = false
@@ -352,19 +353,19 @@ func _build_touchline() -> Control:
 	_agg_opt.select(["balanced", "attacking", "cautious"].find(str(runner.policy["aggression"])))
 	_agg_opt.item_selected.connect(func(i):
 		runner.set_policy("aggression", ["balanced", "attacking", "cautious"][i])
-		runner.add_note("aggression set to %s." % ["Balanced", "Attacking", "Cautious"][i]))
+		runner.add_note(tr("aggression set to %s.") % tr(["Balanced", "Attacking", "Cautious"][i])))
 	row2.add_child(_agg_opt)
 	row2.add_child(UI.label("Switching", 12, UI.COL_DIM))
 	_swi_opt = OptionButton.new()
-	for o in ["Normal", "Hold the line", "Rotate freely"]:
+	for o in ["Normal", tr("Hold the line"), tr("Rotate freely")]:
 		_swi_opt.add_item(o)
 	_swi_opt.select(["normal", "stay", "eager"].find(str(runner.policy["switching"])))
 	_swi_opt.item_selected.connect(func(i):
 		runner.set_policy("switching", ["normal", "stay", "eager"][i])
-		runner.add_note("switch policy set to %s." % ["Normal", "Hold the line", "Rotate freely"][i]))
+		runner.add_note(tr("switch policy set to %s.") % [tr("Normal"), tr("Hold the line"), tr("Rotate freely")][i]))
 	row2.add_child(_swi_opt)
 	_force_btn = MenuButton.new()
-	_force_btn.text = "Force switch ▾"
+	_force_btn.text = tr("Force switch ▾")
 	_force_btn.flat = false
 	_force_btn.about_to_popup.connect(_fill_force_menu)
 	_force_btn.get_popup().id_pressed.connect(_on_force_switch)
@@ -385,12 +386,12 @@ func _build_action_bar() -> Control:
 	pair[1].add_child(rows)
 	var head_row := UI.hbox(8)
 	rows.add_child(head_row)
-	head_row.add_child(UI.label("YOUR CALL", 11, UI.COL_DIM))
+	head_row.add_child(UI.label(tr("YOUR CALL"), 11, UI.COL_DIM))
 	var head := UI.label("", 13, UI.COL_ACCENT)
 	head_row.add_child(head)
 	head_row.add_child(UI.spacer_h())
 	var undo := Button.new()
-	undo.text = "↩ redo slot 1"
+	undo.text = tr("↩ redo slot 1")
 	undo.visible = false
 	undo.custom_minimum_size = Vector2(110, 24)
 	undo.add_theme_font_size_override("font_size", 12)
@@ -447,10 +448,10 @@ func _refresh_all() -> void:
 
 func _refresh_scoreboard() -> void:
 	_score_label.text = "%d – %d" % [runner.wins[0], runner.wins[1]]
-	_battle_label.text = "BEST OF 3  ·  BATTLE %d%s  ·  TURN %d  ·  %s" % [
-		runner.battle_no, "  ·  2v2 DOUBLES" if runner.doubles_now() else "", runner.turn_now,
-		("LEAGUE ROUND %d" % int(runner.fixture["round"])) if runner.fixture["comp"] == "league"
-		else Season.cup_round_name(int(runner.fixture["round"])).to_upper() + " (CUP)"]
+	_battle_label.text = tr("BEST OF 3  ·  BATTLE %d%s  ·  TURN %d  ·  %s") % [
+		runner.battle_no, tr("  ·  2v2 DOUBLES") if runner.doubles_now() else "", runner.turn_now,
+		(tr("LEAGUE ROUND %d") % int(runner.fixture["round"])) if runner.fixture["comp"] == "league"
+		else tr(Season.cup_round_name(int(runner.fixture["round"]))).to_upper() + tr(" (CUP)")]
 	var wk := str(runner.vm.get("weather", ""))
 	if wk == "" or not WEATHER_UI.has(wk):
 		_weather_label.visible = false
@@ -458,8 +459,8 @@ func _refresh_scoreboard() -> void:
 		_weather_label.visible = true
 		var spec: Array = WEATHER_UI[wk]
 		var turns := int(runner.vm.get("weather_turns", 0))
-		_weather_label.text = "◈ %s%s" % [spec[0],
-			("  ·  %d turn%s left" % [turns, "" if turns == 1 else "s"]) if turns > 0 else ""]
+		_weather_label.text = "◈ %s%s" % [tr(spec[0]),
+			I18n.np(turns, "  ·  %d turn left", "  ·  %d turns left") if turns > 0 else ""]
 		_weather_label.add_theme_color_override("font_color", spec[1])
 
 
@@ -469,9 +470,9 @@ func _refresh_bag() -> void:
 	var parts: Array = []
 	var bag: Dictionary = runner.our_bag()
 	for iid in bag:
-		parts.append("%s ×%d" % [DataStore.item_name(str(iid)), int(bag[iid])])
-	var mine := "empty" if parts.is_empty() else " · ".join(parts)
-	_bag_label.text = "MATCH BAG:  %s      |   items used — you %d, them %d" % [
+		parts.append("%s ×%d" % [I18n.item_name(str(iid)), int(bag[iid])])
+	var mine := tr("empty") if parts.is_empty() else " · ".join(parts)
+	_bag_label.text = tr("MATCH BAG:  %s      |   items used — you %d, them %d") % [
 		mine, runner.items_spent(runner.player_side), runner.items_spent(1 - runner.player_side)]
 
 
@@ -501,9 +502,9 @@ func _refresh_card(side: int, animate: bool) -> void:
 		var pip := Panel.new()
 		pip.custom_minimum_size = Vector2(30, 12)
 		var held := str(m.get("item", ""))
-		pip.tooltip_text = "%s  Lv%d  %d/%d HP%s%s" % [m["name"], int(m["level"]), int(m["hp"]),
-			int(m["max_hp"]), ("  " + str(m["status"]).to_upper()) if str(m["status"]) != "" else "",
-			("\nHolds: " + DataStore.item_name(held)) if held != "" else ""]
+		pip.tooltip_text = tr("%s  Lv%d  %d/%d HP%s%s") % [m["name"], int(m["level"]), int(m["hp"]),
+			int(m["max_hp"]), ("  " + I18n.t(str(m["status"])).to_upper()) if str(m["status"]) != "" else "",
+			(tr("\nHolds: ") + I18n.item_name(held)) if held != "" else ""]
 		var sb := StyleBoxFlat.new()
 		var mf := float(m["hp"]) / maxf(float(m["max_hp"]), 1.0)
 		sb.bg_color = Color("242a3d") if m["fainted"] else UI.hp_color(mf) * Color(1, 1, 1, 0.55 + 0.45 * mf)
@@ -519,9 +520,9 @@ func _refresh_block(refs: Dictionary, b: Dictionary, animate: bool) -> void:
 	var compact := bool(refs.get("compact", false))
 	refs["name"].text = str(b["name"])
 	if compact:
-		refs["level"].text = "Lv %d" % int(b["level"])
+		refs["level"].text = tr("Lv %d") % int(b["level"])
 	else:
-		refs["level"].text = "Lv %d  %s" % [int(b["level"]), str(b["species"]) if b["species"] != b["name"] else ""]
+		refs["level"].text = I18n.t("Lv %d  %s") % [int(b["level"]), str(b["species"]) if b["species"] != b["name"] else ""]
 	for c in refs["types"].get_children():
 		c.queue_free()
 	for t in b["types"]:
@@ -536,7 +537,7 @@ func _refresh_block(refs: Dictionary, b: Dictionary, animate: bool) -> void:
 	if compact:
 		refs["hp_text"].text = "%d/%d" % [int(b["hp"]), int(b["max_hp"])]
 	else:
-		refs["hp_text"].text = "%d / %d HP  (%d%%)" % [int(b["hp"]), int(b["max_hp"]), int(round(frac * 100))]
+		refs["hp_text"].text = tr("%d / %d HP  (%d%%)") % [int(b["hp"]), int(b["max_hp"]), int(round(frac * 100))]
 	for c in refs["status"].get_children():
 		c.queue_free()
 	if str(b["status"]) != "":
@@ -549,15 +550,15 @@ func _refresh_block(refs: Dictionary, b: Dictionary, animate: bool) -> void:
 	if iid == "":
 		refs["item"].text = "—" if compact else "nothing"
 		refs["item"].add_theme_color_override("font_color", UI.COL_DIM)
-		refs["item"].tooltip_text = "No held item."
+		refs["item"].tooltip_text = tr("No held item.")
 	else:
 		var it: Dictionary = DataStore.item(iid)
 		var consumed := bool(b.get("item_consumed", false))
-		refs["item"].text = "◆ %s%s" % [str(it.get("name", iid)),
-			("*" if compact else "  (spent)") if consumed else ""]
+		refs["item"].text = "◆ %s%s" % [tr(str(it.get("name", iid))),
+			("*" if compact else tr("  (spent)")) if consumed else ""]
 		refs["item"].add_theme_color_override("font_color", UI.COL_DIM if consumed else UI.COL_WARN)
-		refs["item"].tooltip_text = "%s\n%s%s" % [str(it.get("name", iid)), str(it.get("desc", "")),
-			"\n(already spent this battle)" if consumed else ""]
+		refs["item"].tooltip_text = "%s\n%s%s" % [tr(str(it.get("name", iid))), tr(str(it.get("desc", ""))),
+			tr("\n(already spent this battle)") if consumed else ""]
 	# live move list with PP
 	for c in refs["moves"].get_children():
 		c.queue_free()
@@ -566,15 +567,15 @@ func _refresh_block(refs: Dictionary, b: Dictionary, animate: bool) -> void:
 		var pp_left := int(b.get("pp", {}).get(str(mname), -1))
 		var out_of_pp := pp_left == 0
 		var pw := int(mv.get("power", 0))
-		var meta_txt := ("pw %d" % pw) if pw > 0 else str(mv.get("category", ""))
+		var meta_txt := (tr("pw %d") % pw) if pw > 0 else tr(str(mv.get("category", "")))
 		if compact:
 			# 2x2 grid cell: type-coloured move name + PP count (tooltip = detail)
 			var cell := UI.hbox(4)
 			var ml := UI.label(str(mname), 10,
 				UI.COL_DIM if out_of_pp else DataStore.type_color(str(mv.get("type", "?"))).lightened(0.25))
 			ml.mouse_filter = Control.MOUSE_FILTER_STOP
-			ml.tooltip_text = "%s · %s · %s · %s PP left" % [str(mv.get("type", "?")).to_upper(),
-				str(mv.get("category", "?")), meta_txt, str(pp_left) if pp_left >= 0 else "?"]
+			ml.tooltip_text = tr("%s · %s · %s · %s PP left") % [I18n.type_name(str(mv.get("type", "?"))).to_upper(),
+				tr(str(mv.get("category", "?"))), meta_txt, str(pp_left) if pp_left >= 0 else "?"]
 			cell.add_child(ml)
 			cell.add_child(UI.label("·%s" % (str(pp_left) if pp_left >= 0 else "?"), 9,
 				UI.COL_BAD if out_of_pp else UI.COL_DIM))
@@ -603,7 +604,7 @@ func _render_ticker_catchup() -> void:
 func _append_new_ticker_lines() -> void:
 	while _ticker_idx < runner.ticker.size():
 		var l: Dictionary = runner.ticker[_ticker_idx]
-		_ticker.append_text("[color=#3d4358]B%d·T%02d[/color]  %s\n" %
+		_ticker.append_text(tr("[color=#3d4358]B%d·T%02d[/color]  %s\n") %
 			[int(l["battle"]), int(l["turn"]), str(l["text"])])
 		_ticker_idx += 1
 
@@ -677,12 +678,12 @@ func _show_over_bar() -> void:
 	_over_bar.visible = true
 	var s: Array = runner.shorts()
 	if runner.series_decided():
-		_over_label.text = "FULL TIME — %s %d-%d %s" % [s[0], runner.wins[0], runner.wins[1], s[1]]
-		_over_btn.text = "Full-time report  ▶"
+		_over_label.text = tr("FULL TIME — %s %d-%d %s") % [s[0], runner.wins[0], runner.wins[1], s[1]]
+		_over_btn.text = tr("Full-time report  ▶")
 	else:
-		_over_label.text = "Battle %d goes to %s.  Series: %d–%d." % [
+		_over_label.text = tr("Battle %d goes to %s.  Series: %d–%d.") % [
 			runner.battle_no, s[runner.battles.back()["winner"]], runner.wins[0], runner.wins[1]]
-		_over_btn.text = "Start battle %d  ▶" % (runner.battle_no + 1)
+		_over_btn.text = tr("Start battle %d  ▶") % (runner.battle_no + 1)
 
 
 func _on_over_pressed() -> void:
@@ -705,14 +706,14 @@ func _fill_force_menu() -> void:
 		var b: Dictionary = team[i]
 		if b["fainted"] or runner.vm["actives"][runner.player_side].has(i):
 			continue
-		pop.add_item("%s  Lv%d  %d%%" % [b["name"], int(b["level"]),
+		pop.add_item(tr("%s  Lv%d  %d%%") % [b["name"], int(b["level"]),
 			int(round(100.0 * float(b["hp"]) / maxf(float(b["max_hp"]), 1.0)))], i)
 
 
 func _on_force_switch(id: int) -> void:
 	runner.force_switch(id)
 	var b: Dictionary = runner.vm["teams"][runner.player_side][id]
-	runner.add_note("force switch — %s will come in." % str(b["name"]))
+	runner.add_note(tr("force switch — %s will come in.") % str(b["name"]))
 	_append_new_ticker_lines()
 
 
@@ -737,14 +738,14 @@ func _show_action_bar() -> void:
 	undo.visible = false
 	if doubles:
 		var me: Dictionary = runner.engine.slot_battler(runner.player_side, slot)
-		head.text = "DOUBLES — SLOT %d/%d: %s.  Pick a move AND its target, switch, or use an item." % [
+		head.text = tr("DOUBLES — SLOT %d/%d: %s.  Pick a move AND its target, switch, or use an item.") % [
 			slot + 1, runner.engine.slot_count(), str(me.get("name", "?"))]
 		if not runner.slot_actions.is_empty():
 			var prev_slot: int = runner.slot_actions.keys()[0]
-			undo.text = "↩ redo slot %d" % (int(prev_slot) + 1)
+			undo.text = tr("↩ redo slot %d") % (int(prev_slot) + 1)
 			undo.visible = true
 	else:
-		head.text = "Attack, switch or use an item (items cost the turn)."
+		head.text = tr("Attack, switch or use an item (items cost the turn).")
 	var moves_row: HBoxContainer = _action_bar.get_meta("moves_row")
 	var switch_row: HBoxContainer = _action_bar.get_meta("switch_row")
 	var items_row: HBoxContainer = _action_bar.get_meta("items_row")
@@ -787,16 +788,16 @@ static func _eff_text(mv: Dictionary, pv: Dictionary, spread: bool) -> String:
 	var eff := float(pv.get("eff", 1.0))
 	var est := int(round(float(pv.get("est_frac", 0.0)) * 100))
 	if str(mv.get("category", "")) == "status":
-		return "status"
-	var t := "~%d%% dmg" % est
+		return I18n.t("status")
+	var t := I18n.t("~%d%% dmg") % est
 	if eff >= 2.0:
 		t += " ▲▲"
 	elif eff == 0.0:
-		t = "immune ✕"
+		t = I18n.t("immune ✕")
 	elif eff < 1.0:
 		t += " ▼"
 	if spread:
-		t += " · EACH"
+		t += I18n.t(" · EACH")
 	return t
 
 
@@ -818,12 +819,12 @@ func _move_button(a: Dictionary) -> Button:
 	var acc_txt := "—" if acc_v <= 0 else "%d%%" % acc_v
 	var tail := eff_txt
 	if spread:
-		tail = ("HITS BOTH FOES%s · " % (" + ALLY" if tg == "spread_all" else "")) + eff_txt
-	btn.text = "%s\n%s · pw %s · acc %s · %d PP\n%s" % [str(a["move"]),
-		str(mv.get("type", "?")).to_upper(), pow_txt, acc_txt, int(a["pp"]), tail]
-	btn.tooltip_text = "Type %s · %s · power %s · accuracy %s · %d PP left%s" % [
-		str(mv.get("type", "?")), str(mv.get("category", "?")), pow_txt, acc_txt, int(a["pp"]),
-		"\nSpread: hits every target at 75% power." if spread else ""]
+		tail = tr("HITS BOTH FOES") + (tr(" + ALLY") if tg == "spread_all" else "") + " · " + eff_txt
+	btn.text = I18n.t("%s\n%s · pw %s · acc %s · %d PP\n%s") % [tr(str(a["move"])),
+		I18n.type_name(str(mv.get("type", "?"))).to_upper(), pow_txt, acc_txt, int(a["pp"]), tail]
+	btn.tooltip_text = tr("Type %s · %s · power %s · accuracy %s · %d PP left%s") % [
+		I18n.type_name(str(mv.get("type", "?"))), tr(str(mv.get("category", "?"))), pow_txt, acc_txt, int(a["pp"]),
+		tr("\nSpread: hits every target at 75% power.") if spread else ""]
 	btn.add_theme_color_override("font_color",
 		UI.COL_GOOD if eff >= 2.0 else (UI.COL_BAD if eff == 0.0 else UI.COL_TEXT))
 	btn.add_theme_font_size_override("font_size", 12)
@@ -840,13 +841,13 @@ func _move_target_menu(a: Dictionary) -> MenuButton:
 	var pow_txt := "—" if int(mv.get("power", 0)) <= 0 else str(int(mv["power"]))
 	var acc_v := int(mv.get("accuracy", 100))
 	var acc_txt := "—" if acc_v <= 0 else "%d%%" % acc_v
-	mb.text = "%s  🎯▾\n%s · pw %s · acc %s · %d PP\npick a target" % [str(a["move"]),
-		str(mv.get("type", "?")).to_upper(), pow_txt, acc_txt, int(a["pp"])]
+	mb.text = I18n.t("%s  🎯▾\n%s · pw %s · acc %s · %d PP\npick a target") % [tr(str(a["move"])),
+		I18n.type_name(str(mv.get("type", "?"))).to_upper(), pow_txt, acc_txt, int(a["pp"])]
 	mb.flat = false
 	mb.add_theme_font_size_override("font_size", 12)
 	mb.custom_minimum_size = Vector2(120, 46)
 	mb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mb.tooltip_text = "Single-target move — choose which foe to hit."
+	mb.tooltip_text = tr("Single-target move — choose which foe to hit.")
 	var targets: Array = a.get("targets", [])
 	var pop := mb.get_popup()
 	for i in targets.size():
@@ -875,11 +876,11 @@ func _item_menu(iid: String, actions: Array) -> MenuButton:
 	## One button per distinct item in the bag; the popup picks the target.
 	var mb := MenuButton.new()
 	var first: Dictionary = actions[0]
-	mb.text = "🧰 %s ×%d ▾" % [str(first.get("name", iid)), int(first.get("count", 1))]
+	mb.text = "🧰 %s ×%d ▾" % [tr(str(first.get("name", iid))), int(first.get("count", 1))]
 	mb.flat = false
 	mb.add_theme_color_override("font_color", UI.COL_WARN)
 	mb.add_theme_font_size_override("font_size", 12)
-	mb.tooltip_text = "%s — using an item costs this turn." % str(first.get("desc", ""))
+	mb.tooltip_text = tr("%s — using an item costs this turn.") % tr(str(first.get("desc", "")))
 	mb.custom_minimum_size = Vector2(110, 26)
 	var pop := mb.get_popup()
 	for i in actions.size():
@@ -888,11 +889,11 @@ func _item_menu(iid: String, actions: Array) -> MenuButton:
 		var hp := int(a.get("target_hp", 0))
 		var desc: String
 		if hp <= 0:
-			desc = "fainted"
+			desc = tr("fainted")
 		else:
-			desc = "%d/%d HP" % [hp, int(a.get("target_max", 1))]
+			desc = tr("%d/%d HP") % [hp, int(a.get("target_max", 1))]
 			if status != "":
-				desc += " · " + status.to_upper()
+				desc += " · " + I18n.t(status).to_upper()
 		pop.add_item("→ %s   (%s)" % [str(a.get("target_name", "?")), desc], i)
 	pop.id_pressed.connect(func(id: int):
 		var a: Dictionary = actions[id]

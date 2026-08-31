@@ -82,7 +82,7 @@ class Medallion:
 		draw_string(font, c + Vector2(-msz.x * 0.5, msz.y * 0.32), mono,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, fs, mcol)
 		# level tag
-		var lv := "Lv%d" % int(battler.get("level", 0))
+		var lv := tr("Lv%d") % int(battler.get("level", 0))
 		var lsz := font.get_string_size(lv, HORIZONTAL_ALIGNMENT_CENTER, -1, 11)
 		var tag_pos := c + Vector2(r * 0.25, r * 0.78)
 		draw_rect(Rect2(tag_pos - Vector2(4, 11), lsz + Vector2(8, 5)), Color("11141dcc"))
@@ -258,7 +258,7 @@ func _draw() -> void:
 			draw_ellipse_fill(plat_c + Vector2(0, -6), pr * 0.45, pr * 0.13, Color(0, 0, 0, 0.35))
 			if runner != null and k == slots_n - 1:
 				var font := get_theme_default_font()
-				var tag := str(club.get("short", "?")) + ("  ·  YOU" if side == runner.player_side else "")
+				var tag := str(club.get("short", "?")) + (tr("  ·  YOU") if side == runner.player_side else "")
 				var col := Color("f2f4fa") if side == runner.player_side else Color("8b91a8")
 				draw_string(font, plat_c + Vector2(-pr, 22), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, col)
 
@@ -271,10 +271,10 @@ func _draw_weather(w: float, h: float) -> void:
 	if wk == "":
 		return
 	var spec: Dictionary = {
-		"sun": {"label": "HARSH SUNLIGHT", "col": Color("f0a848")},
-		"rain": {"label": "POURING RAIN", "col": Color("58a8f0")},
-		"sand": {"label": "SANDSTORM", "col": Color("d8c078")},
-		"hail": {"label": "HAIL", "col": Color("98d8d8")},
+		"sun": {"label": tr("HARSH SUNLIGHT"), "col": Color("f0a848")},
+		"rain": {"label": tr("POURING RAIN"), "col": Color("58a8f0")},
+		"sand": {"label": tr("SANDSTORM"), "col": Color("d8c078")},
+		"hail": {"label": tr("HAIL"), "col": Color("98d8d8")},
 	}.get(wk, {})
 	if spec.is_empty():
 		return
@@ -345,10 +345,10 @@ func play_event(e: Dictionary) -> void:
 		"battle_start":
 			sync_actives()
 			if runner.doubles_now():
-				_set_caption("BATTLE %d OF 3 — 2v2 DOUBLES" % runner.battle_no,
-					Color("9a8dff"), "two actives per side · pick your targets")
+				_set_caption(tr("BATTLE %d OF 3 — 2v2 DOUBLES") % runner.battle_no,
+					Color("9a8dff"), tr("two actives per side · pick your targets"))
 			else:
-				_set_caption("BATTLE %d OF 3" % runner.battle_no, Color("9a8dff"), "")
+				_set_caption(tr("BATTLE %d OF 3") % runner.battle_no, Color("9a8dff"), "")
 		"switch":
 			_anim_switch(e)
 		"move_used":
@@ -366,33 +366,33 @@ func play_event(e: Dictionary) -> void:
 		"stat_change":
 			_anim_stat(e)
 		"no_target":
-			_float_med(_med_from_event(e), "NO TARGET", Color("8b91a8"), 13)
+			_float_med(_med_from_event(e), tr("NO TARGET"), Color("8b91a8"), 13)
 		"flinch":
-			_float_med(_med_from_event(e), "FLINCHED", Color("e0b050"), 13)
+			_float_med(_med_from_event(e), tr("FLINCHED"), Color("e0b050"), 13)
 		"confused_hit":
-			_float_med(_med_from_event(e), "HIT ITSELF", Color("e0b050"), 13)
+			_float_med(_med_from_event(e), tr("HIT ITSELF"), Color("e0b050"), 13)
 		"paralyzed":
-			_float_med(_med_from_event(e), "FULLY PARALYSED", Color("f8d030"), 12)
+			_float_med(_med_from_event(e), tr("FULLY PARALYSED"), Color("f8d030"), 12)
 		"asleep":
-			_float_med(_med_from_event(e), "FROZEN" if e.get("frozen", false) else "ASLEEP",
+			_float_med(_med_from_event(e), tr("FROZEN") if e.get("frozen", false) else tr("ASLEEP"),
 				Color("98d8d8") if e.get("frozen", false) else Color("8b91a8"), 12)
 		"item_used":
 			_anim_item(e)
 		"weather_start":
 			_anim_weather_start(e)
 		"weather_end":
-			_set_caption("THE SKIES CLEAR", Color("8b91a8"), "")
+			_set_caption(tr("THE SKIES CLEAR"), Color("8b91a8"), "")
 		"weather_chip":
 			var wcol := Color("d8c078") if str(e.get("kind", "")) == "sand" else Color("98d8d8")
 			_float_med(_med_from_event(e), "-%d %s" % [int(e.get("amount", 0)),
-				"SAND" if str(e.get("kind", "")) == "sand" else "HAIL"], wcol, 12)
+				tr("SAND") if str(e.get("kind", "")) == "sand" else tr("HAIL")], wcol, 12)
 		"ability_triggered":
 			_anim_ability(e)
 		"held_item":
-			_float_med(_med_from_event(e), "◆ " + str(e.get("item_name", "")), Color("e0b050"), 12, -26.0)
+			_float_med(_med_from_event(e), "◆ " + tr(str(e.get("item_name", ""))), Color("e0b050"), 12, -26.0)
 		"battle_end":
 			var s: Array = runner.shorts()
-			_set_caption("BATTLE %d — %s TAKE IT" % [runner.battle_no, s[int(e["winner"])]],
+			_set_caption(tr("BATTLE %d — %s TAKE IT") % [runner.battle_no, s[int(e["winner"])]],
 				Color("57c979") if int(e["winner"]) == runner.player_side else Color("e06060"), "")
 
 
@@ -446,12 +446,12 @@ func _anim_move(e: Dictionary) -> void:
 	var mtype := str(mv.get("type", "normal"))
 	var mcol: Color = DataStore.type_color(mtype)
 	var cat := str(mv.get("category", "phys"))
-	var sub := "%s · %s" % [mtype.to_upper(), cat.to_upper()]
+	var sub := "%s · %s" % [I18n.type_name(mtype).to_upper(), tr(cat.to_upper())]
 	if e.has("target"):
-		sub += " · at %s" % str(e["target"])
+		sub += tr(" · at %s") % str(e["target"])
 	elif bool(e.get("spread", false)):
-		sub += " · SPREAD"
-	_set_caption("%s — %s" % [str(e.get("pokemon", "?")), mname], mcol, sub)
+		sub += tr(" · SPREAD")
+	_set_caption("%s — %s" % [str(e.get("pokemon", "?")), tr(mname)], mcol, sub)
 	var me: Medallion = _med_from_event(e)
 	if me == null:
 		return
@@ -496,7 +496,7 @@ func _anim_damage(e: Dictionary) -> void:
 	shake.tween_property(m, "anim_offset", Vector2.ZERO, 0.06)
 	# floating damage number
 	var pos := m.center() - global_position + Vector2(randf_range(-14, 14), -m.size.y * 0.55)
-	var txt := ("-%d" % amount) if not crit else ("CRIT -%d" % amount)
+	var txt := ("-%d" % amount) if not crit else (tr("CRIT -%d") % amount)
 	var col := Color("f2f4fa")
 	if crit:
 		col = Color("e0b050")
@@ -506,11 +506,11 @@ func _anim_damage(e: Dictionary) -> void:
 	_float_text(pos, txt, col, fsize + (4 if crit else 0))
 	if not recoil:
 		if eff >= 2.0:
-			_float_text(pos + Vector2(0, 20), "SUPER EFFECTIVE!", Color("e0b050"), 11)
+			_float_text(pos + Vector2(0, 20), tr("SUPER EFFECTIVE!"), Color("e0b050"), 11)
 		elif eff == 0.0:
-			_float_text(pos + Vector2(0, 20), "IMMUNE", Color("6a7188"), 11)
+			_float_text(pos + Vector2(0, 20), tr("IMMUNE"), Color("6a7188"), 11)
 		elif eff < 1.0:
-			_float_text(pos + Vector2(0, 20), "resisted", Color("6a7188"), 10)
+			_float_text(pos + Vector2(0, 20), tr("resisted"), Color("6a7188"), 10)
 
 
 func _anim_miss(e: Dictionary) -> void:
@@ -522,7 +522,7 @@ func _anim_miss(e: Dictionary) -> void:
 	var tw := create_tween()
 	tw.tween_property(d, "anim_offset", Vector2(22.0 * (1.0 if 1 - side == 1 else -1.0), -6), 0.12)
 	tw.tween_property(d, "anim_offset", Vector2.ZERO, 0.18)
-	_float_med(d, "MISS", Color("8b91a8"), 13)
+	_float_med(d, tr("MISS"), Color("8b91a8"), 13)
 
 
 func _anim_faint(e: Dictionary) -> void:
@@ -533,7 +533,7 @@ func _anim_faint(e: Dictionary) -> void:
 	tw.tween_property(m, "anim_offset", Vector2(0, 54.0), 0.5)\
 		.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(m, "modulate:a", 0.35, 0.5)
-	_float_med(m, "FAINTED", Color("e06060"), 16)
+	_float_med(m, tr("FAINTED"), Color("e06060"), 16)
 	_burst(m.center() - global_position, Color("6a7188"), 8, 40.0, 0.0, true)
 
 
@@ -547,7 +547,7 @@ func _anim_heal(e: Dictionary) -> void:
 		var tw := create_tween()
 		tw.tween_property(m, "anim_offset", Vector2.ZERO, 0.4)\
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		_float_med(m, "REVIVED!", Color("57c979"), 15)
+		_float_med(m, tr("REVIVED!"), Color("57c979"), 15)
 	else:
 		_float_med(m, "+%d" % int(e.get("amount", 0)), Color("57c979"), 15)
 	# rising sparkles
@@ -559,9 +559,9 @@ func _anim_heal(e: Dictionary) -> void:
 
 func _anim_status(e: Dictionary) -> void:
 	var st := str(e.get("status", ""))
-	var labels := {"burn": "BURNED!", "para": "PARALYSED!", "sleep": "ASLEEP!",
-		"poison": "POISONED!", "freeze": "FROZEN!", "confused": "CONFUSED!",
-		"cured": "CURED!", "woke": "WOKE UP", "thawed": "THAWED"}
+	var labels := {"burn": tr("BURNED!"), "para": tr("PARALYSED!"), "sleep": tr("ASLEEP!"),
+		"poison": tr("POISONED!"), "freeze": tr("FROZEN!"), "confused": tr("CONFUSED!"),
+		"cured": tr("CURED!"), "woke": tr("WOKE UP"), "thawed": tr("THAWED")}
 	var col: Color = UI.STATUS_COLORS.get(st, Color("57c979") if st in ["cured", "woke", "thawed"] else Color("e0b050"))
 	var m: Medallion = _med_from_event(e)
 	if m == null:
@@ -575,21 +575,21 @@ func _anim_stat(e: Dictionary) -> void:
 	var names := {"atk": "ATK", "def": "DEF", "spa": "SPA", "spd": "SPD",
 		"spe": "SPE", "acc": "ACC", "eva": "EVA"}
 	var arrow := "▲".repeat(mini(absi(d), 2)) if d > 0 else "▼".repeat(mini(absi(d), 2))
-	_float_med(_med_from_event(e), "%s %s" % [arrow, names.get(str(e["stat"]), str(e["stat"]).to_upper())],
+	_float_med(_med_from_event(e), "%s %s" % [arrow, tr(str(names.get(str(e["stat"]), str(e["stat"]).to_upper())))],
 		Color("57c979") if d > 0 else Color("e06060"), 13)
 
 
 func _anim_weather_start(e: Dictionary) -> void:
 	var kind := str(e.get("kind", ""))
-	var caps := {"sun": ["THE SUNLIGHT TURNS HARSH", Color("f0a848")],
-		"rain": ["RAIN POUNDS THE ARENA", Color("58a8f0")],
-		"sand": ["A SANDSTORM KICKS UP", Color("d8c078")],
-		"hail": ["HAIL PELTS DOWN", Color("98d8d8")]}
-	var spec: Array = caps.get(kind, ["THE WEATHER SHIFTS", Color("8b91a8")])
+	var caps := {"sun": [tr("THE SUNLIGHT TURNS HARSH"), Color("f0a848")],
+		"rain": [tr("RAIN POUNDS THE ARENA"), Color("58a8f0")],
+		"sand": [tr("A SANDSTORM KICKS UP"), Color("d8c078")],
+		"hail": [tr("HAIL PELTS DOWN"), Color("98d8d8")]}
+	var spec: Array = caps.get(kind, [tr("THE WEATHER SHIFTS"), Color("8b91a8")])
 	var src := str(e.get("pokemon", ""))
 	var sub := ""
 	if src != "":
-		sub = ("%s's ability set it off" if str(e.get("source", "")) == "ability" else "summoned by %s") % src
+		sub = (tr("%s's ability set it off") if str(e.get("source", "")) == "ability" else tr("summoned by %s")) % src
 	_set_caption(spec[0], spec[1], sub)
 	# sweep a burst of weather-coloured particles across the sky band
 	for i in 7:
@@ -601,7 +601,7 @@ func _anim_ability(e: Dictionary) -> void:
 	var m: Medallion = _med_from_event(e)
 	if m == null:
 		return
-	var ab := str(e.get("ability_name", e.get("ability", "?"))).to_upper()
+	var ab := tr(str(e.get("ability_name", e.get("ability", "?")))).to_upper()
 	var effect := str(e.get("effect", ""))
 	if effect in ["no_recoil"]:
 		return  # silent QoL trigger — a floater every hit would be noise
@@ -611,16 +611,16 @@ func _anim_ability(e: Dictionary) -> void:
 	_float_med(m, "◈ " + ab, col, 12, -30.0)
 	_ring(m.center() - global_position, col)
 	if effect in ["entry_stat", "weather", "sturdy", "immune", "absorb"]:
-		var subs := {"entry_stat": "takes the field", "weather": "changes the weather",
-			"sturdy": "hangs on at 1 HP", "immune": "no effect", "absorb": "soaks the attack up"}
-		_set_caption("%s — %s" % [str(e.get("pokemon", "?")), str(e.get("ability_name", "?"))],
+		var subs := {"entry_stat": tr("takes the field"), "weather": tr("changes the weather"),
+			"sturdy": tr("hangs on at 1 HP"), "immune": tr("no effect"), "absorb": tr("soaks the attack up")}
+		_set_caption("%s — %s" % [str(e.get("pokemon", "?")), tr(str(e.get("ability_name", "?")))],
 			col, str(subs.get(effect, "")))
 
 
 func _anim_item(e: Dictionary) -> void:
 	var side := int(e["side"])
-	var iname := str(e.get("item_name", "Item"))
-	_set_caption("ITEM — %s" % iname, Color("9a8dff"), "used on %s · costs the turn" % str(e.get("pokemon", "?")))
+	var iname := tr(str(e.get("item_name", "Item")))
+	_set_caption(tr("ITEM — %s") % iname, Color("9a8dff"), tr("used on %s · costs the turn") % str(e.get("pokemon", "?")))
 	var actives: Array = runner.vm["actives"][side]
 	var t_idx := int(e.get("target_index", -1))
 	var target_slot := actives.find(t_idx)
@@ -631,7 +631,7 @@ func _anim_item(e: Dictionary) -> void:
 		_projectile(corner, m.center() - global_position, Color("9a8dff"), 5)
 		_ring(m.center() - global_position, Color("9a8dff"))
 	else:
-		_float_text(corner + Vector2(0, 18), "→ %s (bench)" % str(e.get("pokemon", "?")), Color("8b91a8"), 11)
+		_float_text(corner + Vector2(0, 18), tr("→ %s (bench)") % str(e.get("pokemon", "?")), Color("8b91a8"), 11)
 
 
 # ================================================================= primitives

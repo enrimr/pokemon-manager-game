@@ -80,7 +80,7 @@ func _default_state() -> Dictionary:
 	return {
 		"version": 1,
 		"last": "",           # last synced in-game date
-		"initialised": false, # first-ever sync writes "took charge" baselines
+		"initialised": false, # first-ever sync writes tr("took charge") baselines
 		"mons": {},           # uid -> mon history entry (see _mon)
 	}
 
@@ -135,14 +135,14 @@ func _mon(uid: String, inst: Dictionary) -> Dictionary:
 	var etype: String
 	if not bool(state.get("initialised", false)) or date <= GameState.season_start:
 		etype = "baseline"
-		text = "At the club when you took charge — Lv %d, contracted at %s/wk to %s." % [
+		text = tr("At the club when you took charge — Lv %d, contracted at %s/wk to %s.") % [
 			int(inst["level"]), UI.money(int(inst["contract"]["salary"])),
-			Season.pretty_date(str(inst["contract"]["expiry"]))]
+			I18n.pretty_date(str(inst["contract"]["expiry"]))]
 	else:
 		etype = "arrived"
-		text = "Joined the squad — Lv %d, contracted at %s/wk to %s." % [
+		text = tr("Joined the squad — Lv %d, contracted at %s/wk to %s.") % [
 			int(inst["level"]), UI.money(int(inst["contract"]["salary"])),
-			Season.pretty_date(str(inst["contract"]["expiry"]))]
+			I18n.pretty_date(str(inst["contract"]["expiry"]))]
 	entry["events"].append({"date": date, "type": etype, "text": text})
 	entry["snaps"].append(_snapshot(inst))
 	return entry
@@ -217,7 +217,7 @@ func sync() -> void:
 			continue
 		m["left"] = date
 		(m["events"] as Array).append({"date": date, "type": "contract",
-			"text": "Left the club."})
+			"text": tr("Left the club.")})
 		changed = true
 
 	if not was_initialised:
@@ -241,7 +241,7 @@ func _diff_mon(m: Dictionary, inst: Dictionary, date: String) -> bool:
 	# --- level
 	if int(now["level"]) != int(cur["level"]):
 		events.append({"date": date, "type": "level",
-			"text": "Reached level %d (was %d)." % [int(now["level"]), int(cur["level"])]})
+			"text": tr("Reached level %d (was %d).") % [int(now["level"]), int(cur["level"])]})
 		changed = true
 
 	# --- attribute gains (training converts progress into IV points)
@@ -252,12 +252,12 @@ func _diff_mon(m: Dictionary, inst: Dictionary, date: String) -> bool:
 			var d_eff := int(now["stats"][k]) - int(cur["stats"][k])
 			var eff_note := ""
 			if d_eff != 0:
-				eff_note = ", eff %d > %d" % [int(cur["stats"][k]), int(now["stats"][k])]
+				eff_note = tr(", eff %d > %d") % [int(cur["stats"][k]), int(now["stats"][k])]
 			parts.append("%s %d > %d (%+d%s)" % [STAT_SHORT[k],
 				int(cur["ivs"][k]), int(now["ivs"][k]), d_iv, eff_note])
 	if not parts.is_empty():
 		events.append({"date": date, "type": "development",
-			"text": "Training gains: " + " · ".join(PackedStringArray(parts))})
+			"text": tr("Training gains: ") + " · ".join(PackedStringArray(parts))})
 		changed = true
 
 	# --- moves learned / replaced
@@ -266,7 +266,7 @@ func _diff_mon(m: Dictionary, inst: Dictionary, date: String) -> bool:
 	var added: Array = new_moves.filter(func(mv): return not old_moves.has(mv))
 	var removed: Array = old_moves.filter(func(mv): return not new_moves.has(mv))
 	for i in added.size():
-		var text := "Learned %s" % str(added[i])
+		var text := I18n.t("Learned %s") % I18n.t(str(added[i]))
 		if i < removed.size():
 			text += ", replacing %s" % str(removed[i])
 		events.append({"date": date, "type": "move", "text": text + "."})
@@ -275,9 +275,9 @@ func _diff_mon(m: Dictionary, inst: Dictionary, date: String) -> bool:
 	# --- contract changed outside our own renewal flow (e.g. another piece)
 	if int(now["salary"]) != int(cur["salary"]) or str(now["expiry"]) != str(cur["expiry"]):
 		events.append({"date": date, "type": "contract",
-			"text": "Contract updated: %s/wk to %s (was %s/wk to %s)." % [
-				UI.money(int(now["salary"])), Season.pretty_date(str(now["expiry"])),
-				UI.money(int(cur["salary"])), Season.pretty_date(str(cur["expiry"]))]})
+			"text": tr("Contract updated: %s/wk to %s (was %s/wk to %s).") % [
+				UI.money(int(now["salary"])), I18n.pretty_date(str(now["expiry"])),
+				UI.money(int(cur["salary"])), I18n.pretty_date(str(cur["expiry"]))]})
 		changed = true
 
 	if changed:
@@ -363,10 +363,10 @@ func _push(uid: String, etype: String, text: String) -> void:
 
 func on_renewal(inst: Dictionary, old_wage: int, wage: int, years: int, bonus: int) -> void:
 	var uid: String = str(inst["uid"])
-	_push(uid, "renewal", "Signed a new %d-year contract at %s/wk (was %s/wk)%s, running to %s." % [
+	_push(uid, "renewal", tr("Signed a new %d-year contract at %s/wk (was %s/wk)%s, running to %s.") % [
 		years, UI.money(wage), UI.money(old_wage),
-		(" plus a %s signing bonus" % UI.money(bonus)) if bonus > 0 else "",
-		Season.pretty_date(str(inst["contract"]["expiry"]))])
+		(tr(" plus a %s signing bonus") % UI.money(bonus)) if bonus > 0 else "",
+		I18n.pretty_date(str(inst["contract"]["expiry"]))])
 	# Refresh the mirror so sync() does not double-report the contract change.
 	if (state["mons"] as Dictionary).has(uid):
 		(state["mons"][uid] as Dictionary)["cur"] = _observe(inst)
@@ -376,20 +376,20 @@ func on_renewal(inst: Dictionary, old_wage: int, wage: int, years: int, bonus: i
 
 func on_listed(inst: Dictionary, ask: int) -> void:
 	_push(str(inst["uid"]), "listed",
-		"Placed on the transfer list at %s (valued %s)." % [UI.money(ask), UI.money(UI.est_value(inst))])
+		tr("Placed on the transfer list at %s (valued %s).") % [UI.money(ask), UI.money(UI.est_value(inst))])
 	save_state()
 	history_changed.emit()
 
 
 func on_unlisted(inst: Dictionary) -> void:
-	_push(str(inst["uid"]), "unlisted", "Removed from the transfer list.")
+	_push(str(inst["uid"]), "unlisted", I18n.t("Removed from the transfer list."))
 	save_state()
 	history_changed.emit()
 
 
 func on_sold(inst: Dictionary, buyer_name: String, fee: int) -> void:
 	var uid: String = str(inst["uid"])
-	_push(uid, "sold", "Sold to %s for %s." % [buyer_name, UI.money(fee)])
+	_push(uid, "sold", tr("Sold to %s for %s.") % [buyer_name, UI.money(fee)])
 	if (state["mons"] as Dictionary).has(uid):
 		(state["mons"][uid] as Dictionary)["left"] = GameState.current_date
 	save_state()
@@ -398,8 +398,8 @@ func on_sold(inst: Dictionary, buyer_name: String, fee: int) -> void:
 
 func on_released(inst: Dictionary, comp: int) -> void:
 	var uid: String = str(inst["uid"])
-	_push(uid, "released", "Contract terminated%s; entered free agency." %
-		((" (%s compensation paid)" % UI.money(comp)) if comp > 0 else ""))
+	_push(uid, "released", tr("Contract terminated%s; entered free agency.") %
+		((tr(" (%s compensation paid)") % UI.money(comp)) if comp > 0 else ""))
 	if (state["mons"] as Dictionary).has(uid):
 		(state["mons"][uid] as Dictionary)["left"] = GameState.current_date
 	save_state()

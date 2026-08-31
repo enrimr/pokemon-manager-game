@@ -46,6 +46,9 @@ var _incompatible_save := false     # a pre-leagues save was found and archived
 func _ready() -> void:
 	# Boot into a playable state: load save if present, else new career.
 	# (Deferred so DataStore's _ready has definitely run first.)
+	# The Settings autoload registers AFTER us, so apply the saved language
+	# first — boot-time inbox mail must be written in the player's locale.
+	I18n.apply_saved_locale()
 	boot()
 
 
@@ -57,10 +60,8 @@ func boot() -> void:
 	var had_old := _incompatible_save
 	new_career()
 	if had_old:
-		add_inbox_message(current_date, "Save file from an earlier era",
-			"Your previous career predates the two-league world (Kanto League + "
-			+ "Johto League with the cross-league Indigo Cup) and could not be "
-			+ "carried over. A fresh career has been started at %s — good luck, boss."
+		add_inbox_message(current_date, I18n.t("Save file from an earlier era"),
+			I18n.t("Your previous career predates the two-league world (Kanto League + Johto League with the cross-league Indigo Cup) and could not be carried over. A fresh career has been started at %s — good luck, boss.")
 			% player_club()["name"])
 		save_game()
 
@@ -93,9 +94,9 @@ func new_career(seed_value: int = 20260801, club_id: String = "") -> void:
 	cup_round = 1
 	fixtures += Season.make_cup_round(all_club_ids(), 1, Season.cup_round_date(season_start, 1), career_seed)
 	inbox = []
-	add_inbox_message(current_date, "Welcome to %s" % player_club()["name"],
-		"The board expects a solid mid-table finish in the %s. Your first fixture is on %s." %
-		[world["meta"]["league_name"], Season.pretty_date(next_player_fixture().get("date", season_start))])
+	add_inbox_message(current_date, I18n.t("Welcome to %s") % player_club()["name"],
+		I18n.t("The board expects a solid mid-table finish in the %s. Your first fixture is on %s.") %
+		[I18n.t(world["meta"]["league_name"]), I18n.pretty_date(next_player_fixture().get("date", season_start))])
 	_table_dirty = true
 	_load_services()
 	career_started.emit()
@@ -360,13 +361,13 @@ func player_inventory() -> Dictionary:
 func buy_item(item_id: String, qty: int = 1) -> String:
 	var it: Dictionary = DataStore.item(item_id)
 	if it.is_empty():
-		return "Unknown item."
+		return I18n.t("Unknown item.")
 	qty = maxi(1, qty)
 	var cost := int(it["price"]) * qty
 	var fin: Dictionary = player_club()["finances"]
 	var spendable := mini(int(fin["balance"]), int(fin.get("transfer_budget", 0)))
 	if spendable < cost:
-		return "Not enough transfer budget — %s %d needed, %s %d released by the board." % [
+		return I18n.t("Not enough transfer budget — %s %d needed, %s %d released by the board.") % [
 			world["meta"]["currency"], cost, world["meta"]["currency"], maxi(0, spendable)]
 	fin["balance"] = int(fin["balance"]) - cost
 	fin["transfer_budget"] = int(fin.get("transfer_budget", 0)) - cost
@@ -381,7 +382,7 @@ func sell_item(item_id: String, qty: int = 1) -> String:
 	qty = maxi(1, qty)
 	var inv := player_inventory()
 	if int(inv.get(item_id, 0)) < qty:
-		return "Not enough of that item in the storeroom."
+		return I18n.t("Not enough of that item in the storeroom.")
 	inv[item_id] = int(inv[item_id]) - qty
 	if int(inv[item_id]) <= 0:
 		inv.erase(item_id)
@@ -406,17 +407,17 @@ func squad_member(uid: String) -> Dictionary:
 func assign_held_item(uid: String, item_id: String) -> String:
 	var m := squad_member(uid)
 	if m.is_empty():
-		return "That Pokémon is not in your squad."
+		return I18n.t("That Pokémon is not in your squad.")
 	var it: Dictionary = DataStore.item(item_id)
 	if it.is_empty() or str(it["class"]) != "held":
-		return "Only held-class items can be equipped."
+		return I18n.t("Only held-class items can be equipped.")
 	var inv := player_inventory()
 	if int(inv.get(item_id, 0)) <= 0:
-		return "None in the storeroom — buy one first."
+		return I18n.t("None in the storeroom — buy one first.")
 	var cur: Variant = m.get("held_item")
 	if cur != null and str(cur) != "":
 		if str(cur) == item_id:
-			return "Already holding that item."
+			return I18n.t("Already holding that item.")
 		inv[str(cur)] = int(inv.get(str(cur), 0)) + 1
 	inv[item_id] = int(inv[item_id]) - 1
 	if int(inv[item_id]) <= 0:
@@ -430,10 +431,10 @@ func assign_held_item(uid: String, item_id: String) -> String:
 func unassign_held_item(uid: String) -> String:
 	var m := squad_member(uid)
 	if m.is_empty():
-		return "That Pokémon is not in your squad."
+		return I18n.t("That Pokémon is not in your squad.")
 	var cur: Variant = m.get("held_item")
 	if cur == null or str(cur) == "":
-		return "It isn't holding anything."
+		return I18n.t("It isn't holding anything.")
 	var inv := player_inventory()
 	inv[str(cur)] = int(inv.get(str(cur), 0)) + 1
 	m["held_item"] = null
@@ -602,9 +603,9 @@ func _play_fixture(f: Dictionary) -> void:
 		var us: int = f["score_home"] if we_home else f["score_away"]
 		var them: int = f["score_away"] if we_home else f["score_home"]
 		var opp: String = club(f["away"] if we_home else f["home"])["name"]
-		var verdict := "won" if us > them else "lost"
-		add_inbox_message(current_date, "Match report: %d-%d vs %s" % [us, them, opp],
-			"We %s the %s tie against %s, %d-%d in battles." % [verdict, f["comp"], opp, us, them])
+		add_inbox_message(current_date, I18n.t("Match report: %d-%d vs %s") % [us, them, opp],
+			I18n.t("We won the %s tie against %s, %d-%d in battles." if us > them
+				else "We lost the %s tie against %s, %d-%d in battles.") % [I18n.t(str(f["comp"])), opp, us, them])
 
 
 func _maybe_generate_next_cup_round() -> void:
@@ -618,9 +619,9 @@ func _maybe_generate_next_cup_round() -> void:
 	cup_round += 1
 	fixtures += _season_tag_ids(Season.make_cup_round(winners, cup_round,
 		Season.cup_round_date(season_start, cup_round), career_seed + cup_round))
-	add_inbox_message(current_date, "%s draw: %s" % [cup_name(), Season.cup_round_name(cup_round)],
-		"The %s %s draw has been made — clubs from both leagues remain in the hat." %
-		[cup_name(), Season.cup_round_name(cup_round)])
+	add_inbox_message(current_date, I18n.t("%s draw: %s") % [I18n.t(cup_name()), I18n.cup_round(cup_round)],
+		I18n.t("The %s %s draw has been made — clubs from both leagues remain in the hat.") %
+		[I18n.t(cup_name()), I18n.cup_round(cup_round)])
 
 
 # ------------------------------------------------------------------ season rollover
@@ -672,11 +673,10 @@ func start_new_season() -> void:
 			m["age_months"] = int(m.get("age_months", 0)) + 12
 
 	_table_dirty = true
-	add_inbox_message(current_date, "Season %d is under way" % season_no(),
-		("Preseason at %s. Both championships have published their fixtures and the "
-		+ "%s first-round draw has been made. Your league opener is on %s.") % [
-		player_club()["name"], cup_name(),
-		Season.pretty_date(next_player_fixture().get("date", season_start))])
+	add_inbox_message(current_date, I18n.t("Season %d is under way") % season_no(),
+		I18n.t("Preseason at %s. Both championships have published their fixtures and the %s first-round draw has been made. Your league opener is on %s.") % [
+		player_club()["name"], I18n.t(cup_name()),
+		I18n.pretty_date(next_player_fixture().get("date", season_start))])
 	season_rolled.emit(season_no())
 	date_changed.emit(current_date)
 	table_updated.emit()
@@ -871,18 +871,17 @@ func trigger_game_over(info: Dictionary) -> void:
 ## Continue the career at one of the offered clubs. "" = ok, else error.
 func accept_job_offer(club_id: String) -> String:
 	if not is_game_over():
-		return "There is no offer on the table."
+		return I18n.t("There is no offer on the table.")
 	var offers: Array = game_over_info().get("offers", [])
 	if not offers.any(func(o): return str(o.get("club_id", "")) == club_id):
-		return "That club has not made an offer."
+		return I18n.t("That club has not made an offer.")
 	var old_club: String = str(world["meta"].get("player_club_id", ""))
 	world["meta"]["game_over"] = {}
 	world["meta"]["player_club_id"] = club_id
 	_ensure_league_state()   # league_name follows the player's league
 	_table_dirty = true
-	add_inbox_message(current_date, "A new chapter: welcome to %s" % player_club().get("name", club_id),
-		("The board of %s has taken a chance on you after your dismissal at %s. "
-		+ "Expectations are humbler here — rebuild your reputation, one matchday at a time.") % [
+	add_inbox_message(current_date, I18n.t("A new chapter: welcome to %s") % player_club().get("name", club_id),
+		I18n.t("The board of %s has taken a chance on you after your dismissal at %s. Expectations are humbler here — rebuild your reputation, one matchday at a time.") % [
 		player_club().get("name", club_id), str(club(old_club).get("name", old_club))])
 	career_started.emit()
 	date_changed.emit(current_date)

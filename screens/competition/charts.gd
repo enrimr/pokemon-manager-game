@@ -41,13 +41,7 @@ static func pct_tint(p: float, max_alpha: float = 0.20) -> Color:
 static func ordinal(n: int) -> String:
 	if n <= 0:
 		return "-"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)
 
 
 # ============================================================== PositionChart
@@ -72,13 +66,7 @@ class PositionChart:
 	static func ordinal(n: int) -> String:
 		if n <= 0:
 			return "-"
-		var suffix := "th"
-		if n % 100 < 11 or n % 100 > 13:
-			match n % 10:
-				1: suffix = "st"
-				2: suffix = "nd"
-				3: suffix = "rd"
-		return "%d%s" % [n, suffix]
+		return I18n.ordinal(n)
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_STOP
@@ -316,7 +304,7 @@ class Sparkline:
 				best_d = d
 				best = i
 		var cap: String = str(labels[best]) if best < labels.size() else "#%d" % (best + 1)
-		return "%s: %s" % [cap, ("%.2f" % float(values[best])).trim_suffix(".00")]
+		return "%s: %s" % [cap, I18n.decimal(float(values[best]), 2).trim_suffix(",00").trim_suffix(".00")]
 
 
 # =================================================================== BarChartH
@@ -575,7 +563,7 @@ class PercentileBar:
 
 	func set_pct(p: float) -> void:
 		pctl = clampf(p, 0.0, 1.0)
-		tooltip_text = "League percentile: %d (higher is better)" % roundi(pctl * 100.0)
+		tooltip_text = I18n.t("League percentile: %d (higher is better)") % roundi(pctl * 100.0)
 		queue_redraw()
 
 	func _draw() -> void:

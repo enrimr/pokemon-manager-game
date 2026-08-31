@@ -46,19 +46,19 @@ func _build_header() -> Control:
 	var row := UI.hbox(14)
 	pair[1].add_child(row)
 	var f: Dictionary = runner.fixture
-	var comp_txt: String = ("League · Round %d" % int(f["round"])) if f["comp"] == "league" \
-		else "Cup · %s" % Season.cup_round_name(int(f["round"]))
+	var comp_txt: String = (tr("League · Round %d") % int(f["round"])) if f["comp"] == "league" \
+		else tr("Cup · %s") % I18n.cup_round(int(f["round"]))
 	row.add_child(UI.monogram(runner.home_club.get("short", "H"), UI.club_color(runner.home_club), 40))
 	var mid := UI.vbox(2)
-	var title := UI.label("%s  vs  %s" % [runner.home_club["name"], runner.away_club["name"]], 21, Color.WHITE)
+	var title := UI.label(tr("%s  vs  %s") % [runner.home_club["name"], runner.away_club["name"]], 21, Color.WHITE)
 	mid.add_child(title)
-	mid.add_child(UI.label("MATCH DAY  ·  %s  ·  %s  ·  best of 3 six-a-side battles  ·  %s" % [
-		comp_txt, Season.pretty_date(str(f["date"])),
-		"home advantage: none — this is about the six you send out" if runner.player_side == 0 else "away day"],
+	mid.add_child(UI.label(tr("MATCH DAY  ·  %s  ·  %s  ·  best of 3 six-a-side battles  ·  %s") % [
+		comp_txt, I18n.pretty_date(str(f["date"])),
+		tr("home advantage: none — this is about the six you send out") if runner.player_side == 0 else tr("away day")],
 		12, UI.COL_DIM))
 	if f["comp"] == "cup":
-		mid.add_child(UI.label("CUP FORMAT — game 2 is played 2v2 DOUBLES: two actives per side, "
-			+ "spread moves, targeting calls. Order your six with a doubles pair in mind.",
+		mid.add_child(UI.label(tr("CUP FORMAT — game 2 is played 2v2 DOUBLES: two actives per side, ")
+			+ tr("spread moves, targeting calls. Order your six with a doubles pair in mind."),
 			12, UI.COL_WARN))
 	row.add_child(mid)
 	row.add_child(UI.spacer_h())
@@ -69,7 +69,7 @@ func _build_header() -> Control:
 # ------------------------------------------------------------------ our lineup
 
 func _build_lineup_panel() -> Control:
-	var pair: Array = UI.panel("Your starting six  ·  slot 1 leads off")
+	var pair: Array = UI.panel(tr("Your starting six  ·  slot 1 leads off"))
 	var p: PanelContainer = pair[0]
 	var box: VBoxContainer = pair[1]
 	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -83,8 +83,8 @@ func _build_lineup_panel() -> Control:
 
 	var btns := UI.hbox(6)
 	box.add_child(btns)
-	for spec in [["▲ Up", _move_up], ["▼ Down", _move_down], ["⇄ Swap with reserve", _swap],
-			["Reset best six", _reset]]:
+	for spec in [[tr("▲ Up"), _move_up], [tr("▼ Down"), _move_down], [tr("⇄ Swap with reserve"), _swap],
+			[tr("Reset best six"), _reset]]:
 		var b := Button.new()
 		b.text = spec[0]
 		b.add_theme_font_size_override("font_size", 12)
@@ -98,17 +98,17 @@ func _build_lineup_panel() -> Control:
 	_res_list.add_theme_font_size_override("font_size", 13)
 	box.add_child(_res_list)
 
-	box.add_child(UI.label("MATCH BAG — usable mid-battle (an item spends the turn)", 10, UI.COL_DIM))
+	box.add_child(UI.label(tr("MATCH BAG — usable mid-battle (an item spends the turn)"), 10, UI.COL_DIM))
 	var bag: Dictionary = runner.usable_only(GameState.player_inventory())
 	if bag.is_empty():
-		box.add_child(UI.label("Bag is empty — visit the Items screen to stock up on potions and heals.",
+		box.add_child(UI.label(tr("Bag is empty — visit the Items screen to stock up on potions and heals."),
 			12, UI.COL_WARN))
 	else:
 		var bag_row := UI.hbox(6)
 		for iid in bag:
 			var it: Dictionary = DataStore.item(str(iid))
-			var chip := UI.label("%s ×%d" % [str(it.get("name", iid)), int(bag[iid])], 12, UI.COL_TEXT)
-			chip.tooltip_text = str(it.get("desc", ""))
+			var chip := UI.label("%s ×%d" % [tr(str(it.get("name", iid))), int(bag[iid])], 12, UI.COL_TEXT)
+			chip.tooltip_text = tr(str(it.get("desc", "")))
 			chip.mouse_filter = Control.MOUSE_FILTER_STOP
 			var sb := StyleBoxFlat.new()
 			sb.bg_color = Color("222840")
@@ -127,14 +127,14 @@ func _build_lineup_panel() -> Control:
 
 func _inst_row(inst: Dictionary, slot: int = -1) -> String:
 	var sp: Dictionary = DataStore.species(int(inst["species_id"]))
-	var types: String = "/".join(sp.get("types", []))
+	var types: String = I18n.types_join(sp.get("types", []))
 	var prefix := ("%d.  " % (slot + 1)) if slot >= 0 else ""
 	var nick: String = inst.get("nickname") if inst.get("nickname") else str(inst.get("species", sp.get("name", "?")))
 	var held := str(inst.get("held_item", "") if inst.get("held_item") != null else "")
-	return "%s%-14s Lv%-3d %-16s cond %d%%  fit %d%%  mor %d%%  %s" % [
+	return tr("%s%-14s Lv%-3d %-16s cond %d%%  fit %d%%  mor %d%%  %s") % [
 		prefix, nick, int(inst["level"]), types,
 		int(inst.get("condition", 100)), int(inst.get("fitness", 100)), int(inst.get("morale", 70)),
-		("◆ " + DataStore.item_name(held)) if held != "" else "—"]
+		("◆ " + I18n.item_name(held)) if held != "" else "—"]
 
 
 func _refresh_lists() -> void:
@@ -193,7 +193,7 @@ func _reset() -> void:
 
 func _build_scout_panel() -> Control:
 	var opp: Dictionary = runner.opponent_club()
-	var pair: Array = UI.panel("Scout report · %s" % opp["name"])
+	var pair: Array = UI.panel(tr("Scout report · %s") % opp["name"])
 	var p: PanelContainer = pair[0]
 	var box: VBoxContainer = pair[1]
 	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -206,31 +206,31 @@ func _build_scout_panel() -> Control:
 		if table[i]["club_id"] == opp["id"]:
 			pos = i + 1
 			pts = int(table[i]["points"])
-	box.add_child(UI.label("Manager: %s" % opp.get("manager", "?"), 13))
-	box.add_child(UI.label("Reputation: %d / 20" % int(opp.get("reputation", 10)), 13))
-	box.add_child(UI.label("League: %s · %d pts" % [_ordinal(pos), pts], 13))
+	box.add_child(UI.label(tr("Manager: %s") % opp.get("manager", "?"), 13))
+	box.add_child(UI.label(tr("Reputation: %d / 20") % int(opp.get("reputation", 10)), 13))
+	box.add_child(UI.label(tr("League: %s · %d pts") % [_ordinal(pos), pts], 13))
 
 	var form_row := UI.hbox(4)
 	form_row.add_child(UI.label("Form:", 13, UI.COL_DIM))
 	var form := _recent_form(opp["id"], 5)
 	if form.is_empty():
-		form_row.add_child(UI.label("no matches yet", 13, UI.COL_DIM))
+		form_row.add_child(UI.label(tr("no matches yet"), 13, UI.COL_DIM))
 	for w in form:
 		form_row.add_child(UI.result_chip(w))
 	box.add_child(form_row)
 	box.add_child(HSeparator.new())
 
-	box.add_child(UI.label("EXPECTED DIFFICULTY", 10, UI.COL_DIM))
+	box.add_child(UI.label(tr("EXPECTED DIFFICULTY"), 10, UI.COL_DIM))
 	_diff_blocks = UI.hbox(3)
 	box.add_child(_diff_blocks)
 	_diff_label = UI.label("", 14, Color.WHITE)
 	box.add_child(_diff_label)
 	box.add_child(HSeparator.new())
 
-	box.add_child(UI.label("KEY THREATS", 10, UI.COL_DIM))
+	box.add_child(UI.label(tr("KEY THREATS"), 10, UI.COL_DIM))
 	for threat in _threats():
 		var trow := UI.hbox(6)
-		trow.add_child(UI.label("%s  Lv%d" % [threat["name"], threat["level"]], 13, Color.WHITE))
+		trow.add_child(UI.label(tr("%s  Lv%d") % [threat["name"], threat["level"]], 13, Color.WHITE))
 		for t in threat["types"]:
 			trow.add_child(UI.type_badge(str(t), 10))
 		box.add_child(trow)
@@ -271,8 +271,8 @@ func _threats() -> Array:
 					worst_move = str(m)
 		scored.append({"name": b["name"], "level": int(b["level"]), "types": b["types"],
 			"score": worst + float(b["level"]) * 2.0,
-			"note": ("%s punishes your lineup" % worst_move) if worst >= 160.0
-				else ("watch out for %s" % worst_move) if worst_move != "" else "no obvious edge"})
+			"note": (tr("%s punishes your lineup") % I18n.move_name(worst_move)) if worst >= 160.0
+				else (tr("watch out for %s") % I18n.move_name(worst_move)) if worst_move != "" else tr("no obvious edge")})
 	scored.sort_custom(func(a, b): return a["score"] > b["score"])
 	return scored.slice(0, 3)
 
@@ -294,26 +294,26 @@ func _refresh_difficulty() -> void:
 	var col: Color
 	var blocks: int
 	if score <= -3.0:
-		verdict = "Strong favourites"
+		verdict = tr("Strong favourites")
 		col = UI.COL_GOOD
 		blocks = 1
 	elif score <= -1.0:
-		verdict = "Favourites"
+		verdict = tr("Favourites")
 		col = UI.COL_GOOD
 		blocks = 2
 	elif score < 1.0:
-		verdict = "Even contest"
+		verdict = tr("Even contest")
 		col = UI.COL_WARN
 		blocks = 3
 	elif score < 3.0:
-		verdict = "Underdogs"
+		verdict = tr("Underdogs")
 		col = UI.COL_BAD
 		blocks = 4
 	else:
-		verdict = "Big underdogs"
+		verdict = tr("Big underdogs")
 		col = UI.COL_BAD
 		blocks = 5
-	_diff_label.text = "%s  ·  avg level %0.1f vs %0.1f" % [verdict, our_avg, their_avg]
+	_diff_label.text = tr("%s  ·  avg level %s vs %s") % [verdict, I18n.decimal(our_avg, 1), I18n.decimal(their_avg, 1)]
 	_diff_label.add_theme_color_override("font_color", col)
 	for c in _diff_blocks.get_children():
 		c.queue_free()
@@ -330,7 +330,7 @@ func _refresh_difficulty() -> void:
 # ------------------------------------------------------------------ their lineup
 
 func _build_their_panel() -> Control:
-	var pair: Array = UI.panel("Their expected six")
+	var pair: Array = UI.panel(tr("Their expected six"))
 	var p: PanelContainer = pair[0]
 	var box: VBoxContainer = pair[1]
 	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -340,23 +340,23 @@ func _build_their_panel() -> Control:
 		var row := UI.hbox(6)
 		row.add_child(UI.label("%d." % (i + 1), 13, UI.COL_DIM))
 		row.add_child(UI.label("%s" % b["name"], 14, Color.WHITE))
-		row.add_child(UI.label("Lv%d" % int(b["level"]), 12, UI.COL_DIM))
+		row.add_child(UI.label(tr("Lv%d") % int(b["level"]), 12, UI.COL_DIM))
 		row.add_child(UI.spacer_h())
 		for t in b["types"]:
 			row.add_child(UI.type_badge(str(t), 10))
 		box.add_child(row)
 		var hp := int(b["stats"]["hp"])
-		box.add_child(UI.label("     HP %d · Atk %d · Def %d · SpA %d · SpD %d · Spe %d" % [
+		box.add_child(UI.label(tr("     HP %d · Atk %d · Def %d · SpA %d · SpD %d · Spe %d") % [
 			hp, int(b["stats"]["atk"]), int(b["stats"]["def"]), int(b["stats"]["spa"]),
 			int(b["stats"]["spd"]), int(b["stats"]["spe"])], 11, UI.COL_DIM))
 		var held := str(b.get("held_item", "") if b.get("held_item") != null else "")
 		if held != "":
-			var hl := UI.label("     ◆ holds %s" % DataStore.item_name(held), 11, UI.COL_WARN)
-			hl.tooltip_text = str(DataStore.item(held).get("desc", ""))
+			var hl := UI.label(tr("     ◆ holds %s") % I18n.item_name(held), 11, UI.COL_WARN)
+			hl.tooltip_text = I18n.item_desc(held)
 			hl.mouse_filter = Control.MOUSE_FILTER_STOP
 			box.add_child(hl)
 	box.add_child(UI.spacer_v())
-	box.add_child(UI.label("Six picked by level and condition — expect this exact\nlineup in every battle of the series.", 11, UI.COL_DIM))
+	box.add_child(UI.label(tr("Six picked by level and condition — expect this exact\nlineup in every battle of the series."), 11, UI.COL_DIM))
 	return p
 
 
@@ -366,23 +366,23 @@ func _build_footer() -> Control:
 	var pair: Array = UI.panel("", true)
 	var row := UI.hbox(10)
 	pair[1].add_child(row)
-	row.add_child(UI.label("Play it yourself — every move, switch and item is your call —\nor delegate: watch the coach run it, or take the instant result.", 12, UI.COL_DIM))
+	row.add_child(UI.label(tr("Play it yourself — every move, switch and item is your call —\nor delegate: watch the coach run it, or take the instant result."), 12, UI.COL_DIM))
 	row.add_child(UI.spacer_h())
 	var instant := Button.new()
-	instant.text = "Instant result  ⏩"
-	instant.tooltip_text = "Simulate the whole tie and jump to the report."
+	instant.text = tr("Instant result  ⏩")
+	instant.tooltip_text = tr("Simulate the whole tie and jump to the report.")
 	instant.custom_minimum_size = Vector2(150, 38)
 	instant.pressed.connect(func(): instant_result.emit())
 	row.add_child(instant)
 	var watch := Button.new()
-	watch.text = "Watch — coach decides  ▷"
-	watch.tooltip_text = "Sit back on the touchline: the AI coach picks moves under your instructions.\nYou can still force switches, change instructions or take over at any time."
+	watch.text = tr("Watch — coach decides  ▷")
+	watch.tooltip_text = tr("Sit back on the touchline: the AI coach picks moves under your instructions.\nYou can still force switches, change instructions or take over at any time.")
 	watch.custom_minimum_size = Vector2(200, 38)
 	watch.pressed.connect(func(): start_live.emit(false))
 	row.add_child(watch)
 	var go := Button.new()
-	go.text = "PLAY THE MATCH — you call every turn  ▶"
-	go.tooltip_text = "Interactive battle: choose attacks, switches and bag items each turn."
+	go.text = tr("PLAY THE MATCH — you call every turn  ▶")
+	go.tooltip_text = tr("Interactive battle: choose attacks, switches and bag items each turn.")
 	go.custom_minimum_size = Vector2(310, 38)
 	go.add_theme_color_override("font_color", Color.WHITE)
 	var sb := StyleBoxFlat.new()
@@ -399,10 +399,4 @@ func _build_footer() -> Control:
 func _ordinal(n: int) -> String:
 	if n <= 0:
 		return "—"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

@@ -25,8 +25,8 @@ func _ready() -> void:
 	for lg in GameState.leagues():
 		lgs.add_child(UI.league_chip(str(lg["id"])))
 	head.add_child(lgs)
-	head.add_child(UI.dim("top four of each league · seeded knockout · winner is %s" %
-		Season.INDIGO_TITLE, 12))
+	head.add_child(UI.dim(tr("top four of each league · seeded knockout · winner is %s") %
+		tr(Season.INDIGO_TITLE), 12))
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(sp)
@@ -65,7 +65,7 @@ func _render_race() -> void:
 	var last := Season.latest_completed_league_round(
 		GameState.fixtures.filter(func(f): return f["comp"] == "league"))
 	var total := Season.total_league_rounds(GameState.fixtures)
-	_status.text = "qualification race · after matchday %d of %d" % [maxi(last, 0), total]
+	_status.text = tr("qualification race · after matchday %d of %d") % [maxi(last, 0), total]
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
@@ -77,7 +77,7 @@ func _render_race() -> void:
 
 
 func _race_card(lid: String) -> Control:
-	var card := UI.card("%s · TOP FOUR AS IT STANDS" % GameState.league_name(lid).to_upper())
+	var card := UI.card(I18n.t("%s · TOP FOUR AS IT STANDS") % I18n.t(GameState.league_name(lid)).to_upper())
 	card.custom_minimum_size.x = 380
 	var body := UI.card_body(card)
 	var table: Array = GameState.league_table(lid)
@@ -100,11 +100,11 @@ func _race_card(lid: String) -> Control:
 			{"kind": "club", "id": cid}, "%s — view club profile" % club.get("name", cid))
 		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		h.add_child(nm)
-		h.add_child(UI.dim("%d pts" % int(r["points"]), 12))
+		h.add_child(UI.dim(tr("%d pts") % int(r["points"]), 12))
 		body.add_child(h)
 		if i == 3:
 			var sep := HSeparator.new()
-			sep.tooltip_text = "Qualification line — top four go through"
+			sep.tooltip_text = tr("Qualification line — top four go through")
 			body.add_child(sep)
 	return card
 
@@ -117,19 +117,19 @@ func _format_card() -> Control:
 	var last_md := Season.date_add(GameState.season_start,
 		Season.LEAGUE_ROUND_OFFSET + (Season.total_league_rounds(GameState.fixtures) - 1) * Season.LEAGUE_ROUND_STEP)
 	for line in [
-		"After matchday 30, positions 1-4 of the Kanto and Johto",
-		"championships enter a seeded cross-league knockout:",
+		tr("After matchday 30, positions 1-4 of the Kanto and Johto"),
+		tr("championships enter a seeded cross-league knockout:"),
 		"",
-		"  Quarter-finals   %s" % UI.short_date(Season.date_add(last_md, 7)),
-		"  Semi-finals      %s" % UI.short_date(Season.date_add(last_md, 14)),
-		"  Final            %s" % UI.short_date(Season.date_add(last_md, 21)),
+		tr("  Quarter-finals   %s") % UI.short_date(Season.date_add(last_md, 7)),
+		tr("  Semi-finals      %s") % UI.short_date(Season.date_add(last_md, 14)),
+		tr("  Final            %s") % UI.short_date(Season.date_add(last_md, 21)),
 		"",
-		"Seeding keeps the two league champions apart: each plays",
-		"the other league's 4th, so they can only meet in the Final.",
-		"Every tie is decided like a matchday: best of three battles.",
+		tr("Seeding keeps the two league champions apart: each plays"),
+		tr("the other league's 4th, so they can only meet in the Final."),
+		tr("Every tie is decided like a matchday: best of three battles."),
 		"",
-		"The Final's winner is crowned %s — the" % Season.INDIGO_TITLE,
-		"season's true champion, recorded forever in History.",
+		tr("The Final's winner is crowned %s — the") % tr(Season.INDIGO_TITLE),
+		tr("season's true champion, recorded forever in History."),
 	]:
 		body.add_child(UI.dim(str(line), 12))
 	return card
@@ -138,16 +138,16 @@ func _format_card() -> Control:
 func _honours_note() -> Control:
 	var hist: Array = GameState.season_history()
 	if hist.is_empty():
-		return UI.dim("No %s has been crowned yet — this season's Final will be the first."
-			% Season.INDIGO_TITLE, 12)
+		return UI.dim(tr("No %s has been crowned yet — this season's Final will be the first.")
+			% tr(Season.INDIGO_TITLE), 12)
 	var last: Dictionary = hist[hist.size() - 1]
 	var ind: Dictionary = last.get("indigo", {})
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 6)
-	h.add_child(UI.dim("Reigning %s:" % Season.INDIGO_TITLE, 12))
+	h.add_child(UI.dim(tr("Reigning %s:") % tr(Season.INDIGO_TITLE), 12))
 	h.add_child(UI.link(str(ind.get("name", "?")), 13, GOLD.lightened(0.25),
-		{"kind": "club", "id": str(ind.get("champion", ""))}, "View club profile"))
-	h.add_child(UI.dim("(Season %d — full honours in the History tab)" % int(last.get("season", 1)), 12))
+		{"kind": "club", "id": str(ind.get("champion", ""))}, tr("View club profile")))
+	h.add_child(UI.dim(tr("(Season %d — full honours in the History tab)") % int(last.get("season", 1)), 12))
 	return h
 
 
@@ -169,24 +169,23 @@ func _render_bracket(po: Array) -> void:
 		row.add_child(_round_card(po, r))
 	row.add_child(_champion_card(final_f))
 	_body.add_child(row)
-	_body.add_child(UI.dim("Seeding: each league champion opens against the other league's 4th "
-		+ "place; ties are best-of-3 battles, no replays. The Final crowns the %s." % Season.INDIGO_TITLE, 12))
+	_body.add_child(UI.dim(tr("Seeding: each league champion opens against the other league's 4th place; ties are best-of-3 battles, no replays. The Final crowns the %s.") % tr(Season.INDIGO_TITLE), 12))
 
 	if not final_f.is_empty():
 		var champ := GameState.club(Season.fixture_winner(final_f))
-		_status.text = "%s are the %s" % [champ.get("name", "?"), Season.INDIGO_TITLE]
+		_status.text = tr("%s are the %s") % [champ.get("name", "?"), tr(Season.INDIGO_TITLE)]
 	else:
 		var current: Array = po.filter(func(f): return int(f["round"]) == max_round)
 		var pending: Array = current.filter(func(f): return not f["played"])
-		_status.text = "%s · %s" % [Season.playoff_round_name(max_round),
-			"complete — next round pending" if pending.is_empty()
-			else "ties on %s" % Season.pretty_date(str(pending[0]["date"]))]
+		_status.text = "%s · %s" % [I18n.playoff_round(max_round),
+			tr("complete — next round pending") if pending.is_empty()
+			else tr("ties on %s") % I18n.pretty_date(str(pending[0]["date"]))]
 
 
 func _round_card(po: Array, round_no: int) -> Control:
 	var ties: Array = po.filter(func(f): return int(f["round"]) == round_no)
 	ties.sort_custom(func(x, y): return str(x["id"]) < str(y["id"]))
-	var title := Season.playoff_round_name(round_no).to_upper()
+	var title := I18n.playoff_round(round_no).to_upper()
 	if not ties.is_empty():
 		title += " · %s" % UI.short_date(str(ties[0]["date"]))
 	var card := UI.card(title)
@@ -195,7 +194,7 @@ func _round_card(po: Array, round_no: int) -> Control:
 	if ties.is_empty():
 		var n := 4 / int(pow(2, round_no - 1))
 		for i in n:
-			body.add_child(UI.dim("Winners of %s ties" % Season.playoff_round_name(round_no - 1), 12))
+			body.add_child(UI.dim(tr("Winners of %s ties") % I18n.playoff_round(round_no - 1), 12))
 		return card
 	for f in ties:
 		body.add_child(_tie_line(f))
@@ -232,17 +231,17 @@ func _tie_line(f: Dictionary) -> Control:
 			if f["played"] else "-"
 		h.add_child(UI.link(score_txt, 12, Color.WHITE if winner == cid else TB.COL_TEXT_DIM,
 			{"kind": "fixture", "id": str(f["id"])},
-			"Go to match report" if f["played"] else "Go to fixture preview"))
+			tr("Go to match report") if f["played"] else tr("Go to fixture preview")))
 		v.add_child(h)
 	return v
 
 
 func _champion_card(final_f: Dictionary) -> Control:
-	var card := UI.card("%s" % Season.INDIGO_TITLE.to_upper())
+	var card := UI.card("%s" % tr(Season.INDIGO_TITLE).to_upper())
 	card.custom_minimum_size.x = 250
 	var body := UI.card_body(card)
 	if final_f.is_empty():
-		body.add_child(UI.dim("To be decided in the Final.", 12))
+		body.add_child(UI.dim(tr("To be decided in the Final."), 12))
 		return card
 	var cid := Season.fixture_winner(final_f)
 	var club := GameState.club(cid)
@@ -256,5 +255,5 @@ func _champion_card(final_f: Dictionary) -> Control:
 	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	h.add_child(chip)
 	body.add_child(h)
-	body.add_child(UI.dim("Season %d %s" % [GameState.season_no(), Season.INDIGO_TITLE], 11))
+	body.add_child(UI.dim(tr("Season %d %s") % [GameState.season_no(), tr(Season.INDIGO_TITLE)], 11))
 	return card

@@ -80,3 +80,43 @@ off-season week right after the Championship Series Final + awards ceremony —
 ideal for capturing the playoff bracket / History tab / season-end header via
 the screenshot harness with `COMP_DEV_TAB=playoff|history|table`. Prints
 `SEASON SHOT PREP OK`.
+
+## 5. Multi-resolution screenshots (platform piece)
+
+The harness accepts an optional window size (default 1600x900):
+
+```sh
+/Applications/Godot.app/Contents/MacOS/Godot --path <project> res://tools/screenshots.tscn -- --screens=settings,squad --out=artifacts/platform/1920x1080 --size=1920x1080
+```
+
+Verified sizes: 1280x720, 1600x900, 1920x1080, 2560x1440 (PNGs under
+`artifacts/platform/<size>/`). Stretch is `canvas_items` + `expand`, so any
+size renders the full chrome without letterboxing.
+
+## 6. Release exports (platform piece)
+
+One-time setup — install the Godot 4.6 export templates (~1.2 GB):
+
+```sh
+curl -L -o /tmp/godot_templates_4.6.tpz \
+  https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz
+mkdir -p "$HOME/Library/Application Support/Godot/export_templates/4.6.stable"
+cd /tmp && unzip -q godot_templates_4.6.tpz && \
+  mv templates/* "$HOME/Library/Application Support/Godot/export_templates/4.6.stable/"
+```
+
+Build everything (also preflights a clean headless boot first):
+
+```sh
+caffeinate -i /Users/enrique/development/projects/pokemon-manager-game/scripts/export_all.sh
+```
+
+Expected final line: `EXPORT ALL OK`. Outputs:
+- `dist/macos/TrainerManager-macos.zip` — universal .app, ad-hoc signed.
+  Launch test: `unzip`, then `open "Trainer Manager.app"` (or run the binary
+  inside with `--quit-after 60`).
+- `dist/windows/TrainerManager.exe` — x86_64, pck embedded.
+- `dist/linux/TrainerManager.x86_64` — x86_64, pck embedded.
+- `dist/web/` — no-threads web build (plain static hosting works, no
+  COOP/COEP needed). Serve test: `python3 -m http.server -d dist/web 8931`
+  then `curl -sI http://127.0.0.1:8931/index.html` → 200, `index.wasm` > 20 MB.

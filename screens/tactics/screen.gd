@@ -80,7 +80,7 @@ func _refresh_analyses() -> void:
 
 
 func _queue_save() -> void:
-	_saved_lbl.text = "Saving…"
+	_saved_lbl.text = tr("Saving…")
 	_saved_lbl.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 	_save_timer.start()
 
@@ -89,7 +89,7 @@ func _do_save() -> void:
 	Logic.save_state(_state)
 	# A fixture already waiting in pre-match follows the edit immediately.
 	Director.stamp_pending_runner(false, true)
-	_saved_lbl.text = "Saved %s  ·  live on the match engine" % Time.get_time_string_from_system().substr(0, 5)
+	_saved_lbl.text = tr("Saved %s  ·  live on the match engine") % Time.get_time_string_from_system().substr(0, 5)
 	_saved_lbl.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 
 
@@ -191,7 +191,7 @@ func _build_header() -> Control:
 	h.add_theme_constant_override("separation", 10)
 
 	var title := Label.new()
-	title.text = "Battle Plan"
+	title.text = tr("Battle Plan")
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color.WHITE)
 	h.add_child(title)
@@ -226,7 +226,7 @@ func _build_header() -> Control:
 		b.custom_minimum_size.y = 32
 		b.pressed.connect(spec[1])
 		if spec[0] == "Auto-Pick":
-			b.tooltip_text = "Re-select the best six by level & condition and assign each battler its most natural role."
+			b.tooltip_text = tr("Re-select the best six by level & condition and assign each battler its most natural role.")
 		h.add_child(b)
 	return h
 
@@ -271,15 +271,15 @@ func _rebuild_left() -> void:
 	_rows.clear()
 	var p := _preset()
 
-	_left_box.add_child(_section("Starting six — battle order"))
+	_left_box.add_child(_section(tr("Starting six — battle order")))
 	for i in p["lineup"].size():
 		_left_box.add_child(_make_row(p["lineup"][i], str(i + 1), true))
 
-	var bench_hdr := _section("Bench — substitution order")
+	var bench_hdr := _section(tr("Bench — substitution order"))
 	_left_box.add_child(bench_hdr)
 	if p["bench"].is_empty():
 		var none := Label.new()
-		none.text = "No reserves — entire squad starts."
+		none.text = tr("No reserves — entire squad starts.")
 		none.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_left_box.add_child(none)
 	for i in p["bench"].size():
@@ -288,17 +288,17 @@ func _rebuild_left() -> void:
 	var dbl := Label.new()
 	var nxt: Dictionary = GameState.next_player_fixture()
 	var cup_next: bool = not nxt.is_empty() and str(nxt.get("league", "")) == ""
-	dbl.text = ("NEXT: %s game 2 is 2v2 DOUBLES — slots 1 & 2 open as your pair." % GameState.cup_name()) \
-		if cup_next else "Cup ties: game 2 is 2v2 doubles — slots 1 & 2 open as your pair."
+	dbl.text = (tr("NEXT: %s game 2 is 2v2 DOUBLES — slots 1 & 2 open as your pair.") % GameState.cup_name()) \
+		if cup_next else tr("Cup ties: game 2 is 2v2 doubles — slots 1 & 2 open as your pair.")
 	dbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dbl.add_theme_font_size_override("font_size", 10)
 	dbl.add_theme_color_override("font_color",
 		ThemeBuilder.COL_ACCENT if cup_next else ThemeBuilder.COL_TEXT_DIM)
-	dbl.tooltip_text = "The engine plays cup game 2 as 2v2 doubles. Your battle order is the doubles order: slots 1 and 2 start together, faints pull in slot 3 onward. League matches are all singles."
+	dbl.tooltip_text = tr("The engine plays cup game 2 as 2v2 doubles. Your battle order is the doubles order: slots 1 and 2 start together, faints pull in slot 3 onward. League matches are all singles.")
 	_left_box.add_child(dbl)
 
 	var hint := Label.new()
-	hint.text = "Drag a row onto another (or click two rows) to swap. Slot 1 opens the battle."
+	hint.text = tr("Drag a row onto another (or click two rows) to swap. Slot 1 opens the battle.")
 	hint.add_theme_font_size_override("font_size", 10)
 	hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_left_box.add_child(hint)
@@ -322,12 +322,12 @@ func _make_row(uid: String, slot_text: String, starter: bool) -> Control:
 func _rebuild_center() -> void:
 	for c in _center_box.get_children():
 		c.queue_free()
-	_center_box.add_child(_section("Battle line"))
+	_center_box.add_child(_section(tr("Battle line")))
 	_center_box.add_child(_make_battle_line())
 	_center_box.add_child(_make_matchday_panel())
-	_center_box.add_child(_section("Type coverage — best move vs each defending type"))
+	_center_box.add_child(_section(tr("Type coverage — best move vs each defending type")))
 	_center_box.add_child(_make_coverage_grid(true))
-	_center_box.add_child(_section("Defensive response — damage taken from each attack type"))
+	_center_box.add_child(_section(tr("Defensive response — damage taken from each attack type")))
 	_center_box.add_child(_make_coverage_grid(false))
 	_center_box.add_child(_make_coverage_summary())
 	var wp := _make_weather_panel()
@@ -372,8 +372,8 @@ func _refresh_battle_line() -> void:
 		sb.content_margin_top = 4
 		sb.content_margin_bottom = 4
 		card.add_theme_stylebox_override("panel", sb)
-		card.tooltip_text = "%s — slot %d · %s (%s %d)" % [a["battler"]["name"], i + 1,
-			Logic.ROLES[role]["name"], b[0], score]
+		card.tooltip_text = tr("%s — slot %d · %s (%s %d)") % [a["battler"]["name"], i + 1,
+			tr(Logic.ROLES[role]["name"]), tr(str(b[0])), score]
 
 		var v := VBoxContainer.new()
 		v.add_theme_constant_override("separation", 1)
@@ -381,7 +381,7 @@ func _refresh_battle_line() -> void:
 		card.add_child(v)
 
 		var slot := Label.new()
-		slot.text = "LEAD" if i == 0 else "SLOT %d" % (i + 1)
+		slot.text = "LEAD" if i == 0 else tr("SLOT %d") % (i + 1)
 		slot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		slot.add_theme_font_size_override("font_size", 9)
 		slot.add_theme_color_override("font_color",
@@ -404,7 +404,7 @@ func _refresh_battle_line() -> void:
 		v.add_child(nm)
 
 		var rl := Label.new()
-		rl.text = Logic.ROLES[role]["name"]
+		rl.text = tr(Logic.ROLES[role]["name"])
 		rl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		rl.clip_text = true
 		rl.add_theme_font_size_override("font_size", 10)
@@ -446,14 +446,14 @@ func _make_coverage_grid(offensive: bool) -> Control:
 			if offensive:
 				var res: Dictionary = Logic.offense_vs(a, t)
 				grid.add_child(_cell(res["mult"], true,
-					"%s vs %s: ×%s%s" % [a["battler"]["name"], str(t).capitalize(),
+					I18n.t("%s vs %s: ×%s%s") % [a["battler"]["name"], str(t).capitalize(),
 						_fmt_mult(res["mult"]),
 						(" (" + str(res["move"]) + ")") if res["move"] != "" else ""]))
 			else:
 				var mult: float = Logic.def_mult(a, t)
-				var tip := "%s attacks take ×%s on %s" % [str(t).capitalize(), _fmt_mult(mult), a["battler"]["name"]]
+				var tip := I18n.t("%s attacks take ×%s on %s") % [str(t).capitalize(), _fmt_mult(mult), a["battler"]["name"]]
 				if mult != DataStore.effectiveness(t, a["types"]):
-					tip += "\n%s: the ability changes this from the raw type chart (×%s)." % [
+					tip += tr("\n%s: the ability changes this from the raw type chart (×%s).") % [
 						a["ability_name"], _fmt_mult(DataStore.effectiveness(t, a["types"]))]
 				grid.add_child(_cell(mult, false, tip))
 
@@ -543,11 +543,11 @@ func _team_cell(count: int, offensive: bool, t: String, who: Array) -> Control:
 	if offensive:
 		col = ThemeBuilder.COL_BAD if count == 0 else (ThemeBuilder.COL_GOOD if count >= 3 else ThemeBuilder.COL_WARN)
 		pnl.tooltip_text = ("Nobody hits %s super-effectively!" % str(t).capitalize()) if count == 0 \
-			else "%d hit %s super-effectively:\n%s" % [count, str(t).capitalize(), ", ".join(who)]
+			else I18n.t("%d hit %s super-effectively:\n%s") % [count, str(t).capitalize(), ", ".join(who)]
 	else:
 		col = ThemeBuilder.COL_GOOD if count == 0 else (ThemeBuilder.COL_WARN if count <= 2 else ThemeBuilder.COL_BAD)
 		pnl.tooltip_text = ("No starter is weak to %s." % str(t).capitalize()) if count == 0 \
-			else "%d weak to %s:\n%s" % [count, str(t).capitalize(), ", ".join(who)]
+			else I18n.t("%d weak to %s:\n%s") % [count, str(t).capitalize(), ", ".join(who)]
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(col, 0.4)
 	sb.border_color = col
@@ -578,24 +578,24 @@ func _make_coverage_summary() -> Control:
 			if Logic.def_mult(a, t) > 1.0:
 				weak += 1
 		if hits == 0:
-			uncovered.append(str(t).capitalize())
+			uncovered.append(tr(str(t).capitalize()))
 		if weak >= 3:
-			weak_counts[str(t).capitalize()] = weak
+			weak_counts[tr(str(t).capitalize())] = weak
 	var l := Label.new()
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.add_theme_font_size_override("font_size", 11)
 	var bits: Array = []
 	if uncovered.is_empty():
-		bits.append("Every type is hit super-effectively by at least one starter.")
+		bits.append(tr("Every type is hit super-effectively by at least one starter."))
 	else:
-		bits.append("No super-effective answer to: %s." % ", ".join(uncovered))
+		bits.append(tr("No super-effective answer to: %s.") % ", ".join(uncovered))
 	if weak_counts.is_empty():
-		bits.append("No attack type threatens 3+ of your starters.")
+		bits.append(tr("No attack type threatens 3+ of your starters."))
 	else:
 		var ws: Array = []
 		for k in weak_counts:
-			ws.append("%s (%d weak)" % [k, weak_counts[k]])
-		bits.append("Dangerous incoming types: %s." % ", ".join(ws))
+			ws.append(tr("%s (%d weak)") % [k, weak_counts[k]])
+		bits.append(tr("Dangerous incoming types: %s.") % ", ".join(ws))
 	l.text = "  ".join(bits)
 	l.add_theme_color_override("font_color",
 		ThemeBuilder.COL_TEXT_DIM if uncovered.is_empty() and weak_counts.is_empty() else ThemeBuilder.COL_WARN)
@@ -626,7 +626,7 @@ func _make_weather_panel() -> Control:
 	head.add_theme_constant_override("separation", 8)
 	v.add_child(head)
 	var chip := Label.new()
-	chip.text = " %s PLAN " % kind.to_upper()
+	chip.text = tr(" %s PLAN ") % kind.to_upper()
 	chip.add_theme_font_size_override("font_size", 11)
 	chip.add_theme_color_override("font_color", Color(0.08, 0.08, 0.1))
 	var cst := StyleBoxFlat.new()
@@ -635,7 +635,7 @@ func _make_weather_panel() -> Control:
 	chip.add_theme_stylebox_override("normal", cst)
 	head.add_child(chip)
 	var who := Label.new()
-	who.text = "Set by %s" % ", ".join(plan["setters"])
+	who.text = tr("Set by %s") % ", ".join(plan["setters"])
 	who.add_theme_font_size_override("font_size", 11)
 	head.add_child(who)
 	for pair in [[plan["boosts"], "+ ", ThemeBuilder.COL_GOOD], [plan["risks"], "− ", ThemeBuilder.COL_WARN]]:
@@ -646,7 +646,7 @@ func _make_weather_panel() -> Control:
 			l.add_theme_font_size_override("font_size", 10)
 			l.add_theme_color_override("font_color", pair[2])
 			v.add_child(l)
-	box.tooltip_text = "Weather lasts 5 turns from a move (8 from an ability). Sun: Fire ×1.5 / Water ×0.5. Rain: the reverse. Sandstorm chips non Rock/Ground/Steel and raises Rock SpD ×1.5."
+	box.tooltip_text = tr("Weather lasts 5 turns from a move (8 from an ability). Sun: Fire ×1.5 / Water ×0.5. Rain: the reverse. Sandstorm chips non Rock/Ground/Steel and raises Rock SpD ×1.5.")
 	return box
 
 
@@ -658,9 +658,9 @@ func _make_opponent_panel() -> Control:
 	var opp: Dictionary = GameState.club(fx["away"] if we_home else fx["home"])
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 4)
-	holder.add_child(_section("Scout report — next opponent: %s (%s) · %s · %s" % [
-		opp.get("name", "?"), "H" if we_home else "A",
-		Season.pretty_date(fx["date"]), str(fx["comp"]).capitalize()]))
+	holder.add_child(_section(tr("Scout report — next opponent: %s (%s) · %s · %s") % [
+		opp.get("name", "?"), tr("(H)").trim_prefix("(").trim_suffix(")") if we_home else tr("(A)").trim_prefix("(").trim_suffix(")"),
+		I18n.pretty_date(fx["date"]), tr(str(fx["comp"]).capitalize())]))
 
 	var squad: Array = opp.get("squad", []).duplicate()
 	squad.sort_custom(func(x, y):
@@ -673,7 +673,7 @@ func _make_opponent_panel() -> Control:
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 14)
 	grid.add_theme_constant_override("v_separation", 3)
-	for hdr in ["THEIR LIKELY SIX", "TYPES", "OUR BEST ANSWER", "THEY THREATEN"]:
+	for hdr in [tr("THEIR LIKELY SIX"), "TYPES", tr("OUR BEST ANSWER"), tr("THEY THREATEN")]:
 		var h := Label.new()
 		h.text = hdr
 		h.add_theme_font_size_override("font_size", 9)
@@ -682,13 +682,13 @@ func _make_opponent_panel() -> Control:
 	for inst in squad.slice(0, 6):
 		var oa: Dictionary = Logic.analyze(inst)
 		var nm := Label.new()
-		nm.text = "%s  Lv %d" % [oa["battler"]["name"], int(oa["battler"]["level"])]
+		nm.text = tr("%s  Lv %d") % [oa["battler"]["name"], int(oa["battler"]["level"])]
 		nm.add_theme_font_size_override("font_size", 11)
 		nm.add_theme_color_override("font_color", Color.WHITE)
 		grid.add_child(nm)
 
 		var tp := Label.new()
-		tp.text = "/".join(oa["types"].map(func(t): return str(t).to_upper().substr(0, 3)))
+		tp.text = "/".join(oa["types"].map(func(t): return tr(str(t).to_upper().substr(0, 3))))
 		tp.add_theme_font_size_override("font_size", 10)
 		tp.add_theme_color_override("font_color", DataStore.type_color(oa["types"][0]).lightened(0.2))
 		grid.add_child(tp)
@@ -705,7 +705,7 @@ func _make_opponent_panel() -> Control:
 					best_who = a["battler"]["name"]
 					best_move = a["attack_types"][atk_t]
 		var ans := Label.new()
-		ans.text = "%s · %s ×%s" % [best_who, best_move, _fmt_mult(best_m)] if best_who != "" else "—"
+		ans.text = "%s · %s ×%s" % [best_who, tr(str(best_move)), _fmt_mult(best_m)] if best_who != "" else "—"
 		ans.add_theme_font_size_override("font_size", 11)
 		ans.add_theme_color_override("font_color",
 			ThemeBuilder.COL_GOOD if best_m >= 2.0 else (ThemeBuilder.COL_TEXT if best_m >= 1.0 else ThemeBuilder.COL_BAD))
@@ -723,7 +723,7 @@ func _make_opponent_panel() -> Control:
 					thr_tgt = a["battler"]["name"]
 					thr_move = oa["attack_types"][atk_t]
 		var thr := Label.new()
-		thr.text = "%s ×%s vs %s" % [thr_move, _fmt_mult(thr_m), thr_tgt] if thr_tgt != "" else "—"
+		thr.text = "%s ×%s vs %s" % [tr(str(thr_move)), _fmt_mult(thr_m), thr_tgt] if thr_tgt != "" else "—"
 		thr.add_theme_font_size_override("font_size", 11)
 		thr.add_theme_color_override("font_color",
 			ThemeBuilder.COL_BAD if thr_m >= 2.0 else ThemeBuilder.COL_TEXT_DIM)
@@ -746,7 +746,7 @@ const REHEARSAL_TIES := 5
 func _make_matchday_panel() -> Control:
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 4)
-	holder.add_child(_section("Matchday link — this plan commands the engine"))
+	holder.add_child(_section(tr("Matchday link — this plan commands the engine")))
 
 	var panel := PanelContainer.new()
 	var v := VBoxContainer.new()
@@ -771,16 +771,16 @@ func _make_matchday_panel() -> Control:
 	csb.content_margin_bottom = 2
 	chip.add_theme_stylebox_override("panel", csb)
 	var cl := Label.new()
-	cl.text = "ENGINE LINK ACTIVE" if linked else "ENGINE LINK OFFLINE"
+	cl.text = tr("ENGINE LINK ACTIVE") if linked else tr("ENGINE LINK OFFLINE")
 	cl.add_theme_font_size_override("font_size", 10)
 	cl.add_theme_color_override("font_color",
 		(ThemeBuilder.COL_GOOD if linked else ThemeBuilder.COL_BAD).lightened(0.25))
 	chip.add_child(cl)
-	chip.tooltip_text = "TacticsDirector stamps this plan onto every match-day squad sheet\nand resolves instant sims with it (deterministic per fixture)."
+	chip.tooltip_text = tr("TacticsDirector stamps this plan onto every match-day squad sheet\nand resolves instant sims with it (deterministic per fixture).")
 	head.add_child(chip)
 
 	var what := Label.new()
-	what.text = "Slot order = battle order · slot 1 opens · instructions drive every AI turn"
+	what.text = tr("Slot order = battle order · slot 1 opens · instructions drive every AI turn")
 	what.add_theme_font_size_override("font_size", 10)
 	what.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	head.add_child(what)
@@ -788,7 +788,7 @@ func _make_matchday_panel() -> Control:
 	var fx: Dictionary = GameState.next_player_fixture()
 	if fx.is_empty():
 		var none := Label.new()
-		none.text = "No upcoming fixture to rehearse against."
+		none.text = tr("No upcoming fixture to rehearse against.")
 		none.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		none.add_theme_font_size_override("font_size", 11)
 		v.add_child(none)
@@ -799,14 +799,14 @@ func _make_matchday_panel() -> Control:
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
 	var rl := Label.new()
-	rl.text = "REHEARSAL vs %s · %s" % [GameState.club(opp_id).get("name", "?"), Season.pretty_date(fx["date"])]
+	rl.text = tr("REHEARSAL vs %s · %s") % [GameState.club(opp_id).get("name", "?"), I18n.pretty_date(fx["date"])]
 	rl.add_theme_font_size_override("font_size", 11)
 	rl.add_theme_color_override("font_color", Color.WHITE)
 	rl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(rl)
 	var rerun := Button.new()
-	rerun.text = "Re-run rehearsal"
-	rerun.tooltip_text = "Plays %d fresh full-strength best-of-3 ties with this plan (unsaved edits included)\nagainst the opponent's likely six, on new seeds." % REHEARSAL_TIES
+	rerun.text = tr("Re-run rehearsal")
+	rerun.tooltip_text = tr("Plays %d fresh full-strength best-of-3 ties with this plan (unsaved edits included)\nagainst the opponent's likely six, on new seeds.") % REHEARSAL_TIES
 	rerun.pressed.connect(func():
 		_rehearsal_runs += 1
 		_run_rehearsal(fx))
@@ -862,13 +862,13 @@ func _run_rehearsal(fx: Dictionary) -> void:
 			faint_by[nm] = int(faint_by.get(nm, 0)) + int(r["faint_by"][nm])
 	if ties == 0:
 		var err := Label.new()
-		err.text = "Rehearsal unavailable (no valid teams)."
+		err.text = tr("Rehearsal unavailable (no valid teams).")
 		err.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		_rehearsal_box.add_child(err)
 		return
 
 	var head := Label.new()
-	head.text = "Won %d of %d ties  (%s)" % [wins, ties, ", ".join(scorelines)]
+	head.text = tr("Won %d of %d ties  (%s)") % [wins, ties, ", ".join(scorelines)]
 	head.add_theme_font_size_override("font_size", 12)
 	head.add_theme_color_override("font_color",
 		ThemeBuilder.COL_GOOD if wins * 2 > ties else (ThemeBuilder.COL_WARN if wins * 2 == ties else ThemeBuilder.COL_BAD))
@@ -884,11 +884,11 @@ func _run_rehearsal(fx: Dictionary) -> void:
 	det.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	det.add_theme_font_size_override("font_size", 10)
 	det.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
-	var bits := ["Battlers lost per tie: us %.1f, them %.1f." %
+	var bits := [tr("Battlers lost per tie: us %.1f, them %.1f.") %
 		[float(our_faints) / ties, float(their_faints) / ties]]
 	if worst != "":
-		bits.append("Most exposed: %s (down %d times)." % [worst, worst_n])
-	bits.append("Every turn chosen from this plan's instructions — edit a slider and re-run.")
+		bits.append(tr("Most exposed: %s (down %d times).") % [worst, worst_n])
+	bits.append(tr("Every turn chosen from this plan's instructions — edit a slider and re-run."))
 	det.text = "  ".join(bits)
 	_rehearsal_box.add_child(det)
 
@@ -898,9 +898,9 @@ func _run_rehearsal(fx: Dictionary) -> void:
 func _rebuild_right() -> void:
 	for c in _right_box.get_children():
 		c.queue_free()
-	_right_box.add_child(_section("Team instructions"))
+	_right_box.add_child(_section(tr("Team instructions")))
 	_right_box.add_child(_make_instructions())
-	_right_box.add_child(_section("Role guide"))
+	_right_box.add_child(_section(tr("Role guide")))
 	_guide_panel = VBoxContainer.new()
 	_guide_panel.add_theme_constant_override("separation", 4)
 	var gp := PanelContainer.new()
@@ -933,27 +933,27 @@ func _make_instructions() -> Control:
 		ag_val.text = Logic.AGGRESSION_LABELS[int(val)]
 		_queue_save())
 	v.add_child(ag)
-	v.add_child(_instr_desc("Aggressive sides stay in and trade blows; cautious sides pivot out of even matchups."))
+	v.add_child(_instr_desc(tr("Aggressive sides stay in and trade blows; cautious sides pivot out of even matchups.")))
 
 	# --- switch threshold
 	var sw_val := Label.new()
-	v.add_child(_instr_title("Switch-out threshold", sw_val))
+	v.add_child(_instr_title(tr("Switch-out threshold"), sw_val))
 	var sw := HSlider.new()
 	sw.min_value = 0
 	sw.max_value = 60
 	sw.step = 5
 	sw.value = int(instr["switch_threshold"])
-	sw_val.text = "%d%% HP" % int(instr["switch_threshold"])
+	sw_val.text = tr("%d%% HP") % int(instr["switch_threshold"])
 	sw.value_changed.connect(func(val):
 		instr["switch_threshold"] = int(val)
-		sw_val.text = "%d%% HP" % int(val)
+		sw_val.text = tr("%d%% HP") % int(val)
 		_queue_save())
 	v.add_child(sw)
-	v.add_child(_instr_desc("Battlers look for an exit once their HP drops below this line."))
+	v.add_child(_instr_desc(tr("Battlers look for an exit once their HP drops below this line.")))
 
 	# --- status priority
 	var sp_val := Label.new()
-	v.add_child(_instr_title("Status-move priority", sp_val))
+	v.add_child(_instr_title(tr("Status-move priority"), sp_val))
 	var sp := HSlider.new()
 	sp.min_value = 0
 	sp.max_value = 2
@@ -967,17 +967,17 @@ func _make_instructions() -> Control:
 		sp_val.text = Logic.STATUS_LABELS[int(val)]
 		_queue_save())
 	v.add_child(sp)
-	v.add_child(_instr_desc("High: fish for sleep/paralysis early. Low: just click the strongest attack."))
+	v.add_child(_instr_desc(tr("High: fish for sleep/paralysis early. Low: just click the strongest attack.")))
 
 	v.add_child(HSeparator.new())
 
 	for spec in [
-			["protect_lead", "Protect the lead",
-				"Pull the Lead out of losing matchups instead of sacrificing it."],
-			["preserve_last", "Preserve the last battler",
-				"Never leave your final battler in a hopeless matchup — play for the turn cap."],
-			["revenge_switch", "Revenge switching",
-				"After a faint, send the Revenge Killer (or fastest battler) rather than next in order."]]:
+			["protect_lead", tr("Protect the lead"),
+				tr("Pull the Lead out of losing matchups instead of sacrificing it.")],
+			["preserve_last", tr("Preserve the last battler"),
+				tr("Never leave your final battler in a hopeless matchup — play for the turn cap.")],
+			["revenge_switch", tr("Revenge switching"),
+				tr("After a faint, send the Revenge Killer (or fastest battler) rather than next in order.")]]:
 		var cb := CheckButton.new()
 		cb.text = spec[1]
 		cb.button_pressed = bool(instr[spec[0]])
@@ -1032,25 +1032,25 @@ func _refresh_role_guide() -> void:
 	var b: Array = Logic.band(res["score"])
 
 	var title := Label.new()
-	title.text = "%s — %s" % [a["battler"]["name"], Logic.ROLES[role]["name"]]
+	title.text = "%s — %s" % [a["battler"]["name"], tr(Logic.ROLES[role]["name"])]
 	title.add_theme_font_size_override("font_size", 15)
 	title.add_theme_color_override("font_color", Color.WHITE)
 	_guide_panel.add_child(title)
 
 	var fit := Label.new()
-	fit.text = "%s (%d/100)" % [b[0], res["score"]]
+	fit.text = "%s (%d/100)" % [tr(str(b[0])), res["score"]]
 	fit.add_theme_font_size_override("font_size", 12)
 	fit.add_theme_color_override("font_color", b[1])
 	_guide_panel.add_child(fit)
 
 	var desc := Label.new()
-	desc.text = Logic.ROLES[role]["desc"]
+	desc.text = tr(Logic.ROLES[role]["desc"])
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc.add_theme_font_size_override("font_size", 11)
 	_guide_panel.add_child(desc)
 
 	var wants := Label.new()
-	wants.text = "Key attributes: %s" % Logic.ROLES[role]["wants"]
+	wants.text = tr("Key attributes: %s") % tr(Logic.ROLES[role]["wants"])
 	wants.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	wants.add_theme_font_size_override("font_size", 10)
 	wants.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1058,7 +1058,7 @@ func _refresh_role_guide() -> void:
 
 	_guide_panel.add_child(HSeparator.new())
 	var why_hdr := Label.new()
-	why_hdr.text = "WHY THIS RATING"
+	why_hdr.text = tr("WHY THIS RATING")
 	why_hdr.add_theme_font_size_override("font_size", 10)
 	why_hdr.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_guide_panel.add_child(why_hdr)
@@ -1072,7 +1072,7 @@ func _refresh_role_guide() -> void:
 
 	_guide_panel.add_child(HSeparator.new())
 	var alt_hdr := Label.new()
-	alt_hdr.text = "ALL ROLES FOR %s" % str(a["battler"]["name"]).to_upper()
+	alt_hdr.text = tr("ALL ROLES FOR %s") % str(a["battler"]["name"]).to_upper()
 	alt_hdr.add_theme_font_size_override("font_size", 10)
 	alt_hdr.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_guide_panel.add_child(alt_hdr)
@@ -1081,14 +1081,14 @@ func _refresh_role_guide() -> void:
 		var bb: Array = Logic.band(sc)
 		var h := HBoxContainer.new()
 		var rn := Label.new()
-		rn.text = Logic.ROLES[rid]["name"]
+		rn.text = tr(Logic.ROLES[rid]["name"])
 		rn.add_theme_font_size_override("font_size", 11)
 		rn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		rn.add_theme_color_override("font_color",
 			Color.WHITE if rid == role else ThemeBuilder.COL_TEXT)
 		h.add_child(rn)
 		var rs := Label.new()
-		rs.text = "%d  %s" % [sc, bb[0]]
+		rs.text = "%d  %s" % [sc, tr(str(bb[0]))]
 		rs.add_theme_font_size_override("font_size", 11)
 		rs.add_theme_color_override("font_color", bb[1])
 		h.add_child(rs)
@@ -1118,7 +1118,7 @@ func _unique_name(base: String) -> String:
 func _on_new_preset() -> void:
 	var cur := _preset()
 	var np := {
-		"name": _unique_name("New Plan"),
+		"name": _unique_name(tr("New Plan")),
 		"lineup": cur["lineup"].duplicate(),
 		"bench": cur["bench"].duplicate(),
 		"roles": cur["roles"].duplicate(),
@@ -1151,10 +1151,10 @@ func _do_rename() -> void:
 
 func _on_delete_preset() -> void:
 	if _state["presets"].size() <= 1:
-		_saved_lbl.text = "Cannot delete the only tactic"
+		_saved_lbl.text = tr("Cannot delete the only tactic")
 		_saved_lbl.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		return
-	_delete_dialog.dialog_text = "Delete tactic \"%s\"?" % _state["active"]
+	_delete_dialog.dialog_text = tr("Delete tactic \"%s\"?") % _state["active"]
 	_delete_dialog.popup_centered()
 
 
@@ -1178,18 +1178,18 @@ func _on_auto_pick() -> void:
 
 func _build_dialogs() -> void:
 	_rename_dialog = ConfirmationDialog.new()
-	_rename_dialog.title = "Rename tactic"
+	_rename_dialog.title = tr("Rename tactic")
 	_rename_dialog.ok_button_text = "Rename"
 	_rename_edit = LineEdit.new()
 	_rename_edit.custom_minimum_size = Vector2(280, 34)
-	_rename_edit.placeholder_text = "Tactic name"
+	_rename_edit.placeholder_text = tr("Tactic name")
 	_rename_dialog.add_child(_rename_edit)
 	_rename_dialog.register_text_enter(_rename_edit)
 	_rename_dialog.confirmed.connect(_do_rename)
 	add_child(_rename_dialog)
 
 	_delete_dialog = ConfirmationDialog.new()
-	_delete_dialog.title = "Delete tactic"
+	_delete_dialog.title = tr("Delete tactic")
 	_delete_dialog.ok_button_text = "Delete"
 	_delete_dialog.confirmed.connect(_do_delete)
 	add_child(_delete_dialog)

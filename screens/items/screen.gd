@@ -57,12 +57,7 @@ func _cur() -> String:
 
 
 func _money(v: int) -> String:
-	var s := str(absi(v))
-	var out := ""
-	while s.length() > 3:
-		out = "," + s.substr(s.length() - 3) + out
-		s = s.substr(0, s.length() - 3)
-	return "%s%s%s%s" % ["-" if v < 0 else "", _cur(), s, out]
+	return "%s%s%s" % ["-" if v < 0 else "", _cur(), I18n.number(absi(v))]
 
 
 func _clear(node: Node) -> void:
@@ -103,7 +98,7 @@ func _err(msg: String) -> void:
 	if msg == "":
 		return
 	var dlg := AcceptDialog.new()
-	dlg.title = "League Store"
+	dlg.title = tr("League Store")
 	dlg.dialog_text = msg
 	dlg.confirmed.connect(dlg.queue_free)
 	dlg.canceled.connect(dlg.queue_free)
@@ -138,7 +133,7 @@ func _build_ui() -> void:
 	head.add_theme_constant_override("separation", 24)
 	root.add_child(head)
 	var title := Label.new()
-	title.text = "League Store & Equipment"
+	title.text = tr("League Store & Equipment")
 	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_color_override("font_color", Color.WHITE)
 	head.add_child(title)
@@ -161,13 +156,13 @@ func _build_ui() -> void:
 	left.size_flags_stretch_ratio = 1.35
 	left.add_theme_constant_override("separation", 6)
 	body.add_child(left)
-	left.add_child(_section_title("LEAGUE STORE — CATALOG & CLUB STOREROOM"))
+	left.add_child(_section_title(tr("LEAGUE STORE — CATALOG & CLUB STOREROOM")))
 
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 10)
 	left.add_child(bar)
 	var search := LineEdit.new()
-	search.placeholder_text = "Search items..."
+	search.placeholder_text = tr("Search items...")
 	search.custom_minimum_size.x = 190
 	search.text_changed.connect(func(t: String):
 		_search = t
@@ -188,7 +183,7 @@ func _build_ui() -> void:
 		_refresh_shop())
 	bar.add_child(rar)
 	var stock := CheckBox.new()
-	stock.text = "In storeroom"
+	stock.text = tr("In storeroom")
 	stock.toggled.connect(func(on: bool):
 		_stock_only = on
 		_refresh_shop())
@@ -216,7 +211,7 @@ func _build_ui() -> void:
 	_shop_tree.item_selected.connect(_on_shop_selected)
 	_shop_tree.item_activated.connect(func(): _buy(1))  # double-click = buy 1
 	left.add_child(_shop_tree)
-	left.add_child(_lbl("Double-click a row to buy one. Purchases come out of the board's transfer budget.",
+	left.add_child(_lbl(tr("Double-click a row to buy one. Purchases come out of the board's transfer budget."),
 		ThemeBuilder.COL_TEXT_DIM, 11))
 
 	# ------ right: dossier + squad equipment
@@ -226,7 +221,7 @@ func _build_ui() -> void:
 	right.add_theme_constant_override("separation", 6)
 	body.add_child(right)
 
-	right.add_child(_section_title("ITEM DOSSIER"))
+	right.add_child(_section_title(tr("ITEM DOSSIER")))
 	var dpanel := PanelContainer.new()
 	dpanel.custom_minimum_size.y = 236
 	right.add_child(dpanel)
@@ -238,14 +233,14 @@ func _build_ui() -> void:
 	_detail.add_theme_constant_override("separation", 5)
 	dscroll.add_child(_detail)
 
-	right.add_child(_section_title("SQUAD EQUIPMENT — WHO HOLDS WHAT"))
+	right.add_child(_section_title(tr("SQUAD EQUIPMENT — WHO HOLDS WHAT")))
 	_squad_tree = Tree.new()
 	_squad_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_squad_tree.hide_root = true
 	_squad_tree.select_mode = Tree.SELECT_ROW
 	_squad_tree.columns = 4
 	_squad_tree.set_column_titles_visible(true)
-	var st := ["Pokémon", "Lv", "Type", "Held item"]
+	var st := ["Pokémon", "Lv", "Type", tr("Held item")]
 	var sw := [130, 40, 92, 150]
 	for i in 4:
 		_squad_tree.set_column_title(i, st[i])
@@ -263,11 +258,11 @@ func _build_ui() -> void:
 	_equip_btn.pressed.connect(_do_equip)
 	eq_row.add_child(_equip_btn)
 	_strip_btn = Button.new()
-	_strip_btn.text = "Take item"
+	_strip_btn.text = tr("Take item")
 	_strip_btn.pressed.connect(_do_strip)
 	eq_row.add_child(_strip_btn)
 	_use_btn = Button.new()
-	_use_btn.text = "Use stone"
+	_use_btn.text = tr("Use stone")
 	_use_btn.visible = false
 	_use_btn.pressed.connect(_do_use_stone)
 	eq_row.add_child(_use_btn)
@@ -376,9 +371,9 @@ func _do_use_stone() -> void:
 	if err != "":
 		_err(err)
 		return
-	_err("%s evolved into %s! The %s was consumed." % [old_name,
+	_err(tr("%s evolved into %s! The %s was consumed.") % [old_name,
 		str(GameState.squad_member(_selected_uid).get("species", "?")),
-		DataStore.item_name(_selected_item)])
+		I18n.item_name(_selected_item)])
 	_refresh_all()
 
 
@@ -410,13 +405,13 @@ func _refresh_header() -> void:
 		if h != null and str(h) != "":
 			equipped += 1
 			eq_value += int(DataStore.item(str(h)).get("price", 0))
-	_header_stat("Transfer budget", _money(maxi(0, mini(int(pc["finances"]["balance"]),
+	_header_stat(tr("Transfer budget"), _money(maxi(0, mini(int(pc["finances"]["balance"]),
 		int(pc["finances"].get("transfer_budget", 0))))), ThemeBuilder.COL_GOOD)
-	_header_stat("Club balance", _money(int(pc["finances"]["balance"])), ThemeBuilder.COL_TEXT_DIM)
-	_header_stat("Storeroom", "%d items · %s" % [stocked, _money(value)])
-	_header_stat("Squad equipped", "%d / %d" % [equipped, pc["squad"].size()],
+	_header_stat(tr("Club balance"), _money(int(pc["finances"]["balance"])), ThemeBuilder.COL_TEXT_DIM)
+	_header_stat(tr("Storeroom"), tr("%d items · %s") % [stocked, _money(value)])
+	_header_stat(tr("Squad equipped"), "%d / %d" % [equipped, pc["squad"].size()],
 		ThemeBuilder.COL_GOOD if equipped > 0 else ThemeBuilder.COL_TEXT_DIM)
-	_header_stat("Kit on backs", _money(eq_value), ThemeBuilder.COL_TEXT_DIM)
+	_header_stat(tr("Kit on backs"), _money(eq_value), ThemeBuilder.COL_TEXT_DIM)
 
 
 func _refresh_shop() -> void:
@@ -461,7 +456,7 @@ func _refresh_shop() -> void:
 			row.set_text_alignment(c, HORIZONTAL_ALIGNMENT_RIGHT)
 		if iid == _selected_item:
 			row.select(0)
-	_count_label.text = "%d of %d items" % [shown, DataStore.items.size()]
+	_count_label.text = tr("%d of %d items") % [shown, DataStore.items.size()]
 
 
 func _refresh_squad() -> void:
@@ -479,7 +474,7 @@ func _refresh_squad() -> void:
 		row.set_custom_color(0, Color.WHITE)
 		row.set_text(1, str(int(m["level"])))
 		row.set_custom_color(1, ThemeBuilder.COL_TEXT_DIM)
-		var types_txt := " / ".join(sp["types"].map(func(x): return str(x).capitalize()))
+		var types_txt := " / ".join(sp["types"].map(func(x): return tr(str(x).capitalize())))
 		row.set_text(2, types_txt)
 		row.set_custom_color(2, DataStore.type_color(sp["types"][0]))
 		var h: Variant = m.get("held_item")
@@ -489,7 +484,7 @@ func _refresh_squad() -> void:
 			row.set_custom_color(3, ThemeBuilder.COL_GOOD)
 			row.set_tooltip_text(3, str(it.get("desc", "")))
 		else:
-			row.set_text(3, "— bare —")
+			row.set_text(3, tr("— bare —"))
 			row.set_custom_color(3, ThemeBuilder.COL_TEXT_DIM)
 		if str(m["uid"]) == _selected_uid:
 			row.select(0)
@@ -501,7 +496,7 @@ func _refresh_detail() -> void:
 	_clear(_detail)
 	var it: Dictionary = DataStore.item(_selected_item) if _selected_item != "" else {}
 	if it.is_empty():
-		_detail.add_child(_lbl("Select an item from the catalog.\n\nHELD items work passively while a Pokémon carries them — equip below.\nUSABLE items go into the matchday bag: using one in battle costs that Pokémon's turn, exactly like the real thing.",
+		_detail.add_child(_lbl(tr("Select an item from the catalog.\n\nHELD items work passively while a Pokémon carries them — equip below.\nUSABLE items go into the matchday bag: using one in battle costs that Pokémon's turn, exactly like the real thing."),
 			ThemeBuilder.COL_TEXT_DIM, 13, true))
 		return
 	var inv: Dictionary = GameState.player_inventory()
@@ -516,37 +511,37 @@ func _refresh_detail() -> void:
 	toprow.add_child(_chip(str(it["rarity"]).to_upper(),
 		RARITY_COLORS.get(str(it["rarity"]), ThemeBuilder.COL_TEXT)))
 	_detail.add_child(_lbl(str(it["desc"]), ThemeBuilder.COL_TEXT, 13, true))
-	_detail.add_child(_lbl("Engine effects: %s" % ", ".join(it.get("effects", [])),
+	_detail.add_child(_lbl(tr("Engine effects: %s") % ", ".join(it.get("effects", [])),
 		ThemeBuilder.COL_TEXT_DIM, 11, true))
 	_detail.add_child(HSeparator.new())
-	_detail.add_child(_lbl("Price %s   ·   sells back for %s   ·   in storeroom: %d" % [
+	_detail.add_child(_lbl(tr("Price %s   ·   sells back for %s   ·   in storeroom: %d") % [
 		_money(int(it["price"])), _money(int(int(it["price"]) * 0.5)), owned],
 		ThemeBuilder.COL_TEXT, 13))
 	if str(it["class"]) == "held":
 		var holders := _holders(_selected_item)
 		if holders.is_empty():
-			_detail.add_child(_lbl("Currently held by: nobody in the squad.", ThemeBuilder.COL_TEXT_DIM, 12))
+			_detail.add_child(_lbl(tr("Currently held by: nobody in the squad."), ThemeBuilder.COL_TEXT_DIM, 12))
 		else:
-			_detail.add_child(_lbl("Currently held by: %s" % ", ".join(
-				holders.map(func(m): return "%s (Lv %d)" % [_display_name(m), int(m["level"])])),
+			_detail.add_child(_lbl(tr("Currently held by: %s") % ", ".join(
+				holders.map(func(m): return tr("%s (Lv %d)") % [_display_name(m), int(m["level"])])),
 				ThemeBuilder.COL_GOOD, 12, true))
 	elif _is_stone(it):
 		var targets := _stone_targets(_selected_item)
 		if targets.is_empty():
-			_detail.add_child(_lbl("Evolution stone — applied from the storeroom, never in battle. Nobody in the current squad evolves with it.",
+			_detail.add_child(_lbl(tr("Evolution stone — applied from the storeroom, never in battle. Nobody in the current squad evolves with it."),
 				ThemeBuilder.COL_TEXT_DIM, 12, true))
 		else:
 			var lines: Array = []
 			for m in targets:
 				var route := _stone_route(_selected_item, m)
-				lines.append("%s (Lv %d) -> %s" % [_display_name(m), int(m["level"]),
+				lines.append(tr("%s (Lv %d) -> %s") % [_display_name(m), int(m["level"]),
 					str(DataStore.species(int(route["to"])).get("name", "?"))])
-			_detail.add_child(_lbl("Would evolve: %s" % ", ".join(PackedStringArray(lines)),
+			_detail.add_child(_lbl(tr("Would evolve: %s") % ", ".join(PackedStringArray(lines)),
 				ThemeBuilder.COL_GOOD, 12, true))
-			_detail.add_child(_lbl("Pick the Pokémon below and press Use — evolution is immediate and permanent; using the stone is the approval.",
+			_detail.add_child(_lbl(tr("Pick the Pokémon below and press Use — evolution is immediate and permanent; using the stone is the approval."),
 				ThemeBuilder.COL_TEXT_DIM, 11, true))
 	else:
-		_detail.add_child(_lbl("Usable items are consumed as a battle turn — the engine exposes them as \"use_item\" actions from your matchday bag.",
+		_detail.add_child(_lbl(tr("Usable items are consumed as a battle turn — the engine exposes them as \"use_item\" actions from your matchday bag."),
 			ThemeBuilder.COL_TEXT_DIM, 11, true))
 
 	var btns := HBoxContainer.new()
@@ -555,17 +550,17 @@ func _refresh_detail() -> void:
 	var fin: Dictionary = GameState.player_club()["finances"]
 	var bal := mini(int(fin["balance"]), int(fin.get("transfer_budget", 0)))
 	var b1 := Button.new()
-	b1.text = "Buy 1  (%s)" % _money(int(it["price"]))
+	b1.text = tr("Buy 1  (%s)") % _money(int(it["price"]))
 	b1.disabled = bal < int(it["price"])
 	b1.pressed.connect(func(): _buy(1))
 	btns.add_child(b1)
 	var b5 := Button.new()
-	b5.text = "Buy 5"
+	b5.text = tr("Buy 5")
 	b5.disabled = bal < int(it["price"]) * 5
 	b5.pressed.connect(func(): _buy(5))
 	btns.add_child(b5)
 	var bs := Button.new()
-	bs.text = "Sell 1"
+	bs.text = tr("Sell 1")
 	bs.disabled = owned <= 0
 	bs.pressed.connect(func(): _sell(1))
 	btns.add_child(bs)
@@ -579,7 +574,7 @@ func _refresh_equip_row() -> void:
 	var owned := int(GameState.player_inventory().get(_selected_item, 0))
 	var is_held: bool = not it.is_empty() and str(it["class"]) == "held"
 	_equip_btn.disabled = not (is_held and owned > 0 and not m.is_empty())
-	_equip_btn.text = "Equip %s" % str(it["name"]) if is_held else "Equip"
+	_equip_btn.text = I18n.t("Equip %s") % str(it["name"]) if is_held else "Equip"
 	var cur: Variant = m.get("held_item") if not m.is_empty() else null
 	_strip_btn.disabled = m.is_empty() or cur == null or str(cur) == ""
 	# evolution stones: the Use path (apply from storeroom -> evolves NOW)
@@ -587,28 +582,28 @@ func _refresh_equip_row() -> void:
 	var route: Dictionary = _stone_route(_selected_item, m) if is_stone else {}
 	_use_btn.visible = is_stone
 	_use_btn.disabled = route.is_empty() or owned <= 0
-	_use_btn.text = "Use %s" % str(it["name"]) if is_stone else "Use stone"
+	_use_btn.text = I18n.t("Use %s") % str(it["name"]) if is_stone else "Use stone"
 	if is_stone:
 		if m.is_empty():
-			_equip_hint.text = "Pick a Pokémon below to apply the %s — stones evolve certain species instantly (never used in battle)." % str(it["name"])
+			_equip_hint.text = I18n.t("Pick a Pokémon below to apply the %s — stones evolve certain species instantly (never used in battle).") % str(it["name"])
 		elif route.is_empty():
-			_equip_hint.text = "The %s has no effect on %s." % [str(it["name"]), _display_name(m)]
+			_equip_hint.text = I18n.t("The %s has no effect on %s.") % [str(it["name"]), _display_name(m)]
 		elif owned <= 0:
-			_equip_hint.text = "%s would evolve into %s — buy a %s first." % [_display_name(m),
+			_equip_hint.text = tr("%s would evolve into %s — buy a %s first.") % [_display_name(m),
 				str(DataStore.species(int(route["to"])).get("name", "?")), str(it["name"])]
 		else:
-			_equip_hint.text = "%s -> evolves %s into %s. Permanent — using the stone is the approval." % \
+			_equip_hint.text = tr("%s -> evolves %s into %s. Permanent — using the stone is the approval.") % \
 				[str(it["name"]), _display_name(m),
 				str(DataStore.species(int(route["to"])).get("name", "?"))]
 		return
 	if m.is_empty():
-		_equip_hint.text = "Pick an item above and a Pokémon here, then Equip. Swapping returns the old item to the storeroom."
+		_equip_hint.text = tr("Pick an item above and a Pokémon here, then Equip. Swapping returns the old item to the storeroom.")
 	elif is_held and owned > 0:
-		_equip_hint.text = "%s -> %s%s" % [str(it["name"]), _display_name(m),
-			("  (replaces %s)" % DataStore.item_name(str(cur))) if cur != null and str(cur) != "" else ""]
+		_equip_hint.text = "%s -> %s%s" % [tr(str(it["name"])), _display_name(m),
+			(tr("  (replaces %s)") % I18n.item_name(str(cur))) if cur != null and str(cur) != "" else ""]
 	elif is_held and owned <= 0:
-		_equip_hint.text = "No %s in the storeroom — buy one first." % str(it["name"])
+		_equip_hint.text = I18n.t("No %s in the storeroom — buy one first.") % tr(str(it["name"]))
 	elif cur != null and str(cur) != "":
-		_equip_hint.text = "%s is holding %s." % [_display_name(m), DataStore.item_name(str(cur))]
+		_equip_hint.text = I18n.t("%s is holding %s.") % [_display_name(m), I18n.item_name(str(cur))]
 	else:
-		_equip_hint.text = "%s is not holding anything." % _display_name(m)
+		_equip_hint.text = tr("%s is not holding anything.") % _display_name(m)

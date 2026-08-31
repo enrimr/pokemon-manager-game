@@ -22,7 +22,7 @@ const TYPE_ABBR := {
 
 
 static func type_abbr(t: String) -> String:
-	return TYPE_ABBR.get(t, t.substr(0, 3).to_upper())
+	return I18n.t(TYPE_ABBR.get(t, t.substr(0, 3).to_upper()))
 
 
 ## Small solid pill texture: one or two type colors side-by-side. Cached.
@@ -172,14 +172,14 @@ static func pct_color(v: int) -> Color:
 
 static func morale_word(v: int) -> String:
 	if v >= 90:
-		return "Superb"
+		return I18n.t("Superb")
 	if v >= 75:
-		return "Good"
+		return I18n.t("Good")
 	if v >= 55:
-		return "Okay"
+		return I18n.t("Okay")
 	if v >= 35:
-		return "Poor"
-	return "Abysmal"
+		return I18n.t("Poor")
+	return I18n.t("Abysmal")
 
 
 static func rating_color(r: float) -> Color:
@@ -211,36 +211,30 @@ static func base_to_20(base: int) -> int:
 # ------------------------------------------------------------------ formatting
 
 static func money(n: int) -> String:
-	var s := str(absi(n))
-	var out := ""
-	while s.length() > 3:
-		out = "," + s.substr(s.length() - 3) + out
-		s = s.substr(0, s.length() - 3)
-	out = s + out
 	var cur: String = GameState.world["meta"]["currency"]
-	return ("-" if n < 0 else "") + cur + out
+	return ("-" if n < 0 else "") + cur + I18n.number(absi(n))
 
 
 static func age_str(months: int) -> String:
-	return "%dy %dm" % [months / 12, months % 12]
+	return I18n.t("%dy %dm") % [months / 12, months % 12]
 
 
 static func age_stage(months: int) -> String:
 	if months < 24:
-		return "Developing"
+		return I18n.t("Developing")
 	if months < 60:
-		return "Peak years"
+		return I18n.t("Peak years")
 	if months < 84:
-		return "Experienced"
-	return "Veteran"
+		return I18n.t("Experienced")
+	return I18n.t("Veteran")
 
 
 static func growth_label(g: String) -> String:
 	match g:
-		"fast": return "Fast"
-		"medium_fast": return "Medium-Fast"
-		"medium_slow": return "Medium-Slow"
-		"slow": return "Slow"
+		"fast": return I18n.t("Fast")
+		"medium_fast": return I18n.t("Medium-Fast")
+		"medium_slow": return I18n.t("Medium-Slow")
+		"slow": return I18n.t("Slow")
 	return g.capitalize()
 
 
@@ -323,8 +317,8 @@ static func nature_text(inst: Dictionary) -> String:
 	var plus: Variant = nat.get("plus")
 	var minus: Variant = nat.get("minus")
 	if plus == null or minus == null:
-		return "%s (neutral)" % n
-	return "%s (+%s, −%s)" % [n, STAT_SHORT.get(str(plus), str(plus)),
+		return I18n.t("%s (neutral)") % I18n.t(n)
+	return "%s (+%s, −%s)" % [I18n.t(n), STAT_SHORT.get(str(plus), str(plus)),
 		STAT_SHORT.get(str(minus), str(minus))]
 
 
@@ -335,11 +329,11 @@ static func nature_tip(inst: Dictionary) -> String:
 	var plus: Variant = nat.get("plus")
 	var minus: Variant = nat.get("minus")
 	if plus == null or minus == null:
-		return "%s nature — neutral: no stat is boosted or hindered." % n
+		return I18n.t("%s nature — neutral: no stat is boosted or hindered.") % I18n.t(n)
 	var raw := raw_stats(inst)
 	var fin := apply_nature(raw, n)
-	return "%s nature — battle stats are modified at battle start:\n+10%% %s (%d -> %d)   −10%% %s (%d -> %d)\nAll stats shown on this screen already include the nature." % [
-		n, STAT_SHORT.get(str(plus), str(plus)), int(raw[str(plus)]), int(fin[str(plus)]),
+	return I18n.t("%s nature — battle stats are modified at battle start:\n+10%% %s (%d -> %d)   −10%% %s (%d -> %d)\nAll stats shown on this screen already include the nature.") % [
+		I18n.t(n), STAT_SHORT.get(str(plus), str(plus)), int(raw[str(plus)]), int(fin[str(plus)]),
 		STAT_SHORT.get(str(minus), str(minus)), int(raw[str(minus)]), int(fin[str(minus)])]
 
 
@@ -353,20 +347,20 @@ static func ability_id(inst: Dictionary) -> String:
 
 static func ability_label(inst: Dictionary) -> String:
 	var id := ability_id(inst)
-	return DataStore.ability_name(id) if id != "" else "—"
+	return I18n.t(DataStore.ability_name(id)) if id != "" else "—"
 
 
 ## Tooltip: ability name, effect text and any type immunities it grants.
 static func ability_tip(inst: Dictionary) -> String:
 	var id := ability_id(inst)
 	if id == "":
-		return "No battle ability."
+		return I18n.t("No battle ability.")
 	var ab: Dictionary = DataStore.ability(id)
-	var s := "%s — %s" % [str(ab.get("name", id)), str(ab.get("desc", ""))]
+	var s := "%s — %s" % [I18n.t(str(ab.get("name", id))), I18n.t(str(ab.get("desc", "")))]
 	var imm := ability_immunities(id)
 	if not imm.is_empty():
-		s += "\nTakes ZERO damage from %s moves — the type chart alone understates this battler." % \
-			"/".join(imm.map(func(t): return str(t).capitalize()))
+		s += I18n.t("\nTakes ZERO damage from %s moves — the type chart alone understates this battler.") % \
+			"/".join(imm.map(func(t): return I18n.t(str(t).capitalize())))
 	return s
 
 

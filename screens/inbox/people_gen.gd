@@ -81,10 +81,10 @@ const P_CLOSER := ["That's all I'll say.", "Take that however you like.",
 
 func persona(mgr: String) -> Dictionary:
 	return {
-		"tic": P_TICS[absi((mgr + "|tic").hash()) % P_TICS.size()],
-		"crowd": P_CROWD[absi((mgr + "|crowd").hash()) % P_CROWD.size()],
-		"arena": P_ARENA[absi((mgr + "|arena").hash()) % P_ARENA.size()],
-		"closer": P_CLOSER[absi((mgr + "|closer").hash()) % P_CLOSER.size()],
+		"tic": I18n.t(P_TICS[absi((mgr + "|tic").hash()) % P_TICS.size()]),
+		"crowd": I18n.t(P_CROWD[absi((mgr + "|crowd").hash()) % P_CROWD.size()]),
+		"arena": I18n.t(P_ARENA[absi((mgr + "|arena").hash()) % P_ARENA.size()]),
+		"closer": I18n.t(P_CLOSER[absi((mgr + "|closer").hash()) % P_CLOSER.size()]),
 	}
 
 
@@ -472,7 +472,9 @@ func _pick_line(key: String, n: int, rng: RandomNumberGenerator, date: String) -
 
 
 func _fmt(tpl: String, params: Dictionary) -> String:
-	return tpl.format(params)
+	# Localization point: template banks stay English (stable ids); the
+	# catalog (i18n/translations.csv) carries the Spanish line for each.
+	return I18n.t(tpl).format(params)
 
 
 ## Capitalize the first letter of every sentence — persona slots ("my squad",
@@ -591,7 +593,7 @@ func _gen_mind_games(have: Dictionary) -> void:
 		for tid in tids:
 			_mark_used(str(tid), msg_date)
 		_add(have, uid, msg_date, title, body,
-			{"cat": "media", "sender": "%s (%s Manager)" % [mgr, opp["name"]],
+			{"cat": "media", "sender": I18n.t("%s (%s Manager)") % [mgr, opp["name"]],
 				"fid": str(f["id"]), "opp_id": str(opp["id"]), "tone": tone,
 				"quote": str(q["text"]), "tids": tids,
 				"facts": _snapshot_facts(pc, opp, msg_date),
@@ -644,8 +646,8 @@ func _snapshot_facts(pc: Dictionary, opp: Dictionary, pub_date: String) -> Dicti
 		"our_form": Season.club_form(str(pc["id"]), pre, 5),
 		"their_form": Season.club_form(str(opp["id"]), pre, 5),
 		"our_pos": our_pos, "their_pos": their_pos,
-		"their_pos_text": ("yet to play in the league" if their_played == 0
-			else "%s in the league" % _ordinal(their_pos)),
+		"their_pos_text": (I18n.t("yet to play in the league") if their_played == 0
+			else I18n.t("%s in the league") % _ordinal(their_pos)),
 		"morale": _avg_squad_morale(pc),
 	}
 
@@ -656,9 +658,9 @@ func mind_replies(msg: Dictionary) -> Array:
 	if f.is_empty() or f.get("played", false) or msg.get("replied", "") != "":
 		return []
 	return [
-		{"kind": "reply", "reply": "fire", "style": "warn", "label": "Fire Back in the Press"},
-		{"kind": "reply", "reply": "calm", "style": "good", "label": "Praise Your Squad Instead"},
-		{"kind": "reply", "reply": "none", "style": "bad", "label": "No Comment"},
+		{"kind": "reply", "reply": "fire", "style": "warn", "label": I18n.t("Fire Back in the Press")},
+		{"kind": "reply", "reply": "calm", "style": "good", "label": I18n.t("Praise Your Squad Instead")},
+		{"kind": "reply", "reply": "none", "style": "bad", "label": I18n.t("No Comment")},
 	]
 
 
@@ -708,8 +710,8 @@ func _gen_press_reactions(have: Dictionary) -> void:
 			"opp": str(opp["name"]), "opps": str(opp["short"]),
 			"orep": int(opp["reputation"]), "gap": absi(gap),
 			"us": us, "them": them, "streak": streak,
-			"round": Season.cup_round_name(rnd),
-			"next_round": Season.cup_round_name(mini(rnd + 1, 4)),
+			"round": I18n.cup_round_prose(rnd),
+			"next_round": I18n.cup_round_prose(mini(rnd + 1, 4)),
 		}
 		var p_bank: Array = PRESS_PROSE[kind]
 		var p_idx := _pick_line("press.p." + kind, p_bank.size(), rng, msg_date)
@@ -862,7 +864,7 @@ func _gen_delighted_note(have: Dictionary, date: String, pc: Dictionary) -> void
 	rng.seed = GameState.career_seed + absi(("monstar" + date).hash())
 	var params := {"name": news.display_name(best), "species": str(best["species"]),
 		"level": int(best["level"]), "n": best_log.size(), "kos": kos,
-		"rating": "%.2f" % best_rating, "coach": _coach_first_name(pc)}
+		"rating": I18n.decimal(best_rating, 2), "coach": _coach_first_name(pc)}
 	var p_idx := _pick_line("monstar.p", STAR_PROSE.size(), rng, date)
 	var t_idx := _pick_line("monstar.t", STAR_TITLES.size(), rng, date)
 	var b_idx := _pick_line("monstar.b", STAR_BODIES.size(), rng, date)
@@ -880,8 +882,8 @@ func _gen_delighted_note(have: Dictionary, date: String, pc: Dictionary) -> void
 func _coach_name(pc: Dictionary) -> String:
 	for s in pc.get("staff", []):
 		if str(s["role"]) == "coach":
-			return "%s (Coach)" % s["name"]
-	return "Head Coach"
+			return I18n.t("%s (Coach)") % s["name"]
+	return I18n.t("Head Coach")
 
 
 func _coach_first_name(pc: Dictionary) -> String:
@@ -962,7 +964,7 @@ func _pledge_mail(have: Dictionary, src: Dictionary, pl: Dictionary, inst: Dicti
 		_mark_used(str(tid), date)
 	_add(have, "pledge:%s:%s" % [str(src.get("uid", "")), "kept" if kept else "broken"], date,
 		_fmt(titles[t_idx], params),
-		"%s reports back on the promise you made." % _coach_name(pc),
+		I18n.t("%s reports back on the promise you made.") % _coach_name(pc),
 		{"cat": "staff", "sender": _coach_name(pc), "mon_uid": str(inst["uid"]),
 			"pledge_kept": kept, "apps": int(pl.get("apps", 0)),
 			"target": int(pl.get("target", PLEDGE_TARGET)),
@@ -1108,7 +1110,7 @@ func _gen_roundup(have: Dictionary, boundary: String, month_key: String) -> void
 	for tid in tids:
 		_mark_used(str(tid), boundary)
 	_add(have, uid, boundary,
-		"League Review — %s: Pokémon of the Month is %s" % [mname, pom_line],
+		I18n.t("League Review — %s: Pokémon of the Month is %s") % [mname, pom_line],
 		_fmt(ROUNDUP_BODIES[b_idx], {"paper": PAPER, "month": mname}),
 		{"cat": "media", "sender": "%s — %s" % [_journalist("roundup" + month_key), PAPER],
 			"month": month_key, "podium": podium, "totm": totm, "upset": upset,
@@ -1120,7 +1122,7 @@ func _gen_roundup(have: Dictionary, boundary: String, month_key: String) -> void
 func _month_name(month_key: String) -> String:
 	var names := ["", "January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December"]
-	return "%s %s" % [names[int(month_key.split("-")[1])], month_key.substr(0, 4)]
+	return "%s %s" % [I18n.t(names[int(month_key.split("-")[1])]), month_key.substr(0, 4)]
 
 
 # ==================================================================== replies
@@ -1129,7 +1131,7 @@ func _month_name(month_key: String) -> String:
 ## records the outcome on the message. Returns {note, good}.
 func apply_reply(msg: Dictionary, action: Dictionary) -> Dictionary:
 	if msg.get("replied", "") != "":
-		return {"note": "You have already responded to this.", "good": false}
+		return {"note": I18n.t("You have already responded to this."), "good": false}
 	var choice := str(action.get("reply", ""))
 	var uid := str(msg.get("uid", ""))
 	var out := {"note": "", "good": true}
@@ -1150,13 +1152,13 @@ func apply_reply(msg: Dictionary, action: Dictionary) -> Dictionary:
 func _pick_reply_line(bank: Array, salt: String) -> String:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = GameState.career_seed + absi(salt.hash())
-	return str(bank[rng.randi_range(0, bank.size() - 1)])
+	return I18n.t(str(bank[rng.randi_range(0, bank.size() - 1)]))
 
 
 func _apply_mind_reply(msg: Dictionary, choice: String) -> Dictionary:
 	var pc: Dictionary = GameState.player_club()
 	var opp: Dictionary = GameState.club(str(msg.get("opp_id", "")))
-	var opp_name := str(opp.get("manager", "the rival manager"))
+	var opp_name := str(opp.get("manager", I18n.t("the rival manager")))
 	var salt := "reply" + str(msg.get("fid", ""))
 	match choice:
 		"fire":
@@ -1177,7 +1179,7 @@ func _apply_mind_reply(msg: Dictionary, choice: String) -> Dictionary:
 func _apply_unhappy_reply(msg: Dictionary, choice: String) -> Dictionary:
 	var inst := GameState.squad_member(str(msg.get("mon_uid", "")))
 	if inst.is_empty():
-		return {"note": "That battler is no longer at the club.", "good": false}
+		return {"note": I18n.t("That battler is no longer at the club."), "good": false}
 	var before := int(inst.get("morale", 70))
 	var salt := "unhappy" + str(msg.get("uid", ""))
 	match choice:
@@ -1190,7 +1192,7 @@ func _apply_unhappy_reply(msg: Dictionary, choice: String) -> Dictionary:
 				"target": PLEDGE_TARGET, "status": "open"}
 			return {"note": _fmt(_pick_reply_line(REPLY_PROMISE, salt),
 				{"name": news.display_name(inst), "target": PLEDGE_TARGET,
-					"deadline": Season.pretty_date(deadline),
+					"deadline": I18n.pretty_date(deadline),
 					"b": before, "a": int(inst["morale"])}), "good": true}
 		_:
 			inst["morale"] = maxi(0, before - 5)
@@ -1201,7 +1203,7 @@ func _apply_unhappy_reply(msg: Dictionary, choice: String) -> Dictionary:
 func _apply_star_reply(msg: Dictionary, choice: String) -> Dictionary:
 	var inst := GameState.squad_member(str(msg.get("mon_uid", "")))
 	if inst.is_empty():
-		return {"note": "That battler is no longer at the club.", "good": false}
+		return {"note": I18n.t("That battler is no longer at the club."), "good": false}
 	var before := int(inst.get("morale", 70))
 	var salt := "star" + str(msg.get("uid", ""))
 	match choice:
@@ -1245,7 +1247,7 @@ func _reply_block(msg: Dictionary) -> String:
 	if msg.get("replied", "") == "":
 		return ""
 	var col := C_GOOD if msg.get("reply_good", true) else C_WARN
-	return "\n[color=#%s][b]YOUR RESPONSE[/b][/color]\n[color=#%s]%s[/color]\n" % \
+	return I18n.t("\n[color=#%s][b]YOUR RESPONSE[/b][/color]\n[color=#%s]%s[/color]\n") % \
 		[C_DIM, col, str(msg.get("reply_note", ""))]
 
 
@@ -1258,8 +1260,8 @@ func _render_mind(msg: Dictionary) -> Dictionary:
 		return {"bbcode": "[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", ""))], "actions": [], "banner": {}}
 	var pc: Dictionary = GameState.player_club()
 	var we_home: bool = GameState.is_player_club(f["home"])
-	var comp_line: String = ("%s · Matchday %d" % [GameState.world["meta"]["league_name"], int(f["round"])]) \
-		if str(f["comp"]) == "league" else ("Indigo Cup · %s" % Season.cup_round_name(int(f["round"])))
+	var comp_line: String = ("%s · %s" % [I18n.t(GameState.world["meta"]["league_name"]), I18n.t("Matchday %d") % int(f["round"])]) \
+		if str(f["comp"]) == "league" else ("%s · %s" % [I18n.t("Indigo Cup"), I18n.cup_round(int(f["round"]))])
 
 	# facts as they stood at publication — snapshotted, never recomputed
 	var facts: Dictionary = msg.get("facts", {})
@@ -1276,44 +1278,44 @@ func _render_mind(msg: Dictionary) -> Dictionary:
 		our_form = facts.get("our_form", [])
 		their_form = facts.get("their_form", [])
 		morale = int(facts.get("morale", 70))
-		opp_pos_text = str(facts.get("their_pos_text", "unranked"))
+		opp_pos_text = str(facts.get("their_pos_text", I18n.t("unranked")))
 
 	var bb := "[color=#%s]%s · %s · %s[/color]\n\n" % \
-		[C_DIM, comp_line, Season.pretty_date(str(f["date"])), "we host" if we_home else "we travel"]
-	bb += "[color=#%s]Speaking to %s ahead of the tie, [b]%s[/b] (%s, %s, reputation %d/20) went on the record:[/color]\n\n" % \
+		[C_DIM, comp_line, I18n.pretty_date(str(f["date"])), I18n.t("we host") if we_home else I18n.t("we travel")]
+	bb += I18n.t("[color=#%s]Speaking to %s ahead of the tie, [b]%s[/b] (%s, %s, reputation %d/20) went on the record:[/color]\n\n") % \
 		[C_WHITE, PAPER, opp["manager"], opp["name"], opp_pos_text, int(opp["reputation"])]
 	bb += "[color=#%s][b]\"%s\"[/b][/color]\n\n" % [C_ACC, str(msg.get("quote", ""))]
 
-	var facts_hdr := "THE FACTS"
+	var facts_hdr := I18n.t("THE FACTS")
 	if facts.has("as_of"):
-		facts_hdr = "THE FACTS — at publication, %s" % Season.pretty_date(str(facts["as_of"]))
+		facts_hdr = I18n.t("THE FACTS — at publication, %s") % I18n.pretty_date(str(facts["as_of"]))
 	bb += "[color=#%s][b]%s[/b][/color]\n" % [C_DIM, facts_hdr]
-	bb += "[color=#%s]%s form:[/color]  %s\n" % [C_DIM, pc["short"], _form_bb(our_form)]
-	bb += "[color=#%s]%s form:[/color]  %s\n" % [C_DIM, opp["short"], _form_bb(their_form)]
-	bb += "[color=#%s]Squad morale:[/color] [color=#%s][b]%d/100[/b][/color]\n" % \
+	bb += I18n.t("[color=#%s]%s form:[/color]  %s\n") % [C_DIM, pc["short"], _form_bb(our_form)]
+	bb += I18n.t("[color=#%s]%s form:[/color]  %s\n") % [C_DIM, opp["short"], _form_bb(their_form)]
+	bb += I18n.t("[color=#%s]Squad morale:[/color] [color=#%s][b]%d/100[/b][/color]\n") % \
 		[C_DIM, C_GOOD if morale >= 75 else (C_WARN if morale >= 55 else C_BAD), morale]
 
 	if f.get("played", false):
 		var us := int(f["score_home"] if we_home else f["score_away"])
 		var them := int(f["score_away"] if we_home else f["score_home"])
-		bb += "\n[color=#%s]The match has since been played — we %s %d-%d. The talking is over.[/color]\n" % \
-			[C_GOOD if us > them else C_BAD, "won" if us > them else "lost", us, them]
+		bb += I18n.t("\n[color=#%s]The match has since been played — we %s %d-%d. The talking is over.[/color]\n") % \
+			[C_GOOD if us > them else C_BAD, I18n.t("won") if us > them else I18n.t("lost"), us, them]
 	elif msg.get("replied", "") == "":
-		bb += "\n[color=#%s][b]The press pack wants your response before kick-off. How you answer will reach the dressing room.[/b][/color]\n" % C_WARN
+		bb += I18n.t("\n[color=#%s][b]The press pack wants your response before kick-off. How you answer will reach the dressing room.[/b][/color]\n") % C_WARN
 	bb += _reply_block(msg)
 
 	var actions: Array = mind_replies(msg)
-	actions.append({"label": "Go to Fixture", "screen": "competition"})
-	actions.append({"label": "Tactics", "screen": "tactics"})
+	actions.append({"label": I18n.t("Go to Fixture"), "screen": "competition"})
+	actions.append({"label": I18n.t("Tactics"), "screen": "tactics"})
 	return {"bbcode": bb, "actions": actions, "banner": {}}
 
 
 func _form_bb(form: Array) -> String:
 	if form.is_empty():
-		return "[color=#%s]no matches yet[/color]" % C_DIM
+		return I18n.t("[color=#%s]no matches yet[/color]") % C_DIM
 	var out := ""
 	for r in form:
-		out += "[color=#%s][b] %s [/b][/color]" % [C_GOOD if str(r) == "W" else C_BAD, str(r)]
+		out += "[color=#%s][b] %s [/b][/color]" % [C_GOOD if str(r) == "W" else C_BAD, I18n.t(str(r))]
 	return out
 
 
@@ -1340,10 +1342,10 @@ func _render_press(msg: Dictionary) -> Dictionary:
 	var us := int(f["score_home"] if we_home else f["score_away"])
 	var them := int(f["score_away"] if we_home else f["score_home"])
 	var won := us > them
-	var comp_line: String = ("%s · Matchday %d" % [GameState.world["meta"]["league_name"], int(f["round"])]) \
-		if str(f["comp"]) == "league" else ("Indigo Cup · %s" % Season.cup_round_name(int(f["round"])))
+	var comp_line: String = ("%s · %s" % [I18n.t(GameState.world["meta"]["league_name"]), I18n.t("Matchday %d") % int(f["round"])]) \
+		if str(f["comp"]) == "league" else ("%s · %s" % [I18n.t("Indigo Cup"), I18n.cup_round(int(f["round"]))])
 
-	var bb := "[color=#%s][i]An opinion piece in %s.[/i][/color]\n\n" % [C_DIM, PAPER]
+	var bb := I18n.t("[color=#%s][i]An opinion piece in %s.[/i][/color]\n\n") % [C_DIM, PAPER]
 	var prose := str(msg.get("prose", ""))
 	if prose == "":
 		prose = _legacy_press_prose(msg, f, pc, opp, us, them)
@@ -1352,27 +1354,27 @@ func _render_press(msg: Dictionary) -> Dictionary:
 	# the real star of the tie, from the deterministic replay
 	var star := _fixture_star(f, 0 if we_home else 1)
 	if not star.is_empty():
-		bb += "[color=#%s][b]%s OF THE MATCH[/b][/color]\n" % [C_DIM, "STAR" if won else "ONE BRIGHT SPOT"]
-		bb += "[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d damage across %d battle%s. Match rating [/color][color=#%s][b]%.1f[/b][/color]\n\n" % \
+		bb += I18n.t("[color=#%s][b]%s OF THE MATCH[/b][/color]\n") % [C_DIM, I18n.t("STAR") if won else I18n.t("ONE BRIGHT SPOT")]
+		bb += I18n.t("[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d damage across %d battle%s. Match rating [/color][color=#%s][b]%s[/b][/color]\n\n") % \
 			[C_ACC, star["name"], C_DIM, star["species"], star["kos"], "" if int(star["kos"]) == 1 else "s",
 			star["dmg"], star["battles"], "" if int(star["battles"]) == 1 else "s",
-			C_GOOD if float(star["rating"]) >= 7.5 else C_WHITE, star["rating"]]
+			C_GOOD if float(star["rating"]) >= 7.5 else C_WHITE, I18n.decimal(float(star["rating"]), 1)]
 
 	# table position at publication time (snapshotted; legacy falls back live)
 	var pos := int(msg.get("pos_at_pub", -1))
 	if pos < 0:
 		pos = GameState.player_table_position()
 	if pos > 0 and str(f["comp"]) == "league":
-		bb += "[color=#%s]%s sat [b]%s[/b] in the %s as this went to print.[/color]\n" % \
-			[C_DIM, pc["short"], _ordinal(pos), GameState.world["meta"]["league_name"]]
+		bb += I18n.t("[color=#%s]%s sat [b]%s[/b] in the %s as this went to print.[/color]\n") % \
+			[C_DIM, pc["short"], _ordinal(pos), I18n.t(GameState.world["meta"]["league_name"])]
 	bb += "\n[color=#%s]— %s[/color]" % [C_DIM, str(msg.get("sender", PAPER))]
 
 	return {"bbcode": bb,
-		"actions": [{"label": "Go to Fixture", "screen": "competition"},
-			{"label": "View Squad", "screen": "squad"}],
+		"actions": [{"label": I18n.t("Go to Fixture"), "screen": "competition"},
+			{"label": I18n.t("View Squad"), "screen": "squad"}],
 		"banner": {"home": home["name"], "away": away["name"],
 			"sh": int(f["score_home"]), "sa": int(f["score_away"]),
-			"comp": comp_line + " · " + Season.pretty_date(str(f["date"])), "won": won}}
+			"comp": comp_line + " · " + I18n.pretty_date(str(f["date"])), "won": won}}
 
 
 ## Pre-variant saves stored no prose — reproduce the original single templates.
@@ -1380,20 +1382,20 @@ func _legacy_press_prose(msg: Dictionary, f: Dictionary, pc: Dictionary, opp: Di
 		us: int, them: int) -> String:
 	match str(msg.get("press_kind", "")):
 		"champions":
-			return "They will sing about this one for years. [b]%s[/b] beat %s %d-%d in the Indigo Cup Final and the trophy is theirs. Whatever happens in the league now, this season is already immortal." % \
+			return I18n.t("They will sing about this one for years. [b]%s[/b] beat %s %d-%d in the Indigo Cup Final and the trophy is theirs. Whatever happens in the league now, this season is already immortal.") % \
 				[pc["name"], opp["name"], us, them]
 		"upset":
-			return "Nobody outside the %s dressing room saw this coming. A club with a reputation of %d/20 dismantling [b]%s[/b] (%d/20) by %d-%d is the kind of result that changes how a league talks about you. %s's side played without fear — and the giants blinked first." % \
+			return I18n.t("Nobody outside the %s dressing room saw this coming. A club with a reputation of %d/20 dismantling [b]%s[/b] (%d/20) by %d-%d is the kind of result that changes how a league talks about you. %s's side played without fear — and the giants blinked first.") % \
 				[pc["short"], int(pc["reputation"]), opp["name"], int(opp["reputation"]), us, them, pc["manager"]]
 		"cupwin":
-			return "The cup run is alive. [b]%s[/b] saw off %s %d-%d in the %s, and the draw for the %s suddenly matters a great deal in this corner of the league." % \
-				[pc["name"], opp["name"], us, them, Season.cup_round_name(int(f["round"])),
-				Season.cup_round_name(int(f["round"]) + 1)]
+			return I18n.t("The cup run is alive. [b]%s[/b] saw off %s %d-%d in the %s, and the draw for the %s suddenly matters a great deal in this corner of the league.") % \
+				[pc["name"], opp["name"], us, them, I18n.cup_round_prose(int(f["round"])),
+				I18n.cup_round_prose(int(f["round"]) + 1)]
 		"streak":
-			return "[b]%d wins in a row.[/b] Streaks like this are not luck — they are structure, squad depth and a dugout that trusts itself. %s made it %d straight by beating %s %d-%d, and the chasing pack has noticed." % \
+			return I18n.t("[b]%d wins in a row.[/b] Streaks like this are not luck — they are structure, squad depth and a dugout that trusts itself. %s made it %d straight by beating %s %d-%d, and the chasing pack has noticed.") % \
 				[int(msg.get("streak", 3)), pc["name"], int(msg.get("streak", 3)), opp["name"], us, them]
 		_:
-			return "There is no dressing this up. [b]%s[/b] (reputation %d/20) were beaten %d-%d by %s (%d/20) — a side they were built, budgeted and expected to beat. Questions travel fast in this league, and today they are all pointed at %s's office." % \
+			return I18n.t("There is no dressing this up. [b]%s[/b] (reputation %d/20) were beaten %d-%d by %s (%d/20) — a side they were built, budgeted and expected to beat. Questions travel fast in this league, and today they are all pointed at %s's office.") % \
 				[pc["name"], int(pc["reputation"]), them, us, opp["name"], int(opp["reputation"]), pc["manager"]]
 
 
@@ -1422,36 +1424,36 @@ func _fixture_star(f: Dictionary, side: int) -> Dictionary:
 func _render_unhappy(msg: Dictionary) -> Dictionary:
 	var inst := GameState.squad_member(str(msg.get("mon_uid", "")))
 	if inst.is_empty():
-		return {"bbcode": "[color=#%s]That battler has since left the club — the matter is closed.[/color]" % C_DIM,
-			"actions": [{"label": "View Squad", "screen": "squad"}], "banner": {}}
+		return {"bbcode": I18n.t("[color=#%s]That battler has since left the club — the matter is closed.[/color]") % C_DIM,
+			"actions": [{"label": I18n.t("View Squad"), "screen": "squad"}], "banner": {}}
 	var apps := int(msg.get("apps", 0))
 	var cm := int(msg.get("club_matches", 0))
 	var morale := int(inst.get("morale", 70))
 	var prose := str(msg.get("prose", ""))
 	if prose == "":   # legacy message
-		prose = "Boss — a quiet word before this becomes a loud one. [b]%s[/b] (%s, Lv %d) has featured in [b]%d of our %d[/b] matches this season. The mood around the training pens is turning: less appetite in drills, snapping at the younger battlers. In my experience this only goes one way if it's left alone." % \
+		prose = I18n.t("Boss — a quiet word before this becomes a loud one. [b]%s[/b] (%s, Lv %d) has featured in [b]%d of our %d[/b] matches this season. The mood around the training pens is turning: less appetite in drills, snapping at the younger battlers. In my experience this only goes one way if it's left alone.") % \
 			[news.display_name(inst), inst["species"], int(inst["level"]), apps, cm]
 	var bb := "[color=#%s]%s[/color]\n\n" % [C_WHITE, prose]
-	bb += "[color=#%s][b]CURRENT MORALE[/b][/color]  [color=#%s][b]%d/100[/b][/color]     [color=#%s][b]CONDITION[/b][/color]  [color=#%s]%d[/color]     [color=#%s][b]WAGES[/b][/color]  [color=#%s]%s / mo[/color]\n\n" % \
+	bb += I18n.t("[color=#%s][b]CURRENT MORALE[/b][/color]  [color=#%s][b]%d/100[/b][/color]     [color=#%s][b]CONDITION[/b][/color]  [color=#%s]%d[/color]     [color=#%s][b]WAGES[/b][/color]  [color=#%s]%s / mo[/color]\n\n") % \
 		[C_DIM, C_BAD if morale < 60 else C_WARN, morale,
 		C_DIM, C_WHITE, int(inst.get("condition", 100)),
 		C_DIM, C_WHITE, news.money(int(inst["contract"]["salary"]))]
 	bb += _pledge_status_block(msg, inst)
 	if msg.get("replied", "") == "":
 		if bool(msg.get("urgent", false)):
-			bb += "[color=#%s][b]They are waiting on a message from you. What do I tell them?[/b][/color]\n" % C_WARN
+			bb += I18n.t("[color=#%s][b]They are waiting on a message from you. What do I tell them?[/b][/color]\n") % C_WARN
 		else:
-			bb += "[color=#%s]You let it slide — the mood in the gym cooled on its own, but the coach noted your silence.[/color]\n" % C_DIM
+			bb += I18n.t("[color=#%s]You let it slide — the mood in the gym cooled on its own, but the coach noted your silence.[/color]\n") % C_DIM
 	bb += _reply_block(msg)
 
 	var actions: Array = []
 	if msg.get("replied", "") == "" and bool(msg.get("urgent", false)):
 		actions = [
-			{"kind": "reply", "reply": "promise", "style": "good", "label": "Promise More Battles (+morale, tracked)"},
-			{"kind": "reply", "reply": "patient", "style": "bad", "label": "Tell Them to Earn It (-morale)"},
+			{"kind": "reply", "reply": "promise", "style": "good", "label": I18n.t("Promise More Battles (+morale, tracked)")},
+			{"kind": "reply", "reply": "patient", "style": "bad", "label": I18n.t("Tell Them to Earn It (-morale)")},
 		]
-	actions.append({"label": "View Squad", "screen": "squad"})
-	actions.append({"label": "Training", "screen": "training"})
+	actions.append({"label": I18n.t("View Squad"), "screen": "squad"})
+	actions.append({"label": I18n.t("Training"), "screen": "training"})
 	return {"bbcode": bb, "actions": actions, "banner": {}}
 
 
@@ -1467,45 +1469,45 @@ func _pledge_status_block(msg: Dictionary, inst: Dictionary) -> String:
 			var pc: Dictionary = GameState.player_club()
 			var upto := str(pl["deadline"]) if str(pl["deadline"]) < GameState.current_date else GameState.current_date
 			var so_far := _appearance_dates(str(pc["id"]), str(pl["mon_uid"]), str(pl["made_on"]), upto).size()
-			return "[color=#%s][b]PLEDGE OPEN[/b][/color]  [color=#%s]You promised [b]%d battles by %s[/b]. Progress: [b]%d of %d[/b]. Break it and the whole squad will know.[/color]\n\n" % \
-				[C_WARN, C_WHITE, target, Season.pretty_date(str(pl["deadline"])), so_far, target]
+			return I18n.t("[color=#%s][b]PLEDGE OPEN[/b][/color]  [color=#%s]You promised [b]%d battles by %s[/b]. Progress: [b]%d of %d[/b]. Break it and the whole squad will know.[/color]\n\n") % \
+				[C_WARN, C_WHITE, target, I18n.pretty_date(str(pl["deadline"])), so_far, target]
 		"kept":
-			return "[color=#%s][b]PLEDGE KEPT[/b][/color]  [color=#%s]%s got the promised battles (%d of %d) by %s.[/color]\n\n" % \
+			return I18n.t("[color=#%s][b]PLEDGE KEPT[/b][/color]  [color=#%s]%s got the promised battles (%d of %d) by %s.[/color]\n\n") % \
 				[C_GOOD, C_WHITE, news.display_name(inst), int(pl.get("apps", target)), target,
-				Season.pretty_date(str(pl.get("resolved_on", pl["deadline"])))]
+				I18n.pretty_date(str(pl.get("resolved_on", pl["deadline"])))]
 		"broken":
-			return "[color=#%s][b]PLEDGE BROKEN[/b][/color]  [color=#%s]Only %d of the %d promised battles arrived before %s. The squad remembers.[/color]\n\n" % \
-				[C_BAD, C_WHITE, int(pl.get("apps", 0)), target, Season.pretty_date(str(pl["deadline"]))]
+			return I18n.t("[color=#%s][b]PLEDGE BROKEN[/b][/color]  [color=#%s]Only %d of the %d promised battles arrived before %s. The squad remembers.[/color]\n\n") % \
+				[C_BAD, C_WHITE, int(pl.get("apps", 0)), target, I18n.pretty_date(str(pl["deadline"]))]
 		"void":
-			return "[color=#%s]The pledge dissolved when the battler left the club.[/color]\n\n" % C_DIM
+			return I18n.t("[color=#%s]The pledge dissolved when the battler left the club.[/color]\n\n") % C_DIM
 	return ""
 
 
 func _render_star(msg: Dictionary) -> Dictionary:
 	var inst := GameState.squad_member(str(msg.get("mon_uid", "")))
 	if inst.is_empty():
-		return {"bbcode": "[color=#%s]That battler has since left the club.[/color]" % C_DIM,
-			"actions": [{"label": "View Squad", "screen": "squad"}], "banner": {}}
+		return {"bbcode": I18n.t("[color=#%s]That battler has since left the club.[/color]") % C_DIM,
+			"actions": [{"label": I18n.t("View Squad"), "screen": "squad"}], "banner": {}}
 	var rating := float(msg.get("rating", 7.0))
 	var prose := str(msg.get("prose", ""))
 	if prose == "":   # legacy message
-		prose = "Boss — thought you'd want this one in writing. [b]%s[/b] (%s, Lv %d) has been outstanding. Across the last [b]%d[/b] matches: [b]%d KOs[/b] and an average match rating of [b]%.2f[/b]. Technique, timing, temperament — everything we drill is showing up on matchday." % \
+		prose = I18n.t("Boss — thought you'd want this one in writing. [b]%s[/b] (%s, Lv %d) has been outstanding. Across the last [b]%d[/b] matches: [b]%d KOs[/b] and an average match rating of [b]%s[/b]. Technique, timing, temperament — everything we drill is showing up on matchday.") % \
 			[news.display_name(inst), inst["species"], int(inst["level"]),
-			int(msg.get("recent_n", 3)), int(msg.get("recent_kos", 0)), rating]
+			int(msg.get("recent_n", 3)), int(msg.get("recent_kos", 0)), I18n.decimal(rating, 2)]
 	var bb := "[color=#%s]%s[/color]\n\n" % [C_WHITE, prose]
-	bb += "[color=#%s][b]CURRENT MORALE[/b][/color]  [color=#%s][b]%d/100[/b][/color]     [color=#%s][b]FITNESS[/b][/color]  [color=#%s]%d[/color]\n\n" % \
+	bb += I18n.t("[color=#%s][b]CURRENT MORALE[/b][/color]  [color=#%s][b]%d/100[/b][/color]     [color=#%s][b]FITNESS[/b][/color]  [color=#%s]%d[/color]\n\n") % \
 		[C_DIM, C_GOOD, int(inst.get("morale", 70)), C_DIM, C_WHITE, int(inst.get("fitness", 100))]
 	if msg.get("replied", "") == "":
-		bb += "[color=#%s]Development like this deserves a word from the manager — your call how loud that word is.[/color]\n" % C_DIM
+		bb += I18n.t("[color=#%s]Development like this deserves a word from the manager — your call how loud that word is.[/color]\n") % C_DIM
 	bb += _reply_block(msg)
 
 	var actions: Array = []
 	if msg.get("replied", "") == "":
 		actions = [
-			{"kind": "reply", "reply": "praise", "style": "good", "label": "Pass On Your Praise (+morale)"},
-			{"kind": "reply", "reply": "grounded", "style": "warn", "label": "Keep Them Grounded"},
+			{"kind": "reply", "reply": "praise", "style": "good", "label": I18n.t("Pass On Your Praise (+morale)")},
+			{"kind": "reply", "reply": "grounded", "style": "warn", "label": I18n.t("Keep Them Grounded")},
 		]
-	actions.append({"label": "View Squad", "screen": "squad"})
+	actions.append({"label": I18n.t("View Squad"), "screen": "squad"})
 	return {"bbcode": bb, "actions": actions, "banner": {}}
 
 
@@ -1514,79 +1516,79 @@ func _render_star(msg: Dictionary) -> Dictionary:
 func _render_pledge(msg: Dictionary) -> Dictionary:
 	var kept := bool(msg.get("pledge_kept", false))
 	var bb := "[color=#%s]%s[/color]\n\n" % [C_WHITE, str(msg.get("prose", msg.get("body", "")))]
-	bb += "[color=#%s][b]THE PLEDGE[/b][/color]  [color=#%s]%d battles promised on %s, deadline %s — [b]%d delivered[/b].[/color]\n" % \
+	bb += I18n.t("[color=#%s][b]THE PLEDGE[/b][/color]  [color=#%s]%d battles promised on %s, deadline %s — [b]%d delivered[/b].[/color]\n") % \
 		[C_DIM, C_WHITE, int(msg.get("target", PLEDGE_TARGET)),
-		Season.pretty_date(str(msg.get("made_on", ""))),
-		Season.pretty_date(str(msg.get("deadline", ""))), int(msg.get("apps", 0))]
-	bb += "[color=#%s][b]MORALE[/b][/color]  [color=#%s][b]%d → %d[/b][/color]" % \
+		I18n.pretty_date(str(msg.get("made_on", ""))),
+		I18n.pretty_date(str(msg.get("deadline", ""))), int(msg.get("apps", 0))]
+	bb += I18n.t("[color=#%s][b]MORALE[/b][/color]  [color=#%s][b]%d → %d[/b][/color]") % \
 		[C_DIM, C_GOOD if kept else C_BAD, int(msg.get("morale_before", 70)), int(msg.get("morale_after", 70))]
 	if not kept:
-		bb += "  [color=#%s](and a knock across the rest of the squad — word travels)[/color]" % C_DIM
+		bb += I18n.t("  [color=#%s](and a knock across the rest of the squad — word travels)[/color]") % C_DIM
 	bb += "\n"
 	return {"bbcode": bb,
-		"actions": [{"label": "View Squad", "screen": "squad"},
-			{"label": "Training", "screen": "training"}], "banner": {}}
+		"actions": [{"label": I18n.t("View Squad"), "screen": "squad"},
+			{"label": I18n.t("Training"), "screen": "training"}], "banner": {}}
 
 
 # ------------------------------------------------------------- monthly column
 
 func _render_roundup(msg: Dictionary) -> Dictionary:
 	var mname := _month_name(str(msg.get("month", "")))
-	var bb := "[color=#%s][i]%s's monthly league column.[/i][/color]\n\n" % [C_DIM, PAPER]
-	bb += "[color=#%s]The books are closed on [b]%s[/b] — %d league matchdays of it. Here is how the month will be remembered.[/color]\n\n" % \
+	var bb := I18n.t("[color=#%s][i]%s's monthly league column.[/i][/color]\n\n") % [C_DIM, PAPER]
+	bb += I18n.t("[color=#%s]The books are closed on [b]%s[/b] — %d league matchdays of it. Here is how the month will be remembered.[/color]\n\n") % \
 		[C_WHITE, mname, int(msg.get("league_n", 0))]
 
 	# --- Pokémon of the Month podium (real replay ratings)
 	var podium: Array = msg.get("podium", [])
 	if not podium.is_empty():
-		bb += "[color=#%s][b]POKÉMON OF THE MONTH[/b][/color]\n" % C_WARN
-		var medals := ["1st", "2nd", "3rd"]
+		bb += I18n.t("[color=#%s][b]POKÉMON OF THE MONTH[/b][/color]\n") % C_WARN
+		var medals := [I18n.t("1st"), I18n.t("2nd"), I18n.t("3rd")]
 		for i in podium.size():
 			var p: Dictionary = podium[i]
 			var name_col := C_ACC if bool(p.get("mine", false)) else C_WHITE
-			bb += "[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d battles, %d KOs, %d dmg · avg rating [/color][color=#%s][b]%.2f[/b][/color]%s\n" % \
+			bb += I18n.t("[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d battles, %d KOs, %d dmg · avg rating [/color][color=#%s][b]%s[/b][/color]%s\n") % \
 				[C_DIM, medals[i], name_col, str(p["name"]), C_DIM, str(p["species"]), str(p["club"]),
 				int(p["battles"]), int(p["kos"]), int(p["dmg"]),
-				C_GOOD if float(p["rating"]) >= 7.0 else C_WHITE, float(p["rating"]),
-				"  [color=#%s][b]← OURS[/b][/color]" % C_GOOD if bool(p.get("mine", false)) else ""]
+				C_GOOD if float(p["rating"]) >= 7.0 else C_WHITE, I18n.decimal(float(p["rating"]), 2),
+				I18n.t("  [color=#%s][b]← OURS[/b][/color]") % C_GOOD if bool(p.get("mine", false)) else ""]
 		var w: Dictionary = podium[0]
 		var pom_quote := str(msg.get("pom_quote", ""))
 		if pom_quote == "":   # legacy message
-			pom_quote = "%s was simply a level above everything else on the circuit this month." % str(w["name"])
+			pom_quote = I18n.t("%s was simply a level above everything else on the circuit this month.") % str(w["name"])
 		bb += "[color=#%s]\"%s\"[/color]\n\n" % [C_DIM, pom_quote]
 
 	# --- Team of the Month
 	var totm: Dictionary = msg.get("totm", {})
 	if not totm.is_empty():
 		var mine: bool = GameState.is_player_club(str(totm.get("club_id", "")))
-		bb += "[color=#%s][b]TEAM OF THE MONTH[/b][/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%d-%d in the league)%s[/color]\n" % \
+		bb += I18n.t("[color=#%s][b]TEAM OF THE MONTH[/b][/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%d-%d in the league)%s[/color]\n") % \
 			[C_WARN, C_ACC if mine else C_WHITE, str(totm["club"]), C_DIM,
-			int(totm["won"]), int(totm["lost"]), " — yes, YOUR team" if mine else ""]
+			int(totm["won"]), int(totm["lost"]), I18n.t(" — yes, YOUR team") if mine else ""]
 
 	# --- upset of the month
 	var upset: Dictionary = msg.get("upset", {})
 	if not upset.is_empty():
-		bb += "[color=#%s][b]SHOCK OF THE MONTH[/b][/color]  [color=#%s]%s toppling %s (%s, %s) — a %d-point reputation gap bridged in an afternoon.[/color]\n" % \
+		bb += I18n.t("[color=#%s][b]SHOCK OF THE MONTH[/b][/color]  [color=#%s]%s toppling %s (%s, %s) — a %d-point reputation gap bridged in an afternoon.[/color]\n") % \
 			[C_WARN, C_WHITE, str(upset["winner"]), str(upset["loser"]), str(upset["score"]),
-			Season.pretty_date(str(upset["date"])), int(upset["gap"])]
+			I18n.pretty_date(str(upset["date"])), int(upset["gap"])]
 
 	# --- the state of the race + our month
-	bb += "\n[color=#%s][b]THE TABLE[/b][/color]  [color=#%s][b]%s[/b] led the league as the month closed" % \
+	bb += I18n.t("\n[color=#%s][b]THE TABLE[/b][/color]  [color=#%s][b]%s[/b] led the league as the month closed") % \
 		[C_DIM, C_WHITE, str(msg.get("leader", "?"))]
 	var our_pos := int(msg.get("our_pos", 0))
 	if our_pos > 0:
-		bb += "; %s sat [b]%s[/b]" % [GameState.player_club()["short"], _ordinal(our_pos)]
+		bb += I18n.t("; %s sat [b]%s[/b]") % [GameState.player_club()["short"], _ordinal(our_pos)]
 	bb += ".[/color]\n"
 	var ow := int(msg.get("our_won", 0))
 	var ol := int(msg.get("our_lost", 0))
 	var our_col := C_GOOD if ow > ol else (C_WARN if ow == ol else C_BAD)
-	bb += "[color=#%s][b]OUR MONTH[/b][/color]  [color=#%s][b]%d won, %d lost[/b] in the league — %s.[/color]\n" % \
+	bb += I18n.t("[color=#%s][b]OUR MONTH[/b][/color]  [color=#%s][b]%d won, %d lost[/b] in the league — %s.[/color]\n") % \
 		[C_DIM, our_col, ow, ol,
-		"a month to build on" if ow > ol else ("honours even" if ow == ol else "a month to forget")]
+		I18n.t("a month to build on") if ow > ol else (I18n.t("honours even") if ow == ol else I18n.t("a month to forget"))]
 	bb += "\n[color=#%s]— %s[/color]" % [C_DIM, str(msg.get("sender", PAPER))]
 	return {"bbcode": bb,
-		"actions": [{"label": "League Table", "screen": "competition"},
-			{"label": "View Squad", "screen": "squad"}], "banner": {}}
+		"actions": [{"label": I18n.t("League Table"), "screen": "competition"},
+			{"label": I18n.t("View Squad"), "screen": "squad"}], "banner": {}}
 
 
 # ==================================================================== helpers
@@ -1605,18 +1607,12 @@ func _pos_text(club_id: String) -> String:
 	for i in t.size():
 		if str(t[i]["club_id"]) == club_id:
 			if int(t[i]["played"]) == 0:
-				return "yet to play in the league"
-			return "%s in the league" % _ordinal(i + 1)
-	return "unranked"
+				return I18n.t("yet to play in the league")
+			return I18n.t("%s in the league") % _ordinal(i + 1)
+	return I18n.t("unranked")
 
 
 func _ordinal(n: int) -> String:
 	if n <= 0:
 		return "—"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

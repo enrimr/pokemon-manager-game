@@ -23,7 +23,7 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 8)
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 10)
-	var title := UI.label(GameState.cup_name().to_upper(), 16, Color.WHITE)
+	var title := UI.label(I18n.t(GameState.cup_name()).to_upper(), 16, Color.WHITE)
 	head.add_child(title)
 	var lgs := HBoxContainer.new()
 	lgs.add_theme_constant_override("separation", 4)
@@ -31,7 +31,7 @@ func _ready() -> void:
 	for lg in GameState.leagues():
 		lgs.add_child(UI.league_chip(str(lg["id"])))
 	head.add_child(lgs)
-	for entry in [["bracket", "Bracket"], ["road", "Road to the Final"]]:
+	for entry in [["bracket", tr("Bracket")], ["road", tr("Road to the Final")]]:
 		var b := Button.new()
 		b.text = entry[1]
 		b.toggle_mode = true
@@ -40,8 +40,8 @@ func _ready() -> void:
 		b.add_theme_font_size_override("font_size", 12)
 		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 		match entry[0]:
-			"bracket": b.tooltip_text = "The full cross-league knockout tree"
-			"road": b.tooltip_text = "Your cup run, round by round, plus every round's results"
+			"bracket": b.tooltip_text = tr("The full cross-league knockout tree")
+			"road": b.tooltip_text = tr("Your cup run, round by round, plus every round's results")
 		b.pressed.connect(_set_mode.bind(entry[0]))
 		head.add_child(b)
 		_mode_buttons[entry[0]] = b
@@ -141,7 +141,7 @@ func refresh() -> void:
 		var drawn: Array = ordered.get(r, [])
 
 		# round header
-		var head := UI.dim("%s · %s" % [Season.cup_round_name(r).to_upper(),
+		var head := UI.dim("%s · %s" % [I18n.cup_round(r).to_upper(),
 			UI.short_date(Season.cup_round_date(GameState.season_start, r))], 11)
 		head.position = Vector2(x, 0)
 		_bracket.add_child(head)
@@ -185,11 +185,11 @@ func refresh() -> void:
 	var all_played: bool = not current.any(func(f): return not f["played"])
 	if max_round == total_rounds and all_played:
 		var champ_club := GameState.club(Season.fixture_winner(current[0]))
-		_status.text = "%s are the %s champions" % [champ_club.get("name", "?"), GameState.cup_name()]
+		_status.text = tr("%s are the %s champions") % [champ_club.get("name", "?"), tr(GameState.cup_name())]
 	else:
-		_status.text = "%s · %s" % [Season.cup_round_name(max_round),
-			"completed - next draw pending" if all_played else
-			"ties on %s" % Season.pretty_date(current[0]["date"])]
+		_status.text = "%s · %s" % [I18n.cup_round(max_round),
+			tr("completed - next draw pending") if all_played else
+			tr("ties on %s") % I18n.pretty_date(current[0]["date"])]
 
 
 func _draw_links() -> void:
@@ -225,7 +225,7 @@ func _tie_panel(f: Dictionary, round_no: int) -> PanelContainer:
 		sb.bg_color = Color(TB.COL_PANEL, 0.45)
 		sb.border_color = Color(TB.COL_BORDER, 0.55)
 		p.add_theme_stylebox_override("panel", sb)
-		var l := UI.dim("Winners of %s" % Season.cup_round_name(round_no - 1), 11)
+		var l := UI.dim(tr("Winners of %s") % I18n.cup_round(round_no - 1), 11)
 		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		l.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		v.add_child(l)
@@ -290,7 +290,7 @@ func _champion_panel(final_f: Dictionary) -> PanelContainer:
 	h.add_theme_constant_override("separation", 8)
 	p.add_child(h)
 	if winner == "":
-		var l := UI.dim("To be decided", 12)
+		var l := UI.dim(tr("To be decided"), 12)
 		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		h.add_child(l)
 	else:
@@ -317,7 +317,7 @@ func _refresh_road() -> void:
 	var cup: Array = GameState.fixtures.filter(func(f): return f["comp"] == "cup")
 	if cup.is_empty():
 		_status.text = "Cup draw not yet made"
-		_road.add_child(UI.dim("The first-round draw has not been made yet.", 13))
+		_road.add_child(UI.dim(tr("The first-round draw has not been made yet."), 13))
 		return
 
 	var by_round := {}
@@ -342,18 +342,18 @@ func _refresh_road() -> void:
 	var all_played: bool = not current.any(func(f): return not f["played"])
 	if max_round == total_rounds and all_played:
 		var champ_club := GameState.club(Season.fixture_winner(current[0]))
-		_status.text = "%s are the %s champions" % [champ_club.get("name", "?"), GameState.cup_name()]
+		_status.text = tr("%s are the %s champions") % [champ_club.get("name", "?"), tr(GameState.cup_name())]
 	else:
-		_status.text = "%s · %s" % [Season.cup_round_name(max_round),
-			"completed - next draw pending" if all_played else
-			"ties on %s" % Season.pretty_date(current[0]["date"])]
+		_status.text = "%s · %s" % [I18n.cup_round(max_round),
+			tr("completed - next draw pending") if all_played else
+			tr("ties on %s") % I18n.pretty_date(current[0]["date"])]
 
 
 ## Left column: the player club's cup run, one row per round.
 func _road_card(by_round: Dictionary, max_round: int, total_rounds: int) -> PanelContainer:
 	var pid: String = GameState.world["meta"]["player_club_id"]
 	var us := GameState.player_club()
-	var card := UI.card("%s · Road to the Final" % str(us.get("name", "You")).to_upper())
+	var card := UI.card(tr("%s · Road to the Final") % str(us.get("name", "You")).to_upper())
 	card.custom_minimum_size.x = 470
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var body := UI.card_body(card)
@@ -376,24 +376,24 @@ func _road_card(by_round: Dictionary, max_round: int, total_rounds: int) -> Pane
 		final_f = f
 	var champ := Season.fixture_winner(final_f) if not final_f.is_empty() else ""
 	if champ == pid:
-		body.add_child(UI.label("CUP WINNERS — the %s is yours!" % GameState.cup_name(), 14,
+		body.add_child(UI.label(tr("CUP WINNERS — the %s is yours!") % tr(GameState.cup_name()), 14,
 			Color(0.95, 0.83, 0.4)))
 	elif champ != "":
 		var cl := GameState.club(champ)
 		var h := HBoxContainer.new()
 		h.add_theme_constant_override("separation", 6)
-		h.add_child(UI.dim("Champions:", 12))
+		h.add_child(UI.dim(tr("Champions:"), 12))
 		h.add_child(UI.club_link(cl, 13, Color(0.95, 0.83, 0.4)))
 		var chip := UI.league_chip(GameState.league_of(champ))
 		chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(chip)
 		body.add_child(h)
 	elif not alive:
-		body.add_child(UI.dim("Out in the %s — the road ends here this season." %
-			Season.cup_round_name(elim_round), 12))
+		body.add_child(UI.dim(tr("Out in the %s — the road ends here this season.") %
+			I18n.cup_round(elim_round), 12))
 	else:
 		var left := total_rounds - max_round + 1
-		body.add_child(UI.dim("Still alive — at most %d win%s from the trophy." % [
+		body.add_child(UI.dim(tr("Still alive — at most %d win%s from the trophy.") % [
 			left, "" if left == 1 else "s"], 12))
 	return card
 
@@ -402,7 +402,7 @@ func _road_card(by_round: Dictionary, max_round: int, total_rounds: int) -> Pane
 func _road_row(round_no: int, tie: Dictionary, pid: String, drawn: bool, alive: bool) -> Control:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 8)
-	var rn := UI.dim(Season.cup_round_name(round_no), 12)
+	var rn := UI.dim(I18n.cup_round(round_no), 12)
 	rn.custom_minimum_size.x = 106
 	h.add_child(rn)
 	var dt := UI.dim(UI.short_date(Season.cup_round_date(GameState.season_start, round_no)), 11)
@@ -413,9 +413,9 @@ func _road_row(round_no: int, tie: Dictionary, pid: String, drawn: bool, alive: 
 		if not alive:
 			h.add_child(UI.dim("—", 12))
 		elif drawn:
-			h.add_child(UI.dim("not in this round", 12))
+			h.add_child(UI.dim(tr("not in this round"), 12))
 		else:
-			h.add_child(UI.dim("awaiting the draw", 12))
+			h.add_child(UI.dim(tr("awaiting the draw"), 12))
 		return h
 
 	var we_home: bool = tie["home"] == pid
@@ -425,14 +425,13 @@ func _road_row(round_no: int, tie: Dictionary, pid: String, drawn: bool, alive: 
 		var us_s := int(tie["score_home"] if we_home else tie["score_away"])
 		var them_s := int(tie["score_away"] if we_home else tie["score_home"])
 		h.add_child(UI.form_pips(["W" if us_s > them_s else "L"], 15))
-		var lab := UI.link("%d-%d vs %s (%s)" % [us_s, them_s, opp.get("name", "?"),
-			"H" if we_home else "A"], 13,
+		var lab := UI.link(tr("%d-%d vs %s (H)" if we_home else "%d-%d vs %s (A)") % [us_s, them_s, opp.get("name", "?")], 13,
 			Color.WHITE if us_s > them_s else TB.COL_TEXT_DIM,
-			{"kind": "fixture", "id": str(tie["id"])}, "Go to match report")
+			{"kind": "fixture", "id": str(tie["id"])}, tr("Go to match report"))
 		h.add_child(lab)
 	else:
-		var lab := UI.link("vs %s (%s)" % [opp.get("name", "?"), "H" if we_home else "A"],
-			13, TB.COL_TEXT, {"kind": "fixture", "id": str(tie["id"])}, "Go to fixture preview")
+		var lab := UI.link(tr("vs %s (H)" if we_home else "vs %s (A)") % opp.get("name", "?"),
+			13, TB.COL_TEXT, {"kind": "fixture", "id": str(tie["id"])}, tr("Go to fixture preview"))
 		h.add_child(lab)
 	var chip := UI.league_chip(GameState.league_of(opp_id))
 	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -453,8 +452,8 @@ func _round_results(by_round: Dictionary, max_round: int) -> Control:
 
 	for r in range(max_round, 0, -1):   # latest round first
 		var ties: Array = by_round.get(r, [])
-		var card := UI.card("%s · %s" % [Season.cup_round_name(r),
-			Season.pretty_date(Season.cup_round_date(GameState.season_start, r))])
+		var card := UI.card("%s · %s" % [I18n.cup_round(r),
+			I18n.pretty_date(Season.cup_round_date(GameState.season_start, r))])
 		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var body := UI.card_body(card)
 		var grid := GridContainer.new()

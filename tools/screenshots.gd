@@ -5,6 +5,7 @@ extends Node
 ## Usage (must run WINDOWED — headless cannot render):
 ##   godot --path <project> res://tools/screenshots.tscn -- --screens=squad,tactics --out=artifacts/run1
 ##   godot --path <project> res://tools/screenshots.tscn -- --screens=all --out=artifacts/all
+##   Optional: --size=1920x1080 captures at that window size (default 1600x900).
 ##
 ## Exits 0 on success; nonzero (and prints SCREENSHOT ERROR lines) on any failure.
 
@@ -26,6 +27,16 @@ func _run() -> void:
 	if err != OK:
 		_die("cannot create output dir %s (err %d)" % [out_dir, err])
 		return
+
+	var size_arg: String = args.get("size", "")
+	if size_arg.contains("x"):
+		var wh: PackedStringArray = size_arg.split("x")
+		var sz := Vector2i(int(wh[0]), int(wh[1]))
+		if sz.x >= 320 and sz.y >= 240:
+			get_window().min_size = Vector2i.ZERO
+			get_window().size = sz
+			get_window().position = DisplayServer.screen_get_usable_rect().position
+			await _settle()
 
 	# Boot the real shell (GameState autoload already loaded/created a career).
 	var packed: PackedScene = load("res://shell/main.tscn")

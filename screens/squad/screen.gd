@@ -287,7 +287,7 @@ func _refresh() -> void:
 	var bids: Array = _svc.active_offers()
 	_bids_btn.visible = not bids.is_empty()
 	if not bids.is_empty():
-		_bids_btn.text = "%d transfer bid%s awaiting response" % [bids.size(),
+		_bids_btn.text = tr("%d transfer bid%s awaiting response") % [bids.size(),
 			"s" if bids.size() > 1 else ""]
 	_rebuild_table()
 	if _profile.visible:
@@ -374,18 +374,14 @@ func _make_record(inst: Dictionary, wage_bill: int) -> Dictionary:
 func _update_header(club: Dictionary, wage_bill: int) -> void:
 	var squad: Array = club["squad"]
 	var pos := GameState.player_table_position()
-	var suffix := "th"
-	if pos % 10 == 1 and pos % 100 != 11: suffix = "st"
-	elif pos % 10 == 2 and pos % 100 != 12: suffix = "nd"
-	elif pos % 10 == 3 and pos % 100 != 13: suffix = "rd"
-	var pos_txt := "%d%s" % [pos, suffix]
+	var pos_txt := I18n.ordinal(pos)
 	for r in GameState.league_table():
 		if GameState.is_player_club(r["club_id"]) and int(r.get("played", 0)) == 0:
 			pos_txt = "—"   # pre-season: a table position would be alphabetical noise
-	_header_info.text = "%s · %s · %s in the %s · %s · Tactic: %s%s" % [
-		club["name"], Season.pretty_date(GameState.current_date), pos_txt,
-		GameState.world["meta"]["league_name"], "Manager: %s" % club["manager"],
-		_sel.get("name", "-"), "" if _sel.get("source", "") == "tactic" else " (auto)"]
+	_header_info.text = tr("%s · %s · %s in the %s · %s · Tactic: %s%s") % [
+		club["name"], I18n.pretty_date(GameState.current_date), pos_txt,
+		tr(GameState.world["meta"]["league_name"]), tr("Manager: %s") % club["manager"],
+		tr(str(_sel.get("name", "-"))), "" if _sel.get("source", "") == "tactic" else tr(" (auto)")]
 	_header_info.tooltip_text = _header_info.text
 	for c in _chips_box.get_children():
 		c.queue_free()
@@ -408,13 +404,13 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 			if rec["pick"]["kind"] == "starter":
 				picked_fit += 1
 	var picked_n: int = (_sel.get("slot", {}) as Dictionary).size()
-	var six_chip := _chip("PICKED SIX", "%d/%d fit" % [picked_fit, maxi(picked_n, 1)],
+	var six_chip := _chip("PICKED SIX", tr("%d/%d fit") % [picked_fit, maxi(picked_n, 1)],
 		UI.COL_GOOD if picked_fit >= picked_n else UI.COL_WARN)
-	six_chip.tooltip_text = ("Starters of the saved tactic '%s' clear of serious availability doubts (%d of the %d-strong squad fully available)." %
+	six_chip.tooltip_text = (tr("Starters of the saved tactic '%s' clear of serious availability doubts (%d of the %d-strong squad fully available).") %
 		[_sel.get("name", "-"), avail_all, squad.size()]) if _sel.get("source", "") == "tactic" \
-		else "No tactic saved yet: the six are auto-picked by level and condition. Set a lineup on the Tactics screen."
+		else tr("No tactic saved yet: the six are auto-picked by level and condition. Set a lineup on the Tactics screen.")
 	_chips_box.add_child(six_chip)
-	_chips_box.add_child(_chip("AVG LEVEL", "%.1f" % (float(lv_sum) / n), UI.COL_TEXT))
+	_chips_box.add_child(_chip("AVG LEVEL", I18n.decimal(float(lv_sum) / n, 1), UI.COL_TEXT))
 	_chips_box.add_child(_chip("AVG COND", "%d%%" % int(float(cond_sum) / n),
 		UI.pct_color(int(float(cond_sum) / n))))
 	var happy_sum := 0
@@ -422,20 +418,20 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 	for rec in _records:
 		happy_sum += int(rec["happy_score"])
 		if int(rec["happy_score"]) < 38:
-			unhappy.append("%s — %s" % [rec["name"], rec["concern"] if rec["concern"] != "" else "unhappy"])
+			unhappy.append("%s — %s" % [rec["name"], rec["concern"] if rec["concern"] != "" else tr("unhappy")])
 	var mood_avg := int(float(happy_sum) / n)
 	var mood_chip := _chip("MOOD",
-		Personality.happiness_word(mood_avg) + ((" · %d unhappy" % unhappy.size()) if not unhappy.is_empty() else ""),
+		Personality.happiness_word(mood_avg) + ((tr(" · %d unhappy") % unhappy.size()) if not unhappy.is_empty() else ""),
 		Personality.happiness_color(mood_avg) if unhappy.is_empty() else UI.COL_WARN)
-	mood_chip.tooltip_text = ("Average squad happiness %d/100. Concerns needing attention:\n%s" %
+	mood_chip.tooltip_text = (tr("Average squad happiness %d/100. Concerns needing attention:\n%s") %
 		[mood_avg, "\n".join(PackedStringArray(unhappy))]) if not unhappy.is_empty() else \
-		"Average squad happiness %d/100 — no one is agitating. The Happiness view shows every factor." % mood_avg
+		tr("Average squad happiness %d/100 — no one is agitating. The Happiness view shows every factor.") % mood_avg
 	_chips_box.add_child(mood_chip)
 	var evo_svc: RefCounted = EvoSvc.instance
 	if evo_svc != null and not evo_svc.pending().is_empty():
 		var pend: Array = evo_svc.pending()
-		var evo_chip := _chip("EVOLUTION", "%d awaiting approval" % pend.size(), UI.COL_GOOD)
-		evo_chip.tooltip_text = "Manager approval needed — decide from the profile or the inbox:\n" + \
+		var evo_chip := _chip("EVOLUTION", tr("%d awaiting approval") % pend.size(), UI.COL_GOOD)
+		evo_chip.tooltip_text = tr("Manager approval needed — decide from the profile or the inbox:\n") + \
 			"\n".join(PackedStringArray(pend.map(func(e): return "%s -> %s" % [e["name"], e["to_name"]])))
 		_chips_box.add_child(evo_chip)
 	var nf: Dictionary = GameState.next_player_fixture()
@@ -446,15 +442,15 @@ func _update_header(club: Dictionary, wage_bill: int) -> void:
 		var is_cup: bool = str(nf.get("league", "")) == ""
 		var comp: String = GameState.cup_name() if is_cup else GameState.league_name(str(nf["league"]))
 		var cross: bool = is_cup and GameState.league_of(opp_id) != GameState.player_league_id()
-		var next_chip := _chip("NEXT", "%s %s (%s)" % ["vs" if we_home else "@", str(opp["short"]),
-			("CUP·" + GameState.league_name(GameState.league_of(opp_id)).trim_suffix(" League")) if cross else comp.trim_suffix(" League")],
+		var next_chip := _chip("NEXT", "%s %s (%s)" % [tr("vs") if we_home else "@", str(opp["short"]),
+			(tr("CUP·") + tr(GameState.league_name(GameState.league_of(opp_id))).trim_suffix(" League")) if cross else tr(comp).trim_suffix(" League")],
 			UI.COL_ACCENT if cross else UI.COL_TEXT)
-		next_chip.tooltip_text = "%s — %s %s, %s.%s" % [comp, "home to" if we_home else "away at", str(opp["name"]),
-			Season.pretty_date(str(nf["date"])),
-			("\nCross-league cup tie: they play in the %s — check their squad on the Transfers search." % GameState.league_name(GameState.league_of(opp_id))) if cross
-			else ("\nCup ties are best-of-3 and game 2 is 2v2 doubles — set your pair on Tactics." if is_cup else "")]
+		next_chip.tooltip_text = "%s — %s %s, %s.%s" % [tr(comp), tr("home to") if we_home else tr("away at"), str(opp["name"]),
+			I18n.pretty_date(str(nf["date"])),
+			(tr("\nCross-league cup tie: they play in the %s — check their squad on the Transfers search.") % tr(GameState.league_name(GameState.league_of(opp_id)))) if cross
+			else (tr("\nCup ties are best-of-3 and game 2 is 2v2 doubles — set your pair on Tactics.") if is_cup else "")]
 		_chips_box.add_child(next_chip)
-	var wages_chip := _chip("WAGES /WK", "%s of %s" % [UI.money(wage_bill),
+	var wages_chip := _chip("WAGES /WK", tr("%s of %s") % [UI.money(wage_bill),
 		UI.money(int(club["finances"]["wage_budget"]))],
 		UI.COL_WARN if wage_bill > int(club["finances"]["wage_budget"]) else UI.COL_TEXT)
 	wages_chip.tooltip_text = "Weekly wage bill against the wage budget."
@@ -501,26 +497,26 @@ func _cell_text(rec: Dictionary, id: String) -> String:
 	match id:
 		"pick": return (rec["pick"] as Dictionary)["text"]
 		"avail": return Selection.flags_text(rec["flags"])
-		"item": return rec["item_name"] if rec["item_name"] != "" else "-"
+		"item": return tr(rec["item_name"]) if rec["item_name"] != "" else "-"
 		"babil": return rec["babil"]
-		"role": return rec["role"] if rec["role"] != "" else "-"
+		"role": return tr(rec["role"]) if rec["role"] != "" else "-"
 		"cur", "pot": return ""  # star icon cells
-		"rec": return rec["rec"]
+		"rec": return tr(rec["rec"])
 		"type": return "/".join(rec["types"].map(func(t): return UI.type_abbr(t)))
 		"age": return UI.age_str(rec["age"])
 		"cond": return "%d%%" % rec["cond"]
 		"fit": return "%d%%" % rec["fit"]
 		"morale": return UI.morale_word(rec["morale"])
-		"happy": return str((rec["happy"] as Dictionary)["word"])
-		"sstat": return str((rec["sstat"] as Dictionary)["label"])
-		"concern": return rec["concern"] if rec["concern"] != "" else "-"
+		"happy": return tr(str((rec["happy"] as Dictionary)["word"]))
+		"sstat": return tr(str((rec["sstat"] as Dictionary)["label"]))
+		"concern": return tr(rec["concern"]) if rec["concern"] != "" else "-"
 		"promise": return _promise_cell(rec["promise"])
-		"rat": return "%.2f" % rec["rat"] if rec["apps"] > 0 else "-"
-		"salary": return UI.money(rec["salary"]) + "/wk"
-		"wage_pct": return "%.1f%%" % rec["wage_pct"]
-		"expiry": return Season.pretty_date(rec["expiry"])
+		"rat": return I18n.decimal(float(rec["rat"]), 2) if rec["apps"] > 0 else "-"
+		"salary": return UI.money(rec["salary"]) + tr("/wk")
+		"wage_pct": return I18n.decimal(float(rec["wage_pct"]), 1) + "%"
+		"expiry": return I18n.pretty_date(rec["expiry"])
 		"value": return UI.money(rec["value"])
-		"demand": return "~%s/wk" % UI.money(rec["demand"])
+		"demand": return tr("~%s/wk") % UI.money(rec["demand"])
 		"status": return _status_text(rec)
 		"dev": return ("+%d" % rec["dev"]) if rec["dev"] > 0 else "-"
 		"dmg", "taken": return str(rec[id]) if rec["apps"] > 0 else "-"
@@ -572,34 +568,34 @@ func _cell_color(rec: Dictionary, id: String) -> Color:
 func _status_text(rec: Dictionary) -> String:
 	var parts: Array = []
 	if rec["evo_pending"]:
-		parts.append("Evolve? -> %s" % rec["evo_to"])
+		parts.append(tr("Evolve? -> %s") % rec["evo_to"])
 	elif rec["evo_ready"]:
-		parts.append("Stone ready")
+		parts.append(tr("Stone ready"))
 	if rec["bids"] > 0:
-		parts.append("%d bid%s" % [rec["bids"], "s" if rec["bids"] > 1 else ""])
+		parts.append(tr("%d bid%s") % [rec["bids"], "s" if rec["bids"] > 1 else ""])
 	if rec["listed"]:
-		parts.append("Listed")
+		parts.append(tr("Listed"))
 	if rec["talks_locked"]:
-		parts.append("Talks off")
+		parts.append(tr("Talks off"))
 	return " · ".join(PackedStringArray(parts)) if not parts.is_empty() else "-"
 
 
 func _status_tip(rec: Dictionary) -> String:
 	var lines: Array = []
 	if rec["evo_pending"]:
-		lines.append("Ready to evolve into %s — approve or postpone from the profile or the inbox decision message." % rec["evo_to"])
+		lines.append(tr("Ready to evolve into %s — approve or postpone from the profile or the inbox decision message.") % rec["evo_to"])
 	elif rec["evo_ready"]:
-		lines.append("An evolution stone in the storeroom would evolve it into %s — apply it from the profile or the Items screen." % rec["evo_to"])
+		lines.append(tr("An evolution stone in the storeroom would evolve it into %s — apply it from the profile or the Items screen.") % rec["evo_to"])
 	if rec["bids"] > 0:
-		lines.append("%d active transfer bid%s awaiting your response (respond from the footer or right-click)." %
+		lines.append(tr("%d active transfer bid%s awaiting your response (respond from the footer or right-click).") %
 			[rec["bids"], "s" if rec["bids"] > 1 else ""])
 	if rec["listed"]:
-		lines.append("Transfer listed at %s." % UI.money(rec["ask"]))
+		lines.append(tr("Transfer listed at %s.") % UI.money(rec["ask"]))
 	if rec["talks_locked"]:
-		lines.append("Contract talks broke down — locked until %s." %
-			Season.pretty_date(_svc.talks_locked_until(rec["uid"])))
+		lines.append(tr("Contract talks broke down — locked until %s.") %
+			I18n.pretty_date(_svc.talks_locked_until(rec["uid"])))
 	return "\n".join(PackedStringArray(lines)) if not lines.is_empty() \
-		else "No live transfer/contract state: no bids, not listed, talks open."
+		else tr("No live transfer/contract state: no bids, not listed, talks open.")
 
 
 const PROMISE_SHORT := {"battles": "Battles", "new_deal": "New deal", "unlist": "Unlist"}
@@ -608,12 +604,12 @@ const PROMISE_SHORT := {"battles": "Battles", "new_deal": "New deal", "unlist": 
 func _promise_cell(p: Dictionary) -> String:
 	if p.is_empty():
 		return "-"
-	var kind := str(PROMISE_SHORT.get(str(p["kind"]), "Promise"))
+	var kind := tr(str(PROMISE_SHORT.get(str(p["kind"]), "Promise")))
 	match str(p["status"]):
 		"open": return "%s · %s" % [kind,
-			" ".join(Season.pretty_date(str(p["deadline"])).split(" ").slice(0, 2))]
-		"kept": return "Kept · %s" % kind
-		"broken": return "BROKEN · %s" % kind
+			" ".join(I18n.pretty_date(str(p["deadline"])).split(" ").slice(0, 2))]
+		"kept": return tr("Kept · %s") % kind
+		"broken": return tr("BROKEN · %s") % kind
 	return "-"
 
 
@@ -629,33 +625,33 @@ func _promise_color(p: Dictionary) -> Color:
 
 func _promise_tip(p: Dictionary) -> String:
 	if p.is_empty():
-		return "No promise outstanding. Make one from the right-click menu — promises are tracked with deadlines and real consequences."
+		return tr("No promise outstanding. Make one from the right-click menu — promises are tracked with deadlines and real consequences.")
 	match str(p["status"]):
-		"open": return "Your word, given %s: %s Deadline %s — break it and morale, trust and future contract talks all pay." % \
-			[Season.pretty_date(str(p["made_on"])), str(p["text"]), Season.pretty_date(str(p["deadline"]))]
-		"kept": return "Promise kept on %s: %s Trust has deepened." % \
-			[Season.pretty_date(str(p["resolved_on"])), str(p["text"])]
-		"broken": return "Promise BROKEN on %s: %s The distrust lingers for weeks and poisons contract talks." % \
-			[Season.pretty_date(str(p["resolved_on"])), str(p["text"])]
+		"open": return tr("Your word, given %s: %s Deadline %s — break it and morale, trust and future contract talks all pay.") % \
+			[I18n.pretty_date(str(p["made_on"])), str(p["text"]), I18n.pretty_date(str(p["deadline"]))]
+		"kept": return tr("Promise kept on %s: %s Trust has deepened.") % \
+			[I18n.pretty_date(str(p["resolved_on"])), str(p["text"])]
+		"broken": return tr("Promise BROKEN on %s: %s The distrust lingers for weeks and poisons contract talks.") % \
+			[I18n.pretty_date(str(p["resolved_on"])), str(p["text"])]
 	return ""
 
 
 ## Morale tooltip: the mood ledger — every recent change with its reason.
 func _morale_tip(rec: Dictionary) -> String:
-	var lines: Array = ["Morale %s (%d) — day-to-day mood." % [UI.morale_word(rec["morale"]), rec["morale"]]]
+	var lines: Array = [tr("Morale %s (%d) — day-to-day mood.") % [UI.morale_word(rec["morale"]), rec["morale"]]]
 	var log: Array = _svc.mood_log(rec["uid"])
 	if log.is_empty():
-		lines.append("No recorded morale events yet.")
+		lines.append(tr("No recorded morale events yet."))
 	else:
-		lines.append("Recent morale events:")
+		lines.append(tr("Recent morale events:"))
 		for e in log.slice(0, 7):
-			lines.append("  %s  %+d  %s" % [Season.pretty_date(str(e["d"])), int(e["delta"]), str(e["why"])])
+			lines.append("  %s  %+d  %s" % [I18n.pretty_date(str(e["d"])), int(e["delta"]), tr(str(e["why"]))])
 	var h: Dictionary = rec["happy"]
 	var gap: int = int(h["score"]) - int(rec["morale"])
 	if absi(gap) > 6:
-		lines.append("Drifting %s toward their underlying happiness (%s, %d)." %
-			["up" if gap > 0 else "down", str(h["word"]), int(h["score"])])
-	lines.append("See the Happiness view / profile for the full breakdown.")
+		lines.append(tr("Drifting %s toward their underlying happiness (%s, %d).") %
+			[tr("up") if gap > 0 else tr("down"), str(h["word"]), int(h["score"])])
+	lines.append(tr("See the Happiness view / profile for the full breakdown."))
 	return "\n".join(PackedStringArray(lines))
 
 
@@ -701,7 +697,7 @@ func _rebuild_table() -> void:
 		var arrow := ""
 		if cols[i] == _sort_key:
 			arrow = "  v" if _sort_desc else "  ^"
-		_tree.set_column_title(i, def["title"] + arrow)
+		_tree.set_column_title(i, tr(def["title"]) + arrow)
 		_tree.set_column_expand(i, def["expand"])
 		_tree.set_column_title_alignment(i,
 			HORIZONTAL_ALIGNMENT_RIGHT if def["num"] else HORIZONTAL_ALIGNMENT_LEFT)
@@ -737,20 +733,20 @@ func _rebuild_table() -> void:
 		var cur_col := cols.find("cur")
 		if cur_col >= 0:
 			it.set_icon(cur_col, Ability.stars_icon(rec["cur"]))
-			it.set_tooltip_text(cur_col, "Current ability %s stars — %s.\nCoach report by %s (judging ability %d/20); top %d%% of the league's %d battlers." %
+			it.set_tooltip_text(cur_col, tr("Current ability %s stars — %s.\nCoach report by %s (judging ability %d/20); top %d%% of the league's %d battlers.") %
 				[Ability.stars_text(rec["cur"]), Ability.ability_word(rec["cur"]),
 				rep["ja_name"], int(rep["ja"]),
 				maxi(int(round((1.0 - float(rep["pct_now"])) * 100.0)), 1), int(rep["league_n"])])
 		var pot_col := cols.find("pot")
 		if pot_col >= 0:
 			it.set_icon(pot_col, Ability.stars_icon(float(rep["pot_lo"]), float(rep["pot_hi"]), Ability.COL_STARS_POT))
-			it.set_tooltip_text(pot_col, "Potential %s stars (%s confidence — %s, judging potential %d/20).\nCeiling from trainable IVs (%d%% -> ~%d%%) and the full learnset." %
+			it.set_tooltip_text(pot_col, tr("Potential %s stars (%s confidence — %s, judging potential %d/20).\nCeiling from trainable IVs (%d%% -> ~%d%%) and the full learnset.") %
 				[Ability.stars_range_text(float(rep["pot_lo"]), float(rep["pot_hi"])),
-				rep["confidence"], rep["jp_name"], int(rep["jp"]),
+				tr(rep["confidence"]), rep["jp_name"], int(rep["jp"]),
 				int(rep["iv_pct"]), int(rep["iv_pct_peak"])])
 		var rec_col := cols.find("rec")
 		if rec_col >= 0:
-			it.set_tooltip_text(rec_col, str(rep["reason"]))
+			it.set_tooltip_text(rec_col, tr(str(rep["reason"])))
 		var type_col := cols.find("type")
 		if type_col >= 0:
 			it.set_icon(type_col, UI.type_icon(rec["types"]))
@@ -766,20 +762,20 @@ func _rebuild_table() -> void:
 		var pers_col := cols.find("pers")
 		if pers_col >= 0:
 			var hh: Dictionary = rec["happy"]
-			it.set_tooltip_text(pers_col, "%s — %s\nCoach's read: %s." %
-				[(hh["arch"] as Dictionary)["name"], (hh["arch"] as Dictionary)["desc"],
+			it.set_tooltip_text(pers_col, tr("%s — %s\nCoach's read: %s.") %
+				[tr((hh["arch"] as Dictionary)["name"]), tr((hh["arch"] as Dictionary)["desc"]),
 				Personality.attrs_line(hh["attrs"])])
 		var sstat_col := cols.find("sstat")
 		if sstat_col >= 0:
 			var stt: Dictionary = rec["sstat"]
-			it.set_tooltip_text(sstat_col, "%s (rated %d of %d in the squad). %s" %
-				[stt["label"], int(stt["rank"]), int(stt["n"]), stt["expect"]])
+			it.set_tooltip_text(sstat_col, tr("%s (rated %d of %d in the squad). %s") %
+				[tr(stt["label"]), int(stt["rank"]), int(stt["n"]), tr(stt["expect"])])
 		var concern_col := cols.find("concern")
 		if concern_col >= 0:
 			var cs: Array = (rec["happy"] as Dictionary)["concerns"]
 			it.set_tooltip_text(concern_col, "\n".join(cs.map(func(c):
-				return "%s — %s" % [str(c["short"]), str(c["detail"])])) if not cs.is_empty()
-				else "No active concerns.")
+				return "%s — %s" % [tr(str(c["short"])), tr(str(c["detail"]))])) if not cs.is_empty()
+				else tr("No active concerns."))
 			if not cs.is_empty():
 				it.set_icon(concern_col, UI.dot_icon(
 					UI.COL_BAD if float(cs[0]["w"]) <= -8.0 else UI.COL_WARN, 9))
@@ -807,10 +803,10 @@ func _rebuild_table() -> void:
 			if rec["item_name"] != "":
 				var item: Dictionary = rec["item"]
 				it.set_icon(item_col, UI.dot_icon(UI.rarity_color(str(item.get("rarity", ""))), 9))
-				it.set_tooltip_text(item_col, "%s (%s, held)\n%s\nEquip or swap items from the Items screen." %
-					[item.get("name", "?"), item.get("rarity", "?"), item.get("desc", "")])
+				it.set_tooltip_text(item_col, tr("%s (%s, held)\n%s\nEquip or swap items from the Items screen.") %
+					[tr(str(item.get("name", "?"))), tr(str(item.get("rarity", "?")).capitalize()), tr(str(item.get("desc", "")))])
 			else:
-				it.set_tooltip_text(item_col, "No held item — equip one from the Items screen storeroom.")
+				it.set_tooltip_text(item_col, tr("No held item — equip one from the Items screen storeroom."))
 		var babil_col := cols.find("babil")
 		if babil_col >= 0:
 			it.set_tooltip_text(babil_col, rec["babil_tip"])
@@ -822,11 +818,11 @@ func _rebuild_table() -> void:
 			if s_col < 0:
 				continue
 			var dir := UI.nature_dir(rec["inst"], sk)
-			var tip := "Battle-real %s: %d — the number the match engine fights with." % \
+			var tip := tr("Battle-real %s: %d — the number the match engine fights with.") % \
 				[UI.STAT_SHORT[sk], int(rec[sk])]
 			if dir != 0:
-				tip += "\nIncludes the %s nature's %s10%% %s." % [rec["nature_name"],
-					"+" if dir > 0 else "−", "boost" if dir > 0 else "drop"]
+				tip += tr("\nIncludes the %s nature's %s10%% %s.") % [rec["nature_name"],
+					"+" if dir > 0 else "−", tr("boost") if dir > 0 else tr("drop")]
 				it.set_custom_color(s_col, UI.COL_GOOD if dir > 0 else UI.COL_WARN)
 			it.set_tooltip_text(s_col, tip)
 		var name_col := cols.find("name")
@@ -885,27 +881,26 @@ func _rebuild_views_bar() -> void:
 		c.queue_free()
 	_view_buttons.clear()
 	var view_lbl := Label.new()
-	view_lbl.text = "View:"
+	view_lbl.text = tr("View:")
 	view_lbl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	_views_bar.add_child(view_lbl)
 	for vn in Views.view_names():
 		var b := Button.new()
-		b.text = str(vn) + ("*" if Views.is_modified(vn) else "")
+		b.text = tr(str(vn)) + ("*" if Views.is_modified(vn) else "")
 		b.toggle_mode = true
 		b.button_pressed = vn == _view
 		if Views.is_preset(vn):
-			b.tooltip_text = ("Preset view (carrying your edits — Columns... to change or reset)"
-				if Views.is_modified(vn) else "Preset view — an editable starting point (Columns...)")
+			b.tooltip_text = (tr("Preset view (carrying your edits — Columns... to change or reset)")
+				if Views.is_modified(vn) else tr("Preset view — an editable starting point (Columns...)"))
 		else:
-			b.tooltip_text = "Your custom view — saved in this career's save file"
+			b.tooltip_text = tr("Your custom view — saved in this career's save file")
 			b.add_theme_color_override("font_color", UI.COL_ACCENT.lightened(0.35))
 		b.pressed.connect(_on_preset.bind(str(vn)))
 		_views_bar.add_child(b)
 		_view_buttons[str(vn)] = b
 	var edit_b := Button.new()
 	edit_b.text = "Columns..."
-	edit_b.tooltip_text = ("Customize this view: add, remove and reorder columns,\n" +
-		"save it over '%s' or as a new view. Saved views live in the career save.") % _view
+	edit_b.tooltip_text = tr("Customize this view: add, remove and reorder columns,\nsave it over '%s' or as a new view. Saved views live in the career save.") % _view
 	edit_b.pressed.connect(_open_view_editor)
 	_views_bar.add_child(edit_b)
 
@@ -985,7 +980,7 @@ func _update_footer() -> void:
 	idbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_footer_stats.add_child(idbox)
 	var nm := Label.new()
-	nm.text = "%s  ·  Lv %d %s" % [rec["name"], rec["lv"], rec["species"]]
+	nm.text = tr("%s  ·  Lv %d %s") % [rec["name"], rec["lv"], rec["species"]]
 	nm.add_theme_font_size_override("font_size", 16)
 	nm.add_theme_color_override("font_color", Color.WHITE)
 	idbox.add_child(nm)
@@ -997,15 +992,15 @@ func _update_footer() -> void:
 
 	var pick: Dictionary = rec["pick"]
 	var sel_stat := _footer_stat("PICKED",
-		("Starter %d" % int(pick["rank"])) if pick["kind"] == "starter" else str(pick["text"]).replace("S", "Sub "),
+		(tr("Starter %d") % int(pick["rank"])) if pick["kind"] == "starter" else str(pick["text"]).replace("S", tr("Sub ")),
 		UI.COL_ACCENT.lightened(0.2) if pick["kind"] == "starter" else UI.COL_TEXT_DIM)
 	sel_stat.tooltip_text = str(pick["tip"])
 	_footer_stats.add_child(sel_stat)
 	var item_stat := _footer_stat("HELD ITEM",
-		rec["item_name"] if rec["item_name"] != "" else "None",
+		tr(rec["item_name"]) if rec["item_name"] != "" else tr("None"),
 		UI.rarity_color(str((rec["item"] as Dictionary).get("rarity", ""))) if rec["item_name"] != "" else UI.COL_TEXT_DIM)
-	item_stat.tooltip_text = ("%s\nManage from the Items screen." % (rec["item"] as Dictionary).get("desc", "")) \
-		if rec["item_name"] != "" else "No held item — equip one from the Items screen."
+	item_stat.tooltip_text = (tr("%s\nManage from the Items screen.") % tr((rec["item"] as Dictionary).get("desc", ""))) \
+		if rec["item_name"] != "" else tr("No held item — equip one from the Items screen.")
 	_footer_stats.add_child(item_stat)
 	if not (rec["flags"] as Array).is_empty():
 		var av_stat := _footer_stat("AVAILABILITY", Selection.flags_text(rec["flags"]),
@@ -1017,32 +1012,32 @@ func _update_footer() -> void:
 		Ability.ability_word(rec["cur"])))
 	_footer_stats.add_child(_footer_stars("POTENTIAL",
 		Ability.stars_icon(float(rep["pot_lo"]), float(rep["pot_hi"]), Ability.COL_STARS_POT, 12),
-		"%s conf." % rep["confidence"]))
-	_footer_stats.add_child(_footer_stat("COACH CALL", rec["rec"], rep["verdict_color"]))
+		tr("%s conf.") % tr(rep["confidence"])))
+	_footer_stats.add_child(_footer_stat("COACH CALL", tr(rec["rec"]), rep["verdict_color"]))
 	var h: Dictionary = rec["happy"]
-	var happy_stat := _footer_stat("HAPPINESS", str(h["word"]), h["color"])
+	var happy_stat := _footer_stat("HAPPINESS", tr(str(h["word"])), h["color"])
 	happy_stat.tooltip_text = Personality.factors_tip(h)
 	_footer_stats.add_child(happy_stat)
 	if rec["concern"] != "" and int(rec["happy_score"]) < 55:
-		var concern_stat := _footer_stat("TOP CONCERN", rec["concern"], UI.COL_WARN)
+		var concern_stat := _footer_stat("TOP CONCERN", tr(rec["concern"]), UI.COL_WARN)
 		concern_stat.tooltip_text = "\n".join((h["concerns"] as Array).map(func(c):
-			return "%s — %s" % [str(c["short"]), str(c["detail"])]))
+			return "%s — %s" % [tr(str(c["short"])), tr(str(c["detail"]))]))
 		_footer_stats.add_child(concern_stat)
 	if (rec["flags"] as Array).is_empty():
 		_footer_stats.add_child(_footer_stat("COND / FIT", "%d%% / %d%%" % [rec["cond"], rec["fit"]],
 			UI.pct_color(mini(rec["cond"], rec["fit"]))))
 	_footer_stats.add_child(_footer_stat("SEASON",
-		"%d apps · %d KOs · av %s" % [rec["apps"], rec["kos"],
-			("%.2f" % rec["rat"]) if rec["apps"] > 0 else "-"],
+		tr("%d apps · %d KOs · av %s") % [rec["apps"], rec["kos"],
+			I18n.decimal(float(rec["rat"]), 2) if rec["apps"] > 0 else "-"],
 		UI.rating_color(rec["rat"]) if rec["apps"] > 0 else UI.COL_TEXT))
 	if rec["listed"]:
 		_footer_stats.add_child(_footer_stat("TRANSFER",
-			"Listed at %s" % UI.money(rec["ask"]), UI.COL_BAD))
+			tr("Listed at %s") % UI.money(rec["ask"]), UI.COL_BAD))
 
 	var uid: String = rec["uid"]
 	if rec["bids"] > 0:
 		var bids_b := Button.new()
-		bids_b.text = "Respond To %d Bid%s" % [rec["bids"], "s" if rec["bids"] > 1 else ""]
+		bids_b.text = tr("Respond To %d Bid%s") % [rec["bids"], "s" if rec["bids"] > 1 else ""]
 		bids_b.add_theme_color_override("font_color", UI.COL_WARN)
 		bids_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		bids_b.pressed.connect(func() -> void: Actions.open_offers_dialog(self, uid))
@@ -1051,18 +1046,18 @@ func _update_footer() -> void:
 	contract_b.text = "Contract..."
 	contract_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	contract_b.disabled = rec["talks_locked"]
-	contract_b.tooltip_text = "Open contract renewal talks" if not rec["talks_locked"] \
-		else "Talks broke down recently — locked until %s" % Season.pretty_date(_svc.talks_locked_until(uid))
+	contract_b.tooltip_text = tr("Open contract renewal talks") if not rec["talks_locked"] \
+		else tr("Talks broke down recently — locked until %s") % I18n.pretty_date(_svc.talks_locked_until(uid))
 	contract_b.pressed.connect(func() -> void: Actions.open_contract_dialog(self, uid))
 	_footer_actions.add_child(contract_b)
 	var list_b := Button.new()
-	list_b.text = "Unlist" if rec["listed"] else "Transfer List"
+	list_b.text = tr("Unlist") if rec["listed"] else tr("Transfer List")
 	list_b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	list_b.pressed.connect(func() -> void:
 		if _svc.is_listed(_svc.find_instance(uid)):
 			var err: String = _svc.unlist(uid)
 			if err != "":
-				Actions.notice(self, "Transfer list", err)
+				Actions.notice(self, tr("Transfer list"), tr(err))
 		else:
 			Actions.open_list_dialog(self, uid))
 	_footer_actions.add_child(list_b)

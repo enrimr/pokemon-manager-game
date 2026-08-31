@@ -106,8 +106,8 @@ func _run() -> void:
 		"max_hp": 144, "pokemon": "Tauros"}, {}, rng).is_empty(), "weather_chip produces a ticker line")
 	var al: Array = Commentary.lines_for({"t": "ability_triggered", "effect": "sturdy",
 		"pokemon": "Onix", "ability_name": "Sturdy"}, {}, rng)
-	_check(not al.is_empty() and str(al[0]["text"]).contains("Sturdy"),
-		"ability_triggered names the ability in commentary")
+	_check(not al.is_empty() and str(al[0]["text"]).contains(tr("Sturdy")),
+		"ability_triggered names the ability in commentary")  # tr(): commentary localizes ability names
 	_check(Commentary.is_key_event({"t": "weather_start", "kind": "sun"}),
 		"weather_start counts as a key moment")
 	r.vm["weather"] = "rain"

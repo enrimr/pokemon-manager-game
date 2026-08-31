@@ -14,10 +14,10 @@ const Views := preload("res://screens/squad/views.gd")
 ## delete, reset) with the name of the view to display afterwards.
 static func open(host: Control, view_name: String, on_saved: Callable) -> AcceptDialog:
 	var d := AcceptDialog.new()
-	d.title = "Customize View — %s" % view_name
+	d.title = I18n.t("Customize View — %s") % view_name
 	d.min_size = Vector2i(720, 520)
 	d.dialog_hide_on_ok = false   # stay up when validation fails
-	d.get_ok_button().text = "Save & Apply"
+	d.get_ok_button().text = I18n.t("Save & Apply")
 	d.add_cancel_button("Cancel")
 	host.add_child(d)
 	d.close_requested.connect(d.queue_free)
@@ -35,8 +35,8 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	head.add_theme_constant_override("separation", 10)
 	body.add_child(head)
 	var kind := Label.new()
-	kind.text = ("Preset view — edits are saved as your override; Reset restores the factory layout."
-		if is_preset else "Custom view — yours to shape, rename or delete.")
+	kind.text = (I18n.t("Preset view — edits are saved as your override; Reset restores the factory layout.")
+		if is_preset else I18n.t("Custom view — yours to shape, rename or delete."))
 	kind.add_theme_font_size_override("font_size", 12)
 	kind.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	kind.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -49,8 +49,8 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	name_edit.text = view_name
 	name_edit.max_length = Views.MAX_NAME
 	name_edit.custom_minimum_size = Vector2(180, 0)
-	name_edit.tooltip_text = ("Preset names are fixed — type a new name and use Save As New View."
-		if is_preset else "Rename this view (applied on Save) or type a new name for Save As.")
+	name_edit.tooltip_text = (I18n.t("Preset names are fixed — type a new name and use Save As New View.")
+		if is_preset else I18n.t("Rename this view (applied on Save) or type a new name for Save As."))
 	head.add_child(name_edit)
 
 	# --- dual lists
@@ -65,12 +65,12 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	lists.add_child(left)
 	var avail_lbl := Label.new()
-	avail_lbl.text = "AVAILABLE COLUMNS"
+	avail_lbl.text = I18n.t("AVAILABLE COLUMNS")
 	avail_lbl.add_theme_font_size_override("font_size", 11)
 	avail_lbl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	left.add_child(avail_lbl)
 	var search := LineEdit.new()
-	search.placeholder_text = "Search columns..."
+	search.placeholder_text = I18n.t("Search columns...")
 	left.add_child(search)
 	var avail := ItemList.new()
 	avail.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -82,21 +82,21 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	mid.alignment = BoxContainer.ALIGNMENT_CENTER
 	lists.add_child(mid)
 	var add_b := Button.new()
-	add_b.text = "Add  >"
-	add_b.tooltip_text = "Add the selected column to this view (or double-click it)"
+	add_b.text = I18n.t("Add  >")
+	add_b.tooltip_text = I18n.t("Add the selected column to this view (or double-click it)")
 	mid.add_child(add_b)
 	var rem_b := Button.new()
-	rem_b.text = "<  Remove"
-	rem_b.tooltip_text = "Remove the selected column (Name always stays)"
+	rem_b.text = I18n.t("<  Remove")
+	rem_b.tooltip_text = I18n.t("Remove the selected column (Name always stays)")
 	mid.add_child(rem_b)
 	var mid_sp := Control.new()
 	mid_sp.custom_minimum_size = Vector2(0, 12)
 	mid.add_child(mid_sp)
 	var up_b := Button.new()
-	up_b.text = "Move Up"
+	up_b.text = I18n.t("Move Up")
 	mid.add_child(up_b)
 	var down_b := Button.new()
-	down_b.text = "Move Down"
+	down_b.text = I18n.t("Move Down")
 	mid.add_child(down_b)
 
 	var right := VBoxContainer.new()
@@ -105,7 +105,7 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	lists.add_child(right)
 	var cur_lbl := Label.new()
-	cur_lbl.text = "THIS VIEW, LEFT TO RIGHT"
+	cur_lbl.text = I18n.t("THIS VIEW, LEFT TO RIGHT")
 	cur_lbl.add_theme_font_size_override("font_size", 11)
 	cur_lbl.add_theme_color_override("font_color", UI.COL_TEXT_DIM)
 	right.add_child(cur_lbl)
@@ -123,12 +123,12 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	foot.add_theme_constant_override("separation", 8)
 	body.add_child(foot)
 	var reset_b := Button.new()
-	reset_b.text = "Reset To Default"
+	reset_b.text = I18n.t("Reset To Default")
 	reset_b.visible = is_preset
-	reset_b.tooltip_text = "Restore this preset's factory columns (drops your override)."
+	reset_b.tooltip_text = I18n.t("Restore this preset's factory columns (drops your override).")
 	foot.add_child(reset_b)
 	var del_b := Button.new()
-	del_b.text = "Delete View"
+	del_b.text = I18n.t("Delete View")
 	del_b.visible = not is_preset
 	del_b.add_theme_color_override("font_color", UI.COL_BAD)
 	foot.add_child(del_b)
@@ -139,8 +139,8 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	err_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	foot.add_child(err_lbl)
 	var saveas_b := Button.new()
-	saveas_b.text = "Save As New View"
-	saveas_b.tooltip_text = "Save this layout as a brand-new view under the name typed above."
+	saveas_b.text = I18n.t("Save As New View")
+	saveas_b.tooltip_text = I18n.t("Save this layout as a brand-new view under the name typed above.")
 	foot.add_child(saveas_b)
 
 	# --- list plumbing
@@ -177,10 +177,10 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 			cur.set_item_tooltip(i2, str(def3["desc"]))
 			if id2 == Views.LOCKED_COL:
 				cur.set_item_custom_fg_color(i2, UI.COL_TEXT_DIM)
-				cur.set_item_tooltip(i2, "Name is part of every view.")
+				cur.set_item_tooltip(i2, I18n.t("Name is part of every view."))
 		if not keep_sel.is_empty() and keep_sel[0] < cur.item_count:
 			cur.select(keep_sel[0])
-		cur_note.text = "%d of %d columns (min %d)" % [cols.size(), Views.MAX_COLS, Views.MIN_COLS]
+		cur_note.text = I18n.t("%d of %d columns (min %d)") % [cols.size(), Views.MAX_COLS, Views.MIN_COLS]
 		err_lbl.text = ""
 
 	var add_sel := func() -> void:
@@ -244,7 +244,7 @@ static func open(host: Control, view_name: String, on_saved: Callable) -> Accept
 	saveas_b.pressed.connect(func() -> void:
 		var typed := name_edit.text.strip_edges()
 		if typed == view_name:
-			err_lbl.text = "Type a new name above, then Save As New View."
+			err_lbl.text = I18n.t("Type a new name above, then Save As New View.")
 			return
 		var err := Views.create(typed, cols)
 		if err != "":

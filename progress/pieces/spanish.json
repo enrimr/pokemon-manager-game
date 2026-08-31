@@ -1,0 +1,30 @@
+{
+ "piece": "spanish",
+ "fm_reference": "FM24 ships a full professional Spanish (es-ES) localization: every screen, menu, and generated news item reads naturally in football-manager register; language switch applies live from Preferences and persists",
+ "status": "passed",
+ "round": 3,
+ "verdict": "ours",
+ "biggest_gap": "Live-match periphery still carries a handful of catalog-drift leftovers that FM24 would never ship: the flagship live view's HP readout prints '68 / 126 HP (54%)' in English on both battler cards while the commentary beside it correctly says PS (live_view.gd:540 key '%d / %d HP  (%d%%)' absent from catalog); the weather-clear caption shows THE SKIES CLEAR because the catalog key is typo'd 'ATHE SKIES CLEAR' (translations.csv:2439) and the sleep float shows ASLEEP (catalog only has 'ASLEEP!'); plus signature-drift misses on the scouting 'IN TRANSIT — %s until they reach %s' line (transfers/screen.gd:1234 vs %d-key), competition History's '%s avg rating · %d battles' (history_tab.gd:164 vs %.2f-key) and Stats tooltip, prematch 'Lv%d'/'HP %d · Atk...' stat lines, English availability codes (UNH/UNF/LST/EXH) in the squad grid, one stored-English negotiation-log line ('MTS bid P$303.0K') inside an otherwise-Spanish offer mail, and a '$250.000' (not P$) academy button.",
+ "history": [
+  {
+   "round": 1,
+   "phase": "wave3",
+   "winner": "fm",
+   "gap": "Move/item/type names render raw English on match live caption, held-item and bag lines, and Stats/Search type columns despite canonical Spanish existing elsewhere; plus broken plurals (ojeadorses/recomendacionses), English chunks on Competition tabs, and permanently-English stored inbox items after mid-career switch. Strengths: ~4900-key catalog, live selector switch, excellent natural register in generated crónicas/board/scout prose, canonical Pokémon terms (Placaje, Danza Espada, Vidasfera, Copa Anil, Bicho)."
+  },
+  {
+   "round": 2,
+   "phase": "wave3",
+   "winner": "fm",
+   "gap": "Screens are now near-flawless (live selector switch retranslates the whole shell instantly with honest mail-language disclosure; canonical item/move/ability/type names across Plantilla/Táctica/Objetos; superb register: 'Fondo de armario', 'Jefe de cantera', 'Rumorología', idiomatic live commentary). But the simmed inbox/press layer — the FM-iest prose — exceeds 'scattered trivial leftovers': youth-intake mail is half English tokens (types/natures/moves/BASIC FACILITIES), reports hardcode W/L racha letters and English type names (tipo Psychic/Flying), press quotes embed '9.º in the league' and carry agreement errors ('mis entrenadores incomodará'), ledger keeps English months and 'First Round', training report prints 'Attack +1, HP +1', prematch threats and commentary leak Solar Beam/Leftovers, and ISO dates/EN number formats persist."
+  },
+  {
+   "round": 3,
+   "phase": "wave3",
+   "winner": "ours",
+   "gap": "Live-match periphery still carries a handful of catalog-drift leftovers that FM24 would never ship: the flagship live view's HP readout prints '68 / 126 HP (54%)' in English on both battler cards while the commentary beside it correctly says PS (live_view.gd:540 key '%d / %d HP  (%d%%)' absent from catalog); the weather-clear caption shows THE SKIES CLEAR because the catalog key is typo'd 'ATHE SKIES CLEAR' (translations.csv:2439) and the sleep float shows ASLEEP (catalog only has 'ASLEEP!'); plus signature-drift misses on the scouting 'IN TRANSIT — %s until they reach %s' line (transfers/screen.gd:1234 vs %d-key), competition History's '%s avg rating · %d battles' (history_tab.gd:164 vs %.2f-key) and Stats tooltip, prematch 'Lv%d'/'HP %d · Atk...' stat lines, English availability codes (UNH/UNF/LST/EXH) in the squad grid, one stored-English negotiation-log line ('MTS bid P$303.0K') inside an otherwise-Spanish offer mail, and a '$250.000' (not P$) academy button."
+  }
+ ],
+ "updated": "2026-08-31 07:10",
+ "fix_notes": "Wave3 fix2 (generated-prose pass): every mail generator now routes entity tokens through I18n at write/render time — youth-intake mail (types via I18n.type_name chips, natures, moves via I18n.move_name, facility tiers I18n.t'd in mail_gen+academy service, intake/preview/contract dates via I18n.pretty_date); report_gen (W/L racha letters -> V/D, league name in result line, assistant-note type via I18n.type_name + es-decimal '1,1x', KO'd-with-move and chip damage, scout stage names, contract expiry, offer 'today/in %d day(s)' via np(), (OVER)); people_gen (snapshot '9.º in the league' translated at publication, mind-game reply buttons, form pips, cup rounds); economy ledger (es months, 'Premio — victoria en Primera ronda', es attendance grouping); training weekly report stat labels ('Ataque +1, PS +1') and replaced-move names; season_flow (playoff/awards/ultimatum/sack/digest mail: pretty dates, I18n.ordinal replaces hardcoded th/st suffixes, league/cup/Indigo names, np() plurals, es-decimal ratings); commentary + prematch threats localize item/move names ('mordisquea sus Restos', 'Rayo Solar castiga tu alineación'); grammar: es {crowd} persona slots rewritten as singular collectives (fixes 'mis entrenadores incomodará'), 'si venderías'->'si estás abierto a vender', gender-safe round articles via new I18n.round_prose ('en los cuartos de final', never 'la Cuartos de final'); number formats: new I18n.number/decimal (P$1.436.456, 1,5x, notas 9,76) wired through every money/attendance/rating formatter incl. shell top bar; extra leaks fixed while driving the UI: match-hub 'League R6/Cup' labels, academy ISO dates, training '1 match this week', transfers scout-network regions (also fixed region_of() poisoning internal region ids with translated text and focus dialog storing translated focus values), MM-DD rumour dates -> '1 ago'; verified: SMOKE OK, SWITCH CHECK OK, new i18n/prose_check.tscn (renders 37 es mails + ledger through real renderers, greps EN tokens/ISO dates/EN months, asserts es ordinal/number/decimal) PROSE CHECK OK, full es screenshot pass read in artifacts/spanish/w3_fix2, user data dir left clean."
+}

@@ -266,7 +266,7 @@ func _migrate_v1_offers() -> void:
 		if not o.has("package"):
 			o["package"] = {"upfront": int(o.get("bid", 0)), "inst_amount": 0, "inst_years": 2, "sell_on": 0}
 		if not o.has("contract"):
-			o["contract"] = {"wage": int(o.get("wage_offer", 0)), "years": 3, "bonus": 0, "status": "First team"}
+			o["contract"] = {"wage": int(o.get("wage_offer", 0)), "years": 3, "bonus": 0, "status": I18n.t("First team")}
 		if not o.has("ask_package"):
 			var ask := int(o.get("ask", 0))
 			o["ask_package"] = {} if ask <= 0 else {"upfront": ask, "inst_amount": 0, "inst_years": 2, "sell_on": 0}
@@ -644,9 +644,9 @@ func windows() -> Array:
 	var ss: String = GameState.season_start
 	var yr := int(ss.substr(0, 4))
 	return [
-		{"name": "Summer window", "open": ss, "close": Season.date_add(ss, 41)},
-		{"name": "Winter window", "open": "%d-01-01" % (yr + 1), "close": "%d-01-31" % (yr + 1)},
-		{"name": "Summer window", "open": Season.date_add(ss, 364), "close": Season.date_add(ss, 364 + 41)},
+		{"name": I18n.t("Summer window"), "open": ss, "close": Season.date_add(ss, 41)},
+		{"name": I18n.t("Winter window"), "open": "%d-01-01" % (yr + 1), "close": "%d-01-31" % (yr + 1)},
+		{"name": I18n.t("Summer window"), "open": Season.date_add(ss, 364), "close": Season.date_add(ss, 364 + 41)},
 	]
 
 
@@ -722,8 +722,8 @@ func market_locked_reason() -> String:
 	if window_open():
 		return ""
 	var w := next_window()
-	return "The transfer window is CLOSED. It reopens %s (%s, %d days). Only free agents can be signed until then." % [
-		Season.pretty_date(String(w["open"])), String(w["name"]), days_to_open()]
+	return I18n.t("The transfer window is CLOSED. It reopens %s (%s, %d days). Only free agents can be signed until then.") % [
+		I18n.pretty_date(String(w["open"])), String(w["name"]), days_to_open()]
 
 
 func _response_delay(salt: int) -> int:
@@ -766,9 +766,9 @@ func _tick_windows() -> void:
 	last_window_key = key
 	if key != "":
 		GameState.add_inbox_message(GameState.current_date,
-			"%s OPEN — deadline day %s" % [String(w["name"]).to_upper(), Season.pretty_date(String(w["close"]))],
-			"The %s is open. Club-to-club transfers, loans and prospect signings are live until %s (%d days). The market always heats up toward the deadline — move early or scramble late." % [
-				String(w["name"]), Season.pretty_date(String(w["close"])), days_to_deadline()])
+			I18n.t("%s OPEN — deadline day %s") % [String(w["name"]).to_upper(), I18n.pretty_date(String(w["close"]))],
+			I18n.t("The %s is open. Club-to-club transfers, loans and prospect signings are live until %s (%d days). The market always heats up toward the deadline — move early or scramble late.") % [
+				String(w["name"]), I18n.pretty_date(String(w["close"])), days_to_deadline()])
 		_seed_window_rumours()
 	else:
 		_close_window(old_key)
@@ -787,14 +787,14 @@ func _close_window(old_key: String) -> void:
 			continue
 		o["stage"] = "collapsed"
 		o["rival"] = {}
-		o["log"].append(_log_line("The window shut before the deal was done."))
+		o["log"].append(_log_line(I18n.t("The window shut before the deal was done.")))
 		died += 1
-		GameState.add_inbox_message(GameState.current_date, "Missed the deadline: %s" % o["name"],
-			"The transfer window closed before our deal for %s could be completed. Talks are off until the market reopens." % o["name"])
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Missed the deadline: %s") % o["name"],
+			I18n.t("The transfer window closed before our deal for %s could be completed. Talks are off until the market reopens.") % o["name"])
 	for o in offers_in:
 		if String(o["stage"]) in ["open", "counter_pending", "agreed"]:
 			o["stage"] = "expired"
-			o["log"].append(_log_line("Window shut — offer lapsed."))
+			o["log"].append(_log_line(I18n.t("Window shut — offer lapsed.")))
 	if closed_w.is_empty():
 		return
 	# Window round-up: everything that moved while the market was open.
@@ -808,11 +808,11 @@ func _close_window(old_key: String) -> void:
 			spend += int(d["fee"])
 	var nw := next_window()
 	GameState.add_inbox_message(GameState.current_date,
-		"%s SHUT — %d deals done across the league" % [String(closed_w["name"]).to_upper(), in_window.size()],
-		"The %s has closed. League-wide: %d completed deals. Our business: %d deals, %s spent on fees.%s The market reopens %s (%s)." % [
+		I18n.t("%s SHUT — %d deals done across the league") % [String(closed_w["name"]).to_upper(), in_window.size()],
+		I18n.t("The %s has closed. League-wide: %d completed deals. Our business: %d deals, %s spent on fees.%s The market reopens %s (%s).") % [
 			String(closed_w["name"]), in_window.size(), ours, fmt_money(spend),
-			(" %d of our negotiations died at the deadline." % died) if died > 0 else "",
-			Season.pretty_date(String(nw["open"])), String(nw["name"])])
+			(I18n.t(" %d of our negotiations died at the deadline.") % died) if died > 0 else "",
+			I18n.pretty_date(String(nw["open"])), String(nw["name"])])
 
 
 # ------------------------------------------------------------------ deal-structure valuation (the AI's brain)
@@ -874,7 +874,7 @@ func contract_appeal(con: Dictionary, inst: Dictionary) -> float:
 	var sec_rate := 0.05 if age_y > 8.0 else (0.035 if age_y > 3.0 else 0.022)
 	var years := clampi(int(con.get("years", 3)), 1, 4)
 	var security := 1.0 + float(years - 1) * sec_rate
-	var status := String(con.get("status", "First team"))
+	var status := String(con.get("status", I18n.t("First team")))
 	var appeal_mult: float = STATUS_APPEAL.get(status, 1.0)
 	return contract_weekly_equiv(con) * security * appeal_mult
 
@@ -882,30 +882,30 @@ func contract_appeal(con: Dictionary, inst: Dictionary) -> float:
 func describe_package(pkg: Dictionary) -> String:
 	var parts: Array = []
 	if int(pkg.get("upfront", 0)) > 0:
-		parts.append("%s up front" % fmt_money(int(pkg["upfront"])))
+		parts.append(I18n.t("%s up front") % fmt_money(int(pkg["upfront"])))
 	if int(pkg.get("inst_amount", 0)) > 0:
-		parts.append("%s over %d yr%s" % [fmt_money(int(pkg["inst_amount"])), int(pkg.get("inst_years", 2)),
+		parts.append(I18n.t("%s over %d yr%s") % [fmt_money(int(pkg["inst_amount"])), int(pkg.get("inst_years", 2)),
 			"" if int(pkg.get("inst_years", 2)) == 1 else "s"])
 	if int(pkg.get("sell_on", 0)) > 0:
-		parts.append("%d%% sell-on" % int(pkg["sell_on"]))
+		parts.append(I18n.t("%d%% sell-on") % int(pkg["sell_on"]))
 	if parts.is_empty():
 		return "Free"
 	return " + ".join(parts)
 
 
 func describe_loan(lt: Dictionary) -> String:
-	var s := "Loan: %d%% wages covered" % int(lt.get("wage_split", 100))
+	var s := I18n.t("Loan: %d%% wages covered") % int(lt.get("wage_split", 100))
 	if int(lt.get("option_fee", 0)) > 0:
-		s += ", option to buy %s" % fmt_money(int(lt["option_fee"]))
+		s += I18n.t(", option to buy %s") % fmt_money(int(lt["option_fee"]))
 	return s
 
 
 func describe_contract(con: Dictionary) -> String:
-	var s := "%s/wk · %d yr%s" % [fmt_money(int(con.get("wage", 0))), int(con.get("years", 3)),
+	var s := I18n.t("%s/wk · %d yr%s") % [fmt_money(int(con.get("wage", 0))), int(con.get("years", 3)),
 		"" if int(con.get("years", 3)) == 1 else "s"]
 	if int(con.get("bonus", 0)) > 0:
-		s += " · %s signing bonus" % fmt_money(int(con["bonus"]))
-	s += " · %s" % String(con.get("status", "First team"))
+		s += I18n.t(" · %s signing bonus") % fmt_money(int(con["bonus"]))
+	s += " · %s" % String(con.get("status", I18n.t("First team")))
 	return s
 
 
@@ -927,14 +927,14 @@ func offer_hint(uid: String, pkg: Dictionary) -> String:
 		var h := _mask_hash(uid, "hint")
 		base *= 0.85 + float(h % 31) / 100.0
 	var r := float(package_value(pkg, t["inst"], seller)) / maxf(1.0, base)
-	var pre := "" if know >= 50.0 else "(low knowledge — rough read) "
+	var pre := "" if know >= 50.0 else I18n.t("(low knowledge — rough read) ")
 	if r >= 1.02:
-		return pre + "Negotiators: this package should be accepted."
+		return pre + I18n.t("Negotiators: this package should be accepted.")
 	if r >= 0.92:
-		return pre + "Negotiators: very close — expect a small counter."
+		return pre + I18n.t("Negotiators: very close — expect a small counter.")
 	if r >= 0.68:
-		return pre + "Negotiators: short of their valuation — they will counter with structure."
-	return pre + "Negotiators: likely to be dismissed outright."
+		return pre + I18n.t("Negotiators: short of their valuation — they will counter with structure.")
+	return pre + I18n.t("Negotiators: likely to be dismissed outright.")
 
 
 func loan_hint(uid: String) -> String:
@@ -942,15 +942,15 @@ func loan_hint(uid: String) -> String:
 	if t.is_empty() or t["pool"] != "club":
 		return ""
 	if is_ext_club(String(t["club_id"])):
-		return "Negotiators: overseas clubs will not loan battlers abroad — a permanent deal is the only route."
+		return I18n.t("Negotiators: overseas clubs will not loan battlers abroad — a permanent deal is the only route.")
 	var imp := importance_of(t["inst"], club_of(t["club_id"]))
 	if imp >= 1.5 or club_of(t["club_id"])["squad"].size() <= 8:
-		return "Negotiators: a key battler — they will NOT loan them out."
+		return I18n.t("Negotiators: a key battler — they will NOT loan them out.")
 	if imp >= 1.3:
-		return "Negotiators: first-team regular — a loan needs 100% wages and a big option to buy."
+		return I18n.t("Negotiators: first-team regular — a loan needs 100% wages and a big option to buy.")
 	if imp >= 1.15:
-		return "Negotiators: squad member — expect demands for most wages plus an option fee."
-	return "Negotiators: fringe battler — a loan with decent wage cover is very gettable."
+		return I18n.t("Negotiators: squad member — expect demands for most wages plus an option fee.")
+	return I18n.t("Negotiators: fringe battler — a loan with decent wage cover is very gettable.")
 
 
 func contract_hint(uid: String, con: Dictionary, known_demand: int = 0) -> String:
@@ -963,13 +963,13 @@ func contract_hint(uid: String, con: Dictionary, known_demand: int = 0) -> Strin
 	if demand <= 0:
 		demand = int(float(inst["contract"]["salary"]) * 1.15)
 		if knowledge_of(uid) < 100.0:
-			pre = "(estimated) "
+			pre = I18n.t("(estimated) ")
 	var appeal := contract_appeal(con, inst)
 	if appeal >= float(demand) * 0.99:
-		return pre + "Agent: these terms should get it done."
+		return pre + I18n.t("Agent: these terms should get it done.")
 	if appeal >= float(demand) * 0.9:
-		return pre + "Agent: close — length, bonus or a bigger promised role could bridge it."
-	return pre + "Agent: well short of what they'll sign for."
+		return pre + I18n.t("Agent: close — length, bonus or a bigger promised role could bridge it.")
+	return pre + I18n.t("Agent: well short of what they'll sign for.")
 
 
 func committed_installments() -> int:
@@ -1069,22 +1069,14 @@ func fmt_money(v: int) -> String:
 	var cur: String = GameState.world["meta"]["currency"]
 	var a := absi(v)
 	if a >= 1000000:
-		return "%s%s%.2fM" % [("-" if v < 0 else ""), cur, float(a) / 1000000.0]
+		return "%s%s%sM" % [("-" if v < 0 else ""), cur, I18n.decimal(float(a) / 1000000.0, 2)]
 	if a >= 1000:
-		return "%s%s%.1fK" % [("-" if v < 0 else ""), cur, float(a) / 1000.0]
+		return "%s%s%sK" % [("-" if v < 0 else ""), cur, I18n.decimal(float(a) / 1000.0, 1)]
 	return "%s%s%d" % [("-" if v < 0 else ""), cur, a]
 
 
 func fmt_money_full(v: int) -> String:
-	var s := str(absi(v))
-	var out := ""
-	var n := s.length()
-	for i in n:
-		out += s[i]
-		var left := n - i - 1
-		if left > 0 and left % 3 == 0:
-			out += ","
-	return "%s%s%s" % [("-" if v < 0 else ""), GameState.world["meta"]["currency"], out]
+	return "%s%s%s" % [("-" if v < 0 else ""), GameState.world["meta"]["currency"], I18n.number(absi(v))]
 
 
 # ------------------------------------------------------------------ scouting
@@ -1136,6 +1128,7 @@ func region_of(inst: Dictionary) -> String:
 	for r in REGIONS:
 		if t0 in REGIONS[r]:
 			return r
+	# NOTE(i18n): region ids are INTERNAL keys — translate only at display.
 	return "Old Capital"
 
 
@@ -1203,14 +1196,14 @@ func scout_days_for(scout: Dictionary, uid: String = "") -> int:
 func assign_scout_to_target(scout_name: String, uid: String) -> String:
 	var scout := _scout_by_name(scout_name)
 	if scout.is_empty():
-		return "No such scout."
+		return I18n.t("No such scout.")
 	if not assignment_for_scout(scout_name).is_empty():
-		return "%s is already on assignment — recall them first." % scout_name
+		return I18n.t("%s is already on assignment — recall them first.") % scout_name
 	var t := find_target(uid)
 	if t.is_empty() or t["pool"] == "mine":
-		return "Invalid scouting target."
+		return I18n.t("Invalid scouting target.")
 	if knowledge_of(uid) >= 100.0:
-		return "%s is already fully scouted." % display_name(t["inst"])
+		return I18n.t("%s is already fully scouted.") % display_name(t["inst"])
 	var reg := region_of(t["inst"])
 	assignments.append({
 		"scout": scout_name, "kind": "target", "uid": uid, "focus_type": "",
@@ -1225,9 +1218,9 @@ func assign_scout_to_target(scout_name: String, uid: String) -> String:
 func assign_scout_to_focus(scout_name: String, focus_type: String) -> String:
 	var scout := _scout_by_name(scout_name)
 	if scout.is_empty():
-		return "No such scout."
+		return I18n.t("No such scout.")
 	if not assignment_for_scout(scout_name).is_empty():
-		return "%s is already on assignment — recall them first." % scout_name
+		return I18n.t("%s is already on assignment — recall them first.") % scout_name
 	# Region focuses require presence: the scout travels there first.
 	var dest := ""
 	if REGIONS.has(focus_type):
@@ -1301,8 +1294,8 @@ func nature_text(nature: String) -> String:
 	var plus: Variant = nat.get("plus")
 	var minus: Variant = nat.get("minus")
 	if plus == null or str(plus) == "":
-		return "%s (neutral)" % nature
-	return "%s (+%s/−%s)" % [nature, str(plus).capitalize(), str(minus).capitalize()]
+		return I18n.t("%s (neutral)") % I18n.t(nature)
+	return "%s (+%s/−%s)" % [I18n.t(nature), I18n.t(str(plus).capitalize()), I18n.t(str(minus).capitalize())]
 
 
 func full_report_count() -> int:
@@ -1327,8 +1320,8 @@ func _bump_knowledge(uid: String, gain: float, scout_name: String, from_focus: b
 		var t := find_target(uid)
 		if not t.is_empty():
 			GameState.add_inbox_message(GameState.current_date,
-				"Interim scout report: %s (part scouted)" % display_name(t["inst"]),
-				"%s has filed a preliminary assessment of %s — move set confirmed, star ratings given as a RANGE that narrows with more time in the field. Full attributes still need a completed watch. See Transfers > Scouting." % [
+				I18n.t("Interim scout report: %s (part scouted)") % display_name(t["inst"]),
+				I18n.t("%s has filed a preliminary assessment of %s — move set confirmed, star ratings given as a RANGE that narrows with more time in the field. Full attributes still need a completed watch. See Transfers > Scouting.") % [
 					scout_name, display_name(t["inst"])])
 	if before < 100.0 and now >= 100.0:
 		_generate_report(uid, scout_name, true)
@@ -1353,16 +1346,16 @@ func _tick_scouting(_rng: RandomNumberGenerator) -> void:
 			if t.is_empty() or t["pool"] == "mine":
 				done.append(a)
 				GameState.add_inbox_message(GameState.current_date,
-					"Scouting mission over: target unavailable",
-					"%s's watch has ended — the target is no longer on the market." % String(a["scout"]))
+					I18n.t("Scouting mission over: target unavailable"),
+					I18n.t("%s's watch has ended — the target is no longer on the market.") % String(a["scout"]))
 				continue
 			var reg := region_of(t["inst"])
 			_bump_knowledge(uid, scout_daily_rate(scout, reg), String(a["scout"]), false)
 			if knowledge_of(uid) >= 100.0:
 				done.append(a)
 				GameState.add_inbox_message(GameState.current_date,
-					"Full scout report: %s" % display_name(t["inst"]),
-					"%s has completed the watch on %s. Exact attributes, genetics and final star ratings are unlocked in Transfers." % [
+					I18n.t("Full scout report: %s") % display_name(t["inst"]),
+					I18n.t("%s has completed the watch on %s. Exact attributes, genetics and final star ratings are unlocked in Transfers.") % [
 						String(a["scout"]), display_name(t["inst"])])
 		else:
 			# Region/type focus: a broad sweep. Builds knowledge on a few
@@ -1426,54 +1419,54 @@ func _generate_report(uid: String, scout_name: String, final: bool = true) -> vo
 
 	var pros: Array = []
 	var cons: Array = []
-	var names := {"hp": "HP", "atk": "Attack", "def": "Defense", "spa": "Sp. Attack", "spd": "Sp. Defense", "spe": "Speed"}
+	var names := {"hp": "HP", "atk": "Attack", "def": "Defense", "spa": I18n.t("Sp. Attack"), "spd": I18n.t("Sp. Defense"), "spe": "Speed"}
 	var keys := ["atk", "spa", "spe", "def", "spd", "hp"]
 	var ranked := keys.duplicate()
 	ranked.sort_custom(func(a, b): return int(stats[a]) > int(stats[b]))
 	# Interim reports quote the CURRENT uncertainty band, never the exact figure.
 	var sv := func(k: String) -> String:
 		return str(int(stats[k])) if final else masked_int(uid, k, int(stats[k]))
-	pros.append("Standout %s (%s) for its level" % [names[ranked[0]], sv.call(ranked[0])])
+	pros.append(I18n.t("Standout %s (%s) for its level") % [names[ranked[0]], sv.call(ranked[0])])
 	if int(stats[ranked[1]]) > 60:
-		pros.append("Strong secondary %s (%s)" % [names[ranked[1]], sv.call(ranked[1])])
+		pros.append(I18n.t("Strong secondary %s (%s)") % [names[ranked[1]], sv.call(ranked[1])])
 	if int(stats["spe"]) >= int(stats[ranked[1]]):
-		pros.append("Wins the speed tie in most match-ups")
+		pros.append(I18n.t("Wins the speed tie in most match-ups"))
 	if final and iv_total(inst) >= 60:
-		pros.append("Excellent underlying genetics (IV %d/90)" % iv_total(inst))
+		pros.append(I18n.t("Excellent underlying genetics (IV %d/90)") % iv_total(inst))
 	if float(inst["age_months"]) / 12.0 < 3.0:
-		pros.append("Young — years of development ahead")
+		pros.append(I18n.t("Young — years of development ahead"))
 	var cats := {}
 	for m in inst["moves"]:
 		var mv: Dictionary = DataStore.move(m)
 		if not mv.is_empty():
 			cats[mv["category"]] = true
 	if cats.size() >= 2:
-		pros.append("Versatile move set (%s)" % ", ".join(inst["moves"]))
-	cons.append("Weak %s (%s) is exploitable" % [names[ranked[5]], sv.call(ranked[5])])
+		pros.append(I18n.t("Versatile move set (%s)") % ", ".join(inst["moves"]))
+	cons.append(I18n.t("Weak %s (%s) is exploitable") % [names[ranked[5]], sv.call(ranked[5])])
 	if int(stats[ranked[4]]) < 45:
-		cons.append("Below-par %s (%s) too" % [names[ranked[4]], sv.call(ranked[4])])
+		cons.append(I18n.t("Below-par %s (%s) too") % [names[ranked[4]], sv.call(ranked[4])])
 	if final and iv_total(inst) < 35:
-		cons.append("Modest genetics (IV %d/90) cap its ceiling" % iv_total(inst))
+		cons.append(I18n.t("Modest genetics (IV %d/90) cap its ceiling") % iv_total(inst))
 	if not final:
-		cons.append("Genetics unread — a full watch is needed to grade the IVs")
+		cons.append(I18n.t("Genetics unread — a full watch is needed to grade the IVs"))
 	if float(inst["age_months"]) / 12.0 > 8.0:
-		cons.append("Ageing — resale value will only fall")
+		cons.append(I18n.t("Ageing — resale value will only fall"))
 	if int(inst["condition"]) < 70:
-		cons.append("Arrived at trials in poor condition (%d%%)" % int(inst["condition"]))
+		cons.append(I18n.t("Arrived at trials in poor condition (%d%%)") % int(inst["condition"]))
 	if cats.size() == 1:
-		cons.append("One-dimensional move set")
+		cons.append(I18n.t("One-dimensional move set"))
 
 	var verdict: String
 	if ability >= 4.0:
-		verdict = "Sign at almost any cost — a genuine difference-maker."
+		verdict = I18n.t("Sign at almost any cost — a genuine difference-maker.")
 	elif ability >= 3.0:
-		verdict = "Would strengthen our first team immediately. Recommended."
+		verdict = I18n.t("Would strengthen our first team immediately. Recommended.")
 	elif pot >= 3.5:
-		verdict = "Raw today, but the ceiling justifies a development signing."
+		verdict = I18n.t("Raw today, but the ceiling justifies a development signing.")
 	elif ability >= 2.0:
-		verdict = "Useful squad depth at the right price; do not overpay."
+		verdict = I18n.t("Useful squad depth at the right price; do not overpay.")
 	else:
-		verdict = "Not recommended — below the level we need."
+		verdict = I18n.t("Not recommended — below the level we need.")
 
 	# Uncertainty bands: an interim report gives star RANGES, not points.
 	# Band width shrinks with knowledge and with the scout's skill; working an
@@ -1483,7 +1476,7 @@ func _generate_report(uid: String, scout_name: String, final: bool = true) -> vo
 	var band := 0.0
 	if not final:
 		band = (0.5 + (100.0 - know) / 100.0 * 1.3 + float(20 - ja) * 0.04) / fam
-		verdict = "PRELIMINARY (%d%% scouted) — the bands below narrow as the watch continues. %s" % [int(know), verdict]
+		verdict = I18n.t("PRELIMINARY (%d%% scouted) — the bands below narrow as the watch continues. %s") % [int(know), verdict]
 
 	reports[uid] = {
 		"uid": uid, "date": GameState.current_date, "scout": scout_name,
@@ -1518,11 +1511,11 @@ func _maybe_recommend(uid: String, scout_name: String) -> void:
 			return
 	var note: String
 	if ab >= 4.0:
-		note = "%s: \"A genuine difference-maker — take this to the board.\"" % scout_name
+		note = I18n.t("%s: \"A genuine difference-maker — take this to the board.\"") % scout_name
 	elif ab >= 3.0:
-		note = "%s: \"Would improve our first team today.\"" % scout_name
+		note = I18n.t("%s: \"Would improve our first team today.\"") % scout_name
 	else:
-		note = "%s: \"One for the future — the ceiling is %s.\"" % [scout_name, _star_txt(pot)]
+		note = I18n.t("%s: \"One for the future — the ceiling is %s.\"") % [scout_name, _star_txt(pot)]
 	recs.push_front({
 		"id": _next_id, "uid": uid, "scout": scout_name, "date": GameState.current_date,
 		"ability": ab, "potential": pot, "note": note, "status": "new",
@@ -1531,8 +1524,8 @@ func _maybe_recommend(uid: String, scout_name: String) -> void:
 	if recs.size() > 30:
 		recs.resize(30)
 	GameState.add_inbox_message(GameState.current_date,
-		"Scout recommendation: %s (%s / %s)" % [String(r["name"]), _star_txt(ab), _star_txt(pot)],
-		"%s Review the recommendation queue in Transfers > Recruitment — shortlist them or pass." % note)
+		I18n.t("Scout recommendation: %s (%s / %s)") % [String(r["name"]), _star_txt(ab), _star_txt(pot)],
+		I18n.t("%s Review the recommendation queue in Transfers > Recruitment — shortlist them or pass.") % note)
 
 
 func _star_txt(v: float) -> String:
@@ -1558,17 +1551,17 @@ func make_offer(uid: String, pkg: Dictionary) -> String:
 	## Submit a structured permanent-transfer package to the owning club.
 	var t := find_target(uid)
 	if t.is_empty() or t["pool"] != "club":
-		return "That target cannot be bought with a transfer fee."
+		return I18n.t("That target cannot be bought with a transfer fee.")
 	if not window_open():
 		return market_locked_reason()
 	if not offer_for_target(uid).is_empty():
-		return "There is already an active offer for this target."
+		return I18n.t("There is already an active offer for this target.")
 	var err := _validate_package(pkg)
 	if err != "":
 		return err
 	var o := _new_offer(uid, t, "buy")
 	o["package"] = _norm_package(pkg)
-	o["log"].append(_log_line("Offered %s to %s." % [describe_package(o["package"]), club_of(t["club_id"])["name"]]))
+	o["log"].append(_log_line(I18n.t("Offered %s to %s.") % [describe_package(o["package"]), club_of(t["club_id"])["name"]]))
 	offers_out.append(o)
 	if is_deadline_day():
 		_respond_now(o)
@@ -1580,20 +1573,20 @@ func make_offer(uid: String, pkg: Dictionary) -> String:
 func make_loan_offer(uid: String, wage_split: int, option_fee: int) -> String:
 	var t := find_target(uid)
 	if t.is_empty() or t["pool"] != "club":
-		return "That target cannot be taken on loan."
+		return I18n.t("That target cannot be taken on loan.")
 	if is_ext_club(String(t["club_id"])):
-		return "Overseas clubs will not loan battlers abroad — only a permanent transfer can bring them over."
+		return I18n.t("Overseas clubs will not loan battlers abroad — only a permanent transfer can bring them over.")
 	if not window_open():
 		return market_locked_reason()
 	if not offer_for_target(uid).is_empty():
-		return "There is already an active offer for this target."
+		return I18n.t("There is already an active offer for this target.")
 	wage_split = clampi(wage_split, 0, 100)
 	var extra_wage := int(round(float(t["inst"]["contract"]["salary"]) * float(wage_split) / 100.0))
 	if extra_wage > wage_room():
-		return "Covering %d%% of their wages breaks our wage budget (room: %s/wk)." % [wage_split, fmt_money(wage_room())]
+		return I18n.t("Covering %d%% of their wages breaks our wage budget (room: %s/wk).") % [wage_split, fmt_money(wage_room())]
 	var o := _new_offer(uid, t, "loan")
 	o["loan_terms"] = {"wage_split": wage_split, "option_fee": maxi(0, option_fee)}
-	o["log"].append(_log_line("Loan proposed to %s — %s." % [club_of(t["club_id"])["short"], describe_loan(o["loan_terms"])]))
+	o["log"].append(_log_line(I18n.t("Loan proposed to %s — %s.") % [club_of(t["club_id"])["short"], describe_loan(o["loan_terms"])]))
 	offers_out.append(o)
 	if is_deadline_day():
 		_respond_now(o)
@@ -1621,11 +1614,11 @@ func _validate_package(pkg: Dictionary) -> String:
 	var pc: Dictionary = GameState.player_club()
 	var up := int(pkg.get("upfront", 0))
 	if up > spendable_budget():
-		return "Up-front fee exceeds our transfer budget (%s released by the board)." % fmt_money(spendable_budget())
+		return I18n.t("Up-front fee exceeds our transfer budget (%s released by the board).") % fmt_money(spendable_budget())
 	if package_total(pkg) < 1000 and int(pkg.get("sell_on", 0)) <= 0:
-		return "Offer something — minimum package is %s." % fmt_money(1000)
+		return I18n.t("Offer something — minimum package is %s.") % fmt_money(1000)
 	if int(pkg.get("sell_on", 0)) < 0 or int(pkg.get("sell_on", 0)) > 50:
-		return "Sell-on clause must be between 0%% and 50%%."
+		return I18n.t("Sell-on clause must be between 0%% and 50%%.")
 	return ""
 
 
@@ -1641,7 +1634,7 @@ func _norm_package(pkg: Dictionary) -> Dictionary:
 func revise_offer(offer_id: int, pkg: Dictionary) -> String:
 	var o := _offer_out(offer_id)
 	if o.is_empty() or o["stage"] != "countered" or o["kind"] != "buy":
-		return "This offer is not awaiting a revised package."
+		return I18n.t("This offer is not awaiting a revised package.")
 	if not window_open():
 		return market_locked_reason()
 	var err := _validate_package(pkg)
@@ -1649,15 +1642,15 @@ func revise_offer(offer_id: int, pkg: Dictionary) -> String:
 		return err
 	var t := find_target(String(o["uid"]))
 	if t.is_empty():
-		return "Target no longer available."
+		return I18n.t("Target no longer available.")
 	var seller: Dictionary = club_of(String(o["club_id"]))
 	var new_pkg := _norm_package(pkg)
 	if package_value(new_pkg, t["inst"], seller) <= package_value(o["package"], t["inst"], seller):
-		return "The revised package must improve on the last one (in their eyes)."
+		return I18n.t("The revised package must improve on the last one (in their eyes).")
 	o["package"] = new_pkg
 	o["stage"] = "bid_pending"
 	o["respond_on"] = Season.date_add(GameState.current_date, _response_delay(int(o["id"])))
-	o["log"].append(_log_line("Revised package: %s." % describe_package(new_pkg)))
+	o["log"].append(_log_line(I18n.t("Revised package: %s.") % describe_package(new_pkg)))
 	if is_deadline_day():
 		_respond_now(o)
 	save_state()
@@ -1668,20 +1661,20 @@ func revise_offer(offer_id: int, pkg: Dictionary) -> String:
 func revise_loan(offer_id: int, wage_split: int, option_fee: int) -> String:
 	var o := _offer_out(offer_id)
 	if o.is_empty() or o["stage"] != "countered" or o["kind"] != "loan":
-		return "This loan offer is not awaiting revised terms."
+		return I18n.t("This loan offer is not awaiting revised terms.")
 	if not window_open():
 		return market_locked_reason()
 	var t := find_target(String(o["uid"]))
 	if t.is_empty():
-		return "Target no longer available."
+		return I18n.t("Target no longer available.")
 	wage_split = clampi(wage_split, 0, 100)
 	var extra_wage := int(round(float(t["inst"]["contract"]["salary"]) * float(wage_split) / 100.0))
 	if extra_wage > wage_room():
-		return "Covering %d%% of their wages breaks our wage budget." % wage_split
+		return I18n.t("Covering %d%% of their wages breaks our wage budget.") % wage_split
 	o["loan_terms"] = {"wage_split": wage_split, "option_fee": maxi(0, option_fee)}
 	o["stage"] = "bid_pending"
 	o["respond_on"] = Season.date_add(GameState.current_date, mini(1, _response_delay(int(o["id"]))))
-	o["log"].append(_log_line("Revised loan terms: %s." % describe_loan(o["loan_terms"])))
+	o["log"].append(_log_line(I18n.t("Revised loan terms: %s.") % describe_loan(o["loan_terms"])))
 	if is_deadline_day():
 		_respond_now(o)
 	save_state()
@@ -1693,24 +1686,24 @@ func accept_package(offer_id: int, which: String = "ask") -> String:
 	## Accept the seller's counter-proposal ("ask") or their structured alternative ("alt").
 	var o := _offer_out(offer_id)
 	if o.is_empty() or o["stage"] != "countered":
-		return "Nothing to accept."
+		return I18n.t("Nothing to accept.")
 	if not window_open():
 		return market_locked_reason()
 	if o["kind"] == "loan":
 		if o["loan_ask"].is_empty():
-			return "No loan terms on the table."
+			return I18n.t("No loan terms on the table.")
 		var t2 := find_target(String(o["uid"]))
 		if t2.is_empty():
-			return "Target no longer available."
+			return I18n.t("Target no longer available.")
 		var split := int(o["loan_ask"].get("wage_split", 100))
 		var extra_wage := int(round(float(t2["inst"]["contract"]["salary"]) * float(split) / 100.0))
 		if extra_wage > wage_room():
-			return "Their demanded wage cover breaks our wage budget."
+			return I18n.t("Their demanded wage cover breaks our wage budget.")
 		o["loan_terms"] = o["loan_ask"].duplicate()
 		o["binding"] = true
 		o["stage"] = "bid_pending"
 		o["respond_on"] = Season.date_add(GameState.current_date, mini(1, _response_delay(int(o["id"]))))
-		o["log"].append(_log_line("We accepted their loan terms: %s." % describe_loan(o["loan_terms"])))
+		o["log"].append(_log_line(I18n.t("We accepted their loan terms: %s.") % describe_loan(o["loan_terms"])))
 		if is_deadline_day():
 			_respond_now(o)
 		save_state()
@@ -1718,14 +1711,14 @@ func accept_package(offer_id: int, which: String = "ask") -> String:
 		return ""
 	var pkg: Dictionary = o["alt_package"] if which == "alt" else o["ask_package"]
 	if pkg.is_empty():
-		return "That proposal is not on the table."
+		return I18n.t("That proposal is not on the table.")
 	if int(pkg.get("upfront", 0)) > spendable_budget():
-		return "Our transfer budget cannot cover the up-front part of that package (%s)." % fmt_money(int(pkg.get("upfront", 0)))
+		return I18n.t("Our transfer budget cannot cover the up-front part of that package (%s).") % fmt_money(int(pkg.get("upfront", 0)))
 	o["package"] = pkg.duplicate()
 	o["binding"] = true
 	o["stage"] = "bid_pending"
 	o["respond_on"] = Season.date_add(GameState.current_date, mini(1, _response_delay(int(o["id"]))))
-	o["log"].append(_log_line("We accepted their proposal: %s." % describe_package(pkg)))
+	o["log"].append(_log_line(I18n.t("We accepted their proposal: %s.") % describe_package(pkg)))
 	if is_deadline_day():
 		_respond_now(o)
 	save_state()
@@ -1737,25 +1730,25 @@ func offer_contract(offer_id: int, con: Dictionary) -> String:
 	## Personal terms: wage + years + signing bonus + squad status.
 	var o := _offer_out(offer_id)
 	if o.is_empty() or not (o["stage"] in ["fee_agreed", "wage_countered"]):
-		return "Contract talks are not open on this deal."
+		return I18n.t("Contract talks are not open on this deal.")
 	if String(o["kind"]) in ["buy", "prospect"] and not window_open():
 		return market_locked_reason()
 	var wage := int(con.get("wage", 0))
 	var bonus := int(con.get("bonus", 0))
 	if wage > wage_room():
-		return "That wage breaks our wage budget (room: %s/wk)." % fmt_money(wage_room())
+		return I18n.t("That wage breaks our wage budget (room: %s/wk).") % fmt_money(wage_room())
 	var cash_needed := bonus + int(o["package"].get("upfront", 0))
 	if cash_needed > spendable_budget():
-		return "Signing bonus plus the up-front fee exceeds our transfer budget (%s)." % fmt_money(spendable_budget())
+		return I18n.t("Signing bonus plus the up-front fee exceeds our transfer budget (%s).") % fmt_money(spendable_budget())
 	if wage < 50:
-		return "Offer a serious wage."
+		return I18n.t("Offer a serious wage.")
 	o["contract"] = {
 		"wage": wage, "years": clampi(int(con.get("years", 3)), 1, 4),
-		"bonus": maxi(0, bonus), "status": String(con.get("status", "First team")),
+		"bonus": maxi(0, bonus), "status": String(con.get("status", I18n.t("First team"))),
 	}
 	o["stage"] = "wage_pending"
 	o["respond_on"] = Season.date_add(GameState.current_date, mini(1, _response_delay(int(o["id"]))))
-	o["log"].append(_log_line("Contract offered: %s." % describe_contract(o["contract"])))
+	o["log"].append(_log_line(I18n.t("Contract offered: %s.") % describe_contract(o["contract"])))
 	if is_deadline_day():
 		_respond_now(o)
 	save_state()
@@ -1768,7 +1761,7 @@ func withdraw_offer(offer_id: int) -> void:
 	if o.is_empty():
 		return
 	o["stage"] = "withdrawn"
-	o["log"].append(_log_line("Offer withdrawn."))
+	o["log"].append(_log_line(I18n.t("Offer withdrawn.")))
 	save_state()
 	market_updated.emit()
 
@@ -1777,32 +1770,32 @@ func sign_free_agent(uid: String, con: Dictionary) -> String:
 	## Free agents / prospects sign on a contract alone (prospects carry a comp fee).
 	var t := find_target(uid)
 	if t.is_empty() or not (t["pool"] in ["fa", "prospect"]):
-		return "Not a free agent."
+		return I18n.t("Not a free agent.")
 	if t["pool"] == "prospect" and not window_open():
-		return "Prospect signings carry a development fee — window business only. " + market_locked_reason()
+		return I18n.t("Prospect signings carry a development fee — window business only. ") + market_locked_reason()
 	if not offer_for_target(uid).is_empty():
-		return "There is already an active offer for this target."
+		return I18n.t("There is already an active offer for this target.")
 	var fee := 0
 	if t["pool"] == "prospect":
 		fee = int(round(value_of(t["inst"]) * 0.35 / 1000.0)) * 1000
 	var wage := int(con.get("wage", 0))
 	var bonus := maxi(0, int(con.get("bonus", 0)))
 	if fee + bonus > spendable_budget():
-		return "Compensation plus signing bonus (%s) exceeds our transfer budget (%s)." % [
+		return I18n.t("Compensation plus signing bonus (%s) exceeds our transfer budget (%s).") % [
 			fmt_money(fee + bonus), fmt_money(spendable_budget())]
 	if wage > wage_room():
-		return "That wage breaks our wage budget (room: %s/wk)." % fmt_money(wage_room())
+		return I18n.t("That wage breaks our wage budget (room: %s/wk).") % fmt_money(wage_room())
 	if wage < 50:
-		return "Offer a serious wage."
+		return I18n.t("Offer a serious wage.")
 	var o := _new_offer(uid, t, "prospect" if t["pool"] == "prospect" else "fa")
 	o["package"] = blank_package(fee)
 	o["contract"] = {
 		"wage": wage, "years": clampi(int(con.get("years", 3)), 1, 4),
-		"bonus": bonus, "status": String(con.get("status", "First team")),
+		"bonus": bonus, "status": String(con.get("status", I18n.t("First team"))),
 	}
 	o["stage"] = "wage_pending"
-	o["log"].append(_log_line("Contract offered: %s%s." % [describe_contract(o["contract"]),
-		(" (plus %s development compensation)" % fmt_money(fee)) if fee > 0 else ""]))
+	o["log"].append(_log_line(I18n.t("Contract offered: %s%s.") % [describe_contract(o["contract"]),
+		(I18n.t(" (plus %s development compensation)") % fmt_money(fee)) if fee > 0 else ""]))
 	offers_out.append(o)
 	if is_deadline_day():
 		_respond_now(o)
@@ -1827,9 +1820,9 @@ func _tick_offers_out(rng: RandomNumberGenerator) -> void:
 		var t := find_target(o["uid"])
 		if t.is_empty() or (o["kind"] in ["buy", "loan"] and t["club_id"] != o["club_id"]):
 			o["stage"] = "collapsed"
-			o["log"].append(_log_line("Deal collapsed — the target is no longer available."))
-			GameState.add_inbox_message(GameState.current_date, "Deal collapsed: %s" % o["name"],
-				"Our move for %s is off — they are no longer available." % o["name"])
+			o["log"].append(_log_line(I18n.t("Deal collapsed — the target is no longer available.")))
+			GameState.add_inbox_message(GameState.current_date, I18n.t("Deal collapsed: %s") % o["name"],
+				I18n.t("Our move for %s is off — they are no longer available.") % o["name"])
 			continue
 		match String(o["stage"]):
 			"bid_pending":
@@ -1848,9 +1841,9 @@ func _respond_to_package(o: Dictionary, t: Dictionary, rng: RandomNumberGenerato
 	# Won't sell below a working squad.
 	if seller["squad"].size() <= 7:
 		o["stage"] = "rejected"
-		o["log"].append(_log_line("%s reject the offer — their squad is too thin to sell." % seller["short"]))
-		GameState.add_inbox_message(GameState.current_date, "Offer rejected: %s" % o["name"],
-			"%s will not sell %s at any price right now — their squad is too small." % [seller["name"], o["name"]])
+		o["log"].append(_log_line(I18n.t("%s reject the offer — their squad is too thin to sell.") % seller["short"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Offer rejected: %s") % o["name"],
+			I18n.t("%s will not sell %s at any price right now — their squad is too small.") % [seller["name"], o["name"]])
 		return
 	var rep_factor := 1.0 + float(int(seller["reputation"]) - int(pc["reputation"])) * 0.015
 	var mood := 0.97 + rng.randf() * 0.15 - float(int(o["rounds"])) * 0.03
@@ -1869,27 +1862,27 @@ func _respond_to_package(o: Dictionary, t: Dictionary, rng: RandomNumberGenerato
 		o["stage"] = "fee_agreed"
 		var demand := int(round(float(inst["contract"]["salary"]) * (1.15 + rng.randf() * 0.35) / 10.0)) * 10
 		o["contract_demand"] = _make_contract_demand(inst, demand)
-		o["log"].append(_log_line("%s accept the package (%s). Wage demand: %s/wk." % [
+		o["log"].append(_log_line(I18n.t("%s accept the package (%s). Wage demand: %s/wk.") % [
 			seller["short"], describe_package(o["package"]), fmt_money(demand)]))
-		GameState.add_inbox_message(GameState.current_date, "Package agreed: %s (%s)" % [o["name"], describe_package(o["package"])],
-			"%s have accepted our package for %s — %s. Agree personal terms in the Transfer Centre — they want around %s/wk." % [
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Package agreed: %s (%s)") % [o["name"], describe_package(o["package"])],
+			I18n.t("%s have accepted our package for %s — %s. Agree personal terms in the Transfer Centre — they want around %s/wk.") % [
 				seller["name"], o["name"], describe_package(o["package"]), fmt_money(demand)])
 	elif pv >= int(float(threshold) * 0.68) and int(o["rounds"]) <= 3:
 		_build_counter_packages(o, inst, seller, threshold, pv)
 		o["stage"] = "countered"
-		var firm := " This is their final position." if int(o["rounds"]) >= 3 else ""
-		var rival_txt := "" if rv.is_empty() else " They point to %s's rival bid (~%s)." % [String(rv["club"]), fmt_money(int(rv["value"]))]
-		var alt_txt := "" if o["alt_package"].is_empty() else " — or, structured: %s" % describe_package(o["alt_package"])
-		o["log"].append(_log_line("%s counter: %s%s.%s%s" % [seller["short"], describe_package(o["ask_package"]), alt_txt, firm, rival_txt]))
-		GameState.add_inbox_message(GameState.current_date, "Counter offer: %s want more for %s" % [seller["short"], o["name"]],
-			"%s rejected our package (%s) for %s. They propose: %s.%s%s%s" % [
+		var firm := I18n.t(" This is their final position.") if int(o["rounds"]) >= 3 else ""
+		var rival_txt := "" if rv.is_empty() else I18n.t(" They point to %s's rival bid (~%s).") % [String(rv["club"]), fmt_money(int(rv["value"]))]
+		var alt_txt := "" if o["alt_package"].is_empty() else I18n.t(" — or, structured: %s") % describe_package(o["alt_package"])
+		o["log"].append(_log_line(I18n.t("%s counter: %s%s.%s%s") % [seller["short"], describe_package(o["ask_package"]), alt_txt, firm, rival_txt]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Counter offer: %s want more for %s") % [seller["short"], o["name"]],
+			I18n.t("%s rejected our package (%s) for %s. They propose: %s.%s%s%s") % [
 				seller["name"], describe_package(o["package"]), o["name"], describe_package(o["ask_package"]),
-				("" if o["alt_package"].is_empty() else " Alternatively they would take %s." % describe_package(o["alt_package"])), firm, rival_txt])
+				("" if o["alt_package"].is_empty() else I18n.t(" Alternatively they would take %s.") % describe_package(o["alt_package"])), firm, rival_txt])
 	else:
 		o["stage"] = "rejected"
-		o["log"].append(_log_line("%s reject the offer outright." % seller["short"]))
-		GameState.add_inbox_message(GameState.current_date, "Offer rejected: %s" % o["name"],
-			"%s consider our package (%s) for %s derisory and have ended talks." % [
+		o["log"].append(_log_line(I18n.t("%s reject the offer outright.") % seller["short"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Offer rejected: %s") % o["name"],
+			I18n.t("%s consider our package (%s) for %s derisory and have ended talks.") % [
 				seller["name"], describe_package(o["package"]), o["name"]])
 
 
@@ -1933,9 +1926,9 @@ func _respond_to_loan(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) 
 	var imp := importance_of(inst, seller)
 	if imp >= 1.5 or seller["squad"].size() <= 8:
 		o["stage"] = "rejected"
-		o["log"].append(_log_line("%s refuse to loan out a key battler." % seller["short"]))
-		GameState.add_inbox_message(GameState.current_date, "Loan refused: %s" % o["name"],
-			"%s will not loan %s — they are central to their plans." % [seller["name"], o["name"]])
+		o["log"].append(_log_line(I18n.t("%s refuse to loan out a key battler.") % seller["short"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Loan refused: %s") % o["name"],
+			I18n.t("%s will not loan %s — they are central to their plans.") % [seller["name"], o["name"]])
 		return
 	var req_split := 100 if imp >= 1.3 else (80 if imp >= 1.15 else 50 + (rng.randi() % 3) * 10)
 	var ask := ask_price(inst, o["club_id"])
@@ -1951,21 +1944,21 @@ func _respond_to_loan(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) 
 	elif int(o["rounds"]) <= 3:
 		o["loan_ask"] = {"wage_split": req_split, "option_fee": req_opt}
 		o["stage"] = "countered"
-		o["log"].append(_log_line("%s counter on the loan: %s." % [seller["short"], describe_loan(o["loan_ask"])]))
-		GameState.add_inbox_message(GameState.current_date, "Loan counter: %s" % o["name"],
-			"%s would loan %s only on these terms — %s. Respond in the Transfer Centre." % [
+		o["log"].append(_log_line(I18n.t("%s counter on the loan: %s.") % [seller["short"], describe_loan(o["loan_ask"])]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Loan counter: %s") % o["name"],
+			I18n.t("%s would loan %s only on these terms — %s. Respond in the Transfer Centre.") % [
 				seller["name"], o["name"], describe_loan(o["loan_ask"])])
 	else:
 		o["stage"] = "rejected"
-		o["log"].append(_log_line("%s end the loan talks." % seller["short"]))
-		GameState.add_inbox_message(GameState.current_date, "Loan talks over: %s" % o["name"],
-			"%s have ended loan negotiations for %s." % [seller["name"], o["name"]])
+		o["log"].append(_log_line(I18n.t("%s end the loan talks.") % seller["short"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Loan talks over: %s") % o["name"],
+			I18n.t("%s have ended loan negotiations for %s.") % [seller["name"], o["name"]])
 
 
 func _make_contract_demand(inst: Dictionary, wage_demand: int) -> Dictionary:
 	var age_y := float(inst["age_months"]) / 12.0
 	var pref_years := 2 if age_y > 8.0 else (4 if age_y < 3.0 else 3)
-	var pref_status := "First team" if age_y >= 2.5 else "Development"
+	var pref_status := I18n.t("First team") if age_y >= 2.5 else "Development"
 	return {"wage": wage_demand, "years": pref_years, "status": pref_status}
 
 
@@ -1984,26 +1977,26 @@ func _respond_to_contract(o: Dictionary, t: Dictionary, rng: RandomNumberGenerat
 		o["rounds"] = int(o["rounds"]) + 1
 		o["stage"] = "wage_countered"
 		var alt := _contract_alternative(o["contract_demand"], inst)
-		o["log"].append(_log_line("%s wants %s/wk — or would take %s." % [
+		o["log"].append(_log_line(I18n.t("%s wants %s/wk — or would take %s.") % [
 			o["name"], fmt_money(demand_wage), describe_contract(alt)]))
-		GameState.add_inbox_message(GameState.current_date, "Contract talks: %s wants %s/wk" % [o["name"], fmt_money(demand_wage)],
-			"%s turned down our terms (%s). They want %s/wk as offered — or would accept a structured deal: %s. Respond in the Transfer Centre." % [
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Contract talks: %s wants %s/wk") % [o["name"], fmt_money(demand_wage)],
+			I18n.t("%s turned down our terms (%s). They want %s/wk as offered — or would accept a structured deal: %s. Respond in the Transfer Centre.") % [
 				o["name"], describe_contract(o["contract"]), fmt_money(demand_wage), describe_contract(alt)])
 	else:
 		o["stage"] = "collapsed"
-		o["log"].append(_log_line("%s walks away from contract talks." % o["name"]))
-		GameState.add_inbox_message(GameState.current_date, "Talks collapse: %s" % o["name"],
-			"%s has broken off contract negotiations after repeated low offers." % o["name"])
+		o["log"].append(_log_line(I18n.t("%s walks away from contract talks.") % o["name"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Talks collapse: %s") % o["name"],
+			I18n.t("%s has broken off contract negotiations after repeated low offers.") % o["name"])
 
 
 func _contract_alternative(demand: Dictionary, inst: Dictionary) -> Dictionary:
 	## A cheaper-wage package the player would also sign: longer deal + Star
 	## status trades directly against weekly money.
 	var years := clampi(int(demand.get("years", 3)) + 1, 1, 4)
-	var probe := {"wage": 100, "years": years, "bonus": 0, "status": "Star battler"}
+	var probe := {"wage": 100, "years": years, "bonus": 0, "status": I18n.t("Star battler")}
 	var mult := contract_appeal(probe, inst) / 100.0
 	var wage := int(ceil(float(int(demand["wage"])) * 0.97 / mult / 10.0)) * 10
-	return {"wage": wage, "years": years, "bonus": 0, "status": "Star battler"}
+	return {"wage": wage, "years": years, "bonus": 0, "status": I18n.t("Star battler")}
 
 
 func loan_until() -> String:
@@ -2028,7 +2021,7 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 		var extra_wage := int(round(float(inst["contract"]["salary"]) * float(split) / 100.0))
 		if extra_wage > wage_room():
 			o["stage"] = "collapsed"
-			o["log"].append(_log_line("Loan collapsed — wage budget no longer covers our share."))
+			o["log"].append(_log_line(I18n.t("Loan collapsed — wage budget no longer covers our share.")))
 			return
 		var owner: Dictionary = GameState.club(o["club_id"])
 		owner["squad"].erase(inst)
@@ -2038,19 +2031,19 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 		knowledge[inst["uid"]] = 100.0
 		shortlist.erase(String(inst["uid"]))
 		o["stage"] = "completed"
-		o["log"].append(_log_line("Loan agreed. %s joins %s until %s." % [o["name"], pc["short"], Season.pretty_date(inst["loan"]["until"])]))
+		o["log"].append(_log_line(I18n.t("Loan agreed. %s joins %s until %s.") % [o["name"], pc["short"], I18n.pretty_date(inst["loan"]["until"])]))
 		_log_deal(o["name"], owner["name"], pc["name"], 0, extra_wage, "loan", describe_loan(lt))
-		GameState.add_inbox_message(GameState.current_date, "Loan completed: %s" % o["name"],
-			"%s joins %s on loan from %s until %s. We cover %d%% of their %s/wk wages%s." % [
-				o["name"], pc["name"], owner["name"], Season.pretty_date(inst["loan"]["until"]), split,
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Loan completed: %s") % o["name"],
+			I18n.t("%s joins %s on loan from %s until %s. We cover %d%% of their %s/wk wages%s.") % [
+				o["name"], pc["name"], owner["name"], I18n.pretty_date(inst["loan"]["until"]), split,
 				fmt_money(int(inst["contract"]["salary"])),
-				(", with an option to buy for %s" % fmt_money(int(lt.get("option_fee", 0)))) if int(lt.get("option_fee", 0)) > 0 else ""])
+				(I18n.t(", with an option to buy for %s") % fmt_money(int(lt.get("option_fee", 0)))) if int(lt.get("option_fee", 0)) > 0 else ""])
 		GameState.save_game()
 		return
 
 	if upfront + bonus > spendable_budget() or int(con.get("wage", 0)) > wage_room():
 		o["stage"] = "collapsed"
-		o["log"].append(_log_line("Deal collapsed — the transfer or wage budget no longer covers the terms."))
+		o["log"].append(_log_line(I18n.t("Deal collapsed — the transfer or wage budget no longer covers the terms.")))
 		return
 
 	# Move the instance to our squad.
@@ -2081,22 +2074,22 @@ func _complete_incoming_signing(o: Dictionary, t: Dictionary) -> void:
 	inst.erase("scouted_pct")
 	inst["contract"]["salary"] = int(con.get("wage", 0))
 	inst["contract"]["expiry"] = "%d-06-30" % (int(GameState.current_date.substr(0, 4)) + clampi(int(con.get("years", 3)), 1, 4))
-	inst["squad_status"] = String(con.get("status", "First team"))
+	inst["squad_status"] = String(con.get("status", I18n.t("First team")))
 	pc["squad"].append(inst)
 	pc["finances"]["balance"] = int(pc["finances"]["balance"]) - upfront - bonus
 	_adjust_player_budget(-(upfront + bonus))
 	knowledge[inst["uid"]] = 100.0
 	shortlist.erase(String(inst["uid"]))
 	o["stage"] = "completed"
-	o["log"].append(_log_line("Deal done. %s joins %s." % [o["name"], pc["short"]]))
+	o["log"].append(_log_line(I18n.t("Deal done. %s joins %s.") % [o["name"], pc["short"]]))
 	var from_name: String = "Free agency" if o["club_id"] == "" else String(club_of(o["club_id"])["name"])
 	var terms := describe_package(pkg) + " · " + describe_contract(con)
 	_log_deal(o["name"], from_name, pc["name"], package_total(pkg), int(con.get("wage", 0)),
 		"buy" if o["kind"] == "buy" else "fa_in", terms)
-	GameState.add_inbox_message(GameState.current_date, "Signing completed: %s" % o["name"],
-		"%s joins %s from %s. Deal: %s. Contract: %s (until %s)." % [
+	GameState.add_inbox_message(GameState.current_date, I18n.t("Signing completed: %s") % o["name"],
+		I18n.t("%s joins %s from %s. Deal: %s. Contract: %s (until %s).") % [
 			o["name"], pc["name"], from_name, describe_package(pkg),
-			describe_contract(con), inst["contract"]["expiry"]])
+			describe_contract(con), I18n.pretty_date(str(inst["contract"]["expiry"]))])
 	GameState.save_game()
 
 
@@ -2133,8 +2126,8 @@ func _pay_sell_on(inst: Dictionary, fee: int, seller: Dictionary) -> void:
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) + cut
 			_adjust_player_budget(cut)
 			GameState.add_inbox_message(GameState.current_date,
-				"Sell-on clause pays out: %s (%s)" % [display_name(inst), fmt_money(cut)],
-				"Our %d%% sell-on clause on %s has paid out %s from their %s move." % [
+				I18n.t("Sell-on clause pays out: %s (%s)") % [display_name(inst), fmt_money(cut)],
+				I18n.t("Our %d%% sell-on clause on %s has paid out %s from their %s move.") % [
 					int(so.get("pct", 0)), display_name(inst), fmt_money(cut), fmt_money(fee)])
 		else:
 			var owner: Dictionary = club_of(owner_id)
@@ -2155,9 +2148,9 @@ func exercise_loan_option(uid: String) -> String:
 		if inst["uid"] == uid and inst.has("loan"):
 			var fee := int(inst["loan"].get("option_fee", 0))
 			if fee <= 0:
-				return "No option to buy in this loan."
+				return I18n.t("No option to buy in this loan.")
 			if fee > spendable_budget():
-				return "Our transfer budget cannot cover the option fee (%s)." % fmt_money(fee)
+				return I18n.t("Our transfer budget cannot cover the option fee (%s).") % fmt_money(fee)
 			var owner_id := String(inst["loan"]["owner"])
 			var owner: Dictionary = GameState.club(owner_id)
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - fee
@@ -2166,15 +2159,15 @@ func exercise_loan_option(uid: String) -> String:
 			inst.erase("loan")
 			inst["contract"]["expiry"] = "%d-06-30" % (int(GameState.current_date.substr(0, 4)) + 2)
 			_log_deal(display_name(inst), owner["name"], pc["name"], fee,
-				int(inst["contract"]["salary"]), "buy", "Loan option exercised")
-			GameState.add_inbox_message(GameState.current_date, "Option exercised: %s signs permanently" % display_name(inst),
-				"We have exercised the %s option to buy on %s. They join permanently from %s." % [
+				int(inst["contract"]["salary"]), "buy", I18n.t("Loan option exercised"))
+			GameState.add_inbox_message(GameState.current_date, I18n.t("Option exercised: %s signs permanently") % display_name(inst),
+				I18n.t("We have exercised the %s option to buy on %s. They join permanently from %s.") % [
 					fmt_money(fee), display_name(inst), owner["name"]])
 			GameState.save_game()
 			save_state()
 			market_updated.emit()
 			return ""
-	return "No such loanee."
+	return I18n.t("No such loanee.")
 
 
 func _tick_loans() -> void:
@@ -2189,17 +2182,17 @@ func _tick_loans() -> void:
 		elif not bool(lo.get("warned", false)) and Season.date_add(GameState.current_date, 7) >= String(lo["until"]):
 			lo["warned"] = true
 			var opt := int(lo.get("option_fee", 0))
-			GameState.add_inbox_message(GameState.current_date, "Loan ending soon: %s" % display_name(inst),
-				"%s returns to %s on %s.%s" % [display_name(inst), GameState.club(String(lo["owner"]))["name"],
-					Season.pretty_date(String(lo["until"])),
-					(" Exercise our %s option to buy in the Transfer Centre to keep them." % fmt_money(opt)) if opt > 0 else ""])
+			GameState.add_inbox_message(GameState.current_date, I18n.t("Loan ending soon: %s") % display_name(inst),
+				I18n.t("%s returns to %s on %s.%s") % [display_name(inst), GameState.club(String(lo["owner"]))["name"],
+					I18n.pretty_date(String(lo["until"])),
+					(I18n.t(" Exercise our %s option to buy in the Transfer Centre to keep them.") % fmt_money(opt)) if opt > 0 else ""])
 	for inst in returning:
 		var owner: Dictionary = GameState.club(String(inst["loan"]["owner"]))
 		pc["squad"].erase(inst)
 		inst.erase("loan")
 		owner["squad"].append(inst)
-		GameState.add_inbox_message(GameState.current_date, "Loan ended: %s returns to %s" % [display_name(inst), owner["short"]],
-			"%s's loan spell with us is over — they have returned to %s." % [display_name(inst), owner["name"]])
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Loan ended: %s returns to %s") % [display_name(inst), owner["short"]],
+			I18n.t("%s's loan spell with us is over — they have returned to %s.") % [display_name(inst), owner["name"]])
 	if not returning.is_empty():
 		GameState.save_game()
 
@@ -2216,19 +2209,19 @@ func _tick_payments() -> void:
 			_adjust_player_budget(-amount)
 			if not other.is_empty():
 				other["finances"]["balance"] = int(other["finances"]["balance"]) + amount
-			GameState.add_inbox_message(GameState.current_date, "Installment paid: %s (%s)" % [String(p["name"]), fmt_money(amount)],
-				"A scheduled transfer installment of %s for %s has been paid%s." % [
+			GameState.add_inbox_message(GameState.current_date, I18n.t("Installment paid: %s (%s)") % [String(p["name"]), fmt_money(amount)],
+				I18n.t("A scheduled transfer installment of %s for %s has been paid%s.") % [
 					fmt_money(amount), String(p["name"]),
-					(" to %s" % other["name"]) if not other.is_empty() else ""])
+					(I18n.t(" to %s") % other["name"]) if not other.is_empty() else ""])
 		else:
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) + amount
 			_adjust_player_budget(amount)
 			if not other.is_empty():
 				other["finances"]["balance"] = int(other["finances"]["balance"]) - amount
-			GameState.add_inbox_message(GameState.current_date, "Installment received: %s (%s)" % [String(p["name"]), fmt_money(amount)],
-				"A scheduled transfer installment of %s for %s has arrived%s." % [
+			GameState.add_inbox_message(GameState.current_date, I18n.t("Installment received: %s (%s)") % [String(p["name"]), fmt_money(amount)],
+				I18n.t("A scheduled transfer installment of %s for %s has arrived%s.") % [
 					fmt_money(amount), String(p["name"]),
-					(" from %s" % other["name"]) if not other.is_empty() else ""])
+					(I18n.t(" from %s") % other["name"]) if not other.is_empty() else ""])
 	if not due.is_empty():
 		GameState.save_game()
 
@@ -2279,13 +2272,13 @@ func _spawn_rival(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) -> v
 	if decide > close:
 		decide = close
 	o["rival"] = {"club_id": String(rc["id"]), "club": String(rc["short"]), "value": rv_val, "decides_on": decide}
-	o["log"].append(_log_line("RIVAL BID — %s enter the race with a package worth ~%s. %s decide by %s." % [
-		rc["short"], fmt_money(rv_val), seller["short"], Season.pretty_date(decide)]))
+	o["log"].append(_log_line(I18n.t("RIVAL BID — %s enter the race with a package worth ~%s. %s decide by %s.") % [
+		rc["short"], fmt_money(rv_val), seller["short"], I18n.pretty_date(decide)]))
 	GameState.add_inbox_message(GameState.current_date,
-		"Rival bid: %s move for %s" % [rc["short"], o["name"]],
-		"%s have tabled a rival package worth around %s for %s while we negotiate. %s will pick a buyer by %s — improve our offer above theirs or risk losing the deal.%s" % [
-			rc["name"], fmt_money(rv_val), o["name"], seller["name"], Season.pretty_date(decide),
-			" It is deadline week — expect them to move FAST." if days_to_deadline() <= 7 else ""])
+		I18n.t("Rival bid: %s move for %s") % [rc["short"], o["name"]],
+		I18n.t("%s have tabled a rival package worth around %s for %s while we negotiate. %s will pick a buyer by %s — improve our offer above theirs or risk losing the deal.%s") % [
+			rc["name"], fmt_money(rv_val), o["name"], seller["name"], I18n.pretty_date(decide),
+			I18n.t(" It is deadline week — expect them to move FAST.") if days_to_deadline() <= 7 else ""])
 
 
 func _resolve_rival(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) -> void:
@@ -2299,17 +2292,17 @@ func _resolve_rival(o: Dictionary, t: Dictionary, rng: RandomNumberGenerator) ->
 	var rv_val := int(rv["value"])
 	if float(our_pv) * edge >= float(rv_val) or int(rival_club["finances"]["balance"]) < rv_val:
 		o["rival"] = {}
-		o["log"].append(_log_line("%s pull out of the race — our package is the stronger one." % rv["club"]))
-		GameState.add_inbox_message(GameState.current_date, "Rival seen off: %s" % o["name"],
-			"%s have withdrawn their interest in %s. Our package (worth %s to %s) beat their %s." % [
+		o["log"].append(_log_line(I18n.t("%s pull out of the race — our package is the stronger one.") % rv["club"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Rival seen off: %s") % o["name"],
+			I18n.t("%s have withdrawn their interest in %s. Our package (worth %s to %s) beat their %s.") % [
 				rival_club["name"], o["name"], fmt_money(our_pv), seller["short"], fmt_money(rv_val)])
 	elif rv_val > int(float(our_pv) * 1.2) or rng.randf() < 0.75:
 		_hijack_deal(o, t, rv)
 	else:
 		o["rival"] = {}
-		o["log"].append(_log_line("%s hesitate and drop out without completing their bid." % rv["club"]))
-		GameState.add_inbox_message(GameState.current_date, "Rival blinks: %s" % o["name"],
-			"%s failed to close their move for %s. We are back in the driving seat — but we were outbid; do not count on a second escape." % [
+		o["log"].append(_log_line(I18n.t("%s hesitate and drop out without completing their bid.") % rv["club"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Rival blinks: %s") % o["name"],
+			I18n.t("%s failed to close their move for %s. We are back in the driving seat — but we were outbid; do not count on a second escape.") % [
 				rival_club["name"], o["name"]])
 
 
@@ -2327,13 +2320,13 @@ func _hijack_deal(o: Dictionary, t: Dictionary, rv: Dictionary) -> void:
 	seller["finances"]["balance"] = int(seller["finances"]["balance"]) + fee
 	_pay_sell_on(inst, fee, seller)
 	_log_deal(display_name(inst), seller["name"], buyer["name"], fee,
-		int(inst["contract"]["salary"]), "ai", "%s cash (hijacked our deal)" % fmt_money(fee))
+		int(inst["contract"]["salary"]), "ai", I18n.t("%s cash (hijacked our deal)") % fmt_money(fee))
 	o["stage"] = "hijacked"
 	o["rival"] = {}
-	o["log"].append(_log_line("HIJACKED — %s complete a %s deal for %s." % [buyer["short"], fmt_money(fee), o["name"]]))
+	o["log"].append(_log_line(I18n.t("HIJACKED — %s complete a %s deal for %s.") % [buyer["short"], fmt_money(fee), o["name"]]))
 	GameState.add_inbox_message(GameState.current_date,
-		"Deal hijacked: %s sign %s" % [buyer["short"], o["name"]],
-		"%s have gazumped us. While we haggled, they met %s's demands with a %s package and %s is theirs. Rival interest only grows toward the deadline — next time, close faster or bid stronger." % [
+		I18n.t("Deal hijacked: %s sign %s") % [buyer["short"], o["name"]],
+		I18n.t("%s have gazumped us. While we haggled, they met %s's demands with a %s package and %s is theirs. Rival interest only grows toward the deadline — next time, close faster or bid stronger.") % [
 			buyer["name"], seller["name"], fmt_money(fee), o["name"]])
 	GameState.save_game()
 
@@ -2347,7 +2340,7 @@ func active_offers_in() -> Array:
 func accept_offer_in(offer_id: int) -> String:
 	var o := _offer_in(offer_id)
 	if o.is_empty() or not (o["stage"] in ["open", "agreed"]):
-		return "Offer is no longer live."
+		return I18n.t("Offer is no longer live.")
 	return _complete_sale(o)
 
 
@@ -2356,7 +2349,7 @@ func reject_offer_in(offer_id: int) -> void:
 	if o.is_empty():
 		return
 	o["stage"] = "rejected"
-	o["log"].append(_log_line("Offer rejected."))
+	o["log"].append(_log_line(I18n.t("Offer rejected.")))
 	save_state()
 	market_updated.emit()
 
@@ -2367,19 +2360,19 @@ func counter_offer_in(offer_id: int, ask: int, ask_sell_on: int = 0) -> String:
 	## they are willing to spend.
 	var o := _offer_in(offer_id)
 	if o.is_empty() or o["stage"] != "open":
-		return "Offer cannot be countered."
+		return I18n.t("Offer cannot be countered.")
 	if ask <= package_total(o["package"]):
-		return "Ask more than their current package (%s)." % fmt_money(package_total(o["package"]))
+		return I18n.t("Ask more than their current package (%s).") % fmt_money(package_total(o["package"]))
 	if ask_sell_on < 0 or ask_sell_on > 50:
-		return "Sell-on demand must be between 0% and 50%."
+		return I18n.t("Sell-on demand must be between 0% and 50%.")
 	o["ask"] = ask
 	o["ask_sell_on"] = ask_sell_on
 	o["routine"] = false   # the manager engaged — follow-ups deserve attention
 	o["stage"] = "counter_pending"
 	o["respond_on"] = Season.date_add(GameState.current_date, _response_delay(int(o["id"])))
-	var txt := "We demanded %s" % fmt_money(ask)
+	var txt := I18n.t("We demanded %s") % fmt_money(ask)
 	if ask_sell_on > 0:
-		txt += " plus a %d%% sell-on clause" % ask_sell_on
+		txt += I18n.t(" plus a %d%% sell-on clause") % ask_sell_on
 	o["log"].append(_log_line(txt + "."))
 	if is_deadline_day():
 		var rng := RandomNumberGenerator.new()
@@ -2393,13 +2386,13 @@ func counter_offer_in(offer_id: int, ask: int, ask_sell_on: int = 0) -> String:
 func _complete_sale(o: Dictionary) -> String:
 	var pc: Dictionary = GameState.player_club()
 	if pc["squad"].size() <= 6:
-		return "Cannot sell — we need at least 6 in the squad."
+		return I18n.t("Cannot sell — we need at least 6 in the squad.")
 	var t := find_target(o["uid"])
 	if t.is_empty() or t["pool"] != "mine":
-		return "That squad member is no longer ours."
+		return I18n.t("That squad member is no longer ours.")
 	var inst: Dictionary = t["inst"]
 	if inst.has("loan"):
-		return "They are on loan from another club — we cannot sell them."
+		return I18n.t("They are on loan from another club — we cannot sell them.")
 	var buyer: Dictionary = GameState.club(o["club_id"])
 	var agreed: bool = o["stage"] == "agreed" and int(o.get("ask", 0)) > 0
 	var upfront: int
@@ -2428,16 +2421,16 @@ func _complete_sale(o: Dictionary) -> String:
 		inst["sell_on"] = {"club_id": pc["id"], "pct": kept_pct}
 	var terms: String
 	if agreed:
-		terms = "%s up front" % fmt_money(upfront)
+		terms = I18n.t("%s up front") % fmt_money(upfront)
 		if kept_pct > 0:
-			terms += " + %d%% sell-on" % kept_pct
+			terms += I18n.t(" + %d%% sell-on") % kept_pct
 	else:
 		terms = describe_package(o["package"])
 	o["stage"] = "completed"
-	o["log"].append(_log_line("Sale completed — %s." % terms))
+	o["log"].append(_log_line(I18n.t("Sale completed — %s.") % terms))
 	_log_deal(display_name(inst), pc["name"], buyer["name"], total_fee, int(inst["contract"]["salary"]), "sale", terms)
-	GameState.add_inbox_message(GameState.current_date, "Sale completed: %s" % display_name(inst),
-		"%s leaves %s for %s. Deal: %s." % [display_name(inst), pc["name"], buyer["name"], terms])
+	GameState.add_inbox_message(GameState.current_date, I18n.t("Sale completed: %s") % display_name(inst),
+		I18n.t("%s leaves %s for %s. Deal: %s.") % [display_name(inst), pc["name"], buyer["name"], terms])
 	GameState.save_game()
 	save_state()
 	market_updated.emit()
@@ -2469,11 +2462,11 @@ func _respond_counter_in(o: Dictionary, rng: RandomNumberGenerator) -> void:
 	var total_cost := int(o["ask"]) + so_cost
 	if total_cost <= willing:
 		o["stage"] = "agreed"
-		var so_txt := "" if int(o.get("ask_sell_on", 0)) <= 0 else " plus a %d%% sell-on" % int(o["ask_sell_on"])
-		o["log"].append(_log_line("%s agree to pay %s%s. Awaiting our confirmation." % [buyer["short"], fmt_money(int(o["ask"])), so_txt]))
-		GameState.add_inbox_message(GameState.current_date, "%s agree %s for %s" % [
+		var so_txt := "" if int(o.get("ask_sell_on", 0)) <= 0 else I18n.t(" plus a %d%% sell-on") % int(o["ask_sell_on"])
+		o["log"].append(_log_line(I18n.t("%s agree to pay %s%s. Awaiting our confirmation.") % [buyer["short"], fmt_money(int(o["ask"])), so_txt]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("%s agree %s for %s") % [
 			buyer["short"], fmt_money(int(o["ask"])), o["name"]],
-			"%s have met our demands for %s — %s%s. Confirm or reject the sale in the Transfer Centre." % [
+			I18n.t("%s have met our demands for %s — %s%s. Confirm or reject the sale in the Transfer Centre.") % [
 				buyer["name"], o["name"], fmt_money(int(o["ask"])), so_txt])
 	elif total_cost <= int(float(willing) * 1.2):
 		var old_ask := int(o["ask"])
@@ -2482,16 +2475,16 @@ func _respond_counter_in(o: Dictionary, rng: RandomNumberGenerator) -> void:
 		o["ask_sell_on"] = 0
 		o["stage"] = "open"
 		o["expires_on"] = _offer_expiry(5)
-		o["log"].append(_log_line("%s improve their bid to %s (final, cash only)." % [buyer["short"], fmt_money(package_total(o["package"]))]))
-		GameState.add_inbox_message(GameState.current_date, "Improved bid: %s offer %s for %s" % [
+		o["log"].append(_log_line(I18n.t("%s improve their bid to %s (final, cash only).") % [buyer["short"], fmt_money(package_total(o["package"]))]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("Improved bid: %s offer %s for %s") % [
 			buyer["short"], fmt_money(package_total(o["package"])), o["name"]],
-			"%s could not meet %s but tabled a final cash bid of %s for %s." % [
+			I18n.t("%s could not meet %s but tabled a final cash bid of %s for %s.") % [
 				buyer["name"], fmt_money(old_ask), fmt_money(package_total(o["package"])), o["name"]])
 	else:
 		o["stage"] = "withdrawn"
-		o["log"].append(_log_line("%s walk away from the deal." % buyer["short"]))
-		GameState.add_inbox_message(GameState.current_date, "%s withdraw interest in %s" % [buyer["short"], o["name"]],
-			"Our demands for %s were too rich for %s. They have moved on." % [
+		o["log"].append(_log_line(I18n.t("%s walk away from the deal.") % buyer["short"]))
+		GameState.add_inbox_message(GameState.current_date, I18n.t("%s withdraw interest in %s") % [buyer["short"], o["name"]],
+			I18n.t("Our demands for %s were too rich for %s. They have moved on.") % [
 				o["name"], buyer["name"]])
 
 
@@ -2544,7 +2537,7 @@ func _tick_offers_in(rng: RandomNumberGenerator) -> void:
 			_respond_counter_in(o, rng)
 		elif o["stage"] == "open" and String(o.get("expires_on", "9999")) <= GameState.current_date:
 			o["stage"] = "expired"
-			o["log"].append(_log_line("Offer expired."))
+			o["log"].append(_log_line(I18n.t("Offer expired.")))
 	# Rumoured bids for OUR squad land first — the mill predicts the phone call.
 	if _resolve_our_player_rumours(rng):
 		return
@@ -2584,28 +2577,28 @@ func _tick_offers_in(rng: RandomNumberGenerator) -> void:
 					"id": _next_id, "uid": inst["uid"], "club_id": buyer2["id"],
 					"package": pkg, "ask": 0, "ask_sell_on": 0, "stage": "open", "name": display_name(inst),
 					"respond_on": "", "expires_on": expires, "routine": not big,
-					"log": [_log_line("%s bid %s.%s" % [buyer2["short"], describe_package(pkg),
-						" DEADLINE-DAY BID — decide today." if panic else ""])],
+					"log": [_log_line(I18n.t("%s bid %s.%s") % [buyer2["short"], describe_package(pkg),
+						I18n.t(" DEADLINE-DAY BID — decide today.") if panic else ""])],
 				})
 				_next_id += 1
 				note_unsolicited_offer(str(inst["uid"]), str(buyer2["id"]))
 				if big:
 					GameState.add_inbox_message(GameState.current_date,
-						"%s: %s bid %s for %s" % ["DEADLINE-DAY OFFER" if panic else "Transfer offer",
+						I18n.t("%s: %s bid %s for %s") % [I18n.t("DEADLINE-DAY OFFER") if panic else I18n.t("Transfer offer"),
 							buyer2["short"], fmt_money(package_total(pkg)), display_name(inst)],
-						"%s have offered %s for %s (our valuation: %s). Accept, reject or negotiate — you can demand more cash and a sell-on clause — before %s.%s" % [
+						I18n.t("%s have offered %s for %s (our valuation: %s). Accept, reject or negotiate — you can demand more cash and a sell-on clause — before %s.%s") % [
 							buyer2["name"], describe_package(pkg), display_name(inst),
-							fmt_money(value_of(inst)), Season.pretty_date(expires),
-							" The window shuts tonight: this bid dies at midnight." if panic else ""])
+							fmt_money(value_of(inst)), I18n.pretty_date(expires),
+							I18n.t(" The window shuts tonight: this bid dies at midnight.") if panic else ""])
 				else:
 					# Routine interest: logged and waiting in the Transfer Centre,
 					# but it does not stop the manager's week.
 					GameState.add_inbox_message(GameState.current_date,
-						"Transfer interest: %s bid %s for %s" % [
+						I18n.t("Transfer interest: %s bid %s for %s") % [
 							buyer2["short"], fmt_money(package_total(pkg)), display_name(inst)],
-						"%s have lodged an offer of %s for %s (our valuation: %s). Nothing that demands an immediate answer — it sits in the Transfer Centre until %s if you want to deal." % [
+						I18n.t("%s have lodged an offer of %s for %s (our valuation: %s). Nothing that demands an immediate answer — it sits in the Transfer Centre until %s if you want to deal.") % [
 							buyer2["name"], describe_package(pkg), display_name(inst),
-							fmt_money(value_of(inst)), Season.pretty_date(expires)])
+							fmt_money(value_of(inst)), I18n.pretty_date(expires)])
 
 
 # ------------------------------------------------------------------ AI <-> AI market activity
@@ -2633,8 +2626,8 @@ func _tick_ai_market(rng: RandomNumberGenerator) -> void:
 			if offer_for_target(fa["uid"]).is_empty():
 				GameState.world["free_agents"].erase(fa)
 				club["squad"].append(fa)
-				_log_deal(display_name(fa), "Free agency", club["name"], 0,
-					int(fa["contract"]["salary"]), "ai_fa", "Free transfer")
+				_log_deal(display_name(fa), I18n.t("Free agency"), club["name"], 0,
+					int(fa["contract"]["salary"]), "ai_fa", I18n.t("Free transfer"))
 
 
 func _ai_club_deal(rng: RandomNumberGenerator) -> void:
@@ -2671,17 +2664,17 @@ func _ai_club_deal(rng: RandomNumberGenerator) -> void:
 	seller["finances"]["balance"] = int(seller["finances"]["balance"]) + fee
 	# Sell-on clauses (including OURS) pay out on AI-to-AI moves.
 	_pay_sell_on(inst, fee, seller)
-	var tag := " (deadline day)" if is_deadline_day() else ""
+	var tag := I18n.t(" (deadline day)") if is_deadline_day() else ""
 	_log_deal(display_name(inst), seller["name"], buyer["name"], fee,
-		int(inst["contract"]["salary"]), "ai", fmt_money(fee) + " cash" + tag)
+		int(inst["contract"]["salary"]), "ai", fmt_money(fee) + I18n.t(" cash") + tag)
 	_alert_shortlist_sold(inst, buyer)
 	if fee >= 250000 or is_deadline_day():
 		GameState.add_inbox_message(GameState.current_date,
-			"%s: %s sign %s" % ["Deadline-day move" if is_deadline_day() else "Market news",
+			I18n.t("%s: %s sign %s") % [I18n.t("Deadline-day move") if is_deadline_day() else I18n.t("Market news"),
 				buyer["short"], display_name(inst)],
-			"%s have paid %s a fee of %s for %s (Lv %d)%s. One to watch when we face them." % [
+			I18n.t("%s have paid %s a fee of %s for %s (Lv %d)%s. One to watch when we face them.") % [
 				buyer["name"], seller["name"], fmt_money(fee), display_name(inst), int(inst["level"]),
-				" as the window slams shut" if is_deadline_day() else ""])
+				I18n.t(" as the window slams shut") if is_deadline_day() else ""])
 
 
 func _complete_rumoured_deal(rum: Dictionary, rng: RandomNumberGenerator) -> bool:
@@ -2708,11 +2701,11 @@ func _complete_rumoured_deal(rum: Dictionary, rng: RandomNumberGenerator) -> boo
 	_pay_sell_on(inst, fee, seller)
 	rum["came_true"] = true
 	_log_deal(display_name(inst), seller["name"], buyer["name"], fee,
-		int(inst["contract"]["salary"]), "ai", fmt_money(fee) + " cash — as rumoured")
+		int(inst["contract"]["salary"]), "ai", fmt_money(fee) + I18n.t(" cash — as rumoured"))
 	_alert_shortlist_sold(inst, buyer)
 	GameState.add_inbox_message(GameState.current_date,
-		"Rumour confirmed: %s sign %s" % [buyer["short"], display_name(inst)],
-		"The paper talk was right — %s have completed a %s deal for %s from %s." % [
+		I18n.t("Rumour confirmed: %s sign %s") % [buyer["short"], display_name(inst)],
+		I18n.t("The paper talk was right — %s have completed a %s deal for %s from %s.") % [
 			buyer["name"], fmt_money(fee), display_name(inst), seller["name"]])
 	return true
 
@@ -2721,8 +2714,8 @@ func _alert_shortlist_sold(inst: Dictionary, buyer: Dictionary) -> void:
 	if not shortlisted(String(inst["uid"])):
 		return
 	GameState.add_inbox_message(GameState.current_date,
-		"SHORTLIST: we lost %s to %s" % [display_name(inst), String(buyer["short"])],
-		"Our shortlisted target %s has signed for %s while we sat on our hands. The shortlist only works if we act on the alerts." % [
+		I18n.t("SHORTLIST: we lost %s to %s") % [display_name(inst), String(buyer["short"])],
+		I18n.t("Our shortlisted target %s has signed for %s while we sat on our hands. The shortlist only works if we act on the alerts.") % [
 			display_name(inst), String(buyer["name"])])
 
 
@@ -2741,9 +2734,9 @@ func toggle_shortlist(uid: String) -> String:
 	else:
 		var t := find_target(uid)
 		if t.is_empty() or t["pool"] == "mine":
-			return "Only market targets can be shortlisted."
+			return I18n.t("Only market targets can be shortlisted.")
 		if shortlist.size() >= 12:
-			return "Shortlist is full (12) — remove a target first."
+			return I18n.t("Shortlist is full (12) — remove a target first.")
 		shortlist.append(uid)
 	save_state()
 	market_updated.emit()
@@ -2780,7 +2773,7 @@ func rec_accept(rec_id: int) -> String:
 				r["status"] = "new"
 				return err
 			return ""
-	return "Recommendation no longer available."
+	return I18n.t("Recommendation no longer available.")
 
 
 func rec_dismiss(rec_id: int) -> void:
@@ -2847,9 +2840,9 @@ func _tick_agents(rng: RandomNumberGenerator) -> void:
 		var uid := String(inst["uid"])
 		var guide := int(round(float(ask_price(inst, t["club_id"])) * AGENT_GREASE / 1000.0)) * 1000
 		var pitches := [
-			"\"My client feels he has taken %s as far as he can. Move now and this is a smooth deal.\"",
-			"\"He has told %s he wants a new challenge. They will not stand in his way at the right price.\"",
-			"\"The relationship with %s has run its course. You will not get better access than this.\"",
+			I18n.t("\"My client feels he has taken %s as far as he can. Move now and this is a smooth deal.\""),
+			I18n.t("\"He has told %s he wants a new challenge. They will not stand in his way at the right price.\""),
+			I18n.t("\"The relationship with %s has run its course. You will not get better access than this.\""),
 		]
 		var pitch: String = String(pitches[rng.randi() % pitches.size()]) % String(club_of(t["club_id"])["short"])
 		agent_offers.push_front({
@@ -2859,11 +2852,11 @@ func _tick_agents(rng: RandomNumberGenerator) -> void:
 		_next_id += 1
 		var sl := shortlisted(uid)
 		GameState.add_inbox_message(GameState.current_date,
-			"%sAgent offer: %s available from %s" % ["SHORTLIST ALERT — " if sl else "",
+			I18n.t("%sAgent offer: %s available from %s") % [I18n.t("SHORTLIST ALERT — ") if sl else "",
 				display_name(inst), String(club_of(t["club_id"])["short"])],
-			"%s's agent has offered him to %s. %s A deal near %s should do it while the offer stands (until %s) — the agent's pressure softens %s at the table. See Transfers > Recruitment." % [
+			I18n.t("%s's agent has offered him to %s. %s A deal near %s should do it while the offer stands (until %s) — the agent's pressure softens %s at the table. See Transfers > Recruitment.") % [
 				display_name(inst), pc["name"], pitch, fmt_money(guide),
-				Season.pretty_date(_offer_expiry(7)), String(club_of(t["club_id"])["short"])])
+				I18n.pretty_date(_offer_expiry(7)), String(club_of(t["club_id"])["short"])])
 	else:
 		var fas: Array = GameState.world["free_agents"].filter(func(i):
 			return agent_offer_for(String(i["uid"])).is_empty() and offer_for_target(String(i["uid"])).is_empty())
@@ -2876,13 +2869,13 @@ func _tick_agents(rng: RandomNumberGenerator) -> void:
 		agent_offers.push_front({
 			"id": _next_id, "uid": uid2, "kind": "fa", "date": GameState.current_date,
 			"expires": Season.date_add(GameState.current_date, 10),
-			"ask": wage_guide, "pitch": "\"He is training alone and hungry. Around %s/wk signs him this week.\"" % fmt_money(wage_guide),
+			"ask": wage_guide, "pitch": I18n.t("\"He is training alone and hungry. Around %s/wk signs him this week.\"") % fmt_money(wage_guide),
 			"status": "open",
 		})
 		_next_id += 1
 		GameState.add_inbox_message(GameState.current_date,
-			"Agent touting a free agent: %s" % display_name(inst2),
-			"An agent has offered free agent %s (Lv %d) to us directly — around %s/wk gets it done. No fee, signable any time. See Transfers > Recruitment." % [
+			I18n.t("Agent touting a free agent: %s") % display_name(inst2),
+			I18n.t("An agent has offered free agent %s (Lv %d) to us directly — around %s/wk gets it done. No fee, signable any time. See Transfers > Recruitment.") % [
 				display_name(inst2), int(inst2["level"]), fmt_money(wage_guide)])
 
 
@@ -2900,17 +2893,32 @@ func rumours_for(uid: String) -> Array:
 
 
 func _add_rumour(kind: String, uid: String, club_id: String, other_id: String,
-		strength: String, text: String, due: String = "") -> Dictionary:
+		strength: String, text: String, due: String = "", tmpl: String = "",
+		targs: Array = []) -> Dictionary:
 	var r := {
 		"id": _next_id, "date": GameState.current_date, "kind": kind, "uid": uid,
 		"club_id": club_id, "other_id": other_id, "strength": strength,
 		"text": text, "came_true": false, "dud": false, "due": due,
 	}
+	if tmpl != "":
+		# locale-proof: the English template + neutral args persist, so the
+		# mill re-renders in whatever language is active when it is READ.
+		r["tmpl"] = tmpl
+		r["targs"] = targs
 	_next_id += 1
 	rumours.push_front(r)
 	if rumours.size() > 40:
 		rumours.resize(40)
 	return r
+
+
+## Rumour line in the CURRENT language: structured entries re-render live,
+## legacy ones (or those from older saves) fall back to their stored text.
+func rumour_text(r: Dictionary) -> String:
+	if r.has("tmpl"):
+		var args: Array = r.get("targs", [])
+		return I18n.t(String(r["tmpl"])) % args if not args.is_empty() else I18n.t(String(r["tmpl"]))
+	return String(r.get("text", ""))
 
 
 func _tick_rumours(rng: RandomNumberGenerator) -> void:
@@ -2953,13 +2961,15 @@ func _rumour_listing(rng: RandomNumberGenerator) -> void:
 	listed[uid] = Season.date_add(GameState.current_date, 28)
 	var new_ask := ask_price(inst, String(club["id"]))
 	var r := _add_rumour("listing", uid, String(club["id"]), "", "Strong",
-		"%s have made %s (Lv %d) available for transfer — around %s would do it." % [
-			String(club["short"]), display_name(inst), int(inst["level"]), fmt_money(new_ask)])
+		I18n.t("%s have made %s (Lv %d) available for transfer — around %s would do it.") % [
+			String(club["short"]), display_name(inst), int(inst["level"]), fmt_money(new_ask)],
+		"", "%s have made %s (Lv %d) available for transfer — around %s would do it.",
+		[String(club["short"]), display_name(inst), int(inst["level"]), fmt_money(new_ask)])
 	r["came_true"] = true
 	if shortlisted(uid):
 		GameState.add_inbox_message(GameState.current_date,
-			"SHORTLIST ALERT: %s transfer-listed by %s" % [display_name(inst), String(club["short"])],
-			"Our shortlisted target %s has been made available — %s's ask drops to about %s while the listing stands. Move before a rival does." % [
+			I18n.t("SHORTLIST ALERT: %s transfer-listed by %s") % [display_name(inst), String(club["short"])],
+			I18n.t("Our shortlisted target %s has been made available — %s's ask drops to about %s while the listing stands. Move before a rival does.") % [
 				display_name(inst), String(club["name"]), fmt_money(new_ask)])
 
 
@@ -2978,14 +2988,18 @@ func _rumour_interest(rng: RandomNumberGenerator) -> void:
 	var inst: Dictionary = pool[rng.randi() % pool.size()]
 	var uid := String(inst["uid"])
 	var strength: String = RUMOUR_STRENGTHS[rng.randi() % 3]
-	var verbs := {"Whisper": "are said to be monitoring", "Warm": "are weighing a move for", "Strong": "are preparing a bid for"}
+	var verbs := {"Whisper": I18n.t("are said to be monitoring"), "Warm": I18n.t("are weighing a move for"), "Strong": I18n.t("are preparing a bid for")}
+	var tmpls := {"Whisper": "%s are said to be monitoring %s (%s).",
+		"Warm": "%s are weighing a move for %s (%s).",
+		"Strong": "%s are preparing a bid for %s (%s)."}
 	_add_rumour("interest", uid, String(seller["id"]), String(buyer["id"]), strength,
 		"%s %s %s (%s)." % [String(buyer["short"]), verbs[strength], display_name(inst), String(seller["short"])],
-		Season.date_add(GameState.current_date, 2 + int(rng.randi() % 5)))
+		Season.date_add(GameState.current_date, 2 + int(rng.randi() % 5)),
+		tmpls[strength], [String(buyer["short"]), display_name(inst), String(seller["short"])])
 	if shortlisted(uid):
 		GameState.add_inbox_message(GameState.current_date,
-			"SHORTLIST ALERT: %s circling %s" % [String(buyer["short"]), display_name(inst)],
-			"The rumour mill says %s %s our shortlisted target %s. If we want him, the safe move is to bid before they do." % [
+			I18n.t("SHORTLIST ALERT: %s circling %s") % [String(buyer["short"]), display_name(inst)],
+			I18n.t("The rumour mill says %s %s our shortlisted target %s. If we want him, the safe move is to bid before they do.") % [
 				String(buyer["name"]), verbs[strength], display_name(inst)])
 
 
@@ -3011,11 +3025,13 @@ func _rumour_our_player(rng: RandomNumberGenerator) -> void:
 	var buyer: Dictionary = buyers[rng.randi() % buyers.size()]
 	var strength: String = RUMOUR_STRENGTHS[rng.randi() % 3]
 	_add_rumour("our_player", uid, String(pc["id"]), String(buyer["id"]), strength,
-		"%s are rumoured to be readying an offer for OUR %s." % [String(buyer["short"]), display_name(inst)],
-		Season.date_add(GameState.current_date, 2 + int(rng.randi() % 4)))
+		I18n.t("%s are rumoured to be readying an offer for OUR %s.") % [String(buyer["short"]), display_name(inst)],
+		Season.date_add(GameState.current_date, 2 + int(rng.randi() % 4)),
+		"%s are rumoured to be readying an offer for OUR %s.",
+		[String(buyer["short"]), display_name(inst)])
 	GameState.add_inbox_message(GameState.current_date,
-		"Paper talk: %s linked with our %s" % [String(buyer["short"]), display_name(inst)],
-		"The rumour mill has %s preparing a bid for %s. Nothing official yet — but if you would sell, decide your price now; if not, brace for the phone call." % [
+		I18n.t("Paper talk: %s linked with our %s") % [String(buyer["short"]), display_name(inst)],
+		I18n.t("The rumour mill has %s preparing a bid for %s. Nothing official yet — but if you would sell, decide your price now; if not, brace for the phone call.") % [
 			String(buyer["name"]), display_name(inst)])
 
 
@@ -3023,7 +3039,9 @@ func _rumour_war_chest(rng: RandomNumberGenerator) -> void:
 	var clubs: Array = GameState.world["clubs"].filter(func(c): return not GameState.is_player_club(c["id"]))
 	var club: Dictionary = clubs[rng.randi() % clubs.size()]
 	_add_rumour("war_chest", "", String(club["id"]), "", "Whisper",
-		"%s's board is said to have released a war chest — expect them to be busy this window." % String(club["short"]))
+		I18n.t("%s's board is said to have released a war chest — expect them to be busy this window.") % String(club["short"]),
+		"", "%s's board is said to have released a war chest — expect them to be busy this window.",
+		[String(club["short"])])
 
 
 func _seed_window_rumours() -> void:
@@ -3073,14 +3091,14 @@ func _resolve_our_player_rumours(rng: RandomNumberGenerator) -> bool:
 			"id": _next_id, "uid": inst["uid"], "club_id": buyer["id"],
 			"package": pkg, "ask": 0, "ask_sell_on": 0, "stage": "open", "name": display_name(inst),
 			"respond_on": "", "expires_on": expires, "routine": not big,
-			"log": [_log_line("%s bid %s — just as the rumour mill predicted." % [buyer["short"], fmt_money(bid)])],
+			"log": [_log_line(I18n.t("%s bid %s — just as the rumour mill predicted.") % [buyer["short"], fmt_money(bid)])],
 		})
 		_next_id += 1
 		note_unsolicited_offer(String(inst["uid"]), String(buyer["id"]))
 		GameState.add_inbox_message(GameState.current_date,
-			"The rumours were true: %s bid %s for %s" % [buyer["short"], fmt_money(bid), display_name(inst)],
-			"%s have followed up the paper talk with a real offer of %s for %s (our valuation: %s). It waits in the Transfer Centre until %s." % [
-				buyer["name"], fmt_money(bid), display_name(inst), fmt_money(value_of(inst)), Season.pretty_date(expires)])
+			I18n.t("The rumours were true: %s bid %s for %s") % [buyer["short"], fmt_money(bid), display_name(inst)],
+			I18n.t("%s have followed up the paper talk with a real offer of %s for %s (our valuation: %s). It waits in the Transfer Centre until %s.") % [
+				buyer["name"], fmt_money(bid), display_name(inst), fmt_money(value_of(inst)), I18n.pretty_date(expires)])
 		return true
 	return false
 
@@ -3135,19 +3153,19 @@ func hire_scout(scout_name: String) -> String:
 			cand = s
 			break
 	if cand.is_empty():
-		return "That scout is no longer on the market."
+		return I18n.t("That scout is no longer on the market.")
 	if hired_scouts().size() >= MAX_HIRED_SCOUTS:
-		return "Scouting department is full (%d hired scouts). Release one first." % MAX_HIRED_SCOUTS
+		return I18n.t("Scouting department is full (%d hired scouts). Release one first.") % MAX_HIRED_SCOUTS
 	if int(cand["wage"]) > wage_room():
-		return "Their %s/wk wage breaks our wage budget (room: %s/wk)." % [fmt_money(int(cand["wage"])), fmt_money(wage_room())]
+		return I18n.t("Their %s/wk wage breaks our wage budget (room: %s/wk).") % [fmt_money(int(cand["wage"])), fmt_money(wage_room())]
 	GameState.player_club()["staff"].append({
 		"name": scout_name, "role": "scout", "hired": true,
 		"wage": int(cand["wage"]), "region": String(cand["region"]),
 		"ratings": {"judging_ability": int(cand["ja"]), "judging_potential": int(cand["jp"])},
 	})
-	GameState.add_inbox_message(GameState.current_date, "Scout hired: %s (%s)" % [scout_name, String(cand["region"])],
-		"%s joins our scouting department on %s/wk. Home network: %s — assignments there run days faster and region focuses build knowledge across the whole patch." % [
-			scout_name, fmt_money(int(cand["wage"])), String(cand["region"])])
+	GameState.add_inbox_message(GameState.current_date, I18n.t("Scout hired: %s (%s)") % [scout_name, I18n.t(String(cand["region"]))],
+		I18n.t("%s joins our scouting department on %s/wk. Home network: %s — assignments there run days faster and region focuses build knowledge across the whole patch.") % [
+			scout_name, fmt_money(int(cand["wage"])), I18n.t(String(cand["region"]))])
 	GameState.save_game()
 	save_state()
 	market_updated.emit()
@@ -3163,13 +3181,13 @@ func fire_scout(scout_name: String) -> String:
 			var severance := int(s.get("wage", 0)) * 4
 			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - severance
 			pc["staff"].erase(s)
-			GameState.add_inbox_message(GameState.current_date, "Scout released: %s" % scout_name,
-				"%s has left the scouting department (severance: %s)." % [scout_name, fmt_money(severance)])
+			GameState.add_inbox_message(GameState.current_date, I18n.t("Scout released: %s") % scout_name,
+				I18n.t("%s has left the scouting department (severance: %s).") % [scout_name, fmt_money(severance)])
 			GameState.save_game()
 			save_state()
 			market_updated.emit()
 			return ""
-	return "Only hired scouts can be released — club coaches stay."
+	return I18n.t("Only hired scouts can be released — club coaches stay.")
 
 
 func region_coverage() -> Dictionary:
@@ -3231,7 +3249,7 @@ func _dof_auto_scout() -> void:
 				return scout_region(a) == reg
 			return int(a["ratings"]["judging_ability"]) > int(b["ratings"]["judging_ability"]))
 		if assign_scout_to_target(String(idle[0]["name"]), uid) == "":
-			_dof_note("Sent %s to scout shortlisted %s." % [String(idle[0]["name"]), display_name(t["inst"])])
+			_dof_note(I18n.t("Sent %s to scout shortlisted %s.") % [String(idle[0]["name"]), display_name(t["inst"])])
 
 
 func _dof_handle_bids() -> void:
@@ -3243,8 +3261,8 @@ func _dof_handle_bids() -> void:
 			continue
 		if package_total(o["package"]) < int(float(value_of(t["inst"])) * 0.92):
 			o["stage"] = "rejected"
-			o["log"].append(_log_line("DoF rejected the bid — below our valuation."))
-			_dof_note("Rejected %s's %s bid for %s (valuation %s)." % [
+			o["log"].append(_log_line(I18n.t("DoF rejected the bid — below our valuation.")))
+			_dof_note(I18n.t("Rejected %s's %s bid for %s (valuation %s).") % [
 				String(GameState.club(String(o["club_id"]))["short"]), fmt_money(package_total(o["package"])),
 				String(o["name"]), fmt_money(value_of(t["inst"]))])
 
@@ -3272,12 +3290,12 @@ func _dof_progress_deals() -> void:
 					take = "ask"
 				if take != "":
 					if accept_package(int(o["id"]), take) == "":
-						_dof_note("Accepted %s's proposal for %s (%s)." % [
+						_dof_note(I18n.t("Accepted %s's proposal for %s (%s).") % [
 							String(club_of(String(o["club_id"]))["short"]), String(o["name"]),
 							describe_package(o["package"])])
 				else:
 					withdraw_offer(int(o["id"]))
-					_dof_note("Walked away from %s — their demands broke the board's limit (%s)." % [String(o["name"]), fmt_money(cap)])
+					_dof_note(I18n.t("Walked away from %s — their demands broke the board's limit (%s).") % [String(o["name"]), fmt_money(cap)])
 			"fee_agreed", "wage_countered":
 				var demand: Dictionary = o.get("contract_demand", {})
 				var wage := int(demand.get("wage", 0))
@@ -3286,10 +3304,10 @@ func _dof_progress_deals() -> void:
 				if wage <= wage_room():
 					if offer_contract(int(o["id"]), {"wage": wage, "years": int(demand.get("years", 3)),
 							"bonus": 0, "status": String(demand.get("status", "First team"))}) == "":
-						_dof_note("Offered %s the %s/wk terms his camp asked for." % [String(o["name"]), fmt_money(wage)])
+						_dof_note(I18n.t("Offered %s the %s/wk terms his camp asked for.") % [String(o["name"]), fmt_money(wage)])
 				else:
 					withdraw_offer(int(o["id"]))
-					_dof_note("Pulled out of the %s deal — his %s/wk demand breaks the wage budget." % [String(o["name"]), fmt_money(wage)])
+					_dof_note(I18n.t("Pulled out of the %s deal — his %s/wk demand breaks the wage budget.") % [String(o["name"]), fmt_money(wage)])
 
 
 func _dof_open_deal(_rng: RandomNumberGenerator) -> void:
@@ -3309,7 +3327,7 @@ func _dof_open_deal(_rng: RandomNumberGenerator) -> void:
 			var pkg := {"upfront": up, "inst_amount": int(round(float(ask) * 0.27 / 1000.0)) * 1000,
 				"inst_years": 2, "sell_on": 0}
 			err = make_offer(uid, pkg)
-			opened = "Opened talks with %s for %s — %s." % [
+			opened = I18n.t("Opened talks with %s for %s — %s.") % [
 				String(club_of(String(t["club_id"]))["short"]), display_name(t["inst"]), describe_package(_norm_package(pkg))]
 		else:
 			if t["pool"] == "prospect" and not window_open():
@@ -3318,14 +3336,14 @@ func _dof_open_deal(_rng: RandomNumberGenerator) -> void:
 			if wage > wage_room():
 				continue
 			err = sign_free_agent(uid, {"wage": wage, "years": 3, "bonus": 0, "status": "Rotation"})
-			opened = "Opened contract talks with %s (%s/wk)." % [display_name(t["inst"]), fmt_money(wage)]
+			opened = I18n.t("Opened contract talks with %s (%s/wk).") % [display_name(t["inst"]), fmt_money(wage)]
 		if err == "":
 			var o := offer_for_target(uid)
 			if not o.is_empty():
 				o["dof"] = true
 			_dof_note(opened)
-			GameState.add_inbox_message(GameState.current_date, "DoF: talks opened for %s" % display_name(t["inst"]),
-				"%s Your Director of Battling is handling the negotiation — limits: %d%% over valuation, board budgets. Watch it in the Transfer Centre or take over any time." % [
+			GameState.add_inbox_message(GameState.current_date, I18n.t("DoF: talks opened for %s") % display_name(t["inst"]),
+				I18n.t("%s Your Director of Battling is handling the negotiation — limits: %d%% over valuation, board budgets. Watch it in the Transfer Centre or take over any time.") % [
 					opened, int(dof.get("max_over_pct", 10))])
 			return
 

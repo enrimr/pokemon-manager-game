@@ -222,18 +222,18 @@ static func set_active(name: String) -> void:
 static func _check_cols(cols: Array) -> String:
 	var clean := sanitize(cols)
 	if clean.size() < MIN_COLS:
-		return "A view needs at least %d columns." % MIN_COLS
+		return I18n.t("A view needs at least %d columns.") % MIN_COLS
 	if clean.size() > MAX_COLS:
-		return "A view can hold at most %d columns." % MAX_COLS
+		return I18n.t("A view can hold at most %d columns.") % MAX_COLS
 	return ""
 
 
 static func _check_name(name: String) -> String:
 	var n := name.strip_edges()
 	if n.length() < 2 or n.length() > MAX_NAME:
-		return "View names must be 2-%d characters." % MAX_NAME
+		return I18n.t("View names must be 2-%d characters.") % MAX_NAME
 	if has_view(n):
-		return "A view called '%s' already exists." % n
+		return I18n.t("A view called '%s' already exists.") % n
 	return ""
 
 
@@ -241,7 +241,7 @@ static func _check_name(name: String) -> String:
 ## (dropped again if it matches the factory layout). Returns "" or an error.
 static func save_columns(name: String, cols: Array) -> String:
 	if not has_view(name):
-		return "No view called '%s'." % name
+		return I18n.t("No view called '%s'.") % name
 	var err := _check_cols(cols)
 	if err != "":
 		return err
@@ -268,7 +268,7 @@ static func create(name: String, cols: Array) -> String:
 		return err
 	var st := _state()
 	if (st["custom"] as Dictionary).size() >= MAX_VIEWS:
-		return "Custom view limit reached (%d). Delete one first." % MAX_VIEWS
+		return I18n.t("Custom view limit reached (%d). Delete one first.") % MAX_VIEWS
 	st["custom"][n] = sanitize(cols)
 	(st["order"] as Array).append(n)
 	st["active"] = n
@@ -280,7 +280,7 @@ static func create(name: String, cols: Array) -> String:
 static func rename(old_name: String, new_name: String) -> String:
 	var st := _state()
 	if not (st["custom"] as Dictionary).has(old_name):
-		return "Only custom views can be renamed."
+		return I18n.t("Only custom views can be renamed.")
 	var n := new_name.strip_edges()
 	if n == old_name:
 		return ""
@@ -303,7 +303,7 @@ static func rename(old_name: String, new_name: String) -> String:
 static func delete_view(name: String) -> String:
 	var st := _state()
 	if not (st["custom"] as Dictionary).has(name):
-		return "Presets can't be deleted — use Reset to restore their layout."
+		return I18n.t("Presets can't be deleted — use Reset to restore their layout.")
 	(st["custom"] as Dictionary).erase(name)
 	(st["order"] as Array).erase(name)
 	if str(st["active"]) == name:

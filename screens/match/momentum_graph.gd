@@ -5,7 +5,7 @@ extends Control
 var points: Array = []        # [{v, battle, turn}]
 var faint_marks: Array = []   # [{idx, side}]
 var player_side := 0
-var shorts := ["US", "THEM"]
+var shorts := [tr("US"), tr("THEM")]
 
 const COL_US := Color("57c979")
 const COL_THEM := Color("e06060")

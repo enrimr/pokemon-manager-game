@@ -479,3 +479,198 @@ log ride `save_state()/load_state()`. Proof driver:
 `EVOLUTION DRIVER OK`) — full Charmander→Charizard chain via real training
 weeks, Eevee via shop purchase + `use_stone`, postpone tradeoff, AI-club
 evolutions with a determinism replay, and a save/load roundtrip.
+
+## Long-career polish (polish piece)
+
+### Settings (GameState, additive)
+
+`GameState.settings` is a flat JSON-safe dict persisted in the save (top-level
+`"settings"` key; survives new careers in-session). API: `setting(key,
+default=null)`, `set_setting(key, value)` (emits `settings_changed(key)`),
+defaults merged from `GameState.SETTINGS_DEFAULTS`. The platform piece renders
+these on its Settings screen. Documented keys:
+
+| key                | type/default | meaning |
+|--------------------|--------------|---------|
+| `ai_coach_uses_bag`| bool, `true` | May the AI coach spend YOUR club's consumables when a player match is delegated / instant-simmed? Honored by the match runner (`set_ai_item_budget(player_side, 0)` when off — the opponent's bag and the player's own manual `use_item` actions are unaffected). |
+
+### Manager career & the sacking arc (GameState additive + season_flow + shell)
+
+- `GameState.manager_history()` -> Array (oldest first); one stint entry per
+  COMPLETED season, written by season_flow at each ceremony:
+  `{season, club_id, club, league, pos, points, wins, losses, cup, honours:[..]}`.
+- Sacking rules (season_flow, at the ceremony): a **missed board ultimatum**
+  (issued after a Danger Zone finish; carries `club_id`, so it dies if you
+  change employer) is terminal, and so is a **catastrophic season** (dead last
+  with <= 18 points). `_sack_manager` posts an urgent sacking mail, then calls
+  `GameState.trigger_game_over(info)` with
+  `{reason, season, club_id, club, summary:{seasons, wins, losses, honours,
+  best_pos, clubs}, offers:[{club_id, name, league, reputation}] (2-3 LESSER
+  clubs, deterministic), date}`.
+- `trigger_game_over` persists the record in `world.meta.game_over` (a reload
+  lands back on the game-over screen) and emits `game_over(info)`.
+  `is_game_over()`, `game_over_info()`, and `accept_job_offer(club_id)` ("" or
+  error; switches player_club_id, clears the record, welcome mail, re-emits
+  `career_started`, saves) complete the pathway.
+- The shell renders the moment (`shell/game_over.gd`, opened by `main.gd` on
+  the signal or at boot): SACKED header, per-season career table, totals,
+  honours, offer cards ("Take over") and "Start a fresh career" (club picker).
+
+### Awards 2.0 (season_flow — the entries every UI should reuse)
+
+`compute_awards` now returns FIVE honours, all from recorded match stats and
+still fully deterministic: `pokemon_of_season`, `best_developer` (young, avg
+rating), `cup_mvp` (cup-only stats, `season_player_stats_comp`), `golden_guard`
+(best wall: damage soaked per faint, extra keys `soaked/faints/wall_score`) and
+`best_newcomer` (academy graduates — `from_academy` instances — or first-year
+rookies <= 24 months). **No sweeps**: each award excludes Pokémon already
+honoured that ceremony (relaxed only if nobody else qualifies). Every award
+entry carries a **`display`** key — the name with the species in brackets ONLY
+when a nickname differs ("Sparky (Pikachu)", never "Pikachu (Pikachu)").
+UIs rendering award names should prefer `display` over hand-formatting
+`"%s (%s)" % [name, species]`. The copy stored in `world.meta.history` is
+additionally display-safe for legacy "name (species)" renderers: when there is
+no nickname the stored `species` slot holds the level tag ("Lv 34") instead,
+so the History tab's roll of honour never reads "Jumpluff (Jumpluff)".
+
+### Inbox hygiene at rollover (season_flow)
+
+The day the season rolls over: every ROUTINE unread mail is auto-marked read
+(urgent mail and open decisions — offers, evo_ready, mind-games, the academy
+youth review — stay unread), the read backlog is trimmed to ~120 items, and
+ONE "Season N digest" mail (cat `media`, uid `digest:S<n>`) summarises what
+was filed plus the season's one-line story. The unread badge stays meaningful
+across ten-season careers.
+
+### Academy housekeeping (academy service + screen)
+
+- **Roster cap by facility level** (`ROSTER_CAP` {L1:8 .. L5:16},
+  `roster_cap()`): intakes shrink to fit and a FULL academy turns the class
+  away (mail `academy_kind: "intake_full"`); the intake preview warns when
+  space is tight; a one-per-squeeze warning mail (`"crowded"`) fires at
+  cap-1.
+- **End-of-season youth review (cull)**: on `season_rolled` the head youth
+  coach files keep/release recommendations for every juvenile (deterministic:
+  ceiling, age-vs-curve, stalled development). State: `AcademyService.cull =
+  {season, date, items:[{uid, species, level, age_months, stars, pot_min,
+  pot_max, rec, reason}], resolved}` (persisted). The mail
+  (`academy_kind: "cull"`, urgent) stays an open DECISION until
+  `apply_cull(release_uids)` settles it from the Academy screen's review
+  panel. `"cull_done"` confirms.
+
+### Free-agent age plausibility (season_flow)
+
+Generated pool ages are clamped to evolutionary stage at career start and
+after every rollover (`_clamp_pool_ages`): base stage of an evolving line
+<= 48 months, middle stage <= 84, final/standalone forms uncapped — ages above
+the cap are deterministically re-housed (no more ten-year-old Larvitar in the
+free-agent list).
+
+Proof drivers: `res://artifacts/polish/driver_season.tscn` (headless, prints
+`POLISH SEASON DRIVER OK` — cap/cull/awards/digest/ages/settings/bag toggle),
+`driver_sack.tscn` (`POLISH SACK DRIVER OK` — the full sacking arc incl.
+save/load and continuing at a lesser club) and `shots.tscn` (windowed
+screenshots of all of the above, incl. the live game-over overlay).
+
+## Platform: settings, resolution independence & exports (platform piece)
+
+**Resolution independence** — `project.godot` uses `canvas_items` stretch with
+`expand` aspect (design size 1600x900, fractional scale). The UI renders
+identically at any 16:9 size and gains extra content area at other aspect
+ratios; verified at 1280x720 / 1600x900 / 1920x1080 / 2560x1440 via the
+screenshot harness's new `--size=WxH` argument (see docs/TESTING.md).
+
+**Settings autoload** (`Settings`, `res://screens/settings/settings_service.gd`
+— registered in project.godot by the platform owner). Single source of truth
+for *profile* preferences, persisted to `user://settings.json` and applied at
+boot and live on change:
+
+```gdscript
+Settings.get_setting(key, default) -> Variant
+Settings.set_setting(key, value)      # applies + persists + emits
+signal setting_changed(key, value)
+Settings.reset_to_defaults()
+```
+
+Keys: `window_mode` ("windowed"|"borderless"|"fullscreen"), `resolution`
+("1600x900", presets in `Settings.RESOLUTIONS`), `ui_scale` (0.75–1.5, stretch
+scale multiplier), `audio_master`/`audio_music`/`audio_sfx`/`audio_ambience`
+(linear 0–1 — fallback store only: when the shell's `AudioManager` is running
+the Settings screen's sliders call `AudioManager.set_volume(bus, v)`, which is
+the canonical path and persists to `GameState.settings`
+audio_master/music/sfx/ambience/audio_enabled + user://audio_settings.json;
+the service also creates the Master/Music/SFX/Ambience buses at boot, before
+AudioManager, and never touches volumes while AudioManager is alive),
+`autosave_days` (0=off/1/3/7/14 — the service autosaves via
+`GameState.save_game()` off `date_changed`, skipped when headless), `locale`
+("en"; the Settings screen's language selector lists
+`TranslationServer.get_loaded_locales()`, so the localization piece only has
+to load translations for "es" to appear — the choice is applied with
+`TranslationServer.set_locale` at boot).
+
+Per-save *game* settings stay in `GameState.settings`
+(`GameState.setting()/set_setting()`, polish piece — e.g. `ai_coach_uses_bag`);
+the Settings screen renders those too. Rule of thumb: machine/user preference
+=> Settings autoload; career-affecting option => GameState.settings.
+
+**Settings screen** (`res://screens/settings/`, sidebar "Settings", tabs
+Display/Audio/Gameplay/Language) — every control applies immediately.
+
+**Exports** — `export_presets.cfg` ships four release presets: macOS
+(universal zip, ad-hoc signed), Windows Desktop (x86_64, embedded pck),
+Linux/X11 (x86_64, embedded pck) and Web (no-threads build: runs on plain
+static hosting without COOP/COEP headers). `scripts/export_all.sh` rebuilds
+everything into `dist/` (preflight-aborts if the project has script errors).
+Requires the 4.6 export templates installed (docs/TESTING.md §5).
+
+## Audio (audio piece)
+
+100% original procedural audio — every WAV in `res://assets/audio/` (32 files:
+UI feedback, per-category/type-family battle hits, crowd reactions, a seamless
+stadium ambience bed, three chiptune music loops) is synthesized from scratch
+by `python3 tools/gen_audio.py` (deterministic; `--analyze` writes
+duration/peak/RMS/non-silence proof to `artifacts/audio/analysis.{txt,json}`).
+No samples, nothing copyrighted, nothing Pokémon-imitating.
+
+**AudioManager** (`res://shared/audio/audio_manager.{gd,tscn}`, class_name
+`AudioManager`) is instanced once by the shell; all public API is **static and
+null-safe** (no-ops when the shell isn't running):
+
+```gdscript
+AudioManager.play("confirm")           # one-shot: click hover confirm error mail
+                                       # continue back / hit_* miss faint switch item
+                                       # status stat_up stat_down heal weather / crowd_*
+AudioManager.set_ambience("match")     # ""/"menu"/"match" (music + stadium bed + chants)
+AudioManager.on_screen_changed(name)   # shell nav hook — picks ambience for the screen
+AudioManager.on_battle_event(ev)       # engine event dict -> hit/faint/crowd routing
+AudioManager.crowd("roar")             # roar / gasp / cheer / chant (throttled)
+AudioManager.set_volume("Music", 0.6)  # Master/Music/SFX/Ambience, 0..1
+AudioManager.volume(bus) / set_enabled(on) / enabled()
+```
+
+- **Buses**: Master/Music/SFX/Ambience (created if missing, never duplicated).
+  **Ownership contract with the platform piece**: the Settings autoload is the
+  persisted store (user://settings.json, keys `audio_*`); while
+  `AudioManager.instance` is alive it APPLIES bus volumes (Settings'
+  `_apply_audio` defers to it) and listens to `setting_changed`, and
+  `AudioManager.set_volume` write-throughs to `Settings.set_setting`. Without
+  the Settings autoload it falls back to `user://audio_settings.json`.
+- **Free UI sounds**: every `BaseButton` that enters the tree is auto-wired
+  for click + hover (set meta `"no_sfx"` on a button to opt out — the shell's
+  Continue button does, it plays the "continue" whoosh instead). Mail-arrival
+  dings ride `GameState.inbox_updated` (throttled). No screen code needed.
+- **Match audio**: the shell switches to stadium ambience + matchday music on
+  the match screen; `live_view.gd` feeds each replayed engine event through
+  `AudioManager.on_battle_event(ev)` (one-liner) — physical thumps, special
+  hits by type family (zap/splash/flame/whoosh/burst), super-effective/crit
+  crunches with crowd roars on big momentum swings, faint tones with home/away
+  gasp/roar, switch swishes, item pops, weather gusts, end-of-battle cheers.
+  Music ducks -7 dB under big SFX. Event SFX are globally throttled (70 ms) so
+  fast-forward replay never machine-guns.
+- **Headless-safe**: with the Dummy audio driver (`--headless`) all routing/
+  counters run but playback is skipped (playbacks would leak at exit) — smoke
+  and sim_check stay clean. QA driver:
+  `Godot --headless --path . res://artifacts/audio/driver.tscn` boots the real
+  autoloads, checks buses/settings write-through/Settings-slider path, drives
+  a real BattleEngine log through the router and prints `AUDIO DRIVER OK`
+  (proof log: `artifacts/audio/hook_log.txt`; `AUDIO_DEBUG=1` traces plays).

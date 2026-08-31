@@ -587,16 +587,16 @@ func auto_load_reason(inst: Dictionary) -> String:
 	var s := strain(str(inst["uid"]))
 	var a := age_mult(int(inst.get("age_months", 48)))
 	if s >= AUTO_REST_AT:
-		return "strain %d%% ≥ %d — full rest until recovered" % [int(s), int(AUTO_REST_AT)]
+		return I18n.t("strain %d%% ≥ %d — full rest until recovered") % [int(s), int(AUTO_REST_AT)]
 	if s >= AUTO_LIGHT_AT:
-		return "strain %d%% ≥ %d — dropped to Light" % [int(s), int(AUTO_LIGHT_AT)]
+		return I18n.t("strain %d%% ≥ %d — dropped to Light") % [int(s), int(AUTO_LIGHT_AT)]
 	if a <= 0.7:
 		if s >= AUTO_VET_LIGHT_AT:
-			return "veteran body at strain %d%% — eased to Light" % int(s)
-		return "veteran body — capped at Normal (Light from strain %d)" % int(AUTO_VET_LIGHT_AT)
+			return I18n.t("veteran body at strain %d%% — eased to Light") % int(s)
+		return I18n.t("veteran body — capped at Normal (Light from strain %d)") % int(AUTO_VET_LIGHT_AT)
 	if s < AUTO_FRESH_BELOW and a >= 1.15:
-		return "fresh (%d%%) rapid developer — pushed to High" % int(s)
-	return "standard load at strain %d%%" % int(s)
+		return I18n.t("fresh (%d%%) rapid developer — pushed to High") % int(s)
+	return I18n.t("standard load at strain %d%%") % int(s)
 
 
 ## The load step actually applied to this Pokémon today.
@@ -698,25 +698,25 @@ func mentor_of(uid: String) -> Dictionary:
 ## "" if this pairing is allowed, else the human reason it is not.
 func can_mentor(mentor: Dictionary, junior: Dictionary) -> String:
 	if not mentor_eligible(mentor):
-		return "%s is not a veteran yet — only Pokémon whose own growth has flattened can mentor" % _display_name(mentor)
+		return I18n.t("%s is not a veteran yet — only Pokémon whose own growth has flattened can mentor") % _display_name(mentor)
 	if not junior_eligible(junior):
-		return "%s is past rapid development — mentoring only accelerates young Pokémon" % _display_name(junior)
+		return I18n.t("%s is past rapid development — mentoring only accelerates young Pokémon") % _display_name(junior)
 	if int(mentor["level"]) - int(junior["level"]) < MENTOR_LEVEL_GAP:
-		return "needs a mentor at least %d levels above (%s is Lv %d vs Lv %d)" % [
+		return I18n.t("needs a mentor at least %d levels above (%s is Lv %d vs Lv %d)") % [
 			MENTOR_LEVEL_GAP, _display_name(mentor), int(mentor["level"]), int(junior["level"])]
 	if int(mentor["age_months"]) - int(junior["age_months"]) < MENTOR_AGE_GAP:
-		return "age gap under %d months — too close in age to look up to" % MENTOR_AGE_GAP
+		return I18n.t("age gap under %d months — too close in age to look up to") % MENTOR_AGE_GAP
 	return ""
 
 
 func create_mentor_group(mentor_uid: String) -> String:
 	var m := _find_instance(mentor_uid)
 	if m.is_empty():
-		return "not in the squad"
+		return I18n.t("not in the squad")
 	if not mentor_eligible(m):
-		return "%s is not a veteran yet" % _display_name(m)
+		return I18n.t("%s is not a veteran yet") % _display_name(m)
 	if not group_of(mentor_uid).is_empty():
-		return "%s is already in a mentor group" % _display_name(m)
+		return I18n.t("%s is already in a mentor group") % _display_name(m)
 	mentor_groups().append({"mentor": mentor_uid, "juniors": []})
 	save_state()
 	training_changed.emit()
@@ -735,11 +735,11 @@ func disband_mentor_group(mentor_uid: String) -> void:
 func add_junior(mentor_uid: String, junior_uid: String) -> String:
 	var g := group_of(mentor_uid)
 	if g.is_empty() or str(g.get("mentor", "")) != mentor_uid:
-		return "no such mentor group"
+		return I18n.t("no such mentor group")
 	if (g["juniors"] as Array).size() >= MENTOR_MAX_JUNIORS:
-		return "a mentor can watch at most %d juniors" % MENTOR_MAX_JUNIORS
+		return I18n.t("a mentor can watch at most %d juniors") % MENTOR_MAX_JUNIORS
 	if not group_of(junior_uid).is_empty():
-		return "already in a mentor group"
+		return I18n.t("already in a mentor group")
 	var err := can_mentor(_find_instance(mentor_uid), _find_instance(junior_uid))
 	if err != "":
 		return err
@@ -829,8 +829,8 @@ func _validate_mentoring(date: String) -> void:
 				changed = true
 			elif not junior_eligible(junior):
 				GameState.add_inbox_message(date,
-					"%s has outgrown mentoring" % _display_name(junior),
-					"%s is no longer in rapid development and gains nothing more from shadowing %s. The mentor group has been adjusted." %
+					I18n.t("%s has outgrown mentoring") % _display_name(junior),
+					I18n.t("%s is no longer in rapid development and gains nothing more from shadowing %s. The mentor group has been adjusted.") %
 					[_display_name(junior), _display_name(m)])
 				juniors.remove_at(j)
 				changed = true
@@ -1287,8 +1287,8 @@ func _process_day(date: String) -> void:
 		if float(ms["strain"]) > 80.0 and rng.randf() < knock_risk:
 			inst["condition"] = maxi(35, int(inst.get("condition", 90)) - rng.randi_range(12, 20))
 			ms["strain"] = clampf(float(ms["strain"]) - 25.0, 0.0, 100.0)
-			GameState.add_inbox_message(date, "%s picked up a training knock" % _display_name(inst),
-				"%s was pushed too hard in %s training and picked up a knock. Condition dropped to %d%%. The physio recommends lowering training intensity or scheduling recovery sessions." %
+			GameState.add_inbox_message(date, I18n.t("%s picked up a training knock") % _display_name(inst),
+				I18n.t("%s was pushed too hard in %s training and picked up a knock. Condition dropped to %d%%. The physio recommends lowering training intensity or scheduling recovery sessions.") %
 				[_display_name(inst), FOCUS_LABELS.get(str(plan["am"]), "team"), int(inst["condition"])])
 
 		# --- pushback: individuals react to a FORCED workload (auto never
@@ -1301,9 +1301,9 @@ func _process_day(date: String) -> void:
 					or Season.date_add(str(ms["complained"]), 7) <= date:
 				ms["complained"] = date
 				GameState.add_inbox_message(date,
-					"%s is unhappy with the training workload" % _display_name(inst),
-					"%s has been forced onto %s training while carrying %d%% strain and is reacting badly — morale is down to %d%% and the physio warns the injury risk is climbing. Drop the individual load to Light, or set it to Automatic and let the staff manage it." %
-					[_display_name(inst), LOAD_LABELS[lkey], int(ms["strain"]), int(inst.get("morale", 70))])
+					I18n.t("%s is unhappy with the training workload") % _display_name(inst),
+					I18n.t("%s has been forced onto %s training while carrying %d%% strain and is reacting badly — morale is down to %d%% and the physio warns the injury risk is climbing. Drop the individual load to Light, or set it to Automatic and let the staff manage it.") %
+					[_display_name(inst), I18n.t(str(LOAD_LABELS[lkey])), int(ms["strain"]), int(inst.get("morale", 70))])
 		elif reaction == "wants_more":
 			if rng.randf() < 0.2:
 				inst["morale"] = maxi(20, int(inst.get("morale", 70)) - 1)
@@ -1311,9 +1311,9 @@ func _process_day(date: String) -> void:
 					or Season.date_add(str(ms["complained"]), 10) <= date:
 				ms["complained"] = date
 				GameState.add_inbox_message(date,
-					"%s wants to train more" % _display_name(inst),
-					"%s is fresh (%d%% strain) and at a rapid stage of development, but is being held on a %s individual load. The coaches feel valuable growth is being wasted; morale will suffer if this continues." %
-					[_display_name(inst), int(ms["strain"]), LOAD_LABELS[load_setting(uid)]])
+					I18n.t("%s wants to train more") % _display_name(inst),
+					I18n.t("%s is fresh (%d%% strain) and at a rapid stage of development, but is being held on a %s individual load. The coaches feel valuable growth is being wasted; morale will suffer if this continues.") %
+					[_display_name(inst), int(ms["strain"]), I18n.t(str(LOAD_LABELS[load_setting(uid)]))])
 
 		# --- mentoring morale: juniors are lifted by the guidance; the veteran
 		# gets renewed purpose from passing its craft on (both capped at 95).
@@ -1362,11 +1362,11 @@ func _complete_move(inst: Dictionary, ms: Dictionary, mv: Dictionary, date: Stri
 	inst["moves"] = moves
 	(ms["learned"] as Array).append({"move": mv["name"], "date": date})
 	ms["move"] = null
-	var body := "%s has mastered %s on the training ground" % [_display_name(inst), mv["name"]]
+	var body := I18n.t("%s has mastered %s on the training ground") % [_display_name(inst), I18n.t(str(mv["name"]))]
 	if old != "":
-		body += ", replacing %s" % old
-	body += ". The move is available for selection immediately."
-	GameState.add_inbox_message(date, "%s has learned %s!" % [_display_name(inst), mv["name"]], body)
+		body += I18n.t(", replacing %s") % I18n.t(old)
+	body += I18n.t(". The move is available for selection immediately.")
+	GameState.add_inbox_message(date, I18n.t("%s has learned %s!") % [_display_name(inst), I18n.t(str(mv["name"]))], body)
 
 
 func _send_week_report(date: String) -> void:
@@ -1380,16 +1380,16 @@ func _send_week_report(date: String) -> void:
 		var nm := _display_name(inst)
 		var mentor := mentor_of(str(inst["uid"]))
 		if not mentor.is_empty():
-			nm += " (learning from %s)" % _display_name(mentor)
+			nm += I18n.t(" (learning from %s)") % _display_name(mentor)
 		if not by_mon.has(nm):
 			by_mon[nm] = []
-		by_mon[nm].append("%s +%d" % [STAT_LABELS[parts[1]], int(state["week_gains"][key])])
+		by_mon[nm].append("%s +%d" % [I18n.t(str(STAT_LABELS[parts[1]])), int(state["week_gains"][key])])
 	for nm in by_mon:
 		lines.append("%s: %s" % [nm, ", ".join(by_mon[nm])])
 	if lines.is_empty():
 		return
-	GameState.add_inbox_message(date, "Weekly training report",
-		"Development gains this week:\n" + "\n".join(lines))
+	GameState.add_inbox_message(date, I18n.t("Weekly training report"),
+		I18n.t("Development gains this week:\n") + "\n".join(lines))
 
 
 func _display_name(inst: Dictionary) -> String:

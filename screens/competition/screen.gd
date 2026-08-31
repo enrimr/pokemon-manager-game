@@ -208,7 +208,7 @@ func _apply_ctx(ctx: String) -> void:
 	if _tab_buttons.has("table"):
 		var tb: Button = _tab_buttons["table"]
 		tb.disabled = ctx == "cup"
-		tb.tooltip_text = "Knockout competition — no league table" if ctx == "cup" else ""
+		tb.tooltip_text = tr("Knockout competition — no league table") if ctx == "cup" else ""
 
 
 func _ctx_style(active: bool, col: Color) -> StyleBoxFlat:
@@ -299,10 +299,10 @@ func _rebuild_crumbs() -> void:
 	for c in _crumb_bar.get_children():
 		c.queue_free()
 	var back := Button.new()
-	back.text = "‹ Back"
+	back.text = tr("‹ Back")
 	back.custom_minimum_size = Vector2(72, 26)
 	back.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	back.tooltip_text = "Back to %s" % (_crumb_name(_nav_stack[_nav_stack.size() - 2])
+	back.tooltip_text = tr("Back to %s") % (_crumb_name(_nav_stack[_nav_stack.size() - 2])
 		if _nav_stack.size() > 1 else _tab_title(_current))
 	back.pressed.connect(_profile_back)
 	_crumb_bar.add_child(back)
@@ -310,7 +310,7 @@ func _rebuild_crumbs() -> void:
 
 	# root crumb: the tab this drill-down started from
 	var root_btn := UI.link(_tab_title(_current), 12, TB.COL_TEXT_DIM,
-		{"kind": "tab", "id": _current}, "Back to %s" % _tab_title(_current))
+		{"kind": "tab", "id": _current}, tr("Back to %s") % _tab_title(_current))
 	root_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_crumb_bar.add_child(root_btn)
 	for i in _nav_stack.size():
@@ -324,7 +324,7 @@ func _rebuild_crumbs() -> void:
 			_crumb_bar.add_child(cur)
 		else:
 			var lb := UI.Link.new(nm, 12, TB.COL_TEXT_DIM)
-			lb.tooltip_text = "Back to %s" % nm
+			lb.tooltip_text = tr("Back to %s") % nm
 			lb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var idx := i
 			lb.pressed.connect(func(): _jump_to_stack(idx))
@@ -350,7 +350,7 @@ func _crumb_name(entry: Dictionary) -> String:
 func _tab_title(key: String) -> String:
 	for entry in TABS:
 		if entry[0] == key:
-			return entry[1]
+			return tr(entry[1])
 	return key
 
 
@@ -414,14 +414,14 @@ func _refresh_header() -> void:
 	if _comp_ctx == "cup":
 		_refresh_header_cup()
 		return
-	var season_t := "Season %d" % GameState.season_no()
-	_hdr_title.text = GameState.league_name(_comp_ctx).to_upper()
+	var season_t := tr("Season %d") % GameState.season_no()
+	_hdr_title.text = tr(GameState.league_name(_comp_ctx)).to_upper()
 	var other := ""
 	for lg in GameState.leagues():
 		if str(lg["id"]) != _comp_ctx:
-			other = str(lg["name"])
-	_hdr_sub.text = "with the %s and the %s · %s" % [other, GameState.cup_name(), season_t] \
-		if other != "" else "with the %s · %s" % [GameState.cup_name(), season_t]
+			other = tr(str(lg["name"]))
+	_hdr_sub.text = tr("with the %s and the %s · %s") % [other, tr(GameState.cup_name()), season_t] \
+		if other != "" else tr("with the %s · %s") % [tr(GameState.cup_name()), season_t]
 
 	var lg_fixtures: Array = Season.league_fixtures(GameState.fixtures, _comp_ctx)
 	var completed := 0
@@ -442,12 +442,12 @@ func _refresh_header() -> void:
 		for r in table:
 			if GameState.is_player_club(r["club_id"]):
 				no_games = int(r.get("played", 0)) == 0
-		_hdr_pos.text = "—" if no_games else _ord(pos)
+		_hdr_pos.text = "—" if no_games else I18n.ordinal(pos)
 		_hdr_pos.add_theme_color_override("font_color", TB.COL_ACCENT.lightened(0.35))
 	else:
 		_hdr_pos_cap.text = "TITLE GAP 1st-2nd"
 		if table.size() >= 2 and int(table[0]["played"]) > 0:
-			_hdr_pos.text = "%d pts" % (int(table[0]["points"]) - int(table[1]["points"]))
+			_hdr_pos.text = tr("%d pts") % (int(table[0]["points"]) - int(table[1]["points"]))
 		else:
 			_hdr_pos.text = "—"
 		_hdr_pos.add_theme_color_override("font_color", Color.WHITE)
@@ -465,7 +465,7 @@ func _refresh_header() -> void:
 		_hdr_leader.text = "-"
 	else:
 		var leader := GameState.club(table[0]["club_id"])
-		_hdr_leader.text = "%s · %d pts" % [leader.get("short", "?"), int(table[0]["points"])]
+		_hdr_leader.text = tr("%s · %d pts") % [leader.get("short", "?"), int(table[0]["points"])]
 
 
 ## What comes after matchday 30 — the season never dead-ends: Championship
@@ -473,31 +473,31 @@ func _refresh_header() -> void:
 func _season_end_text() -> String:
 	var po: Array = Season.playoff_fixtures(GameState.fixtures)
 	if po.is_empty():
-		return "CS draw pending" if Season.league_complete(GameState.fixtures) else "Season over"
+		return tr("CS draw pending") if Season.league_complete(GameState.fixtures) else tr("Season over")
 	var pending: Array = po.filter(func(f): return not f["played"])
 	if not pending.is_empty():
 		pending.sort_custom(func(a, b): return str(a["date"]) < str(b["date"]))
-		return "CS %s %s" % [Season.playoff_round_name(int(pending[0]["round"])),
+		return tr("CS %s %s") % [I18n.playoff_round(int(pending[0]["round"])),
 			UI.short_date(str(pending[0]["date"]))]
 	var flow: Variant = SeasonFlow.instance
 	if flow != null and str(flow.rollover_date) != "":
-		return "Season %d: %s" % [GameState.season_no() + 1, UI.short_date(str(flow.rollover_date))]
-	return "Off-season"
+		return tr("Season %d: %s") % [GameState.season_no() + 1, UI.short_date(str(flow.rollover_date))]
+	return tr("Off-season")
 
 
 func _refresh_header_cup() -> void:
-	_hdr_title.text = GameState.cup_name().to_upper()
-	var names: Array = GameState.leagues().map(func(l): return str(l["name"]))
-	_hdr_sub.text = "cross-league knockout · clubs from the %s · Season %d" % [
-		" and ".join(names), GameState.season_no()]
+	_hdr_title.text = tr(GameState.cup_name()).to_upper()
+	var names: Array = GameState.leagues().map(func(l): return tr(str(l["name"])))
+	_hdr_sub.text = tr("cross-league knockout · clubs from the %s · Season %d") % [
+		tr(" and ").join(names), GameState.season_no()]
 	var cup: Array = Season.cup_fixtures(GameState.fixtures)
 	var max_round := 0
 	var total_rounds := 5
 	for f in cup:
 		max_round = maxi(max_round, int(f["round"]))
 	_hdr_round_cap.text = "ROUND"
-	_hdr_round.text = "%s (%d/%d)" % [Season.cup_round_name(max_round), max_round, total_rounds] \
-		if max_round > 0 else "Draw pending"
+	_hdr_round.text = "%s (%d/%d)" % [I18n.cup_round(max_round), max_round, total_rounds] \
+		if max_round > 0 else tr("Draw pending")
 
 	# your cup status
 	_hdr_pos_cap.text = "YOUR STATUS"
@@ -511,18 +511,18 @@ func _refresh_header_cup() -> void:
 	var final_done: bool = max_round == total_rounds \
 		and not current.any(func(f): return not f["played"])
 	if final_done and Season.fixture_winner(current[0]) == pid:
-		_hdr_pos.text = "Champions"
+		_hdr_pos.text = tr("Champions")
 		_hdr_pos.add_theme_color_override("font_color", Color(0.95, 0.83, 0.4))
 	elif out_round > 0:
-		_hdr_pos.text = "Out (%s)" % Season.cup_round_name(out_round)
+		_hdr_pos.text = tr("Out (%s)") % I18n.cup_round(out_round)
 		_hdr_pos.add_theme_color_override("font_color", UI.COL_LOSS)
 	else:
-		_hdr_pos.text = "In the draw"
+		_hdr_pos.text = tr("In the draw")
 		_hdr_pos.add_theme_color_override("font_color", UI.COL_WIN)
 
 	var upcoming: Array = cup.filter(func(f): return not f["played"] and f["date"] > GameState.current_date)
 	if upcoming.is_empty():
-		_hdr_next.text = "Final played" if final_done else "Next draw pending"
+		_hdr_next.text = tr("Final played") if final_done else tr("Next draw pending")
 	else:
 		upcoming.sort_custom(func(a, b): return a["date"] < b["date"])
 		var days := Season.days_between(GameState.current_date, upcoming[0]["date"])
@@ -559,8 +559,8 @@ func _build_tab_bar() -> Control:
 	bar.add_child(cap)
 	var entries: Array = []
 	for lg in GameState.leagues():
-		entries.append([str(lg["id"]), str(lg["name"])])
-	entries.append(["cup", GameState.cup_name()])
+		entries.append([str(lg["id"]), tr(str(lg["name"]))])
+	entries.append(["cup", tr(GameState.cup_name())])
 	for entry in entries:
 		var b := Button.new()
 		b.text = str(entry[1])
@@ -569,7 +569,7 @@ func _build_tab_bar() -> Control:
 		b.custom_minimum_size = Vector2(108, 28)
 		b.add_theme_font_size_override("font_size", 12)
 		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-		b.tooltip_text = "Browse the %s" % entry[1]
+		b.tooltip_text = tr("Browse the %s") % entry[1]
 		b.pressed.connect(comp_set_league.bind(str(entry[0])))
 		bar.add_child(b)
 		_ctx_buttons[str(entry[0])] = b
@@ -626,10 +626,4 @@ func _tab_style(active: bool, hover: bool = false) -> StyleBoxFlat:
 func _ord(n: int) -> String:
 	if n <= 0:
 		return "-"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

@@ -1,5 +1,1 @@
-{
- "phase": "Playtest final de la expansión",
- "note": "Playtest2 COMPLETE: full Johto career driven through real UI (picker->Olivine, tactics, manual league match w/ Rain Dance weather, cup doubles w/ target picker+spread, FA+prospect signings, Kanto scouting through knowledge stages, academy intake+promotion+mentoring, inbox evolution approval, Water Stone Vaporeon, CS+awards+history, season-2 rollover+match, save/load mid-season and post-rollover 18/18). FIXED: weather dead-content (gen_weather.py data patch), tactics debounce edits lost on nav-away, learnset_extra ignored by training, status_tick -1400% commentary, season-end board mails hijacked by board-review card, off-season mail quoting wrong preseason date, cup fixtures unnamed in topbar, 'relegation' leftover. SMOKE OK + all piece drivers green.",
- "updated": "2026-08-30 19:03"
-}
+{"phase":"Ola 3 — Producto: polish, audio, plataformas, español","note":"4 piezas: pendientes de calidad (incluye despido real del mánager), audio procedural, UI multi-resolución + exports Win/Linux/Web, y localización completa al español. Ruedas de prensa descartadas a petición del usuario.","updated":"2026-08-30 20:40"}

@@ -146,11 +146,11 @@ func _settle_fixture(f: Dictionary, positions: Dictionary) -> void:
 		_move(home, share - ops)
 		_move(away, share - travel)
 		if we_home:
-			_record(date, "Cup gate share — vs %s (att %s)" % [opp_h, _fmt_att(att)], share, "gate")
-			_record(date, "Matchday operations — vs %s" % opp_h, -ops, "ops")
+			_record(date, I18n.t("Cup gate share — vs %s (att %s)") % [opp_h, _fmt_att(att)], share, "gate")
+			_record(date, I18n.t("Matchday operations — vs %s") % opp_h, -ops, "ops")
 		elif we_away:
-			_record(date, "Cup gate share — at %s (att %s)" % [opp_a, _fmt_att(att)], share, "gate")
-			_record(date, "Team travel — at %s" % opp_a, -travel, "travel")
+			_record(date, I18n.t("Cup gate share — at %s (att %s)") % [opp_a, _fmt_att(att)], share, "gate")
+			_record(date, I18n.t("Team travel — at %s") % opp_a, -travel, "travel")
 		# round prize money to the winner
 		var rnd := int(f.get("round", 1))
 		var prize := int(CUP_PRIZE.get(rnd, 75000))
@@ -158,15 +158,15 @@ func _settle_fixture(f: Dictionary, positions: Dictionary) -> void:
 		var winner := home if home_won else away
 		_move(winner, prize)
 		if (we_home and home_won) or (we_away and not home_won):
-			_record(date, "Prize money — %s won" % Season.cup_round_name(rnd), prize, "prize")
+			_record(date, I18n.t("Prize money — %s won") % I18n.cup_round(rnd), prize, "prize")
 	else:
 		_move(home, gross - ops)
 		_move(away, -travel)
 		if we_home:
-			_record(date, "Gate receipts — vs %s (att %s)" % [opp_h, _fmt_att(att)], gross, "gate")
-			_record(date, "Matchday operations — vs %s" % opp_h, -ops, "ops")
+			_record(date, I18n.t("Gate receipts — vs %s (att %s)") % [opp_h, _fmt_att(att)], gross, "gate")
+			_record(date, I18n.t("Matchday operations — vs %s") % opp_h, -ops, "ops")
 		elif we_away:
-			_record(date, "Team travel — at %s" % opp_a, -travel, "travel")
+			_record(date, I18n.t("Team travel — at %s") % opp_a, -travel, "travel")
 
 
 ## Deterministic crowd: club stature, the visitors' pull, league standing,
@@ -190,7 +190,7 @@ func _attendance(f: Dictionary, home: Dictionary, away: Dictionary, positions: D
 func _settle_month(boundary: String, positions: Dictionary) -> void:
 	var closing := Season.date_add(boundary, -1)      # e.g. 2026-08-31
 	var month_key := closing.substr(0, 7)
-	var mname: String = MONTH_NAMES[int(closing.split("-")[1])]
+	var mname: String = I18n.t(MONTH_NAMES[int(closing.split("-")[1])])
 
 	for c in GameState.world["clubs"]:
 		var rep := int(c["reputation"])
@@ -203,11 +203,11 @@ func _settle_month(boundary: String, positions: Dictionary) -> void:
 		var broadcast := 6000 + (16 - pos) * 550
 		_move(c, sponsor + broadcast - payroll - upkeep)
 		if GameState.is_player_club(str(c["id"])):
-			_record(closing, "Payroll — squad wages, %s (%d battlers)" %
+			_record(closing, I18n.t("Payroll — squad wages, %s (%d battlers)") %
 				[mname, c["squad"].size()], -payroll, "wages")
-			_record(closing, "Facilities & staff upkeep — %s" % mname, -upkeep, "upkeep")
-			_record(closing, "Sponsorship — %s" % mname, sponsor, "sponsor")
-			_record(closing, "League broadcast & merit payment — %s (%s)" %
+			_record(closing, I18n.t("Facilities & staff upkeep — %s") % mname, -upkeep, "upkeep")
+			_record(closing, I18n.t("Sponsorship — %s") % mname, sponsor, "sponsor")
+			_record(closing, I18n.t("League broadcast & merit payment — %s (%s)") %
 				[mname, _ord(pos)], broadcast, "broadcast")
 	_send_month_report(boundary, month_key, mname)
 
@@ -222,13 +222,13 @@ func _send_month_report(boundary: String, month_key: String, mname: String) -> v
 	var net := int(t["net"])
 	var pc: Dictionary = GameState.player_club()
 	GameState.add_inbox_message(boundary,
-		"Monthly finance report: %s (%s%s)" % [mname, "+" if net >= 0 else "", news.money(net)],
-		"The finance office has closed the books on %s. Operating result: %s." %
+		I18n.t("Monthly finance report: %s (%s%s)") % [mname, "+" if net >= 0 else "", news.money(net)],
+		I18n.t("The finance office has closed the books on %s. Operating result: %s.") %
 			[mname, news.money(net)])
 	var m: Dictionary = GameState.inbox[0]
 	m["uid"] = uid
 	m["cat"] = "board"
-	m["sender"] = "%s Finance Office" % pc["name"]
+	m["sender"] = I18n.t("%s Finance Office") % pc["name"]
 	m["month"] = month_key
 	if boundary < GameState.current_date:
 		m["read"] = true   # backfilled history arrives read, like other news
@@ -292,17 +292,8 @@ func _table_positions() -> Dictionary:
 
 
 func _fmt_att(n: int) -> String:
-	var s := str(n)
-	if s.length() > 3:
-		s = s.substr(0, s.length() - 3) + "," + s.substr(s.length() - 3)
-	return s
+	return I18n.number(n)
 
 
 func _ord(n: int) -> String:
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

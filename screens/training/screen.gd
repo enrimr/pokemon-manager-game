@@ -99,7 +99,7 @@ func _build_layout() -> void:
 	title.add_theme_color_override("font_color", Color.WHITE)
 	head.add_child(title)
 	var sub := Label.new()
-	sub.text = "%s  ·  %d Pokémon  ·  %d coaches" % [GameState.player_club()["name"],
+	sub.text = tr("%s  ·  %d Pokémon  ·  %d coaches") % [GameState.player_club()["name"],
 		svc.squad().size(), svc.coaching_staff().size()]
 	sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	sub.size_flags_vertical = Control.SIZE_SHRINK_END
@@ -241,7 +241,7 @@ func _clear(node: Node) -> void:
 
 
 func _age_str(months: int) -> String:
-	return "%dy %dm" % [months / 12, months % 12]
+	return tr("%dy %dm") % [months / 12, months % 12]
 
 
 func _strain_color(s: float) -> Color:
@@ -255,14 +255,14 @@ func _strain_color(s: float) -> Color:
 func _dev_stage(age_months: int) -> Array:
 	var m: float = svc.age_mult(age_months)
 	if m >= 1.25:
-		return ["Rapid developer", ThemeBuilder.COL_GOOD]
+		return [tr("Rapid developer"), ThemeBuilder.COL_GOOD]
 	if m >= 1.05:
-		return ["Developing well", ThemeBuilder.COL_GOOD]
+		return [tr("Developing well"), ThemeBuilder.COL_GOOD]
 	if m >= 0.85:
 		return ["Steady", ThemeBuilder.COL_TEXT]
 	if m >= 0.55:
-		return ["Development slowing", ThemeBuilder.COL_WARN]
-	return ["Veteran — minimal growth", ThemeBuilder.COL_BAD]
+		return [tr("Development slowing"), ThemeBuilder.COL_WARN]
+	return [tr("Veteran — minimal growth"), ThemeBuilder.COL_BAD]
 
 
 func _display_name(inst: Dictionary) -> String:
@@ -276,7 +276,7 @@ func _build_schedule_tab() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 
-	var left_wrap := _panel("Training calendar")
+	var left_wrap := _panel(tr("Training calendar"))
 	var left: VBoxContainer = left_wrap[1]
 	(left_wrap[0] as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(left_wrap[0])
@@ -296,7 +296,7 @@ func _build_schedule_tab() -> Control:
 	week_row.add_child(vlab)
 	for w in [1, 2, 4]:
 		var vb := Button.new()
-		vb.text = "%d week%s" % [w, "" if w == 1 else "s"]
+		vb.text = tr("%d week%s") % [w, "" if w == 1 else "s"]
 		vb.toggle_mode = true
 		vb.custom_minimum_size = Vector2(76, 28)
 		vb.pressed.connect(func():
@@ -308,8 +308,8 @@ func _build_schedule_tab() -> Control:
 	wsp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	week_row.add_child(wsp)
 	_auto_check = CheckButton.new()
-	_auto_check.text = "Auto-adjust around matches"
-	_auto_check.tooltip_text = "When on: no field training on matchday (warm-up only), a recovery day the morning after, and a light Match Prep day before a fixture — all editable per date; your date edits win.\nWhen off: your plan runs straight into matches — strain will spike."
+	_auto_check.text = tr("Auto-adjust around matches")
+	_auto_check.tooltip_text = tr("When on: no field training on matchday (warm-up only), a recovery day the morning after, and a light Match Prep day before a fixture — all editable per date; your date edits win.\nWhen off: your plan runs straight into matches — strain will spike.")
 	_auto_check.toggled.connect(func(on: bool):
 		svc.set_auto_match(on)
 		_refresh_schedule.call_deferred())
@@ -330,22 +330,22 @@ func _build_schedule_tab() -> Control:
 	presets.add_theme_constant_override("separation", 8)
 	left.add_child(presets)
 	var pl := Label.new()
-	pl.text = "Weekday template presets:"
-	pl.tooltip_text = "Rewrites the repeating weekday DEFAULT. To plan one specific future week instead, use that week's Plan ▾ menu on the calendar."
+	pl.text = tr("Weekday template presets:")
+	pl.tooltip_text = tr("Rewrites the repeating weekday DEFAULT. To plan one specific future week instead, use that week's Plan ▾ menu on the calendar.")
 	pl.mouse_filter = Control.MOUSE_FILTER_STOP
 	pl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	presets.add_child(pl)
 	for p in svc.PRESETS:
 		var b := Button.new()
 		b.text = str(svc.PRESET_LABELS[p])
-		b.tooltip_text = "Sets the repeating weekday template. Per-date edits on the calendar stay in place on top of it."
+		b.tooltip_text = tr("Sets the repeating weekday template. Per-date edits on the calendar stay in place on top of it.")
 		b.pressed.connect(func():
 			svc.apply_preset(p)
 			_refresh_schedule())
 		presets.add_child(b)
 
 	var legend := Label.new()
-	legend.text = "Every cell edits THAT DATE only (violet = date-specific plan; ↺ resets to the weekday template). Use a week's Plan ▾ menu to stamp a preset on just that week — a recovery week before a congested block, a heavy development block, opponent prep — or to save it as the template. Fixtures embed automatically (amber): matchday is locked, the days around it default to recovery/prep but your date edits win. High intensity trains faster but builds strain; each Pokémon also carries its own load below (Automatic rests above %d%% strain, eases above %d%%)." % [int(svc.AUTO_REST_AT), int(svc.AUTO_LIGHT_AT)]
+	legend.text = tr("Every cell edits THAT DATE only (violet = date-specific plan; ↺ resets to the weekday template). Use a week's Plan ▾ menu to stamp a preset on just that week — a recovery week before a congested block, a heavy development block, opponent prep — or to save it as the template. Fixtures embed automatically (amber): matchday is locked, the days around it default to recovery/prep but your date edits win. High intensity trains faster but builds strain; each Pokémon also carries its own load below (Automatic rests above %d%% strain, eases above %d%%).") % [int(svc.AUTO_REST_AT), int(svc.AUTO_LIGHT_AT)]
 	legend.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	legend.add_theme_font_size_override("font_size", 12)
 	legend.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -353,7 +353,7 @@ func _build_schedule_tab() -> Control:
 
 	left.add_child(HSeparator.new())
 	var stl := Label.new()
-	stl.text = "SQUAD TRAINING STATUS"
+	stl.text = tr("SQUAD TRAINING STATUS")
 	stl.add_theme_font_size_override("font_size", 12)
 	stl.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	left.add_child(stl)
@@ -362,7 +362,7 @@ func _build_schedule_tab() -> Control:
 	_status_tree.columns = 10
 	_status_tree.column_titles_visible = true
 	_status_tree.hide_root = true
-	var st_titles := ["Pokémon", "Lv", "Age", "Stage", "Load", "Strain", "7d Δ", "Fitness", "Focus", "Learning"]
+	var st_titles := ["Pokémon", "Lv", "Age", "Stage", "Workload", "Strain", "7d Δ", "Fitness", "Focus", "Learning"]
 	var st_widths := [150, 40, 56, 132, 128, 58, 56, 60, 74, 130]
 	for i in st_titles.size():
 		_status_tree.set_column_title(i, st_titles[i])
@@ -370,10 +370,10 @@ func _build_schedule_tab() -> Control:
 		if i > 0:
 			_status_tree.set_column_custom_minimum_width(i, st_widths[i])
 	_status_tree.item_edited.connect(_on_status_load_edited)
-	_status_tree.tooltip_text = "Load: each Pokémon's own training intensity — click the cell to change it. 7d Δ: its projected net strain this week at that load."
+	_status_tree.tooltip_text = tr("Load: each Pokémon's own training intensity — click the cell to change it. 7d Δ: its projected net strain this week at that load.")
 	left.add_child(_status_tree)
 
-	var right_wrap := _panel("This week · fixtures & load")
+	var right_wrap := _panel(tr("This week · fixtures & load"))
 	(right_wrap[0] as Control).custom_minimum_size.x = 360
 	_summary_box = right_wrap[1]
 	row.add_child(right_wrap[0])
@@ -384,7 +384,7 @@ func _on_date_session_pick(idx: int, date: String, slot: String) -> void:
 	if idx < svc.FOCUSES.size():
 		svc.set_date_session(date, slot, svc.FOCUSES[idx])
 	else:
-		svc.clear_date_slot(date, slot)  # "↺ Template default"
+		svc.clear_date_slot(date, slot)  # tr("↺ Template default")
 	_refresh_schedule.call_deferred()
 
 
@@ -447,7 +447,7 @@ func _day_header(plan: Dictionary) -> Control:
 	var is_today: bool = plan["date"] == GameState.current_date
 	var is_match: bool = not (plan["fixture"] as Dictionary).is_empty()
 	var top := Label.new()
-	top.text = str(svc.DAY_LABELS[plan["day"]]).substr(0, 3).to_upper() + ("  · TODAY" if is_today else "")
+	top.text = tr(str(svc.DAY_LABELS[plan["day"]])).substr(0, 3).to_upper() + (("  · " + tr("TODAY")) if is_today else "")
 	top.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	top.add_theme_font_size_override("font_size", 12)
 	top.add_theme_color_override("font_color",
@@ -461,12 +461,12 @@ func _day_header(plan: Dictionary) -> Control:
 		if bool(ov[k]):
 			edited = true
 	var bot := Label.new()
-	bot.text = "%d %s" % [int(parts[2]), months[int(parts[1]) - 1]] + ("  ●" if edited else "")
+	bot.text = "%d %s" % [int(parts[2]), tr(months[int(parts[1]) - 1])] + ("  ●" if edited else "")
 	bot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	bot.add_theme_font_size_override("font_size", 11)
 	bot.add_theme_color_override("font_color", OVERRIDE_COL if edited else ThemeBuilder.COL_TEXT_DIM)
 	if edited:
-		bot.tooltip_text = "This date has its own plan (differs from the weekday template)."
+		bot.tooltip_text = tr("This date has its own plan (differs from the weekday template).")
 		bot.mouse_filter = Control.MOUSE_FILTER_STOP
 	v.add_child(bot)
 	return v
@@ -482,7 +482,7 @@ func _fixture_cell(plan: Dictionary) -> Control:
 		return dash
 	var opp: Dictionary = svc.opponent_of(fx)
 	var home: bool = svc.fixture_is_home(fx)
-	var comp := "League R%d" % int(fx["round"]) if str(fx["comp"]) == "league" else "Cup R%d" % int(fx["round"])
+	var comp := tr("League R%d") % int(fx["round"]) if str(fx["comp"]) == "league" else tr("Cup R%d") % int(fx["round"])
 	var p := PanelContainer.new()
 	p.custom_minimum_size = Vector2(112, 38)
 	var sb := StyleBoxFlat.new()
@@ -492,11 +492,11 @@ func _fixture_cell(plan: Dictionary) -> Control:
 	sb.set_corner_radius_all(4)
 	p.add_theme_stylebox_override("panel", sb)
 	p.tooltip_text = "%s %s, %s — %s" % ["vs" if home else "at", opp["name"], comp,
-		Season.pretty_date(str(fx["date"]))]
+		I18n.pretty_date(str(fx["date"]))]
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 0)
 	var l1 := Label.new()
-	l1.text = "%s %s" % ["vs" if home else "at", str(opp.get("short", opp["name"]))]
+	l1.text = "%s %s" % [tr("vs") if home else tr("at"), str(opp.get("short", opp["name"]))]
 	l1.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l1.add_theme_font_size_override("font_size", 12)
 	l1.add_theme_color_override("font_color", Color.WHITE)
@@ -545,7 +545,7 @@ func _session_cell(plan: Dictionary, slot: String) -> Control:
 			return _locked_cell("Warm-up", FOCUS_COLORS["match_prep"],
 				"Matchday: only a light pre-match warm-up — no field training (locked).")
 		return _locked_cell("MATCH", ThemeBuilder.COL_WARN,
-			"The fixture itself. Starters take heavy strain from playing.", true)
+			tr("The fixture itself. Starters take heavy strain from playing."), true)
 	var overridden: bool = bool((plan["ov"] as Dictionary)[slot])
 	var ob := OptionButton.new()
 	ob.custom_minimum_size = Vector2(112, 30)
@@ -553,20 +553,20 @@ func _session_cell(plan: Dictionary, slot: String) -> Control:
 	ob.clip_text = true
 	for f in svc.FOCUSES:
 		ob.add_item(svc.FOCUS_LABELS[f])
-	ob.add_item("↺ Template default")
+	ob.add_item(tr("↺ Template default"))
 	ob.select(svc.FOCUSES.find(focus))
 	_tint_focus_button(ob, focus)
 	var tpl_focus: String = svc.state["schedule"][plan["day"]][slot]
-	var tip := "Edits %s %s ONLY (per-date plan)." % [Season.pretty_date(date), slot.to_upper()]
+	var tip := tr("Edits %s %s ONLY (per-date plan).") % [I18n.pretty_date(date), slot.to_upper()]
 	if overridden:
-		tip += "\nDate-specific: %s (template default: %s). ↺ resets it." % [
+		tip += tr("\nDate-specific: %s (template default: %s). ↺ resets it.") % [
 			svc.FOCUS_LABELS[focus], svc.FOCUS_LABELS[tpl_focus]]
 	elif kind == "post_match":
 		tip += "\nAuto: recovery after yesterday's match — pick a focus to override this date."
 	elif kind == "pre_match" and slot == "pm":
-		tip += "\nAuto: Match Prep for tomorrow's fixture — pick a focus to override this date."
+		tip += tr("\nAuto: Match Prep for tomorrow's fixture — pick a focus to override this date.")
 	else:
-		tip += "\nCurrently the %s template default." % svc.DAY_LABELS[plan["day"]]
+		tip += tr("\nCurrently the %s template default.") % svc.DAY_LABELS[plan["day"]]
 	ob.tooltip_text = tip
 	ob.item_selected.connect(_on_date_session_pick.bind(date, slot))
 	return _override_wrap(ob, tip) if overridden else ob
@@ -575,7 +575,7 @@ func _session_cell(plan: Dictionary, slot: String) -> Control:
 func _intensity_cell(plan: Dictionary) -> Control:
 	var date: String = plan["date"]
 	if plan["kind"] == "matchday":
-		return _locked_cell("—", Color("3a4058"), "No training intensity on matchday.")
+		return _locked_cell("—", Color("3a4058"), tr("No training intensity on matchday."))
 	var overridden: bool = bool((plan["ov"] as Dictionary)["intensity"])
 	var ob := OptionButton.new()
 	ob.custom_minimum_size = Vector2(112, 28)
@@ -583,13 +583,13 @@ func _intensity_cell(plan: Dictionary) -> Control:
 	ob.clip_text = true
 	for i in svc.INTENSITIES:
 		ob.add_item(svc.INTENSITY_LABELS[i])
-	ob.add_item("↺ Default")
+	ob.add_item(tr("↺ Default"))
 	ob.select(svc.INTENSITIES.find(str(plan["intensity"])))
-	var tip := "Intensity for %s ONLY." % Season.pretty_date(date)
+	var tip := tr("Intensity for %s ONLY.") % I18n.pretty_date(date)
 	if overridden:
-		tip += "\nDate-specific: %s. ↺ resets to the default." % svc.INTENSITY_LABELS[plan["intensity"]]
+		tip += tr("\nDate-specific: %s. ↺ resets to the default.") % svc.INTENSITY_LABELS[plan["intensity"]]
 	elif plan["kind"] == "post_match" or plan["kind"] == "pre_match":
-		tip += "\nAuto: Light around the fixture — pick to override this date."
+		tip += tr("\nAuto: Light around the fixture — pick to override this date.")
 	ob.tooltip_text = tip
 	ob.item_selected.connect(_on_date_intensity_pick.bind(date))
 	return _override_wrap(ob, tip) if overridden else ob
@@ -599,21 +599,21 @@ func _week_menu(week_idx: int, start_date: String) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 0)
 	var l := Label.new()
-	l.text = "THIS WEEK" if week_idx == 0 else "WEEK +%d" % week_idx
+	l.text = tr("THIS WEEK") if week_idx == 0 else tr("WEEK +%d") % week_idx
 	l.add_theme_font_size_override("font_size", 11)
 	l.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT if week_idx == 0 else ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(l)
 	var mb := MenuButton.new()
-	mb.text = "Plan ▾"
+	mb.text = tr("Plan ▾")
 	mb.flat = false
 	mb.custom_minimum_size = Vector2(74, 26)
-	mb.tooltip_text = "Plan THIS specific week: stamp a preset on it (per-date, template untouched), reset it to the template, or save it as the new weekday template."
+	mb.tooltip_text = tr("Plan THIS specific week: stamp a preset on it (per-date, template untouched), reset it to the template, or save it as the new weekday template.")
 	var pop := mb.get_popup()
 	for i in svc.PRESETS.size():
-		pop.add_item("Preset: %s" % svc.PRESET_LABELS[svc.PRESETS[i]], i)
+		pop.add_item(tr("Preset: %s") % svc.PRESET_LABELS[svc.PRESETS[i]], i)
 	pop.add_separator()
-	pop.add_item("Reset week to template", 100)
-	pop.add_item("Save week as template", 101)
+	pop.add_item(tr("Reset week to template"), 100)
+	pop.add_item(tr("Save week as template"), 101)
 	pop.id_pressed.connect(_on_week_menu.bind(start_date))
 	v.add_child(mb)
 	return v
@@ -643,7 +643,7 @@ func _week_grid(week_idx: int, dates: Array) -> Control:
 	for plan in plans:
 		grid.add_child(_intensity_cell(plan))
 
-	grid.add_child(_row_label("NET STRAIN",
+	grid.add_child(_row_label(tr("NET STRAIN"),
 		"Estimated strain change per Pokémon for that day, including match load (negative = recovering)."))
 	for plan in plans:
 		var dload: float = svc.day_strain_load(str(plan["date"]))
@@ -662,8 +662,8 @@ func _refresh_schedule() -> void:
 		return
 	var weeks: int = svc.view_weeks()
 	var all_dates: Array = svc.calendar_dates(weeks)
-	_week_title.text = "%s  —  %s" % [Season.pretty_date(all_dates[0]),
-		Season.pretty_date(all_dates[all_dates.size() - 1])]
+	_week_title.text = "%s  —  %s" % [I18n.pretty_date(all_dates[0]),
+		I18n.pretty_date(all_dates[all_dates.size() - 1])]
 	for w in _view_buttons:
 		(_view_buttons[w] as Button).set_pressed_no_signal(int(w) == weeks)
 	_auto_check.set_pressed_no_signal(bool(svc.state.get("auto_match", true)))
@@ -689,9 +689,9 @@ func _on_status_load_edited() -> void:
 
 func _load_column_options(inst: Dictionary) -> String:
 	# First entry shows what Automatic resolves to right now for THIS Pokémon.
-	var opts: Array = ["Auto → %s" % svc.LOAD_LABELS[svc.resolve_auto_load(inst)]]
+	var opts: Array = ["Auto → %s" % tr(str(svc.LOAD_LABELS[svc.resolve_auto_load(inst)]))]
 	for i in range(1, svc.LOADS.size()):
-		opts.append(str(svc.LOAD_LABELS[svc.LOADS[i]]))
+		opts.append(tr(str(svc.LOAD_LABELS[svc.LOADS[i]])))
 	return ",".join(opts)
 
 
@@ -732,9 +732,9 @@ func _refresh_status_tree() -> void:
 		it.set_text(6, "%+.0f" % wk)
 		it.set_custom_color(6,
 			ThemeBuilder.COL_GOOD if wk < 0.0 else (ThemeBuilder.COL_WARN if wk < 10.0 else ThemeBuilder.COL_BAD))
-		it.set_tooltip_text(6, "Projected net strain over the next 7 days at %s load%s." % [
-			svc.LOAD_LABELS[svc.effective_load(inst)],
-			" (likely starter — carries match strain)" if svc.likely_starter_uids().has(str(inst["uid"])) else ""])
+		it.set_tooltip_text(6, tr("Projected net strain over the next 7 days at %s load%s.") % [
+			tr(str(svc.LOAD_LABELS[svc.effective_load(inst)])),
+			tr(" (likely starter — carries match strain)") if svc.likely_starter_uids().has(str(inst["uid"])) else ""])
 		var fit := int(inst.get("fitness", 0))
 		it.set_text(7, "%d%%" % fit)
 		it.set_custom_color(7, ThemeBuilder.COL_GOOD if fit >= 85 else (ThemeBuilder.COL_WARN if fit >= 65 else ThemeBuilder.COL_BAD))
@@ -753,14 +753,14 @@ func _load_tooltip(inst: Dictionary, setting: String, reaction: String) -> Strin
 	var eff: String = svc.effective_load(inst)
 	var txt := ""
 	if setting == "auto":
-		txt = "Automatic → %s (%s)." % [svc.LOAD_LABELS[eff], svc.auto_load_reason(inst)]
+		txt = tr("Automatic → %s (%s).") % [tr(str(svc.LOAD_LABELS[eff])), svc.auto_load_reason(inst)]
 	else:
-		txt = "Manual override: %s (×%.2f development, ×%.2f strain)." % [svc.LOAD_LABELS[eff],
+		txt = tr("Manual override: %s (×%.2f development, ×%.2f strain).") % [tr(str(svc.LOAD_LABELS[eff])),
 			float(svc.LOAD_MULT[eff]), float(svc.LOAD_STRAIN[eff])]
 	if reaction == "overworked":
-		txt += "\nReacting badly: overworked at %d%% strain — morale dropping, injury risk up." % int(svc.strain(str(inst["uid"])))
+		txt += I18n.t("\nReacting badly: overworked at %d%% strain — morale dropping, injury risk up.") % int(svc.strain(str(inst["uid"])))
 	elif reaction == "wants_more":
-		txt += "\nUnhappy: fresh rapid developer being held back — wants to train more."
+		txt += tr("\nUnhappy: fresh rapid developer being held back — wants to train more.")
 	return txt
 
 
@@ -769,14 +769,14 @@ func _refresh_schedule_summary() -> void:
 
 	# --- upcoming fixtures embedded in the training week
 	var fl := Label.new()
-	fl.text = "UPCOMING FIXTURES · 14 DAYS"
+	fl.text = tr("UPCOMING FIXTURES · 14 DAYS")
 	fl.add_theme_font_size_override("font_size", 11)
 	fl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_summary_box.add_child(fl)
 	var upcoming: Array = svc.upcoming_player_fixtures(14)
 	if upcoming.is_empty():
 		var none := Label.new()
-		none.text = "No fixtures in the next two weeks — a free run of full training."
+		none.text = tr("No fixtures in the next two weeks — a free run of full training.")
 		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		none.add_theme_font_size_override("font_size", 12)
 		none.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
@@ -792,21 +792,21 @@ func _refresh_schedule_summary() -> void:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 8)
 		var when := Label.new()
-		when.text = "today" if days_away == 0 else "in %dd" % days_away
+		when.text = tr("today") if days_away == 0 else tr("in %dd") % days_away
 		when.custom_minimum_size.x = 52
 		when.add_theme_font_size_override("font_size", 12)
 		when.add_theme_color_override("font_color",
 			ThemeBuilder.COL_WARN if days_away <= 1 else ThemeBuilder.COL_TEXT_DIM)
 		r.add_child(when)
 		var who := Label.new()
-		who.text = "%s %s (%s)" % ["vs" if home else "at", opp["name"], "H" if home else "A"]
+		who.text = "%s %s %s" % [tr("vs") if home else tr("at"), opp["name"], tr("(H)") if home else tr("(A)")]
 		who.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		who.add_theme_font_size_override("font_size", 12)
 		who.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
 		who.clip_text = true
 		r.add_child(who)
 		var comp := Label.new()
-		comp.text = "League" if str(fx["comp"]) == "league" else "Cup"
+		comp.text = tr("League") if str(fx["comp"]) == "league" else tr("Cup")
 		comp.add_theme_font_size_override("font_size", 11)
 		comp.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 		r.add_child(comp)
@@ -815,8 +815,8 @@ func _refresh_schedule_summary() -> void:
 			prep.text = "Prep"
 			prep.custom_minimum_size = Vector2(44, 22)
 			prep.add_theme_font_size_override("font_size", 11)
-			prep.tooltip_text = "Plan opponent prep for THIS fixture: light Match-Prep-heavy plans on the %d day%s before %s %s (per-date — the weekday template is untouched). Match Prep raises condition, which the match sim rates battlers by." % [
-				mini(days_away, 3), "" if mini(days_away, 3) == 1 else "s", "vs" if home else "at", opp["short"]]
+			prep.tooltip_text = tr("Plan opponent prep for THIS fixture: light Match-Prep-heavy plans on the %d day(s) before %s %s (per-date — the weekday template is untouched). Match Prep raises condition, which the match sim rates battlers by.") % [
+				mini(days_away, 3), tr("vs") if home else tr("at"), opp["short"]]
 			var fx_date := str(fx["date"])
 			prep.pressed.connect(func():
 				svc.plan_prep_for_fixture(fx_date, 3)
@@ -829,16 +829,16 @@ func _refresh_schedule_summary() -> void:
 			in_week += 1
 	var cong := Label.new()
 	if in_week >= 2:
-		cong.text = "Congested week: %d matches in 7 days — training auto-drops to recovery and prep around them; expect little development." % in_week
+		cong.text = tr("Congested week: %d matches in 7 days — training auto-drops to recovery and prep around them; expect little development.") % in_week
 		cong.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 	elif in_week == 1:
-		cong.text = "1 match this week — the schedule rests the squad on matchday and the morning after."
+		cong.text = tr("1 match this week — the schedule rests the squad on matchday and the morning after.")
 		cong.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	else:
-		cong.text = "Free week — no fixtures interrupt training."
+		cong.text = tr("Free week — no fixtures interrupt training.")
 		cong.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 	if not bool(svc.state.get("auto_match", true)) and in_week > 0:
-		cong.text += "\nAuto-adjust is OFF: full training runs into matchdays and strain will spike."
+		cong.text += tr("\nAuto-adjust is OFF: full training runs into matchdays and strain will spike.")
 		cong.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 	cong.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	cong.add_theme_font_size_override("font_size", 12)
@@ -847,8 +847,8 @@ func _refresh_schedule_summary() -> void:
 	# --- per-date plans laid down on the calendar (next 28 days)
 	_summary_box.add_child(HSeparator.new())
 	var pdl := Label.new()
-	pdl.text = "PLANNED DAYS · NEXT 28"
-	pdl.tooltip_text = "Dates you planned individually on the calendar (or via a week's Plan ▾ preset). They override the weekday template on that date only."
+	pdl.text = tr("PLANNED DAYS · NEXT 28")
+	pdl.tooltip_text = tr("Dates you planned individually on the calendar (or via a week's Plan ▾ preset). They override the weekday template on that date only.")
 	pdl.mouse_filter = Control.MOUSE_FILTER_STOP
 	pdl.add_theme_font_size_override("font_size", 11)
 	pdl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -856,7 +856,7 @@ func _refresh_schedule_summary() -> void:
 	var planned: Array = svc.planned_custom_dates(28)
 	if planned.is_empty():
 		var nop := Label.new()
-		nop.text = "None — every day runs the weekday template. Edit any calendar cell or use a week's Plan ▾ menu."
+		nop.text = tr("None — every day runs the weekday template. Edit any calendar cell or use a week's Plan ▾ menu.")
 		nop.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		nop.add_theme_font_size_override("font_size", 12)
 		nop.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -867,14 +867,14 @@ func _refresh_schedule_summary() -> void:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 8)
 		var dl := Label.new()
-		dl.text = Season.pretty_date(date)
+		dl.text = I18n.pretty_date(date)
 		dl.custom_minimum_size.x = 76
 		dl.add_theme_font_size_override("font_size", 12)
 		dl.add_theme_color_override("font_color", OVERRIDE_COL)
 		r.add_child(dl)
 		var what := Label.new()
 		if plan["kind"] == "matchday":
-			what.text = "matchday — plan resumes around the fixture"
+			what.text = tr("matchday — plan resumes around the fixture")
 		else:
 			what.text = "%s / %s · %s" % [svc.FOCUS_LABELS.get(str(plan["am"]), "?"),
 				svc.FOCUS_LABELS.get(str(plan["pm"]), "?"),
@@ -887,7 +887,7 @@ func _refresh_schedule_summary() -> void:
 		var x := Button.new()
 		x.text = "↺"
 		x.custom_minimum_size = Vector2(26, 22)
-		x.tooltip_text = "Reset this date to the weekday template."
+		x.tooltip_text = tr("Reset this date to the weekday template.")
 		x.pressed.connect(func():
 			svc.clear_date_override(date)
 			_refresh_schedule.call_deferred())
@@ -895,7 +895,7 @@ func _refresh_schedule_summary() -> void:
 		_summary_box.add_child(r)
 	if planned.size() > 6:
 		var more := Label.new()
-		more.text = "… and %d more planned day%s" % [planned.size() - 6, "" if planned.size() == 7 else "s"]
+		more.text = tr("… and %d more planned day%s") % [planned.size() - 6, "" if planned.size() == 7 else "s"]
 		more.add_theme_font_size_override("font_size", 11)
 		more.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_summary_box.add_child(more)
@@ -903,7 +903,7 @@ func _refresh_schedule_summary() -> void:
 	_summary_box.add_child(HSeparator.new())
 	var counts: Dictionary = svc.sessions_per_focus()
 	var sl := Label.new()
-	sl.text = "SESSIONS THIS WEEK (FIXTURE-ADJUSTED)"
+	sl.text = tr("SESSIONS THIS WEEK (FIXTURE-ADJUSTED)")
 	sl.add_theme_font_size_override("font_size", 11)
 	sl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_summary_box.add_child(sl)
@@ -920,7 +920,7 @@ func _refresh_schedule_summary() -> void:
 		r.add_child(nm)
 		r.add_child(_mini_bar(float(counts[f]) / 8.0, FOCUS_COLORS.get(f, ThemeBuilder.COL_WARN), 130))
 		var c := Label.new()
-		c.text = "%d / wk" % int(counts[f])
+		c.text = tr("%d / wk") % int(counts[f])
 		c.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		r.add_child(c)
 		_summary_box.add_child(r)
@@ -929,20 +929,20 @@ func _refresh_schedule_summary() -> void:
 	var bal: float = svc.weekly_strain_balance()
 	var bl := Label.new()
 	if bal > 5.0:
-		bl.text = "Overtraining: %+.0f strain per week.\nSquad will accumulate fatigue — add Recovery sessions or lower intensity." % bal
+		bl.text = tr("Overtraining: %+.0f strain per week.\nSquad will accumulate fatigue — add Recovery sessions or lower intensity.") % bal
 		bl.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 	elif bal > -5.0:
-		bl.text = "Sustainable load (%+.0f strain / week)." % bal
+		bl.text = tr("Sustainable load (%+.0f strain / week).") % bal
 		bl.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 	else:
-		bl.text = "Light load (%+.0f strain / week).\nSquad recovers; development will be slower." % bal
+		bl.text = tr("Light load (%+.0f strain / week).\nSquad recovers; development will be slower.") % bal
 		bl.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 	bl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_summary_box.add_child(bl)
 
 	_summary_box.add_child(HSeparator.new())
 	var wl := Label.new()
-	wl.text = "STRAIN WATCHLIST"
+	wl.text = tr("STRAIN WATCHLIST")
 	wl.add_theme_font_size_override("font_size", 11)
 	wl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_summary_box.add_child(wl)
@@ -973,14 +973,14 @@ func _refresh_schedule_summary() -> void:
 		listed += 1
 	if listed == 0:
 		var ok := Label.new()
-		ok.text = "No fatigue concerns — all Pokémon fresh."
+		ok.text = tr("No fatigue concerns — all Pokémon fresh.")
 		ok.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 		_summary_box.add_child(ok)
 
 	for cat in svc.CATEGORIES:
 		if str(svc.state["coaches"].get(cat, "")) == "":
 			var warn := Label.new()
-			warn.text = "No coach covers %s — training there is much less effective." % svc.CAT_LABELS[cat]
+			warn.text = tr("No coach covers %s — training there is much less effective.") % svc.CAT_LABELS[cat]
 			warn.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 			warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			_summary_box.add_child(warn)
@@ -999,7 +999,7 @@ func _build_individual_tab() -> Control:
 	_ind_tree.column_titles_visible = true
 	_ind_tree.hide_root = true
 	_ind_tree.select_mode = Tree.SELECT_ROW
-	var titles := ["Pokémon", "Lv", "Age", "Growth", "Focus", "Load", "Strain", "Learning", "Progress"]
+	var titles := ["Pokémon", "Lv", "Age", "Growth rate", "Focus", "Workload", "Strain", "Learning", "Progress"]
 	var widths := [170, 44, 60, 90, 82, 108, 62, 124, 84]
 	for i in titles.size():
 		_ind_tree.set_column_title(i, titles[i])
@@ -1009,7 +1009,7 @@ func _build_individual_tab() -> Control:
 	_ind_tree.item_selected.connect(_on_ind_selected)
 	row.add_child(_ind_tree)
 
-	var wrap := _panel("Pokémon detail")
+	var wrap := _panel(tr("Pokémon detail"))
 	(wrap[0] as Control).custom_minimum_size.x = 430
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1032,7 +1032,7 @@ func _refresh_individual() -> void:
 		var ms: Dictionary = svc.mon_state(inst["uid"])
 		it.set_metadata(0, inst["uid"])
 		var sp: Dictionary = DataStore.species(int(inst["species_id"]))
-		it.set_text(0, "%s  (%s)" % [_display_name(inst), "/".join(sp["types"])])
+		it.set_text(0, "%s  (%s)" % [_display_name(inst), I18n.types_join(sp["types"])])
 		it.set_custom_color(0, DataStore.type_color(sp["types"][0]).lightened(0.25))
 		it.set_text(1, str(int(inst["level"])))
 		it.set_text(2, _age_str(int(inst["age_months"])))
@@ -1107,7 +1107,7 @@ func _refresh_detail() -> void:
 	var meta := HBoxContainer.new()
 	meta.add_theme_constant_override("separation", 6)
 	var lv := Label.new()
-	lv.text = "%s · Lv %d" % [sp["name"], int(inst["level"])]
+	lv.text = tr("%s · Lv %d") % [sp["name"], int(inst["level"])]
 	lv.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	meta.add_child(lv)
 	for t in sp["types"]:
@@ -1118,7 +1118,7 @@ func _refresh_detail() -> void:
 
 	var stage: Array = _dev_stage(int(inst["age_months"]))
 	var dl := Label.new()
-	dl.text = "%s · %s growth · %s" % [_age_str(int(inst["age_months"])),
+	dl.text = I18n.t("%s · %s growth · %s") % [_age_str(int(inst["age_months"])),
 		str(sp["growth"]).replace("_", " "), stage[0]]
 	dl.add_theme_color_override("font_color", stage[1])
 	dl.add_theme_font_size_override("font_size", 12)
@@ -1134,7 +1134,7 @@ func _refresh_detail() -> void:
 	var sv: float = svc.strain(inst["uid"])
 	strain_row.add_child(_mini_bar(sv / 100.0, _strain_color(sv), 160))
 	var stv := Label.new()
-	stv.text = "%d%%  ·  fitness %d%%" % [int(sv), int(inst.get("fitness", 0))]
+	stv.text = tr("%d%%  ·  fitness %d%%") % [int(sv), int(inst.get("fitness", 0))]
 	stv.add_theme_color_override("font_color", _strain_color(sv))
 	strain_row.add_child(stv)
 	_detail_box.add_child(strain_row)
@@ -1143,7 +1143,7 @@ func _refresh_detail() -> void:
 
 	# --- individual workload (FM-style per-Pokémon training intensity)
 	var wl := Label.new()
-	wl.text = "TRAINING WORKLOAD"
+	wl.text = tr("TRAINING WORKLOAD")
 	wl.add_theme_font_size_override("font_size", 11)
 	wl.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	_detail_box.add_child(wl)
@@ -1162,21 +1162,21 @@ func _refresh_detail() -> void:
 	wrow.add_child(wob)
 	var wnow := Label.new()
 	if setting == "auto":
-		wnow.text = "→ %s today" % svc.LOAD_LABELS[eff]
+		wnow.text = tr("→ %s today") % svc.LOAD_LABELS[eff]
 		wnow.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
 	else:
-		wnow.text = "manual override"
+		wnow.text = tr("manual override")
 		wnow.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	wnow.add_theme_font_size_override("font_size", 12)
 	wrow.add_child(wnow)
 	_detail_box.add_child(wrow)
 	var wdetail := Label.new()
 	if setting == "auto":
-		wdetail.text = "Rule: %s.\nEffect: ×%.2f development · ×%.2f strain intake · %+.0f strain projected over 7 days." % [
+		wdetail.text = tr("Rule: %s.\nEffect: ×%.2f development · ×%.2f strain intake · %+.0f strain projected over 7 days.") % [
 			svc.auto_load_reason(inst), float(svc.LOAD_MULT[eff]), float(svc.LOAD_STRAIN[eff]),
 			svc.personal_week_strain(inst)]
 	else:
-		wdetail.text = "Effect: ×%.2f development · ×%.2f strain intake · %+.0f strain projected over 7 days.\n(Automatic would run %s: %s)" % [
+		wdetail.text = tr("Effect: ×%.2f development · ×%.2f strain intake · %+.0f strain projected over 7 days.\n(Automatic would run %s: %s)") % [
 			float(svc.LOAD_MULT[eff]), float(svc.LOAD_STRAIN[eff]), svc.personal_week_strain(inst),
 			svc.LOAD_LABELS[svc.resolve_auto_load(inst)], svc.auto_load_reason(inst)]
 	wdetail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1187,11 +1187,11 @@ func _refresh_detail() -> void:
 	if reaction != "":
 		var rl := Label.new()
 		if reaction == "overworked":
-			rl.text = "Reacting badly: overworked at %d%% strain on a forced %s load — morale %d%% and dropping, injury risk raised. Ease off or set Automatic." % [
+			rl.text = tr("Reacting badly: overworked at %d%% strain on a forced %s load — morale %d%% and dropping, injury risk raised. Ease off or set Automatic.") % [
 				int(sv), svc.LOAD_LABELS[eff], int(inst.get("morale", 70))]
 			rl.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		else:
-			rl.text = "Unhappy: fresh (%d%% strain) rapid developer held on %s — wants to train more; growth is being wasted." % [
+			rl.text = tr("Unhappy: fresh (%d%% strain) rapid developer held on %s — wants to train more; growth is being wasted.") % [
 				int(sv), svc.LOAD_LABELS[eff]]
 			rl.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 		rl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1202,7 +1202,7 @@ func _refresh_detail() -> void:
 
 	# --- individual focus
 	var fl := Label.new()
-	fl.text = "INDIVIDUAL FOCUS"
+	fl.text = tr("INDIVIDUAL FOCUS")
 	fl.add_theme_font_size_override("font_size", 11)
 	fl.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	_detail_box.add_child(fl)
@@ -1210,7 +1210,7 @@ func _refresh_detail() -> void:
 	frow.add_theme_constant_override("separation", 8)
 	var fob := OptionButton.new()
 	fob.custom_minimum_size = Vector2(160, 32)
-	fob.add_item("No focus")
+	fob.add_item(tr("No focus"))
 	for s in svc.STATS:
 		fob.add_item(svc.STAT_LABELS[s])
 	var cur_focus: String = ms.get("focus", "")
@@ -1220,7 +1220,7 @@ func _refresh_detail() -> void:
 		_refresh_individual())
 	frow.add_child(fob)
 	var fhint := Label.new()
-	fhint.text = "+75% on focused stat, −25% elsewhere"
+	fhint.text = tr("+75% on focused stat, −25% elsewhere")
 	fhint.add_theme_font_size_override("font_size", 12)
 	fhint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	frow.add_child(fhint)
@@ -1228,7 +1228,7 @@ func _refresh_detail() -> void:
 
 	# --- projected gains
 	var pl := Label.new()
-	pl.text = "PROJECTED DEVELOPMENT · NEXT 7 DAYS (FIXTURES + %s LOAD)" % str(svc.LOAD_LABELS[eff]).to_upper()
+	pl.text = I18n.t("PROJECTED DEVELOPMENT · NEXT 7 DAYS (FIXTURES + %s LOAD)") % str(svc.LOAD_LABELS[eff]).to_upper()
 	pl.add_theme_font_size_override("font_size", 11)
 	pl.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	_detail_box.add_child(pl)
@@ -1248,12 +1248,12 @@ func _refresh_detail() -> void:
 		r.add_child(_mini_bar(float(proj[s]) / max_pts, col, 130))
 		var v := Label.new()
 		if iv >= 15:
-			v.text = "trained to potential"
+			v.text = tr("trained to potential")
 			v.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		else:
 			var eta: int = svc.eta_days(inst, s)
-			v.text = "%.1f pts/wk · %s" % [float(proj[s]),
-				("+1 in ~%dd" % eta) if eta > 0 else "no gain"]
+			v.text = tr("%.1f pts/wk · %s") % [float(proj[s]),
+				(tr("+1 in ~%dd") % eta) if eta > 0 else tr("no gain")]
 			v.add_theme_color_override("font_color",
 				ThemeBuilder.COL_TEXT if eta > 0 else ThemeBuilder.COL_TEXT_DIM)
 		v.add_theme_font_size_override("font_size", 12)
@@ -1271,31 +1271,31 @@ func _refresh_detail() -> void:
 	var mline := Label.new()
 	var meff: Dictionary = svc.mentoring_effect(str(inst["uid"]))
 	if not meff.is_empty():
-		mline.text = "Learning from %s (%s): ×%.2f development%s%s%s — included in the projection above." % [
+		mline.text = tr("Learning from %s (%s): ×%.2f development%s%s%s — included in the projection above.") % [
 			str(meff["mentor_name"]), svc.PERSONALITIES[meff["personality"]]["label"],
 			float(meff["mult"]),
-			", ×1.25 on %s" % " & ".join((meff["stat_mult"] as Dictionary).keys().map(
+			tr(", ×1.25 on %s") % " & ".join((meff["stat_mult"] as Dictionary).keys().map(
 				func(s): return str(svc.STAT_LABELS[s]))) if not (meff["stat_mult"] as Dictionary).is_empty() else "",
-			", moves ×%.1f" % float(meff["move_mult"]) if float(meff["move_mult"]) > 1.0 else "",
-			", strain ×%.2f" % float(meff["strain_mult"]) if float(meff["strain_mult"]) < 1.0 else ""]
+			tr(", moves ×%.1f") % float(meff["move_mult"]) if float(meff["move_mult"]) > 1.0 else "",
+			tr(", strain ×%.2f") % float(meff["strain_mult"]) if float(meff["strain_mult"]) < 1.0 else ""]
 		mline.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 	elif svc.is_mentor(str(inst["uid"])):
 		var grp: Dictionary = svc.group_of(str(inst["uid"]))
 		var jnames: Array = (grp["juniors"] as Array).map(func(u):
 			var ji: Dictionary = svc._find_instance(str(u))
 			return _display_name(ji) if not ji.is_empty() else "?")
-		mline.text = "Mentoring %s — passing on its %s example gives this veteran renewed purpose (morale %d%%)." % [
-			", ".join(jnames) if not jnames.is_empty() else "no one yet",
+		mline.text = tr("Mentoring %s — passing on its %s example gives this veteran renewed purpose (morale %d%%).") % [
+			", ".join(jnames) if not jnames.is_empty() else tr("no one yet"),
 			svc.personality_label(inst), int(inst.get("morale", 70))]
 		mline.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	elif svc.mentor_eligible(inst):
-		mline.text = "Eligible mentor (%s personality) with no group — set one up in the Mentoring tab to give this veteran purpose." % svc.personality_label(inst)
+		mline.text = tr("Eligible mentor (%s personality) with no group — set one up in the Mentoring tab to give this veteran purpose.") % svc.personality_label(inst)
 		mline.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 	elif svc.junior_eligible(inst):
-		mline.text = "In rapid development and unmentored — pairing it with a veteran (Mentoring tab) would add +12–31% development speed."
+		mline.text = tr("In rapid development and unmentored — pairing it with a veteran (Mentoring tab) would add +12–31% development speed.")
 		mline.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 	else:
-		mline.text = "Not eligible: mentoring links veterans with Pokémon still in rapid development."
+		mline.text = tr("Not eligible: mentoring links veterans with Pokémon still in rapid development.")
 		mline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	mline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mline.add_theme_font_size_override("font_size", 12)
@@ -1305,12 +1305,12 @@ func _refresh_detail() -> void:
 
 	# --- move learning
 	var ml := Label.new()
-	ml.text = "MOVE LEARNING"
+	ml.text = tr("MOVE LEARNING")
 	ml.add_theme_font_size_override("font_size", 11)
 	ml.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	_detail_box.add_child(ml)
 	var known := Label.new()
-	known.text = "Knows: %s" % ", ".join(inst.get("moves", []))
+	known.text = tr("Knows: %s") % ", ".join(inst.get("moves", []).map(func(m): return tr(str(m))))
 	known.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	known.add_theme_font_size_override("font_size", 12)
 	known.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1321,7 +1321,7 @@ func _refresh_detail() -> void:
 		var lrow := HBoxContainer.new()
 		lrow.add_theme_constant_override("separation", 8)
 		var lname := Label.new()
-		lname.text = "Learning %s" % mv["name"]
+		lname.text = tr("Learning %s") % mv["name"]
 		lname.add_theme_color_override("font_color", Color.WHITE)
 		lrow.add_child(lname)
 		_detail_box.add_child(lrow)
@@ -1331,11 +1331,11 @@ func _refresh_detail() -> void:
 		var rate: float = svc.move_learn_rate(inst)
 		var pv := Label.new()
 		if rate <= 0.02:
-			pv.text = "%d%%  ·  paused (individual load: No Training)" % int(mv["progress"])
+			pv.text = tr("%d%%  ·  paused (individual load: No Training)") % int(mv["progress"])
 			pv.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 		else:
 			var eta_d := int(ceil((100.0 - float(mv["progress"])) / maxf(rate, 0.01)))
-			pv.text = "%d%%  ·  ~%d days left" % [int(mv["progress"]), eta_d]
+			pv.text = tr("%d%%  ·  ~%d days left") % [int(mv["progress"]), eta_d]
 		prow.add_child(pv)
 		var cancel := Button.new()
 		cancel.text = "Cancel"
@@ -1345,20 +1345,20 @@ func _refresh_detail() -> void:
 		prow.add_child(cancel)
 		_detail_box.add_child(prow)
 		var repl := Label.new()
-		repl.text = "Will replace %s when mastered." % inst["moves"][int(mv["slot"])]
+		repl.text = tr("Will replace %s when mastered.") % inst["moves"][int(mv["slot"])]
 		repl.add_theme_font_size_override("font_size", 12)
 		repl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_detail_box.add_child(repl)
 	else:
 		var eligible: Array = svc.eligible_moves(inst)
 		var btn := Button.new()
-		btn.text = "Start learning a move…  (%d eligible)" % eligible.size()
+		btn.text = tr("Start learning a move…  (%d eligible)") % eligible.size()
 		btn.disabled = eligible.is_empty()
 		btn.pressed.connect(_open_move_dialog.bind(inst))
 		_detail_box.add_child(btn)
 		var note := Label.new()
 		var tech: int = svc.technique_sessions_per_week()
-		note.text = "Learning speed: %.1f%%/day (Move Practice ×%d per week, coach %s, %s individual load)" % [
+		note.text = tr("Learning speed: %.1f%%/day (Move Practice ×%d per week, coach %s, %s individual load)") % [
 			svc.move_learn_rate(inst), tech,
 			str(svc.state["coaches"].get("technique", "")) if str(svc.state["coaches"].get("technique", "")) != "" else "unassigned",
 			svc.LOAD_LABELS[svc.effective_load(inst)]]
@@ -1373,7 +1373,7 @@ func _refresh_detail() -> void:
 		var parts: Array = []
 		for e in learned:
 			parts.append("%s (%s)" % [e["move"], e["date"]])
-		ll.text = "Learned this season: %s" % ", ".join(parts)
+		ll.text = tr("Learned this season: %s") % ", ".join(parts)
 		ll.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		ll.add_theme_font_size_override("font_size", 12)
 		ll.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
@@ -1384,8 +1384,8 @@ func _refresh_detail() -> void:
 
 func _build_move_dialog() -> void:
 	_move_dialog = AcceptDialog.new()
-	_move_dialog.title = "Start move learning"
-	_move_dialog.ok_button_text = "Begin training"
+	_move_dialog.title = tr("Start move learning")
+	_move_dialog.ok_button_text = tr("Begin training")
 	_move_dialog.min_size = Vector2i(540, 500)
 	var v := VBoxContainer.new()
 	v.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1395,7 +1395,7 @@ func _build_move_dialog() -> void:
 	v.offset_bottom = -50
 	v.add_theme_constant_override("separation", 8)
 	var hint := Label.new()
-	hint.text = "Pick a move from this Pokémon's learnset. Progress advances every training day; Move Practice sessions and the technique coach speed it up."
+	hint.text = tr("Pick a move from this Pokémon's learnset. Progress advances every training day; Move Practice sessions and the technique coach speed it up.")
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(hint)
@@ -1426,7 +1426,7 @@ func _open_move_dialog(inst: Dictionary) -> void:
 	_dialog_moves = svc.eligible_moves(inst)
 	for m in _dialog_moves:
 		var md: Dictionary = DataStore.move(m)
-		var pw := "%d pow" % int(md.get("power", 0)) if int(md.get("power", 0)) > 0 else "status"
+		var pw := tr("%d pow") % int(md.get("power", 0)) if int(md.get("power", 0)) > 0 else "status"
 		_move_list.add_item("%s   ·  %s  ·  %s  ·  %s" % [m, md.get("type", "?"), pw,
 			str(md.get("category", "?"))])
 		_move_list.set_item_custom_fg_color(_move_list.item_count - 1,
@@ -1438,9 +1438,9 @@ func _open_move_dialog(inst: Dictionary) -> void:
 		_slot_option.add_item(str(m))
 	var rate: float = svc.move_learn_rate(inst)
 	if rate <= 0.02:
-		_move_eta_label.text = "Progress is PAUSED: this Pokémon's individual load is No Training. It will resume when it trains again."
+		_move_eta_label.text = tr("Progress is PAUSED: this Pokémon's individual load is No Training. It will resume when it trains again.")
 	else:
-		_move_eta_label.text = "Estimated time to master: ~%d days at the current schedule and individual load." % int(ceil(100.0 / maxf(rate, 0.01)))
+		_move_eta_label.text = tr("Estimated time to master: ~%d days at the current schedule and individual load.") % int(ceil(100.0 / maxf(rate, 0.01)))
 	_move_dialog.popup_centered()
 
 
@@ -1467,7 +1467,7 @@ func _build_coaches_tab() -> Control:
 	left.add_child(_coach_cards_box)
 	row.add_child(left)
 
-	var wrap := _panel("Category assignments")
+	var wrap := _panel(tr("Category assignments"))
 	(wrap[0] as Control).custom_minimum_size.x = 560
 	_assign_box = wrap[1]
 	row.add_child(wrap[0])
@@ -1483,7 +1483,7 @@ func _refresh_coaches() -> void:
 	if not physios.is_empty():
 		var other := Label.new()
 		var names: Array = physios.map(func(s): return "%s (%s)" % [s["name"], s["role"]])
-		other.text = "Other staff: %s" % ", ".join(names)
+		other.text = tr("Other staff: %s") % ", ".join(names)
 		other.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		other.add_theme_font_size_override("font_size", 12)
 		_coach_cards_box.add_child(other)
@@ -1491,7 +1491,7 @@ func _refresh_coaches() -> void:
 	_clear(_assign_box)
 	var mons_per_coach := float(svc.squad().size()) / maxf(1.0, float(svc.coaching_staff().size()))
 	var head := Label.new()
-	head.text = "Assign one coach to each training category. A coach covering 3+ areas loses effectiveness."
+	head.text = tr("Assign one coach to each training category. A coach covering 3+ areas loses effectiveness.")
 	head.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	head.add_theme_font_size_override("font_size", 12)
 	head.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1500,8 +1500,8 @@ func _refresh_coaches() -> void:
 		_assign_box.add_child(_assignment_row(cat))
 	_assign_box.add_child(HSeparator.new())
 	var foot := Label.new()
-	foot.text = "Squad-to-coach ratio: %.1f Pokémon per coach%s" % [mons_per_coach,
-		"  — consider asking the board for more coaches." if mons_per_coach > 6.0 else "."]
+	foot.text = tr("Squad-to-coach ratio: %.1f Pokémon per coach%s") % [mons_per_coach,
+		tr("  — consider asking the board for more coaches.") if mons_per_coach > 6.0 else "."]
 	foot.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	foot.add_theme_font_size_override("font_size", 12)
 	foot.add_theme_color_override("font_color",
@@ -1531,10 +1531,10 @@ func _coach_card(coach: Dictionary) -> Control:
 	var pen: float = svc.workload_penalty(coach["name"])
 	var wl := Label.new()
 	if pen > 0.0:
-		wl.text = "Workload: %d areas — quality −%d%%" % [nload, int(round(pen * 100))]
+		wl.text = tr("Workload: %d areas — quality −%d%%") % [nload, int(round(pen * 100))]
 		wl.add_theme_color_override("font_color", ThemeBuilder.COL_BAD if pen >= 0.14 else ThemeBuilder.COL_WARN)
 	else:
-		wl.text = "Workload: %d area%s — fine" % [nload, "" if nload == 1 else "s"]
+		wl.text = tr("Workload: %d area%s — fine") % [nload, "" if nload == 1 else "s"]
 		wl.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 	head.add_child(wl)
 	v.add_child(head)
@@ -1545,7 +1545,7 @@ func _coach_card(coach: Dictionary) -> Control:
 	grid.add_theme_constant_override("v_separation", 2)
 	var rat: Dictionary = coach["ratings"]
 	var shown := [["attacking", "Attacking"], ["defending", "Defending"], ["fitness", "Fitness"],
-		["judging_ability", "Judge Ability"], ["judging_potential", "Judge Potential"], ["youth", "Youth"]]
+		["judging_ability", tr("Judge Ability")], ["judging_potential", tr("Judge Potential")], ["youth", "Youth"]]
 	for pair in shown:
 		var l := Label.new()
 		l.text = pair[1]
@@ -1570,7 +1570,7 @@ func _coach_card(coach: Dictionary) -> Control:
 		if str(svc.state["coaches"].get(cat, "")) == str(coach["name"]):
 			cats.append(str(svc.CAT_LABELS[cat]))
 	var al := Label.new()
-	al.text = "Assigned: %s" % (", ".join(cats) if not cats.is_empty() else "nothing")
+	al.text = tr("Assigned: %s") % (", ".join(cats) if not cats.is_empty() else "nothing")
 	al.add_theme_font_size_override("font_size", 12)
 	al.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT if not cats.is_empty() else ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(al)
@@ -1601,14 +1601,14 @@ func _assignment_row(cat: String) -> Control:
 	var eff := Label.new()
 	var col: Color = ThemeBuilder.COL_GOOD if mult >= 1.15 else (ThemeBuilder.COL_TEXT if mult >= 0.95 else ThemeBuilder.COL_WARN)
 	if cur == "":
-		eff.text = "no coach — ×0.55 · %d sessions/wk" % sessions
+		eff.text = tr("no coach — ×0.55 · %d sessions/wk") % sessions
 		col = ThemeBuilder.COL_BAD
 	else:
 		var coach: Dictionary = svc.staff_by_name(cur)
 		var rating := int(coach["ratings"].get(svc.CAT_SOURCE[cat], 0))
-		eff.text = "×%.2f  (uses %s %d/20%s) · %d sessions/wk" % [mult,
+		eff.text = tr("×%.2f  (uses %s %d/20%s) · %d sessions/wk") % [mult,
 			str(svc.CAT_SOURCE[cat]).capitalize().replace("_", " "), rating,
-			", stretched" if svc.workload_penalty(cur) > 0.0 else "", sessions]
+			tr(", stretched") if svc.workload_penalty(cur) > 0.0 else "", sessions]
 	eff.add_theme_font_size_override("font_size", 12)
 	eff.add_theme_color_override("font_color", col)
 	r.add_child(eff)
@@ -1621,7 +1621,7 @@ func _build_mentoring_tab() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 
-	var left_wrap := _panel("Mentor groups")
+	var left_wrap := _panel(tr("Mentor groups"))
 	(left_wrap[0] as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1633,7 +1633,7 @@ func _build_mentoring_tab() -> Control:
 	(left_wrap[1] as VBoxContainer).size_flags_vertical = Control.SIZE_EXPAND_FILL
 	row.add_child(left_wrap[0])
 
-	var right_wrap := _panel("Eligibility & personalities")
+	var right_wrap := _panel(tr("Eligibility & personalities"))
 	(right_wrap[0] as Control).custom_minimum_size.x = 460
 	var rscroll := ScrollContainer.new()
 	rscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1707,7 +1707,7 @@ func _mentor_group_card(g: Dictionary) -> Control:
 	nm.add_theme_color_override("font_color", Color.WHITE)
 	hv.add_child(nm)
 	var sub := Label.new()
-	sub.text = "Lv %d · %s · veteran mentor · morale %d%%" % [int(mentor["level"]),
+	sub.text = tr("Lv %d · %s · veteran mentor · morale %d%%") % [int(mentor["level"]),
 		_age_str(int(mentor["age_months"])), int(mentor.get("morale", 70))]
 	sub.add_theme_font_size_override("font_size", 12)
 	sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1719,7 +1719,7 @@ func _mentor_group_card(g: Dictionary) -> Control:
 	head.add_child(sp)
 	var disband := Button.new()
 	disband.text = "Disband"
-	disband.tooltip_text = "Remove this mentor group. Juniors lose the development bonus immediately."
+	disband.tooltip_text = tr("Remove this mentor group. Juniors lose the development bonus immediately.")
 	disband.pressed.connect(func():
 		svc.disband_mentor_group(str(mentor["uid"]))
 		_refresh_mentoring.call_deferred())
@@ -1736,7 +1736,7 @@ func _mentor_group_card(g: Dictionary) -> Control:
 	var juniors: Array = g["juniors"]
 	if juniors.is_empty():
 		var none := Label.new()
-		none.text = "No juniors yet — add one below to start the daily transfer."
+		none.text = tr("No juniors yet — add one below to start the daily transfer.")
 		none.add_theme_font_size_override("font_size", 12)
 		none.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		v.add_child(none)
@@ -1753,7 +1753,7 @@ func _mentor_group_card(g: Dictionary) -> Control:
 		r.add_theme_constant_override("separation", 8)
 		r.add_child(_monogram(junior, 26))
 		var jn := Label.new()
-		jn.text = "%s  Lv %d · %s" % [_display_name(junior), int(junior["level"]),
+		jn.text = tr("%s  Lv %d · %s") % [_display_name(junior), int(junior["level"]),
 			_age_str(int(junior["age_months"]))]
 		jn.custom_minimum_size.x = 190
 		jn.add_theme_font_size_override("font_size", 12)
@@ -1761,7 +1761,7 @@ func _mentor_group_card(g: Dictionary) -> Control:
 		r.add_child(jn)
 		var lrn := Label.new()
 		if eff.is_empty():
-			lrn.text = "pairing no longer valid"
+			lrn.text = tr("pairing no longer valid")
 			lrn.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 		else:
 			var stat_bias: Array = (eff["stat_mult"] as Dictionary).keys().map(
@@ -1770,20 +1770,20 @@ func _mentor_group_card(g: Dictionary) -> Control:
 			if not stat_bias.is_empty():
 				extras.append("×1.25 %s" % " & ".join(stat_bias))
 			if float(eff["move_mult"]) > 1.0:
-				extras.append("moves ×%.1f" % float(eff["move_mult"]))
+				extras.append(tr("moves ×%.1f") % float(eff["move_mult"]))
 			if float(eff["strain_mult"]) < 1.0:
-				extras.append("strain ×%.2f" % float(eff["strain_mult"]))
-			lrn.text = "learning from %s · +%d%% dev%s" % [eff["mentor_name"],
+				extras.append(tr("strain ×%.2f") % float(eff["strain_mult"]))
+			lrn.text = tr("learning from %s · +%d%% dev%s") % [eff["mentor_name"],
 				int(round((float(eff["mult"]) - 1.0) * 100.0)),
 				(" · " + " · ".join(extras)) if not extras.is_empty() else ""]
 			lrn.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
-			lrn.tooltip_text = "Base +%d%%%s · level gap +%d%%%s%s.\nAttributed so far: +%.1f training points, %d IVs." % [
+			lrn.tooltip_text = tr("Base +%d%%%s · level gap +%d%%%s%s.\nAttributed so far: +%.1f training points, %d IVs.") % [
 				int(svc.MENTOR_BASE_BONUS * 100),
-				" · shared type +%d%%" % int(svc.MENTOR_TYPE_BONUS * 100) if bool(eff["compat"]) else "",
+				tr(" · shared type +%d%%") % int(svc.MENTOR_TYPE_BONUS * 100) if bool(eff["compat"]) else "",
 				int(round(minf(svc.MENTOR_GAP_BONUS_CAP, svc.MENTOR_GAP_BONUS_PER_LVL
 					* float(int(eff["mentor"]["level"]) - int(junior["level"]))) * 100.0)),
 				" · Professional +5%" if str(eff["personality"]) == "professional" else "",
-				" · split attention −%d%%" % int(svc.MENTOR_SPLIT_PENALTY * 100) if juniors.size() >= 2 else "",
+				tr(" · split attention −%d%%") % int(svc.MENTOR_SPLIT_PENALTY * 100) if juniors.size() >= 2 else "",
 				float(jms.get("mentor_pts", 0.0)), int(jms.get("mentor_ivs", 0))]
 			lrn.mouse_filter = Control.MOUSE_FILTER_STOP
 		lrn.add_theme_font_size_override("font_size", 12)
@@ -1791,14 +1791,14 @@ func _mentor_group_card(g: Dictionary) -> Control:
 		lrn.clip_text = true
 		r.add_child(lrn)
 		var mor := Label.new()
-		mor.text = "morale %d%%" % int(junior.get("morale", 70))
+		mor.text = tr("morale %d%%") % int(junior.get("morale", 70))
 		mor.add_theme_font_size_override("font_size", 11)
 		mor.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		r.add_child(mor)
 		var x := Button.new()
 		x.text = "✕"
 		x.custom_minimum_size = Vector2(26, 22)
-		x.tooltip_text = "Remove %s from the group." % _display_name(junior)
+		x.tooltip_text = tr("Remove %s from the group.") % _display_name(junior)
 		x.pressed.connect(func():
 			svc.remove_junior(str(jid))
 			_refresh_mentoring.call_deferred())
@@ -1812,7 +1812,7 @@ func _mentor_group_card(g: Dictionary) -> Control:
 		ar.add_theme_constant_override("separation", 8)
 		if addable.is_empty():
 			var no := Label.new()
-			no.text = "No further eligible juniors (young, ≥%d levels and ≥%d months below %s, not already mentored)." % [
+			no.text = tr("No further eligible juniors (young, ≥%d levels and ≥%d months below %s, not already mentored).") % [
 				svc.MENTOR_LEVEL_GAP, svc.MENTOR_AGE_GAP, _display_name(mentor)]
 			no.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			no.add_theme_font_size_override("font_size", 12)
@@ -1822,12 +1822,12 @@ func _mentor_group_card(g: Dictionary) -> Control:
 			var ob := OptionButton.new()
 			ob.custom_minimum_size = Vector2(280, 30)
 			for j in addable:
-				ob.add_item("%s  (Lv %d · %s · +%d%% dev)" % [_display_name(j), int(j["level"]),
+				ob.add_item(tr("%s  (Lv %d · %s · +%d%% dev)") % [_display_name(j), int(j["level"]),
 					_age_str(int(j["age_months"])),
 					int(round((svc.pairing_mult(mentor, j, juniors.size() + 1) - 1.0) * 100.0))])
 			ar.add_child(ob)
 			var add := Button.new()
-			add.text = "Add junior"
+			add.text = tr("Add junior")
 			add.pressed.connect(func():
 				var idx: int = ob.selected
 				if idx >= 0 and idx < addable.size():
@@ -1839,7 +1839,7 @@ func _mentor_group_card(g: Dictionary) -> Control:
 		v.add_child(ar)
 	else:
 		var full := Label.new()
-		full.text = "Group full — a mentor can watch %d juniors (attention already split: −%d%% each)." % [
+		full.text = tr("Group full — a mentor can watch %d juniors (attention already split: −%d%% each).") % [
 			svc.MENTOR_MAX_JUNIORS, int(svc.MENTOR_SPLIT_PENALTY * 100)]
 		full.add_theme_font_size_override("font_size", 12)
 		full.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1853,7 +1853,7 @@ func _refresh_mentoring() -> void:
 	_clear(_groups_box)
 
 	var intro := Label.new()
-	intro.text = "Group a senior Pokémon with up to %d rapid developers. Every training day the juniors gain development speed and morale from the mentor's example — the mentor's personality steers WHICH stats bite hardest — and the veteran gets renewed purpose. Gains are attributed in the Development report." % svc.MENTOR_MAX_JUNIORS
+	intro.text = tr("Group a senior Pokémon with up to %d rapid developers. Every training day the juniors gain development speed and morale from the mentor's example — the mentor's personality steers WHICH stats bite hardest — and the veteran gets renewed purpose. Gains are attributed in the Development report.") % svc.MENTOR_MAX_JUNIORS
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.add_theme_font_size_override("font_size", 12)
 	intro.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1864,7 +1864,7 @@ func _refresh_mentoring() -> void:
 		_groups_box.add_child(_mentor_group_card(g))
 	if groups.is_empty():
 		var none := Label.new()
-		none.text = "No mentor groups yet."
+		none.text = tr("No mentor groups yet.")
 		none.add_theme_font_size_override("font_size", 13)
 		none.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 		_groups_box.add_child(none)
@@ -1876,12 +1876,12 @@ func _refresh_mentoring() -> void:
 	var nr := HBoxContainer.new()
 	nr.add_theme_constant_override("separation", 8)
 	var nl := Label.new()
-	nl.text = "New group:"
+	nl.text = tr("New group:")
 	nl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	nr.add_child(nl)
 	if free_mentors.is_empty():
 		var no := Label.new()
-		no.text = "no free veterans — every eligible mentor already leads a group."
+		no.text = tr("no free veterans — every eligible mentor already leads a group.")
 		no.add_theme_font_size_override("font_size", 12)
 		no.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		nr.add_child(no)
@@ -1889,11 +1889,11 @@ func _refresh_mentoring() -> void:
 		var ob := OptionButton.new()
 		ob.custom_minimum_size = Vector2(300, 30)
 		for m in free_mentors:
-			ob.add_item("%s  (Lv %d · %s · %s)" % [_display_name(m), int(m["level"]),
+			ob.add_item(tr("%s  (Lv %d · %s · %s)") % [_display_name(m), int(m["level"]),
 				_age_str(int(m["age_months"])), svc.personality_label(m)])
 		nr.add_child(ob)
 		var mk := Button.new()
-		mk.text = "Create group"
+		mk.text = tr("Create group")
 		mk.pressed.connect(func():
 			var idx: int = ob.selected
 			if idx >= 0 and idx < free_mentors.size():
@@ -1917,7 +1917,7 @@ func _refresh_mentor_side() -> void:
 	_clear(_mentor_side)
 
 	var rules := Label.new()
-	rules.text = "Eligibility: mentors are veterans whose own development has flattened (age ≥ ~5y7m); juniors are in rapid development (age ≤ 4y) and must sit ≥%d levels and ≥%d months below their mentor. Effect: +%d%% development base, +%d%% shared type, up to +%d%% for a big level gap; −%d%% each when attention splits across two juniors." % [
+	rules.text = tr("Eligibility: mentors are veterans whose own development has flattened (age ≥ ~5y7m); juniors are in rapid development (age ≤ 4y) and must sit ≥%d levels and ≥%d months below their mentor. Effect: +%d%% development base, +%d%% shared type, up to +%d%% for a big level gap; −%d%% each when attention splits across two juniors.") % [
 		svc.MENTOR_LEVEL_GAP, svc.MENTOR_AGE_GAP, int(svc.MENTOR_BASE_BONUS * 100),
 		int(svc.MENTOR_TYPE_BONUS * 100), int(svc.MENTOR_GAP_BONUS_CAP * 100),
 		int(svc.MENTOR_SPLIT_PENALTY * 100)]
@@ -1927,7 +1927,7 @@ func _refresh_mentor_side() -> void:
 	_mentor_side.add_child(rules)
 
 	_mentor_side.add_child(HSeparator.new())
-	_mentor_side.add_child(_side_head("ELIGIBLE MENTORS (VETERANS)"))
+	_mentor_side.add_child(_side_head(tr("ELIGIBLE MENTORS (VETERANS)")))
 	var any_m := false
 	for inst in svc.squad():
 		if not svc.mentor_eligible(inst):
@@ -1936,7 +1936,7 @@ func _refresh_mentor_side() -> void:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 8)
 		var nm := Label.new()
-		nm.text = "%s  Lv %d · %s" % [_display_name(inst), int(inst["level"]),
+		nm.text = tr("%s  Lv %d · %s") % [_display_name(inst), int(inst["level"]),
 			_age_str(int(inst["age_months"]))]
 		nm.custom_minimum_size.x = 190
 		nm.add_theme_font_size_override("font_size", 12)
@@ -1945,7 +1945,7 @@ func _refresh_mentor_side() -> void:
 		var st := Label.new()
 		var grp: Dictionary = svc.group_of(str(inst["uid"]))
 		if not grp.is_empty() and str(grp.get("mentor", "")) == str(inst["uid"]):
-			st.text = "mentoring %d" % (grp["juniors"] as Array).size()
+			st.text = tr("mentoring %d") % (grp["juniors"] as Array).size()
 			st.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 		else:
 			st.text = "available"
@@ -1955,13 +1955,13 @@ func _refresh_mentor_side() -> void:
 		_mentor_side.add_child(r)
 	if not any_m:
 		var no := Label.new()
-		no.text = "No veterans in the squad."
+		no.text = tr("No veterans in the squad.")
 		no.add_theme_font_size_override("font_size", 12)
 		no.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_mentor_side.add_child(no)
 
 	_mentor_side.add_child(HSeparator.new())
-	_mentor_side.add_child(_side_head("ELIGIBLE JUNIORS (RAPID DEVELOPERS)"))
+	_mentor_side.add_child(_side_head(tr("ELIGIBLE JUNIORS (RAPID DEVELOPERS)")))
 	var any_j := false
 	for inst in svc.squad():
 		if not svc.junior_eligible(inst):
@@ -1970,7 +1970,7 @@ func _refresh_mentor_side() -> void:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 8)
 		var nm := Label.new()
-		nm.text = "%s  Lv %d · %s" % [_display_name(inst), int(inst["level"]),
+		nm.text = tr("%s  Lv %d · %s") % [_display_name(inst), int(inst["level"]),
 			_age_str(int(inst["age_months"]))]
 		nm.custom_minimum_size.x = 190
 		nm.add_theme_font_size_override("font_size", 12)
@@ -1978,17 +1978,17 @@ func _refresh_mentor_side() -> void:
 		var st := Label.new()
 		var mentor: Dictionary = svc.mentor_of(str(inst["uid"]))
 		if not mentor.is_empty():
-			st.text = "learning from %s" % _display_name(mentor)
+			st.text = tr("learning from %s") % _display_name(mentor)
 			st.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 		else:
 			# is anyone in the squad actually able to take this junior?
 			var fits: Array = svc.squad().filter(func(m):
 				return svc.mentor_eligible(m) and svc.can_mentor(m, inst) == "")
 			if fits.is_empty():
-				st.text = "no valid mentor (level/age gap)"
+				st.text = tr("no valid mentor (level/age gap)")
 				st.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 			else:
-				st.text = "unmentored — %d possible mentor%s" % [fits.size(), "" if fits.size() == 1 else "s"]
+				st.text = I18n.np(fits.size(), "unmentored — %d possible mentor", "unmentored — %d possible mentors")
 				st.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 		st.add_theme_font_size_override("font_size", 12)
 		st.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1997,14 +1997,14 @@ func _refresh_mentor_side() -> void:
 		_mentor_side.add_child(r)
 	if not any_j:
 		var no := Label.new()
-		no.text = "No rapid developers in the squad — sign or promote young Pokémon."
+		no.text = tr("No rapid developers in the squad — sign or promote young Pokémon.")
 		no.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		no.add_theme_font_size_override("font_size", 12)
 		no.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_mentor_side.add_child(no)
 
 	_mentor_side.add_child(HSeparator.new())
-	_mentor_side.add_child(_side_head("MENTOR PERSONALITIES"))
+	_mentor_side.add_child(_side_head(tr("MENTOR PERSONALITIES")))
 	for pk in svc.PERSONALITIES:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 8)
@@ -2027,11 +2027,11 @@ func _build_development_tab() -> Control:
 
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 12)
-	var best_wrap := _panel("Best developers · last 28 days")
+	var best_wrap := _panel(tr("Best developers · last 28 days"))
 	(best_wrap[0] as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_best_box = best_wrap[1]
 	top.add_child(best_wrap[0])
-	var stag_wrap := _panel("Needs attention")
+	var stag_wrap := _panel(tr("Needs attention"))
 	(stag_wrap[0] as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_stag_box = stag_wrap[1]
 	top.add_child(stag_wrap[0])
@@ -2042,7 +2042,7 @@ func _build_development_tab() -> Control:
 	_dev_tree.columns = 13
 	_dev_tree.column_titles_visible = true
 	_dev_tree.hide_root = true
-	var titles := ["Pokémon", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "IV gains", "Strain", "Moves", "Mentoring", "Evolution"]
+	var titles := ["Pokémon", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", tr("IV gains"), "Strain", "Moves", "Mentoring", "Evolution"]
 	for i in titles.size():
 		_dev_tree.set_column_title(i, titles[i])
 		_dev_tree.set_column_expand(i, i == 0 or i == 11 or i == 12)
@@ -2101,9 +2101,9 @@ func _refresh_development() -> void:
 		var jms: Dictionary = svc.mon_state(str(inst["uid"]))
 		var mentor: Dictionary = svc.mentor_of(str(inst["uid"]))
 		if not mentor.is_empty():
-			it.set_text(11, "learning from %s" % _display_name(mentor))
+			it.set_text(11, tr("learning from %s") % _display_name(mentor))
 			it.set_custom_color(11, ThemeBuilder.COL_GOOD)
-			it.set_tooltip_text(11, "Mentored by %s (%s): +%.1f bonus training points, %d of its IV gains attributed to mentoring." % [
+			it.set_tooltip_text(11, tr("Mentored by %s (%s): +%.1f bonus training points, %d of its IV gains attributed to mentoring.") % [
 				_display_name(mentor), svc.personality_label(mentor),
 				float(jms.get("mentor_pts", 0.0)), int(jms.get("mentor_ivs", 0))])
 		elif svc.is_mentor(str(inst["uid"])):
@@ -2111,9 +2111,9 @@ func _refresh_development() -> void:
 			var jnames: Array = (grp["juniors"] as Array).map(func(u):
 				var ji: Dictionary = svc._find_instance(str(u))
 				return _display_name(ji) if not ji.is_empty() else "?")
-			it.set_text(11, "mentoring %s" % ", ".join(jnames))
+			it.set_text(11, tr("mentoring %s") % ", ".join(jnames))
 			it.set_custom_color(11, ThemeBuilder.COL_ACCENT)
-			it.set_tooltip_text(11, "%s personality — renewed purpose from mentoring lifts its morale (currently %d%%)." % [
+			it.set_tooltip_text(11, tr("%s personality — renewed purpose from mentoring lifts its morale (currently %d%%).") % [
 				svc.personality_label(inst), int(inst.get("morale", 70))])
 		else:
 			it.set_text(11, "—")
@@ -2124,22 +2124,22 @@ func _refresh_development() -> void:
 		it.set_custom_color(12, evo["color"])
 		it.set_tooltip_text(12, evo["tip"])
 
-	_dev_note.text = "Attribute changes over the last 28 training days (tracking %d day%s so far). ▲ real stat increases from training — IVs are capped at 15 per stat.\nEvolution: every %d development points = +1 effective level toward evolution thresholds (decisions land in the Inbox). Need more rapid developers? Promote from the Academy — its intake pipeline feeds this squad." % [tracked, "" if tracked == 1 else "s", _evo_dev_per_level()]
+	_dev_note.text = tr("Attribute changes over the last 28 training days (tracking %d day%s so far). ▲ real stat increases from training — IVs are capped at 15 per stat.\nEvolution: every %d development points = +1 effective level toward evolution thresholds (decisions land in the Inbox). Need more rapid developers? Promote from the Academy — its intake pipeline feeds this squad.") % [tracked, "" if tracked == 1 else "s", _evo_dev_per_level()]
 
 	_clear(_best_box)
 	var best := 0
 	for row in rows:
 		if int(row["total"]) <= 0 or best >= 3:
 			continue
-		var detail := "+%d stat points · %d IVs gained" % [int(row["total"]), int(row["gained"])]
+		var detail := tr("+%d stat points · %d IVs gained") % [int(row["total"]), int(row["gained"])]
 		var mrow: Dictionary = svc.mentor_of(str((row["inst"] as Dictionary)["uid"]))
 		if not mrow.is_empty():
-			detail += " · learning from %s" % _display_name(mrow)
+			detail += tr(" · learning from %s") % _display_name(mrow)
 		_best_box.add_child(_dev_summary_row(row["inst"], detail, ThemeBuilder.COL_GOOD))
 		best += 1
 	if best == 0:
 		var l := Label.new()
-		l.text = "No measurable gains yet — development shows here as training days pass."
+		l.text = tr("No measurable gains yet — development shows here as training days pass.")
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		l.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_best_box.add_child(l)
@@ -2153,18 +2153,18 @@ func _refresh_development() -> void:
 		var reaction: String = svc.workload_reaction(inst)
 		var reason := ""
 		if reaction == "overworked":
-			reason = "unhappy: forced %s load at %d%% strain — morale %d%%, injury risk up. Ease the individual load." % [
+			reason = tr("unhappy: forced %s load at %d%% strain — morale %d%%, injury risk up. Ease the individual load.") % [
 				svc.LOAD_LABELS[svc.effective_load(inst)], int(s), int(inst.get("morale", 70))]
 		elif s > 70.0:
 			var setting: String = svc.load_setting(str(inst["uid"]))
-			reason = "strain %d%% — overtrained, gains reduced%s" % [int(s),
+			reason = tr("strain %d%% — overtrained, gains reduced%s") % [int(s),
 				" (Automatic has eased it to %s)" % svc.LOAD_LABELS[svc.effective_load(inst)] if setting == "auto"
-				else " — set the individual load to Light or Automatic"]
+				else tr(" — set the individual load to Light or Automatic")]
 		elif reaction == "wants_more":
-			reason = "held on %s while fresh — a rapid developer wasting growth; raise the individual load" % \
+			reason = tr("held on %s while fresh — a rapid developer wasting growth; raise the individual load") % \
 				svc.LOAD_LABELS[svc.effective_load(inst)]
 		elif svc.age_mult(age) <= 0.6 and int(row["total"]) <= 0 and not svc.is_mentor(str(inst["uid"])):
-			reason = "veteran (%s) — stagnating; give it purpose as a mentor (Mentoring tab)" % _age_str(age)
+			reason = I18n.t("veteran (%s) — stagnating; give it purpose as a mentor (Mentoring tab)") % _age_str(age)
 		if reason == "" or listed >= 3:
 			continue
 		_stag_box.add_child(_dev_summary_row(inst, reason,
@@ -2172,7 +2172,7 @@ func _refresh_development() -> void:
 		listed += 1
 	if listed == 0:
 		var ok := Label.new()
-		ok.text = "No concerns — workload and age profile look healthy."
+		ok.text = tr("No concerns — workload and age profile look healthy.")
 		ok.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 		_stag_box.add_child(ok)
 
@@ -2213,26 +2213,26 @@ func _evo_cell(inst: Dictionary) -> Dictionary:
 	var pend: Dictionary = s.pending_for(uid)
 	if not pend.is_empty():
 		var pto := str(DataStore.species(int(pend.get("to", 0))).get("name", "?"))
-		return {"text": "→ %s AWAITING APPROVAL" % pto, "color": ThemeBuilder.COL_GOOD,
-			"tip": "Requirements met — approve or postpone the evolution from the Inbox or this Pokémon's profile."}
+		return {"text": tr("→ %s AWAITING APPROVAL") % pto, "color": ThemeBuilder.COL_GOOD,
+			"tip": tr("Requirements met — approve or postpone the evolution from the Inbox or this Pokémon's profile.")}
 	var opts: Array = s.eligibility(inst)
 	if opts.is_empty():
-		return {"text": "final form", "color": Color("3a4058"),
-			"tip": "%s does not evolve — development here is pure stat growth." % _display_name(inst)}
+		return {"text": tr("final form"), "color": Color("3a4058"),
+			"tip": tr("%s does not evolve — development here is pure stat growth.") % _display_name(inst)}
 	# nearest milestone: an ok option first, else the first with a readable gap
 	for o in opts:
 		if o["ok"]:
 			if str(o["method"]) == "stone":
-				return {"text": "→ %s (use stone)" % o["to_name"], "color": ThemeBuilder.COL_ACCENT,
-					"tip": "A stone in the storeroom can evolve it today — Items screen, or the profile's evolution panel."}
-			return {"text": "→ %s ready" % o["to_name"], "color": ThemeBuilder.COL_GOOD,
-				"tip": "Requirements met — the offer will land in your Inbox on the next training day."}
+				return {"text": tr("→ %s (use stone)") % o["to_name"], "color": ThemeBuilder.COL_ACCENT,
+					"tip": tr("A stone in the storeroom can evolve it today — Items screen, or the profile's evolution panel.")}
+			return {"text": tr("→ %s ready") % o["to_name"], "color": ThemeBuilder.COL_GOOD,
+				"tip": tr("Requirements met — the offer will land in your Inbox on the next training day.")}
 	var best: Dictionary = opts[0]
 	var txt := "→ %s · %s" % [best["to_name"], best["why"]]
-	var tip := "Development points from training push evolution milestones: %d pts = +1 effective level.\nDev so far: %d pts (+%d eff. levels)." % [
+	var tip := tr("Development points from training push evolution milestones: %d pts = +1 effective level.\nDev so far: %d pts (+%d eff. levels).") % [
 		_evo_dev_per_level(), int(s.dev_points(uid)), int(s.dev_levels(uid))]
 	if str(best["method"]) == "stone":
-		tip += "\nStone routes are bought in the Items screen and applied from there or the profile."
+		tip += tr("\nStone routes are bought in the Items screen and applied from there or the profile.")
 	if opts.size() > 1:
-		tip += "\nBranches: " + ", ".join(opts.map(func(o): return str(o["to_name"])))
+		tip += tr("\nBranches: ") + ", ".join(opts.map(func(o): return str(o["to_name"])))
 	return {"text": txt, "color": ThemeBuilder.COL_WARN if str(best["method"]) != "stone" else ThemeBuilder.COL_ACCENT, "tip": tip}

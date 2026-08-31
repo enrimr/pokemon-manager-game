@@ -145,7 +145,7 @@ func _build_ui() -> void:
 
 func _tab_button(txt: String) -> Button:
 	var b := Button.new()
-	b.text = "  %s  " % txt
+	b.text = "  %s  " % tr(txt)
 	b.toggle_mode = true
 	b.custom_minimum_size = Vector2(0, 34)
 	b.add_theme_font_override("font", _bold)
@@ -258,10 +258,10 @@ func _update_summary() -> void:
 	for m in GameState.inbox:
 		if m.get("urgent", false) and (not m.get("read", false) or _needs_decision(m)):
 			urgent += 1
-	_summary_lbl.text = "%d messages · %d unread%s" % [total, unread,
-		(" · %d URGENT" % urgent) if urgent > 0 else ""]
-	_tab_inbox.text = "  Inbox (%d)  " % unread if unread > 0 else "  Inbox  "
-	_tab_board.text = "  Board & Finances  "
+	_summary_lbl.text = tr("%d messages · %d unread%s") % [total, unread,
+		(tr(" · %d URGENT") % urgent) if urgent > 0 else ""]
+	_tab_inbox.text = tr("  Inbox (%d)  ") % unread if unread > 0 else tr("  Inbox  ")
+	_tab_board.text = tr("  Board & Finances  ")
 	_tab_inbox.button_pressed = _tab == 0
 	_tab_board.button_pressed = _tab == 1
 
@@ -296,8 +296,8 @@ func _rebuild_list() -> void:
 	for m in GameState.inbox:
 		var c: String = m.get("cat", "board")
 		counts[c] = int(counts.get(c, 0)) + 1
-	var caps := {"all": "All", "match": "Match", "cup": "Cup", "media": "Press",
-		"staff": "Coach", "scout": "Scout", "transfer": "Transfer", "board": "Board"}
+	var caps := {"all": tr("All"), "match": tr("Match"), "cup": tr("Cup"), "media": tr("Press"),
+		"staff": tr("Coach"), "scout": tr("Scout"), "transfer": tr("Transfer"), "board": tr("Board")}
 	for cat in _filter_btns:
 		var btn: Button = _filter_btns[cat]
 		btn.text = "%s %d" % [caps[cat], int(counts.get(cat, 0))]
@@ -306,7 +306,7 @@ func _rebuild_list() -> void:
 	var msgs := _filtered_messages()
 	if msgs.is_empty():
 		var empty := Label.new()
-		empty.text = "\n   No messages match this filter."
+		empty.text = tr("\n   No messages match this filter.")
 		empty.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_list_box.add_child(empty)
 		_selected = {}
@@ -409,7 +409,7 @@ func _make_row(m: Dictionary) -> Button:
 	row.add_child(right)
 
 	var date := Label.new()
-	date.text = Season.pretty_date(str(m.get("date", "")))
+	date.text = I18n.pretty_date(str(m.get("date", "")))
 	date.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	date.add_theme_font_size_override("font_size", 12)
 	date.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -420,11 +420,11 @@ func _make_row(m: Dictionary) -> Button:
 	flag.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	flag.add_theme_font_size_override("font_size", 11)
 	if urgent:
-		flag.text = "DECISION" if decision else "URGENT"
+		flag.text = tr("DECISION") if decision else tr("URGENT")
 		flag.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		flag.add_theme_font_override("font", _bold)
 	elif unread:
-		flag.text = "● NEW"
+		flag.text = tr("● NEW")
 		flag.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	else:
 		flag.text = " "
@@ -474,6 +474,8 @@ func _needs_decision(m: Dictionary) -> bool:
 		return true
 	if str(m.get("kind", "")) == "evo_ready":
 		return str(m.get("decided", "")) == ""
+	if str(m.get("academy_kind", "")) == "cull":   # open end-of-season youth review
+		return not bool(m.get("resolved", false))
 	var uid := str(m.get("uid", ""))
 	return (uid.begins_with("mind:") or uid.begins_with("monlow:")) \
 		and str(m.get("replied", "")) == ""
@@ -523,7 +525,7 @@ func _render_reading_pane() -> void:
 		c.queue_free()
 	if _selected.is_empty():
 		var l := Label.new()
-		l.text = "Select a message to read it."
+		l.text = tr("Select a message to read it.")
 		l.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		_read_pane.add_child(l)
 		return
@@ -549,14 +551,14 @@ func _render_reading_pane() -> void:
 	subj.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	hv.add_child(subj)
 	var fromline := Label.new()
-	fromline.text = "From: %s   ·   %s   ·   %s" % [str(m.get("sender", "—")),
-		Season.pretty_date(str(m.get("date", ""))), str(meta["label"])]
+	fromline.text = tr("From: %s   ·   %s   ·   %s") % [str(m.get("sender", "—")),
+		I18n.pretty_date(str(m.get("date", ""))), tr(str(meta["label"]))]
 	fromline.add_theme_font_size_override("font_size", 12)
 	fromline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	hv.add_child(fromline)
 	if m.get("urgent", false):
 		var u := Label.new()
-		u.text = "DECISION REQUIRED" if _needs_decision(m) else "URGENT"
+		u.text = tr("DECISION REQUIRED") if _needs_decision(m) else tr("URGENT")
 		u.add_theme_font_override("font", _bold)
 		u.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		head.add_child(u)
@@ -608,7 +610,7 @@ func _render_reading_pane() -> void:
 				if target != "@board" and not _shell_has_screen(target):
 					continue
 				var b := Button.new()
-				b.text = "  %s  " % a["label"]
+				b.text = "  %s  " % tr(a["label"])
 				b.custom_minimum_size = Vector2(0, 32)
 				b.add_theme_color_override("font_color", Color.WHITE)
 				b.add_theme_stylebox_override("normal",
@@ -636,7 +638,7 @@ func _decision_button(a: Dictionary) -> Button:
 		"bad": col = ThemeBuilder.COL_BAD
 		_: col = ThemeBuilder.COL_WARN
 	var b := Button.new()
-	b.text = "  %s  " % a["label"]
+	b.text = "  %s  " % tr(a["label"])
 	b.custom_minimum_size = Vector2(0, 32)
 	b.add_theme_font_override("font", _bold)
 	b.add_theme_color_override("font_color", Color("f2f4fb"))
@@ -678,19 +680,19 @@ func _on_evolution_decision(a: Dictionary) -> void:
 		"evo_approve":
 			err = svc.approve(uid)
 			if err == "":
-				ok_note = "Approved — %s has evolved into %s (+%d morale)." % \
+				ok_note = tr("Approved — %s has evolved into %s (+%d morale).") % \
 					[old_name, str(GameState.squad_member(uid).get("species", "?")),
 					EvoSvc.EVOLVE_MORALE_BOOST]
 		"evo_postpone":
 			err = svc.postpone(uid)
 			if err == "":
-				ok_note = "Postponed — the offer returns in %d days if still eligible (-%d morale)." % \
+				ok_note = tr("Postponed — the offer returns in %d days if still eligible (-%d morale).") % \
 					[EvoSvc.REOFFER_DAYS, EvoSvc.POSTPONE_MORALE_COST]
 		"evo_stone":
 			err = svc.use_stone(uid, str(a.get("item", "")))
 			if err == "":
-				ok_note = "%s consumed — %s has evolved into %s." % \
-					[DataStore.item_name(str(a.get("item", ""))), old_name,
+				ok_note = tr("%s consumed — %s has evolved into %s.") % \
+					[tr(DataStore.item_name(str(a.get("item", "")))), old_name,
 					str(GameState.squad_member(uid).get("species", "?"))]
 	if err != "":
 		_action_note = err
@@ -717,16 +719,16 @@ func _on_offer_decision(a: Dictionary) -> void:
 			var before := int(pc["finances"]["balance"])
 			err = str(mkt.accept_offer_in(oid))
 			if err == "":
-				ok_note = "Sale completed — %s credited (balance now %s)." % [
+				ok_note = tr("Sale completed — %s credited (balance now %s).") % [
 					news.money(int(pc["finances"]["balance"]) - before),
 					news.money(int(pc["finances"]["balance"]))]
 		"reject":
 			mkt.reject_offer_in(oid)
-			ok_note = "Offer rejected. They have been informed."
+			ok_note = tr("Offer rejected. They have been informed.")
 		"counter":
 			err = str(mkt.counter_offer_in(oid, int(a.get("ask", 0))))
 			if err == "":
-				ok_note = "Demand of %s sent — expect an answer within a couple of days." % \
+				ok_note = tr("Demand of %s sent — expect an answer within a couple of days.") % \
 					news.money(int(a.get("ask", 0)))
 	if err != "":
 		_action_note = err
@@ -780,7 +782,7 @@ func _make_banner(banner: Dictionary) -> Control:
 	comp.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(comp)
 	var res := Label.new()
-	res.text = "FULL TIME · " + ("WIN" if won else "DEFEAT")
+	res.text = tr("FULL TIME · ") + (tr("WIN") if won else tr("DEFEAT"))
 	res.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	res.add_theme_font_size_override("font_size", 12)
 	res.add_theme_font_override("font", _bold)
@@ -916,7 +918,7 @@ func _board_confidence_panel(conf: Dictionary) -> Control:
 	row.add_theme_constant_override("separation", 12)
 	v.add_child(row)
 	var word := Label.new()
-	word.text = str(conf["word"]).to_upper()
+	word.text = tr(str(conf["word"])).to_upper()
 	word.add_theme_font_size_override("font_size", 30)
 	word.add_theme_font_override("font", _bold)
 	word.add_theme_color_override("font_color", conf["color"])
@@ -931,7 +933,7 @@ func _board_confidence_panel(conf: Dictionary) -> Control:
 	v.add_child(_bar(conf["score"] / 100.0, conf["color"], 18))
 
 	var stmt := Label.new()
-	stmt.text = str(conf["statement"])
+	stmt.text = tr(str(conf["statement"]))
 	stmt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	stmt.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
 	v.add_child(stmt)
@@ -942,30 +944,30 @@ func _board_confidence_panel(conf: Dictionary) -> Control:
 	var pos: int = conf["pos"]
 	var e: int = conf["expected"]
 	var league_delta := e - pos
-	var league_word := "On track"
+	var league_word := tr("On track")
 	var league_col := ThemeBuilder.COL_TEXT
 	if conf["played"] == 0:
-		league_word = "Season not started"
+		league_word = tr("Season not started")
 		league_col = ThemeBuilder.COL_TEXT_DIM
 	elif league_delta >= 3:
-		league_word = "Exceeding"
+		league_word = tr("Exceeding")
 		league_col = ThemeBuilder.COL_GOOD
 	elif league_delta >= 0:
-		league_word = "Meeting"
+		league_word = tr("Meeting")
 		league_col = ThemeBuilder.COL_GOOD
 	elif league_delta >= -3:
-		league_word = "Below par"
+		league_word = tr("Below par")
 		league_col = ThemeBuilder.COL_WARN
 	else:
-		league_word = "Failing"
+		league_word = tr("Failing")
 		league_col = ThemeBuilder.COL_BAD
-	_kv_row(v, "League performance  (%s, expected ~%s)" %
+	_kv_row(v, tr("League performance  (%s, expected ~%s)") %
 		["—" if int(conf["played"]) == 0 else _ord(pos), _ord(e)], league_word, league_col)
 
 	var cs: Dictionary = news.cup_status()
 	var cup_col: Color = ThemeBuilder.COL_GOOD if cs["alive"] else \
 		(ThemeBuilder.COL_WARN if int(cs["round"]) >= 2 else ThemeBuilder.COL_BAD)
-	_kv_row(v, "Cup progress", str(cs["text"]), cup_col)
+	_kv_row(v, tr("Cup progress"), tr(str(cs["text"])), cup_col)
 
 	# form chips
 	var form: Array = news.recent_results(5)
@@ -973,14 +975,14 @@ func _board_confidence_panel(conf: Dictionary) -> Control:
 	frow.add_theme_constant_override("separation", 8)
 	v.add_child(frow)
 	var fl := Label.new()
-	fl.text = "Recent form (newest first)"
+	fl.text = tr("Recent form (newest first)")
 	fl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	fl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	fl.add_theme_font_size_override("font_size", 13)
 	frow.add_child(fl)
 	if form.is_empty():
 		var none := Label.new()
-		none.text = "no matches yet"
+		none.text = tr("no matches yet")
 		none.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		none.add_theme_font_size_override("font_size", 13)
 		frow.add_child(none)
@@ -1016,24 +1018,24 @@ func _expectations_panel(conf: Dictionary) -> Control:
 	var pc: Dictionary = GameState.player_club()
 
 	var s1 := Label.new()
-	s1.text = "\"%s expect the club to %s and to %s.\"" % \
-		[pc["name"], news.league_expectation_text(), news.cup_expectation_text()]
+	s1.text = tr("\"%s expect the club to %s and to %s.\"") % \
+		[pc["name"], tr(news.league_expectation_text()), tr(news.cup_expectation_text())]
 	s1.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	s1.add_theme_color_override("font_color", Color("f2f4fb"))
 	s1.add_theme_font_override("font", _bold)
 	v.add_child(s1)
 
 	var src := Label.new()
-	src.text = "— Board of Directors, %s" % Season.pretty_date(GameState.season_start)
+	src.text = tr("— Board of Directors, %s") % I18n.pretty_date(GameState.season_start)
 	src.add_theme_font_size_override("font_size", 12)
 	src.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(src)
 
 	v.add_child(HSeparator.new())
 	_kv_row(v, "Club reputation", "%d / 20" % int(pc["reputation"]))
-	_kv_row(v, "Expected league position", "~%s of %d" % [_ord(conf["expected"]), GameState.world["clubs"].size()])
+	_kv_row(v, "Expected league position", tr("~%s of %d") % [_ord(conf["expected"]), GameState.world["clubs"].size()])
 	_kv_row(v, "Current league position",
-		_ord(conf["pos"]) if conf["played"] > 0 else "season not started",
+		_ord(conf["pos"]) if conf["played"] > 0 else tr("season not started"),
 		ThemeBuilder.COL_GOOD if conf["pos"] <= conf["expected"] and conf["played"] > 0 else ThemeBuilder.COL_TEXT)
 	_kv_row(v, "League matches played", str(conf["played"]))
 	var row: Dictionary = {}
@@ -1041,7 +1043,7 @@ func _expectations_panel(conf: Dictionary) -> Control:
 		if GameState.is_player_club(r["club_id"]):
 			row = r
 	if not row.is_empty():
-		_kv_row(v, "Record (W-L)", "%d-%d   ·   %d pts" % [int(row["won"]), int(row["lost"]), int(row["points"])])
+		_kv_row(v, "Record (W-L)", tr("%d-%d   ·   %d pts") % [int(row["won"]), int(row["lost"]), int(row["points"])])
 		_kv_row(v, "Battles for / against", "%d / %d" % [int(row["bf"]), int(row["ba"])])
 	return pv[0]
 
@@ -1052,7 +1054,7 @@ func _results_panel() -> Control:
 	var results: Array = news.recent_results(6)
 	if results.is_empty():
 		var l := Label.new()
-		l.text = "No competitive matches played yet."
+		l.text = tr("No competitive matches played yet.")
 		l.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		v.add_child(l)
 		return pv[0]
@@ -1062,7 +1064,7 @@ func _results_panel() -> Control:
 		row.add_theme_constant_override("separation", 10)
 		v.add_child(row)
 		var d := Label.new()
-		d.text = Season.pretty_date(str(f["date"]))
+		d.text = I18n.pretty_date(str(f["date"]))
 		d.custom_minimum_size.x = 90
 		d.add_theme_font_size_override("font_size", 12)
 		d.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1105,7 +1107,7 @@ func _finances_panel(fin: Dictionary) -> Control:
 		ThemeBuilder.COL_GOOD if fin["balance"] >= 0 else ThemeBuilder.COL_BAD)
 	v.add_child(bal)
 	var bal_sub := Label.new()
-	bal_sub.text = "Bank balance  ·  league average %s" % news.money(fin["league_avg_balance"])
+	bal_sub.text = tr("Bank balance  ·  league average %s") % news.money(fin["league_avg_balance"])
 	bal_sub.add_theme_font_size_override("font_size", 12)
 	bal_sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(bal_sub)
@@ -1120,13 +1122,13 @@ func _finances_panel(fin: Dictionary) -> Control:
 	var over: bool = fin["wage_bill"] > fin["wage_budget"]
 	var frac := float(fin["wage_bill"]) / maxf(1.0, float(fin["wage_budget"]))
 	var wl := Label.new()
-	wl.text = "Wage bill vs budget"
+	wl.text = tr("Wage bill vs budget")
 	wl.add_theme_font_size_override("font_size", 13)
 	wl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(wl)
 	v.add_child(_bar(frac, ThemeBuilder.COL_BAD if over else ThemeBuilder.COL_GOOD, 14))
-	_kv_row(v, "Monthly wage bill (%d battlers)" % int(fin["squad_size"]),
-		"%s of %s  (%d%%)" % [news.money(fin["wage_bill"]), news.money(fin["wage_budget"]), int(frac * 100)],
+	_kv_row(v, tr("Monthly wage bill (%d battlers)") % int(fin["squad_size"]),
+		tr("%s of %s  (%d%%)") % [news.money(fin["wage_bill"]), news.money(fin["wage_budget"]), int(frac * 100)],
 		ThemeBuilder.COL_BAD if over else ThemeBuilder.COL_GOOD)
 	_kv_row(v, "Wage budget headroom",
 		news.money(fin["wage_budget"] - fin["wage_bill"]),
@@ -1141,7 +1143,7 @@ func _finances_panel(fin: Dictionary) -> Control:
 	# transfer spend
 	var spend: int = fin["transfer_spend"]
 	var tl := Label.new()
-	tl.text = "Transfer activity this season"
+	tl.text = tr("Transfer activity this season")
 	tl.add_theme_font_size_override("font_size", 13)
 	tl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(tl)
@@ -1152,7 +1154,7 @@ func _finances_panel(fin: Dictionary) -> Control:
 	elif spend < 0:
 		_kv_row(v, "Net transfer income", news.money(-spend), ThemeBuilder.COL_GOOD)
 	else:
-		_kv_row(v, "Net transfer spend", "%s (no deals completed)" % news.money(0))
+		_kv_row(v, "Net transfer spend", tr("%s (no deals completed)") % news.money(0))
 	_kv_row(v, "Balance at season start", news.money(fin["initial_balance"]))
 	_kv_row(v, "Projected 12-month wage commitment", news.money(fin["wage_bill"] * 12))
 	return pv[0]
@@ -1197,7 +1199,7 @@ func _earners_panel(fin: Dictionary) -> Control:
 		w.add_theme_color_override("font_color", Color("f2f4fb"))
 		grid.add_child(w)
 		var x := Label.new()
-		x.text = str(e["expiry"])
+		x.text = I18n.pretty_date(str(e["expiry"]))
 		x.add_theme_font_size_override("font_size", 13)
 		x.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		grid.add_child(x)
@@ -1208,7 +1210,7 @@ func _earners_panel(fin: Dictionary) -> Control:
 		for e in earners.slice(0, 3):
 			top3 += int(e["salary"])
 		pct = int(100.0 * top3 / fin["wage_bill"])
-	note.text = "Top 3 earners account for %d%% of the wage bill." % pct
+	note.text = tr("Top 3 earners account for %d%% of the wage bill.") % pct
 	note.add_theme_font_size_override("font_size", 12)
 	note.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(note)
@@ -1234,15 +1236,15 @@ func _requests_panel() -> Control:
 		bv.add_theme_constant_override("separation", 2)
 		box.add_child(bv)
 		var t := Label.new()
-		t.text = "UNDER CONSIDERATION — %s" % str(pending["label"]).to_upper()
+		t.text = tr("UNDER CONSIDERATION — %s") % tr(str(pending["label"])).to_upper()
 		t.add_theme_font_size_override("font_size", 13)
 		t.add_theme_font_override("font", _bold)
 		t.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 		bv.add_child(t)
 		var d := Label.new()
-		d.text = "Asked for %s on %s · the board will answer by %s." % \
-			[news.money(int(pending["amount"])), Season.pretty_date(str(pending["date"])),
-			Season.pretty_date(str(pending["decide_on"]))]
+		d.text = tr("Asked for %s on %s · the board will answer by %s.") % \
+			[news.money(int(pending["amount"])), I18n.pretty_date(str(pending["date"])),
+			I18n.pretty_date(str(pending["decide_on"]))]
 		d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		d.add_theme_font_size_override("font_size", 12)
 		d.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
@@ -1266,19 +1268,19 @@ func _requests_panel() -> Control:
 		v.add_child(HSeparator.new())
 		for r in resolved.slice(0, 3):
 			var col := ThemeBuilder.COL_BAD
-			var word := "REFUSED"
+			var word := tr("REFUSED")
 			if str(r["status"]) == "granted":
 				col = ThemeBuilder.COL_GOOD
-				word = "GRANTED"
+				word = tr("GRANTED")
 			elif str(r["status"]) == "partial":
 				col = ThemeBuilder.COL_WARN
-				word = "PARTIAL (%s)" % news.money(int(r["granted"]))
-			_kv_row(v, "%s · %s (%s)" % [Season.pretty_date(str(r["decided_on"])),
-				str(r["label"]), news.money(int(r["amount"]))], word, col)
+				word = tr("PARTIAL (%s)") % news.money(int(r["granted"]))
+			_kv_row(v, "%s · %s (%s)" % [I18n.pretty_date(str(r["decided_on"])),
+				tr(str(r["label"])), news.money(int(r["amount"]))], word, col)
 	var recent := int(board.recent_request_count(60))
 	if recent >= 2:
 		var warn := Label.new()
-		warn.text = "%d requests inside 60 days — the board tires of frequent demands." % recent
+		warn.text = tr("%d requests inside 60 days — the board tires of frequent demands.") % recent
 		warn.add_theme_font_size_override("font_size", 11)
 		warn.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
 		v.add_child(warn)
@@ -1292,7 +1294,7 @@ func _request_row(def: Dictionary) -> Control:
 	top.add_theme_constant_override("separation", 8)
 	row.add_child(top)
 	var name := Label.new()
-	name.text = str(def["title"])
+	name.text = tr(str(def["title"]))
 	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name.add_theme_font_size_override("font_size", 13)
 	name.add_theme_font_override("font", _bold)
@@ -1302,13 +1304,13 @@ func _request_row(def: Dictionary) -> Control:
 	var hint: Dictionary = def["options"][0].get("hint", {})
 	if not hint.is_empty():
 		var h := Label.new()
-		h.text = "board: %s" % str(hint["word"])
+		h.text = tr("board: %s") % tr(str(hint["word"]))
 		h.add_theme_font_size_override("font_size", 11)
 		h.add_theme_color_override("font_color", hint["color"])
 		top.add_child(h)
 	for o in def["options"]:
 		var b := Button.new()
-		b.text = "  %s  " % str(o["label"])
+		b.text = "  %s  " % tr(str(o["label"]))
 		b.custom_minimum_size = Vector2(0, 26)
 		b.add_theme_font_size_override("font_size", 12)
 		var oc: Color = (o.get("hint", {}) as Dictionary).get("color", ThemeBuilder.COL_ACCENT)
@@ -1317,7 +1319,7 @@ func _request_row(def: Dictionary) -> Control:
 		b.pressed.connect(_on_board_request.bind(str(def["kind"]), int(o["amount"])))
 		top.add_child(b)
 	var desc := Label.new()
-	desc.text = str(def["desc"])
+	desc.text = tr(str(def["desc"]))
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc.add_theme_font_size_override("font_size", 12)
 	desc.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1332,8 +1334,8 @@ func _on_board_request(kind: String, amount: int) -> void:
 		_board_note_col = ThemeBuilder.COL_BAD
 	else:
 		var pending: Dictionary = board.pending_request()
-		_board_note = "Request submitted — the board will answer by %s. Watch your inbox." % \
-			Season.pretty_date(str(pending.get("decide_on", "")))
+		_board_note = tr("Request submitted — the board will answer by %s. Watch your inbox.") % \
+			I18n.pretty_date(str(pending.get("decide_on", "")))
 		_board_note_col = ThemeBuilder.COL_GOOD
 	_rebuild_all()
 
@@ -1360,7 +1362,7 @@ func _ledger_panel() -> Control:
 	var all_rows: Array = board.ledger_rows(9999)
 	if all_rows.is_empty():
 		var l := Label.new()
-		l.text = "No cash transactions recorded yet — sell, sign or squeeze the board."
+		l.text = tr("No cash transactions recorded yet — sell, sign or squeeze the board.")
 		l.add_theme_font_size_override("font_size", 12)
 		l.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		v.add_child(l)
@@ -1375,7 +1377,7 @@ func _ledger_panel() -> Control:
 		var amt := int(r["amount"])
 		if amt == 0:
 			continue
-		var label: String = LEDGER_CATS.get(str(r["kind"]), "Other")
+		var label: String = tr(LEDGER_CATS.get(str(r["kind"]), "Other"))
 		if amt > 0:
 			cat_in[label] = int(cat_in.get(label, 0)) + amt
 			total_in += amt
@@ -1391,8 +1393,8 @@ func _ledger_panel() -> Control:
 	var split := HBoxContainer.new()
 	split.add_theme_constant_override("separation", 18)
 	v.add_child(split)
-	split.add_child(_cat_column("INCOME", cat_in, total_in, peak, ThemeBuilder.COL_GOOD, true))
-	split.add_child(_cat_column("EXPENDITURE", cat_out, total_out, peak, ThemeBuilder.COL_BAD, false))
+	split.add_child(_cat_column(tr("INCOME"), cat_in, total_in, peak, ThemeBuilder.COL_GOOD, true))
+	split.add_child(_cat_column(tr("EXPENDITURE"), cat_out, total_out, peak, ThemeBuilder.COL_BAD, false))
 
 	var net := total_in - total_out
 	_kv_row(v, "Net cash movement this season",
@@ -1402,7 +1404,7 @@ func _ledger_panel() -> Control:
 	# ---- most recent transactions
 	v.add_child(HSeparator.new())
 	var rt := Label.new()
-	rt.text = "RECENT TRANSACTIONS"
+	rt.text = tr("RECENT TRANSACTIONS")
 	rt.add_theme_font_size_override("font_size", 11)
 	rt.add_theme_font_override("font", _bold)
 	rt.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1412,7 +1414,7 @@ func _ledger_panel() -> Control:
 		row.add_theme_constant_override("separation", 10)
 		v.add_child(row)
 		var d := Label.new()
-		d.text = Season.pretty_date(str(r["date"]))
+		d.text = I18n.pretty_date(str(r["date"]))
 		d.custom_minimum_size.x = 90
 		d.add_theme_font_size_override("font_size", 12)
 		d.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1481,7 +1483,7 @@ func _cat_column(title: String, cats: Dictionary, total: int, peak: int, col: Co
 		row.add_child(al)
 	if keys.is_empty():
 		var none := Label.new()
-		none.text = "— nothing yet"
+		none.text = tr("— nothing yet")
 		none.add_theme_font_size_override("font_size", 12)
 		none.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		box.add_child(none)
@@ -1512,7 +1514,7 @@ func _cashflow_panel() -> Control:
 	v.add_child(grid)
 	for h in ["MONTH", "INCOME", "EXPENDITURE", "NET"]:
 		var hl := Label.new()
-		hl.text = h
+		hl.text = tr(h)
 		hl.add_theme_font_size_override("font_size", 11)
 		hl.add_theme_font_override("font", _bold)
 		hl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1538,8 +1540,8 @@ func _cashflow_panel() -> Control:
 		season_net += net
 		var open_month: bool = m == now_mk
 		var ml := Label.new()
-		ml.text = "%s %s%s" % [economy.MONTH_NAMES[int(m.split("-")[1])], m.substr(0, 4),
-			"  (so far)" if open_month else ""]
+		ml.text = "%s %s%s" % [tr(economy.MONTH_NAMES[int(m.split("-")[1])]), m.substr(0, 4),
+			tr("  (so far)") if open_month else ""]
 		ml.add_theme_font_size_override("font_size", 12)
 		ml.add_theme_color_override("font_color",
 			Color("f2f4fb") if open_month else ThemeBuilder.COL_TEXT)
@@ -1569,10 +1571,4 @@ func _money_cell(txt: String, col: Color, bold: bool = false) -> Label:
 func _ord(n: int) -> String:
 	if n <= 0:
 		return "—"
-	var suffix := "th"
-	if n % 100 < 11 or n % 100 > 13:
-		match n % 10:
-			1: suffix = "st"
-			2: suffix = "nd"
-			3: suffix = "rd"
-	return "%d%s" % [n, suffix]
+	return I18n.ordinal(n)

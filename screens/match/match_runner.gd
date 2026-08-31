@@ -231,6 +231,11 @@ func _start_battle() -> void:
 	engine = BattleEngine.new(team_h, team_a, seed_v, mode_for_battle(battle_no))
 	engine.set_inventory(0, series_bag[0])
 	engine.set_inventory(1, series_bag[1])
+	# Setting "ai_coach_uses_bag" (GameState.settings, default true): when off,
+	# the AI coach may never spend YOUR consumables in delegated / instant-sim
+	# battles — manual use_item actions from the player still work as normal.
+	if not bool(GameState.setting("ai_coach_uses_bag", true)):
+		engine.set_ai_item_budget(player_side, 0)
 	pending = engine.events.duplicate()
 	live_state = LiveState.REPLAYING
 	forced_action = null
@@ -761,15 +766,16 @@ func _finalize_result() -> void:
 	var motm := man_of_the_match()
 	var motm_txt := ""
 	if not motm.is_empty():
-		motm_txt = " %s was the standout performer (%.1f)." % [motm["name"], motm["rating"]]
+		motm_txt = tr(" %s was the standout performer (%.1f).") % [motm["name"], motm["rating"]]
 	var item_txt := ""
 	if items_spent(player_side) > 0:
 		var parts: Array = []
 		for iid in used_items[player_side]:
-			parts.append("%dx %s" % [int(used_items[player_side][iid]), DataStore.item_name(str(iid))])
-		item_txt = " Bag used: %s." % ", ".join(parts)
+			parts.append("%dx %s" % [int(used_items[player_side][iid]), tr(DataStore.item_name(str(iid)))])
+		item_txt = tr(" Bag used: %s.") % ", ".join(parts)
 	GameState.add_inbox_message(GameState.current_date,
-		"Match report: %d-%d vs %s" % [us, them, opp],
-		"We %s the %s tie against %s, %d-%d in battles.%s%s" %
-		[verdict, fixture["comp"], opp, us, them, motm_txt, item_txt])
+		tr("Match report: %d-%d vs %s") % [us, them, opp],
+		tr("We won the %s tie against %s, %d-%d in battles.%s%s" if us > them
+			else "We lost the %s tie against %s, %d-%d in battles.%s%s") %
+		[tr(str(fixture["comp"])), opp, us, them, motm_txt, item_txt])
 	GameState.save_game()

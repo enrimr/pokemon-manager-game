@@ -45,7 +45,7 @@ func _ready() -> void:
 	bar.add_child(cap)
 	for entry in SPLITS:
 		var b := Button.new()
-		b.text = entry[1]
+		b.text = tr(entry[1])
 		b.toggle_mode = true
 		b.focus_mode = Control.FOCUS_NONE
 		b.custom_minimum_size = Vector2(96, 26)
@@ -76,7 +76,7 @@ func _ready() -> void:
 	_tree.columns = 11
 	_tree.column_titles_visible = true
 	for i in _tree.columns:
-		_tree.set_column_title(i, TITLES[i])
+		_tree.set_column_title(i, tr(TITLES[i]) if TITLES[i] != "" else "")
 		_tree.set_column_title_alignment(i, HORIZONTAL_ALIGNMENT_LEFT if i == 2 else HORIZONTAL_ALIGNMENT_CENTER)
 		if WIDTHS[i] > 0:
 			_tree.set_column_expand(i, false)
@@ -104,13 +104,13 @@ func _ready() -> void:
 	# 14-16 trigger board consequences at the end-of-season ceremony.
 	var legend := HBoxContainer.new()
 	legend.add_theme_constant_override("separation", 18)
-	legend.add_child(_legend_entry(Color(0.83, 0.68, 0.21), "League Champions (1st)",
-		"1st place wins the league title and tops the Championship Series seeding"))
-	legend.add_child(_legend_entry(Color(0.34, 0.79, 0.47), "Championship Series (1-4)",
-		"Positions 1-4 of BOTH leagues enter the cross-league Championship Series\nplayoff after matchday 30 — its Final crowns the Indigo Champion"))
-	legend.add_child(_legend_entry(Color(0.88, 0.38, 0.38), "Danger Zone (14-16)",
-		"Finish 14th-16th and the board reacts at season's end:\nreputation -1, transfer budget cut 25%, sponsors pull back —\nand your star Pokémon may demand a move"))
-	legend.add_child(_legend_entry(TB.COL_ACCENT, "Your club", ""))
+	legend.add_child(_legend_entry(Color(0.83, 0.68, 0.21), tr("League Champions (1st)"),
+		tr("1st place wins the league title and tops the Championship Series seeding")))
+	legend.add_child(_legend_entry(Color(0.34, 0.79, 0.47), tr("Championship Series (1-4)"),
+		tr("Positions 1-4 of BOTH leagues enter the cross-league Championship Series\nplayoff after matchday 30 — its Final crowns the Indigo Champion")))
+	legend.add_child(_legend_entry(Color(0.88, 0.38, 0.38), tr("Danger Zone (14-16)"),
+		tr("Finish 14th-16th and the board reacts at season's end:\nreputation -1, transfer budget cut 25%, sponsors pull back —\nand your star Pokémon may demand a move")))
+	legend.add_child(_legend_entry(TB.COL_ACCENT, tr("Your club"), ""))
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	legend.add_child(spacer)
@@ -161,8 +161,8 @@ func refresh() -> void:
 	var graph_mode := _mode == "graph"
 	_tree.visible = not graph_mode
 	_graph.visible = graph_mode
-	_hint.text = ("hover a line to pick out a club · zones shaded behind" if graph_mode
-		else "click a column header to sort · click again to reverse")
+	_hint.text = (tr("hover a line to pick out a club · zones shaded behind") if graph_mode
+		else tr("click a column header to sort · click again to reverse"))
 	if graph_mode:
 		_refresh_graph()
 		return
@@ -258,16 +258,16 @@ func refresh() -> void:
 	var total := Season.total_league_rounds(fixtures)
 	var split_note := ""
 	match _mode:
-		"home": split_note = " · home matches only"
-		"away": split_note = " · away matches only"
-		"form": split_note = " · last 5 matches per club"
+		"home": split_note = tr(" · home matches only")
+		"away": split_note = tr(" · away matches only")
+		"form": split_note = tr(" · last 5 matches per club")
 	if completed <= 0:
-		_footer.text = "%s · season starts %s · %d clubs" % [
-			GameState.league_name(_lg()), Season.pretty_date(
+		_footer.text = tr("%s · season starts %s · %d clubs") % [
+			tr(GameState.league_name(_lg())), I18n.pretty_date(
 				Season.date_add(GameState.season_start, Season.LEAGUE_ROUND_OFFSET)), n]
 	else:
-		_footer.text = "%s · after Matchday %d of %d%s · click a club for its profile" % [
-			GameState.league_name(_lg()), completed, total, split_note]
+		_footer.text = tr("%s · after Matchday %d of %d%s · click a club for its profile") % [
+			tr(GameState.league_name(_lg())), completed, total, split_note]
 
 
 ## Feed the multi-club position tracker (Season.position_history) and set the
@@ -294,16 +294,16 @@ func _refresh_graph() -> void:
 	for s in series:
 		rounds = maxi(rounds, (s["values"] as Array).size())
 	if rounds == 0:
-		_footer.text = "%s · the position graph appears after Matchday 1 completes" % \
-			GameState.world["meta"]["league_name"]
+		_footer.text = tr("%s · the position graph appears after Matchday 1 completes") % \
+			tr(GameState.world["meta"]["league_name"])
 	else:
-		_footer.text = "%s · league position after each of %d completed matchday%s · your club in accent" % [
-			GameState.world["meta"]["league_name"], rounds, "" if rounds == 1 else "s"]
+		_footer.text = tr("%s · league position after each of %d completed matchday%s · your club in accent") % [
+			tr(GameState.world["meta"]["league_name"]), rounds, "" if rounds == 1 else "s"]
 
 
 func _refresh_titles() -> void:
 	for i in _tree.columns:
-		var t: String = TITLES[i]
+		var t: String = tr(TITLES[i]) if TITLES[i] != "" else ""
 		if i == _sort_col and t != "":
 			t += " ▲" if _sort_asc else " ▼"
 		_tree.set_column_title(i, t)
@@ -370,7 +370,7 @@ func _draw_form(item: TreeItem, rect: Rect2, form: Array) -> void:
 		var rr := Rect2(x, y, pip, pip)
 		_tree.draw_rect(rr, Color(col.r, col.g, col.b, 0.22))
 		_tree.draw_rect(rr, col, false, 1.0)
-		_tree.draw_string(font, Vector2(x + (pip - 8) / 2.0, y + pip - 4), str(r),
+		_tree.draw_string(font, Vector2(x + (pip - 8) / 2.0, y + pip - 4), tr(str(r)),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 10, col.lightened(0.3))
 		x += pip + gap
 

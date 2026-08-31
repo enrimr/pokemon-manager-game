@@ -148,7 +148,7 @@ func _ready() -> void:
 	head.add_child(title)
 	for entry in [["centre", "Players"], ["teams", "Teams"], ["hub", "Data Hub"], ["leaders", "Leaders"]]:
 		var b := Button.new()
-		b.text = entry[1]
+		b.text = tr(entry[1])
 		b.toggle_mode = true
 		b.focus_mode = Control.FOCUS_NONE
 		b.custom_minimum_size = Vector2(110, 26)
@@ -162,11 +162,11 @@ func _ready() -> void:
 	var rcap := _toolbar_cap("REGION")
 	head.add_child(rcap)
 	_lg_sel = OptionButton.new()
-	_lg_sel.add_item("All Regions")
+	_lg_sel.add_item(tr("All Regions"))
 	_lg_sel.set_item_metadata(0, "")
 	for lg in GameState.leagues():
 		var idx := _lg_sel.item_count
-		_lg_sel.add_item(str(lg["name"]))
+		_lg_sel.add_item(tr(str(lg["name"])))
 		_lg_sel.set_item_metadata(idx, str(lg["id"]))
 		if str(lg["id"]) == GameState.player_league_id():
 			_lg_sel.select(idx)
@@ -220,8 +220,8 @@ func _build_centre() -> void:
 	bar.add_child(_toolbar_cap("VIEW"))
 	_cat_sel = OptionButton.new()
 	for entry in CATEGORIES:
-		_cat_sel.add_item(entry[0])
-	_cat_sel.add_item(CUSTOM_CAT)
+		_cat_sel.add_item(tr(entry[0]))
+	_cat_sel.add_item(tr(CUSTOM_CAT))
 	_cat_sel.select(0)
 	_cat_sel.custom_minimum_size.x = 168
 	_cat_sel.focus_mode = Control.FOCUS_NONE
@@ -238,7 +238,7 @@ func _build_centre() -> void:
 
 	bar.add_child(_toolbar_cap("CLUB"))
 	_club_sel = OptionButton.new()
-	_club_sel.add_item("All Clubs")
+	_club_sel.add_item(tr("All Clubs"))
 	_club_sel.set_item_metadata(0, "")
 	var clubs: Array = GameState.world["clubs"].duplicate()
 	clubs.sort_custom(func(a, b): return str(a["name"]) < str(b["name"]))
@@ -257,7 +257,7 @@ func _build_centre() -> void:
 	_comp_sel = OptionButton.new()
 	for entry in COMPS:
 		var idx := _comp_sel.item_count
-		_comp_sel.add_item(entry[1])
+		_comp_sel.add_item(tr(entry[1]))
 		_comp_sel.set_item_metadata(idx, entry[0])
 	_comp_sel.select(0)
 	_comp_sel.custom_minimum_size.x = 118
@@ -511,11 +511,11 @@ func _rebuild_table() -> void:
 				tip = STAT_DEFS[key]["tip"]
 		if key == _sort_key:
 			title += " ▲" if _sort_asc else " ▼"
-		_tree.set_column_title(i, title)
+		_tree.set_column_title(i, tr(title))
 		_tree.set_column_title_alignment(i,
 			HORIZONTAL_ALIGNMENT_LEFT if key in ["name", "type"] else HORIZONTAL_ALIGNMENT_CENTER)
 		if tip != "":
-			_tree.set_column_title_tooltip_text(i, tip)
+			_tree.set_column_title_tooltip_text(i, tr(tip))
 		if width > 0:
 			_tree.set_column_expand(i, false)
 			_tree.set_column_custom_minimum_width(i, width)
@@ -546,7 +546,7 @@ func _rebuild_table() -> void:
 			return false
 		return true)
 	_sort_rows(shown)
-	_count_lbl.text = "%d/%d shown · %d battled" % [shown.size(), total, with_apps]
+	_count_lbl.text = tr("%d/%d shown · %d battled") % [shown.size(), total, with_apps]
 
 	var root := _tree.create_item()
 	var stat_keys := _current_cat_keys()
@@ -561,7 +561,7 @@ func _rebuild_table() -> void:
 		item.set_text(1, str(r["name"]))
 		item.set_custom_color(1, TB.COL_TEXT if played else TB.COL_TEXT_DIM)
 		UI.cell_link(item, 1, {"kind": "pokemon", "id": str(r["uid"])},
-			"%s (%s) — view Pokémon profile" % [r["name"], r["species"]])
+			I18n.t("%s (%s) — view Pokémon profile") % [r["name"], r["species"]])
 
 		var club: Dictionary = r["club"]
 		if not club.is_empty():
@@ -574,7 +574,7 @@ func _rebuild_table() -> void:
 			item.set_custom_color(2, TB.COL_TEXT_DIM)
 		item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER)
 
-		item.set_text(3, "/".join(r["types"]))
+		item.set_text(3, I18n.types_join(r["types"]))
 		item.set_custom_color(3, DataStore.type_color(r["types"][0]).lightened(0.25)
 			if not r["types"].is_empty() else TB.COL_TEXT_DIM)
 		item.set_text(4, str(r["level"]))
@@ -605,7 +605,7 @@ func _rebuild_table() -> void:
 				var tint: Color = Charts.pct_tint(p)
 				if tint.a > 0.0:
 					item.set_custom_bg_color(col, tint)
-				item.set_tooltip_text(col, "%s: %s — %d. percentile league-wide" % [
+				item.set_tooltip_text(col, I18n.t("%s: %s — %d. percentile league-wide") % [
 					STAT_DEFS[key]["title"], _fmt_stat(key, r), roundi(p * 100.0)])
 
 		if not club.is_empty() and GameState.is_player_club(str(club.get("id", ""))):
@@ -708,7 +708,7 @@ func _fmt_stat(key: String, r: Dictionary) -> String:
 	var v: Variant = r[key]
 	match str(STAT_DEFS[key]["fmt"]):
 		"pct": return "%d%%" % roundi(float(v))
-		"f2": return "%.2f" % float(v)
+		"f2": return I18n.decimal(float(v), 2)
 	return str(int(v))
 
 
@@ -729,8 +729,8 @@ func _build_teams() -> void:
 	bar.add_child(_toolbar_cap("VIEW"))
 	_tcat_sel = OptionButton.new()
 	for entry in TEAM_CATEGORIES:
-		_tcat_sel.add_item(entry[0])
-	_tcat_sel.add_item(CUSTOM_CAT)
+		_tcat_sel.add_item(tr(entry[0]))
+	_tcat_sel.add_item(tr(CUSTOM_CAT))
 	_tcat_sel.select(0)
 	_tcat_sel.custom_minimum_size.x = 168
 	_tcat_sel.focus_mode = Control.FOCUS_NONE
@@ -749,7 +749,7 @@ func _build_teams() -> void:
 	_tcomp_sel = OptionButton.new()
 	for entry in COMPS:
 		var idx := _tcomp_sel.item_count
-		_tcomp_sel.add_item(entry[1])
+		_tcomp_sel.add_item(tr(entry[1]))
 		_tcomp_sel.set_item_metadata(idx, entry[0])
 	_tcomp_sel.select(0)
 	_tcomp_sel.custom_minimum_size.x = 128
@@ -852,11 +852,11 @@ func _rebuild_teams_table() -> void:
 				tip = TEAM_DEFS[key]["tip"]
 		if key == _tsort_key:
 			col_title += " ▲" if _tsort_asc else " ▼"
-		_ttree.set_column_title(i, col_title)
+		_ttree.set_column_title(i, tr(col_title))
 		_ttree.set_column_title_alignment(i,
 			HORIZONTAL_ALIGNMENT_LEFT if key == "name" else HORIZONTAL_ALIGNMENT_CENTER)
 		if tip != "":
-			_ttree.set_column_title_tooltip_text(i, tip)
+			_ttree.set_column_title_tooltip_text(i, tr(tip))
 		if width > 0:
 			_ttree.set_column_expand(i, false)
 			_ttree.set_column_custom_minimum_width(i, width)
@@ -876,7 +876,7 @@ func _rebuild_teams_table() -> void:
 		return needle == "" or needle in str(r["name"]).to_lower() \
 			or needle in str(r["short"]).to_lower())
 	_sort_team_rows(shown)
-	_tcount_lbl.text = "%d/%d clubs · %d played" % [shown.size(), rows.size(), with_matches]
+	_tcount_lbl.text = tr("%d/%d clubs · %d played") % [shown.size(), rows.size(), with_matches]
 
 	var root := _ttree.create_item()
 	var stat_keys := _team_cat_keys()
@@ -912,7 +912,7 @@ func _rebuild_teams_table() -> void:
 				var tint: Color = Charts.pct_tint(p)
 				if tint.a > 0.0:
 					item.set_custom_bg_color(col, tint)
-				item.set_tooltip_text(col, "%s: %s — %d. percentile league-wide" % [
+				item.set_tooltip_text(col, I18n.t("%s: %s — %d. percentile league-wide") % [
 					TEAM_DEFS[key]["title"], _fmt_team(key, r), roundi(p * 100.0)])
 
 		if GameState.is_player_club(str(r["cid"])):
@@ -995,17 +995,18 @@ func _fmt_team(key: String, r: Dictionary) -> String:
 		"pct": return "%d%%" % roundi(float(r[key]))
 		"sign": return "%+d" % int(r[key]) if int(r[key]) != 0 else "0"
 		"signpct": return "%+d" % roundi(float(r[key])) if roundi(float(r[key])) != 0 else "0"
-		"f1": return "%.1f" % float(r[key])
-		"f2": return "%.2f" % float(r[key])
+		"f1": return I18n.decimal(float(r[key]), 1)
+		"f2": return I18n.decimal(float(r[key]), 2)
 		"int0": return str(roundi(float(r[key])))
 		"rec_h": return "%d-%d" % [int(r["hw"]), int(r["hl"])]
 		"rec_a": return "%d-%d" % [int(r["aw"]), int(r["al"])]
-		"form": return " ".join(r["form"]) if not (r["form"] as Array).is_empty() else "-"
+		"form": return " ".join((r["form"] as Array).map(func(x): return I18n.t(str(x)))) \
+			if not (r["form"] as Array).is_empty() else "-"
 		"streak":
 			var st := int(r["streak"])
 			if st == 0:
 				return "-"
-			return "W%d" % st if st > 0 else "L%d" % (-st)
+			return (I18n.t("W") + str(st)) if st > 0 else (I18n.t("L") + str(-st))
 	return str(int(r[key]))
 
 
@@ -1049,8 +1050,8 @@ func _rebuild_team_insights() -> void:
 	var comp: String = str(_tcomp_sel.get_selected_metadata())
 	var rows: Array = _build_team_rows(comp).filter(func(r): return int(r["matches"]) > 0)
 	if rows.is_empty():
-		_tinsights.add_child(_insight_chip("NO DATA YET", {},
-			"Team statistics appear once the first matchday has been played"))
+		_tinsights.add_child(_insight_chip(tr("NO DATA YET"), {},
+			tr("Team statistics appear once the first matchday has been played")))
 		return
 
 	var by := func(k: String, best_high: bool) -> Dictionary:
@@ -1061,31 +1062,31 @@ func _rebuild_team_insights() -> void:
 		return out
 
 	var atk: Dictionary = by.call("kos", true)
-	_tinsights.add_child(_insight_chip("BEST ATTACK", atk, "%d KOs · %.1f per battle" %
+	_tinsights.add_child(_insight_chip(tr("BEST ATTACK"), atk, tr("%d KOs · %.1f per battle") %
 		[int(atk["kos"]), float(atk["kos"]) / maxf(float(atk["bw"] + atk["bl"]), 1.0)]))
 	var def: Dictionary = by.call("faints", false)
-	_tinsights.add_child(_insight_chip("TIGHTEST DEFENCE", def, "%d Pokémon lost in %d matches" %
+	_tinsights.add_child(_insight_chip(tr("TIGHTEST DEFENCE"), def, tr("%d Pokémon lost in %d matches") %
 		[int(def["faints"]), int(def["matches"])]))
 	var home_rows: Array = rows.filter(func(r): return int(r["hm"]) >= 2)
 	if not home_rows.is_empty():
 		home_rows.sort_custom(func(a, b): return float(a["hbpct"]) > float(b["hbpct"]))
 		var fort: Dictionary = home_rows[0]
-		_tinsights.add_child(_insight_chip("FORTRESS", fort, "%d%% battle wins at home (%d-%d)" %
+		_tinsights.add_child(_insight_chip(tr("FORTRESS"), fort, tr("%d%% battle wins at home (%d-%d)") %
 			[roundi(float(fort["hbpct"])), int(fort["hw"]), int(fort["hl"])]))
 	var away_rows: Array = rows.filter(func(r): return int(r["am"]) >= 2)
 	if not away_rows.is_empty():
 		away_rows.sort_custom(func(a, b): return float(a["abpct"]) > float(b["abpct"]))
 		var trav: Dictionary = away_rows[0]
-		_tinsights.add_child(_insight_chip("ROAD WARRIORS", trav, "%d%% battle wins away (%d-%d)" %
+		_tinsights.add_child(_insight_chip(tr("ROAD WARRIORS"), trav, tr("%d%% battle wins away (%d-%d)") %
 			[roundi(float(trav["abpct"])), int(trav["aw"]), int(trav["al"])]))
 	var hot: Dictionary = by.call("streak", true)
 	if int(hot["streak"]) > 0:
-		_tinsights.add_child(_insight_chip("IN FORM", hot,
-			"won last %d in a row" % int(hot["streak"])))
+		_tinsights.add_child(_insight_chip(tr("IN FORM"), hot,
+			tr("won last %d in a row") % int(hot["streak"])))
 	var cold: Dictionary = by.call("streak", false)
 	if int(cold["streak"]) < 0:
-		_tinsights.add_child(_insight_chip("IN CRISIS", cold,
-			"lost last %d in a row" % (-int(cold["streak"]))))
+		_tinsights.add_child(_insight_chip(tr("IN CRISIS"), cold,
+			tr("lost last %d in a row") % (-int(cold["streak"]))))
 
 
 func _insight_chip(caption: String, r: Dictionary, detail: String) -> PanelContainer:
@@ -1108,7 +1109,7 @@ func _insight_chip(caption: String, r: Dictionary, detail: String) -> PanelConta
 	v.add_child(UI.dim(caption, 9))
 	if not r.is_empty():
 		var lnk := UI.link(str(r["name"]), 13, Color.WHITE,
-			{"kind": "club", "id": str(r["cid"])}, "%s — view club profile" % r["name"])
+			{"kind": "club", "id": str(r["cid"])}, tr("%s — view club profile") % r["name"])
 		v.add_child(lnk)
 	v.add_child(UI.dim(detail, 10))
 	p.add_child(v)
@@ -1158,33 +1159,33 @@ func _build_hub() -> void:
 		return card
 
 	_hub_scatter = Charts.ScatterChart.new()
-	_hub_scatter.x_title = "damage dealt per battle →"
-	_hub_scatter.y_title = "damage taken per battle →"
-	_hub_scatter.quads = ["leaky, low output", "all-out brawlers", "cagey, low output", "complete sides"]
-	grid.add_child(mk_card.call("Attack vs Defence · every club",
-		_hub_scatter, "dashed lines = league average · ring = your club · right & low = complete side"))
+	_hub_scatter.x_title = tr("damage dealt per battle →")
+	_hub_scatter.y_title = tr("damage taken per battle →")
+	_hub_scatter.quads = [tr("leaky, low output"), tr("all-out brawlers"), tr("cagey, low output"), tr("complete sides")]
+	grid.add_child(mk_card.call(tr("Attack vs Defence · every club"),
+		_hub_scatter, tr("dashed lines = league average · ring = your club · right & low = complete side")))
 
 	_hub_top_rated = Charts.BarChartH.new()
 	_hub_top_rated.decimals = 2
 	_hub_top_rated.label_w = 128.0
-	grid.add_child(mk_card.call("Top Rated Pokémon · avg match rating (min 3 apps)",
-		_hub_top_rated, "swatch = owning club color"))
+	grid.add_child(mk_card.call(tr("Top Rated Pokémon · avg match rating (min 3 apps)"),
+		_hub_top_rated, tr("swatch = owning club color")))
 
 	_hub_kod = Charts.BarChartH.new()
 	_hub_kod.label_w = 108.0
-	grid.add_child(mk_card.call("KO Difference · knocked out minus lost",
-		_hub_kod, "green = beats opponents up, red = gets beaten up · swatch = club color"))
+	grid.add_child(mk_card.call(tr("KO Difference · knocked out minus lost"),
+		_hub_kod, tr("green = beats opponents up, red = gets beaten up · swatch = club color")))
 
 	_hub_venue = Charts.BarChartH.new()
 	_hub_venue.label_w = 108.0
 	_hub_venue.suffix = "pp"
-	grid.add_child(mk_card.call("Home Advantage · home minus away battle-win %",
-		_hub_venue, "positive = fortress at home, negative = travels better · swatch = club color"))
+	grid.add_child(mk_card.call(tr("Home Advantage · home minus away battle-win %"),
+		_hub_venue, tr("positive = fortress at home, negative = travels better · swatch = club color")))
 
 
 func _refresh_hub() -> void:
 	var team_rows: Array = _build_team_rows("all").filter(func(r): return int(r["matches"]) > 0)
-	_hub_note.text = "%d clubs with matches played · all marks from recorded match details" % team_rows.size()
+	_hub_note.text = tr("%d clubs with matches played · all marks from recorded match details") % team_rows.size()
 
 	# 1) attack vs defence scatter
 	var pts: Array = []
@@ -1195,7 +1196,7 @@ func _refresh_hub() -> void:
 			"label": str(r["short"]), "x": float(r["dmg_leg"]), "y": float(r["tkn_leg"]),
 			"color": UI.club_color(r["club"]),
 			"highlight": GameState.is_player_club(str(r["cid"])),
-			"tip": "%s\nDamage dealt / battle: %d\nDamage taken / battle: %d\nBattle win rate: %d%%" % [
+			"tip": I18n.t("%s\nDamage dealt / battle: %d\nDamage taken / battle: %d\nBattle win rate: %d%%") % [
 				str(r["name"]), roundi(float(r["dmg_leg"])), roundi(float(r["tkn_leg"])),
 				roundi(float(r["bpct"]))],
 		})
@@ -1210,7 +1211,7 @@ func _refresh_hub() -> void:
 		bars.append({
 			"label": str(r["name"]), "value": float(r["rating"]),
 			"color": UI.club_color(club) if not club.is_empty() else TB.COL_ACCENT,
-			"tip": "%s (%s, Lv %d) — %s\nAvg rating %.2f over %d apps · %d KOs" % [
+			"tip": I18n.t("%s (%s, Lv %d) — %s\nAvg rating %s over %d apps · %d KOs") % [
 				str(r["name"]), str(r["species"]), int(r["level"]),
 				str(club.get("name", "unattached")), float(r["rating"]),
 				int(r["apps"]), int(r["kos"])],
@@ -1225,7 +1226,7 @@ func _refresh_hub() -> void:
 		kod_bars.append({
 			"label": str(r["short"]), "value": float(r["kod"]),
 			"color": UI.club_color(r["club"]),
-			"tip": "%s\nKOs scored %d · conceded %d · difference %+d" % [
+			"tip": I18n.t("%s\nKOs scored %d · conceded %d · difference %+d") % [
 				str(r["name"]), int(r["kos"]), int(r["faints"]), int(r["kod"])],
 		})
 	_hub_kod.set_data(kod_bars)
@@ -1238,7 +1239,7 @@ func _refresh_hub() -> void:
 		venue_bars.append({
 			"label": str(r["short"]), "value": float(r["venue_gap"]),
 			"color": UI.club_color(r["club"]),
-			"tip": "%s\nHome battle-win %d%% (%d-%d) · away %d%% (%d-%d)" % [
+			"tip": I18n.t("%s\nHome battle-win %d%% (%d-%d) · away %d%% (%d-%d)") % [
 				str(r["name"]), roundi(float(r["hbpct"])), int(r["hw"]), int(r["hl"]),
 				roundi(float(r["abpct"])), int(r["aw"]), int(r["al"])],
 		})
@@ -1276,8 +1277,8 @@ func _apply_view() -> void:
 func refresh() -> void:
 	_apply_dev_region()
 	var played_n: int = GameState.fixtures.filter(func(f): return f["played"]).size()
-	var scope: String = "all regions" if _lg_filter() == "" else GameState.league_name(_lg_filter())
-	_note.text = "%s · computed from %d simulated match%s (world-wide)" % [
+	var scope: String = tr("all regions") if _lg_filter() == "" else tr(GameState.league_name(_lg_filter()))
+	_note.text = tr("%s · computed from %d simulated match%s (world-wide)") % [
 		scope, played_n, "" if played_n == 1 else "es"]
 	match _view:
 		"centre":
@@ -1319,9 +1320,9 @@ func _refresh_leaders(played_n: int) -> void:
 	# --- Top rated (min 3 battle appearances)
 	var rated := rows.filter(func(r): return int(r["battles"]) >= 3)
 	rated.sort_custom(func(a, b): return a["avg_rating"] > b["avg_rating"])
-	_leaders.add_child(_leader_card("Top Rated Pokémon", ["Pokémon", "Club", "Lv", "Apps", "Rat"],
+	_leaders.add_child(_leader_card(tr("Top Rated Pokémon"), ["Pokémon", "Club", "Lv", "Apps", "Rat"],
 		[0, 58, 44, 52, 54], rated, func(r): return [
-			str(r["name"]), _short(r), str(r["level"]), str(r["battles"]), "%.2f" % r["avg_rating"]],
+			str(r["name"]), _short(r), str(r["level"]), str(r["battles"]), I18n.decimal(float(r["avg_rating"]), 2)],
 		func(r): return _rating_color(r["avg_rating"])))
 
 	# --- Most KOs
@@ -1330,16 +1331,16 @@ func _refresh_leaders(played_n: int) -> void:
 		if int(a["kos"]) != int(b["kos"]):
 			return int(a["kos"]) > int(b["kos"])
 		return int(a["dmg"]) > int(b["dmg"]))
-	_leaders.add_child(_leader_card("Most KOs", ["Pokémon", "Club", "Apps", "KOs", "KO/App"],
+	_leaders.add_child(_leader_card(tr("Most KOs"), ["Pokémon", "Club", "Apps", "KOs", "KO/App"],
 		[0, 58, 52, 48, 62], kos, func(r): return [
 			str(r["name"]), _short(r), str(r["battles"]), str(r["kos"]),
-			"%.2f" % (float(r["kos"]) / maxi(int(r["battles"]), 1))],
+			I18n.decimal(float(r["kos"]) / maxi(int(r["battles"]), 1), 2)],
 		func(_r): return Color.WHITE))
 
 	# --- Most damage
 	var dmg := rows.duplicate()
 	dmg.sort_custom(func(a, b): return int(a["dmg"]) > int(b["dmg"]))
-	_leaders.add_child(_leader_card("Most Damage Dealt", ["Pokémon", "Club", "Apps", "Dmg", "Dmg/App"],
+	_leaders.add_child(_leader_card(tr("Most Damage Dealt"), ["Pokémon", "Club", "Apps", "Dmg", "Dmg/App"],
 		[0, 58, 52, 62, 66], dmg, func(r): return [
 			str(r["name"]), _short(r), str(r["battles"]), str(r["dmg"]),
 			str(int(float(r["dmg"]) / maxi(int(r["battles"]), 1)))],
@@ -1387,7 +1388,7 @@ func _leader_card(title: String, titles: Array, widths: Array, rows: Array,
 	tree.set_column_expand(0, false)
 	tree.set_column_custom_minimum_width(0, 30)
 	for i in titles.size():
-		tree.set_column_title(i + 1, titles[i])
+		tree.set_column_title(i + 1, tr(titles[i]))
 		tree.set_column_title_alignment(i + 1, HORIZONTAL_ALIGNMENT_LEFT if i == 0 else HORIZONTAL_ALIGNMENT_CENTER)
 		if int(widths[i]) > 0:
 			tree.set_column_expand(i + 1, false)
@@ -1405,7 +1406,7 @@ func _leader_card(title: String, titles: Array, widths: Array, rows: Array,
 			if i > 0:
 				item.set_text_alignment(i + 1, HORIZONTAL_ALIGNMENT_CENTER)
 		UI.cell_link(item, 1, {"kind": "pokemon", "id": str(r["uid"])},
-			"%s — view Pokémon profile" % r["name"])
+			I18n.t("%s — view Pokémon profile") % r["name"])
 		var club: Dictionary = r.get("club", {})
 		if not club.is_empty():
 			item.set_icon(1, UI.badge_texture(UI.club_color(club), 10))
@@ -1423,7 +1424,7 @@ func _leader_card(title: String, titles: Array, widths: Array, rows: Array,
 
 
 func _club_card(clubs: Array) -> PanelContainer:
-	var card := UI.card("Best Clubs · Battle Win Rate")
+	var card := UI.card(tr("Best Clubs · Battle Win Rate"))
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var tree := Tree.new()
@@ -1435,7 +1436,7 @@ func _club_card(clubs: Array) -> PanelContainer:
 	var titles := ["#", "Club", "Matches", "W-L", "Battles", "Win %"]
 	var widths := [30, 0, 62, 56, 66, 60]
 	for i in tree.columns:
-		tree.set_column_title(i, titles[i])
+		tree.set_column_title(i, tr(titles[i]) if titles[i] != "#" else "#")
 		tree.set_column_title_alignment(i, HORIZONTAL_ALIGNMENT_LEFT if i == 1 else HORIZONTAL_ALIGNMENT_CENTER)
 		if widths[i] > 0:
 			tree.set_column_expand(i, false)

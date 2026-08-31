@@ -34,6 +34,9 @@ const ACADEMY_LEVEL_CAP := 28
 const BOARD_RESERVE := 150000
 const GOLDEN_CHANCE := 0.06
 const THIN_CHANCE := 0.10
+## Roster cap by facility level — intakes never take the academy past it, and
+## the end-of-season youth review (cull) exists to keep you honest below it.
+const ROSTER_CAP := {1: 8, 2: 10, 3: 12, 4: 14, 5: 16}
 
 const FOCUSES := ["balanced", "physical", "special", "defense", "speed"]
 const FOCUS_LABELS := {"balanced": "Balanced", "physical": "Physical",
@@ -60,6 +63,8 @@ var roster: Array = []       # academy mon dicts (see _make_recruit)
 var pending: Dictionary = {} # board upgrade request
 var history: Array = []      # newest-first intake summaries
 var next_uid: int = 1
+var cull: Dictionary = {}    # open end-of-season youth review (see _open_cull_review)
+var _crowd_warned := false   # roster-pressure mail sent for the current squeeze
 var _gs = null
 var _evo_parent: Dictionary = {}  # child species id -> pre-evo id (lazy)
 
@@ -90,7 +95,16 @@ func service_id() -> String:
 func on_career_started(gs) -> void:
 	_gs = gs
 	active = self
+	if not gs.season_rolled.is_connected(_on_season_rolled):
+		gs.season_rolled.connect(_on_season_rolled)
 	academy_changed.emit()
+
+
+## New season: FM's youth-review moment. If the academy holds anyone, the head
+## youth coach files a keep/release recommendation list and asks for decisions.
+func _on_season_rolled(_season_no: int) -> void:
+	if _gs != null and not roster.is_empty():
+		_open_cull_review()
 
 
 func on_day(gs, date: String) -> void:
@@ -104,13 +118,16 @@ func on_day(gs, date: String) -> void:
 	if date.ends_with("-01"):
 		for m in roster:
 			m["age_months"] = int(m["age_months"]) + 1
+	if roster.size() < roster_cap() - 1:
+		_crowd_warned = false   # pressure relieved; warn again on the next squeeze
 	academy_changed.emit()
 
 
 func save_state() -> Dictionary:
 	return {"facility_level": facility_level, "roster": roster.duplicate(true),
 		"pending": pending.duplicate(true), "history": history.duplicate(true),
-		"next_uid": next_uid}
+		"next_uid": next_uid, "cull": cull.duplicate(true),
+		"crowd_warned": _crowd_warned}
 
 
 func load_state(state: Dictionary) -> void:
@@ -124,6 +141,10 @@ func load_state(state: Dictionary) -> void:
 		pending["cost"] = int(pending.get("cost", 0))
 	history = state.get("history", [])
 	next_uid = int(state.get("next_uid", 1))
+	cull = state.get("cull", {}) if typeof(state.get("cull")) == TYPE_DICTIONARY else {}
+	if not cull.is_empty():
+		cull["season"] = int(cull.get("season", 0))
+	_crowd_warned = bool(state.get("crowd_warned", false))
 
 
 func _cast_mon(m: Dictionary) -> void:
@@ -150,7 +171,7 @@ func _coach_rating(key: String) -> int:
 
 func head_youth_coach() -> String:
 	var best := -1
-	var who := "the coaching staff"
+	var who := I18n.t("the coaching staff")
 	if _gs == null:
 		return who
 	for s in _gs.player_club().get("staff", []):
@@ -267,15 +288,22 @@ func _post_intake_preview(date: String) -> void:
 	elif bool(roll["thin"]):
 		mood = "thin"
 	var intake_on := date.substr(0, 8) + "%02d" % INTAKE_DAY
-	var body := "%s has been watching the youth candidates ahead of intake day on %s. " % [coach, intake_on]
+	var body := I18n.t("%s has been watching the youth candidates ahead of intake day on %s. ") % [coach, I18n.pretty_date(intake_on)]
 	match mood:
 		"golden":
-			body += "Whispers from the programme suggest a special group is coming through — the staff can barely contain themselves."
+			body += I18n.t("Whispers from the programme suggest a special group is coming through — the staff can barely contain themselves.")
 		"thin":
-			body += "Expectations are low this month; the region's best juveniles appear to have gone elsewhere."
+			body += I18n.t("Expectations are low this month; the region's best juveniles appear to have gone elsewhere.")
 		_:
-			body += "A typical group is expected — a couple of names worth watching, nothing the staff are shouting about yet."
-	_post_mail(date, "Youth intake preview", body, {
+			body += I18n.t("A typical group is expected — a couple of names worth watching, nothing the staff are shouting about yet.")
+	var space := roster_cap() - roster.size()
+	if space <= 0:
+		body += I18n.t(" One problem: the academy is FULL (%d/%d beds) — the whole class will be turned away unless beds open up first.") % [
+			roster.size(), roster_cap()]
+	elif space < int(INTAKE_MIN[facility_level]):
+		body += I18n.t(" Space is tight (%d/%d beds taken) — only %d can be housed.") % [
+			roster.size(), roster_cap(), space]
+	_post_mail(date, I18n.t("Youth intake preview"), body, {
 		"cat": "staff", "sender": coach, "coach": coach,
 		"academy_kind": "preview", "uid": "academy:preview:" + date,
 		"mood": mood, "intake_on": intake_on,
@@ -292,6 +320,22 @@ func _run_intake(date: String) -> void:
 	var count: int = roll["count"]
 	var golden: bool = roll["golden"]
 	var thin: bool = roll["thin"]
+	# The facility can only house so many juveniles: intake shrinks to fit,
+	# and a FULL academy turns the class away entirely (with a pointed mail).
+	var space := roster_cap() - roster.size()
+	if space <= 0:
+		_post_mail(date, I18n.t("Youth intake suspended — the academy is full"),
+			(I18n.t("%s had a class of %d lined up but the %s can house only %d juveniles ")
+			+ I18n.t("and every bed is taken (%d on the roster). Promote or release someone ")
+			+ I18n.t("— or expand the facilities — before the %dth of next month.")) % [
+			head_youth_coach(), count, I18n.t(FACILITY_NAMES[facility_level]), roster_cap(),
+			roster.size(), INTAKE_DAY], {
+			"cat": "staff", "sender": head_youth_coach(),
+			"academy_kind": "intake_full", "uid": "academy:full:" + date,
+			"cap": roster_cap(), "size": roster.size(),
+			"facility_name": String(FACILITY_NAMES[facility_level])})
+		return
+	count = mini(count, space)
 	var pool := _weighted_pool()
 	var recruits: Array = []
 	for i in count:
@@ -319,7 +363,7 @@ func _run_intake(date: String) -> void:
 			"note": _pot_note(int(m["pot_max"])),
 			"best": String(m["uid"]) == String(best["uid"]),
 		})
-	_post_mail(date, "Youth intake day: %d new recruits" % count,
+	_post_mail(date, I18n.t("Youth intake day: %d new recruits") % count,
 		_intake_report(recruits, golden, thin), {
 			"cat": "staff", "sender": coach, "coach": coach,
 			"academy_kind": "intake", "uid": "academy:intake:" + date,
@@ -327,6 +371,133 @@ func _run_intake(date: String) -> void:
 			"facility": facility_level,
 			"facility_name": String(FACILITY_NAMES[facility_level]),
 		})
+	_check_crowding(date)
+
+
+# ------------------------------------------------------------------ housekeeping
+
+## Bed count of the current facilities (upgrades literally add room).
+func roster_cap() -> int:
+	return int(ROSTER_CAP.get(facility_level, 8))
+
+
+## The academy is ballooning: one warning mail per squeeze (resets once the
+## roster drops back under pressure level = cap - 1).
+func _check_crowding(date: String) -> void:
+	var cap := roster_cap()
+	if roster.size() < cap - 1:
+		_crowd_warned = false
+		return
+	if _crowd_warned:
+		return
+	_crowd_warned = true
+	var full := roster.size() >= cap
+	_post_mail(date, I18n.t("Academy roster is %s (%d/%d)") % [
+		I18n.t("full") if full else I18n.t("nearly full"), roster.size(), cap],
+		(I18n.t("%s flags a housekeeping problem: the %s has %d of %d beds taken. %s ")
+		+ I18n.t("Development time gets diluted in an overcrowded academy — promote the ")
+		+ I18n.t("ready ones, release the depth, or ask the board for bigger facilities.")) % [
+		head_youth_coach(), I18n.t(FACILITY_NAMES[facility_level]), roster.size(), roster_cap(),
+		I18n.t("Next month's intake will be turned away entirely.") if full
+			else I18n.t("Anything beyond a token intake will be turned away.")], {
+		"cat": "staff", "sender": head_youth_coach(),
+		"academy_kind": "crowded", "uid": "academy:crowded:" + date,
+		"cap": cap, "size": roster.size(),
+		"facility_name": String(FACILITY_NAMES[facility_level])})
+
+
+## FM's end-of-season youth review: every academy mon gets a coach
+## recommendation (KEEP / RELEASE, with a stated reason); the manager settles
+## it on the Academy screen (apply_cull) — the mail stays a live decision
+## until then. Deterministic: pure function of the roster + coach quality.
+func _open_cull_review() -> void:
+	var items: Array = []
+	for m in roster:
+		var rec := _cull_recommendation(m)
+		items.append({"uid": String(m["uid"]), "species": String(m["species"]),
+			"level": int(m["level"]), "age_months": int(m["age_months"]),
+			"stars": float(m["stars"]), "pot_min": int(m["pot_min"]),
+			"pot_max": int(m["pot_max"]), "rec": rec[0], "reason": rec[1]})
+	items.sort_custom(func(a, b): return int(a["pot_max"]) > int(b["pot_max"]))
+	var releases := items.filter(func(i): return String(i["rec"]) == "release").size()
+	cull = {"season": _gs.season_no(), "date": _gs.current_date,
+		"items": items, "resolved": false}
+	_post_mail(_gs.current_date, I18n.t("Youth review: %s recommends %s") % [
+		head_youth_coach(),
+		(I18n.t("releasing %d of %d juveniles") % [releases, items.size()]) if releases > 0
+			else I18n.t("keeping the whole group")],
+		_cull_body(items, releases), {
+		"cat": "staff", "sender": head_youth_coach(),
+		"academy_kind": "cull", "uid": "academy:cull:S%d" % _gs.season_no(),
+		"items": cull["items"], "resolved": false,
+		"cap": roster_cap(), "size": roster.size()})
+	if not _gs.inbox.is_empty() and str(_gs.inbox[0].get("uid", "")) == "academy:cull:S%d" % _gs.season_no():
+		_gs.inbox[0]["urgent"] = true
+	academy_changed.emit()
+
+
+func _cull_recommendation(m: Dictionary) -> Array:
+	var pot_max := int(m["pot_max"])
+	var pot_mid := (int(m["pot_min"]) + pot_max) / 2
+	var age := int(m["age_months"])
+	if pot_max <= 8:
+		return ["release", I18n.t("ceiling is depth-chart at best — a bed wasted")]
+	if age >= 42 and pot_mid < 12:
+		return ["release", I18n.t("overage for the programme and the ceiling never came")]
+	if age >= 30 and float(m["stars"]) < 1.5 and pot_max < 13:
+		return ["release", I18n.t("development has stalled well behind the age curve")]
+	if pot_max >= 15:
+		return ["keep", I18n.t("genuine first-team ceiling — protect this one")]
+	if int(m["level"]) >= ACADEMY_LEVEL_CAP - 2:
+		return ["keep", I18n.t("ready for a first-team look — promote rather than release")]
+	return ["keep", I18n.t("worth another season of development")]
+
+
+func _cull_body(items: Array, releases: int) -> String:
+	var lines: Array = []
+	lines.append(I18n.t("%s has completed the end-of-season review of the academy (%d/%d beds).") % [
+		head_youth_coach(), roster.size(), roster_cap()])
+	lines.append("")
+	for i in items:
+		lines.append(I18n.t("%s  %s (Lv %d, %s) — %s") % [
+			I18n.t("RELEASE") if String(i["rec"]) == "release" else I18n.t("KEEP") + "   ",
+			String(i["species"]), int(i["level"]), _age_text(int(i["age_months"])),
+			String(i["reason"])])
+	lines.append("")
+	lines.append(I18n.t("Settle the list on the Academy screen — releases free beds before the season's first intake day.")
+		if releases > 0 else I18n.t("No cuts advised, but the decision is yours — review them on the Academy screen."))
+	return "\n".join(lines)
+
+
+## Apply the manager's decisions on the open youth review: release the given
+## uids, mark the review (and its mail) resolved, confirm by mail.
+func apply_cull(release_uids: Array) -> String:
+	if cull.is_empty() or bool(cull.get("resolved", false)):
+		return I18n.t("No youth review is awaiting decisions.")
+	var released: Array = []
+	for uid in release_uids:
+		var m := find(String(uid))
+		if not m.is_empty():
+			released.append(String(m["species"]))
+			roster.erase(m)
+	cull["resolved"] = true
+	cull["released"] = released.size()
+	for mail in _gs.inbox:
+		if str(mail.get("academy_kind", "")) == "cull" and not bool(mail.get("resolved", false)):
+			mail["resolved"] = true
+			mail["urgent"] = false
+	_post_mail(_gs.current_date, I18n.t("Youth review settled: %s") % (
+		(I18n.t("%d released, %d kept") % [released.size(), roster.size()]) if not released.is_empty()
+			else I18n.t("everyone stays")),
+		(I18n.t("The academy heads into the new season with %d of %d beds filled.%s")) % [
+			roster.size(), roster_cap(),
+			(I18n.t(" Released: %s. The staff wish them well.") % ", ".join(released)) if not released.is_empty() else ""], {
+		"cat": "staff", "sender": head_youth_coach(),
+		"academy_kind": "cull_done", "uid": "academy:cull_done:" + _gs.current_date,
+		"released": released, "kept": roster.size(), "cap": roster_cap()})
+	_gs.inbox_updated.emit()
+	academy_changed.emit()
+	return ""
 
 
 func _make_recruit(r: RandomNumberGenerator, pool: Array, golden: bool, thin: bool,
@@ -403,34 +574,34 @@ func potential_stars(m: Dictionary) -> Array:
 
 func _pot_note(pot_max: int) -> String:
 	if pot_max >= 17:
-		return "could lead the first team for a decade"
+		return I18n.t("could lead the first team for a decade")
 	if pot_max >= 13:
-		return "a genuine prospect worth developing"
+		return I18n.t("a genuine prospect worth developing")
 	if pot_max >= 9:
-		return "solid foundations, needs game time"
-	return "one for the depth chart at best"
+		return I18n.t("solid foundations, needs game time")
+	return I18n.t("one for the depth chart at best")
 
 
 func _intake_report(recruits: Array, golden: bool, thin: bool) -> String:
 	var coach := head_youth_coach()
 	var lines: Array = []
-	lines.append("%s presents this month's academy intake (%s, level %d)." % [
-		coach, FACILITY_NAMES[facility_level], facility_level])
+	lines.append(I18n.t("%s presents this month's academy intake (%s, level %d).") % [
+		coach, I18n.t(FACILITY_NAMES[facility_level]), facility_level])
 	if golden:
-		lines.append("The staff are buzzing — early signs suggest this could be a GOLDEN GENERATION.")
+		lines.append(I18n.t("The staff are buzzing — early signs suggest this could be a GOLDEN GENERATION."))
 	elif thin:
-		lines.append("A thin month; the region's best young battlers went elsewhere.")
+		lines.append(I18n.t("A thin month; the region's best young battlers went elsewhere."))
 	lines.append("")
 	for m in recruits:
 		var sp: Dictionary = DataStore.species(int(m["species_id"]))
 		var band := potential_stars(m)
-		lines.append("%s  (%s)  — Lv %d, %s" % [String(m["species"]),
-			", ".join(sp.get("types", [])), int(m["level"]), _age_text(int(m["age_months"]))])
-		lines.append("    Current %s   Potential %s – %s   \"%s\"" % [
+		lines.append(I18n.t("%s  (%s)  — Lv %d, %s") % [String(m["species"]),
+			I18n.types_join(sp.get("types", []), ", "), int(m["level"]), _age_text(int(m["age_months"]))])
+		lines.append(I18n.t("    Current %s   Potential %s – %s   \"%s\"") % [
 			star_text(float(m["stars"])), star_text(band[0]), star_text(band[1]),
 			_pot_note(int(m["pot_max"]))])
 	lines.append("")
-	lines.append("They begin work at the academy immediately. Review them on the Academy screen.")
+	lines.append(I18n.t("They begin work at the academy immediately. Review them on the Academy screen."))
 	return "\n".join(lines)
 
 
@@ -444,7 +615,7 @@ static func star_text(v: float) -> String:
 
 
 static func _age_text(months: int) -> String:
-	return "%dy %dm" % [months / 12, months % 12]
+	return I18n.t("%dy %dm") % [months / 12, months % 12]
 
 
 # ------------------------------------------------------------------ development
@@ -542,10 +713,10 @@ func set_focus(uid: String, focus: String) -> void:
 func promote(uid: String) -> String:
 	var m := find(uid)
 	if m.is_empty():
-		return "Not in the academy."
+		return I18n.t("Not in the academy.")
 	var squad: Array = _gs.player_club()["squad"]
 	if squad.size() >= FIRST_TEAM_CAP:
-		return "First-team squad is full (%d/%d). Release or sell first." % [squad.size(), FIRST_TEAM_CAP]
+		return I18n.t("First-team squad is full (%d/%d). Release or sell first.") % [squad.size(), FIRST_TEAM_CAP]
 	var sp: Dictionary = DataStore.species(int(m["species_id"]))
 	var bst := 0
 	for k in sp.get("base", {}):
@@ -570,9 +741,9 @@ func promote(uid: String) -> String:
 	squad.append(inst)
 	roster.erase(m)
 	var band := potential_stars(m)
-	_post_mail(_gs.current_date, "%s promoted to the first team" % inst["species"],
-		"%s steps up from the academy on a contract to %s. Coaches rate the ceiling %s – %s. Young battlers develop fastest alongside senior squad-mates — consider a mentor." % [
-			inst["species"], inst["contract"]["expiry"],
+	_post_mail(_gs.current_date, I18n.t("%s promoted to the first team") % inst["species"],
+		I18n.t("%s steps up from the academy on a contract to %s. Coaches rate the ceiling %s – %s. Young battlers develop fastest alongside senior squad-mates — consider a mentor.") % [
+			inst["species"], I18n.pretty_date(str(inst["contract"]["expiry"])),
 			star_text(band[0]), star_text(band[1])], {
 			"cat": "staff", "sender": head_youth_coach(),
 			"academy_kind": "promote",
@@ -592,10 +763,10 @@ func promote(uid: String) -> String:
 func release(uid: String) -> String:
 	var m := find(uid)
 	if m.is_empty():
-		return "Not in the academy."
+		return I18n.t("Not in the academy.")
 	roster.erase(m)
-	_post_mail(_gs.current_date, "%s released from the academy" % m["species"],
-		"%s leaves the club's youth setup. The staff wish them well." % m["species"], {
+	_post_mail(_gs.current_date, I18n.t("%s released from the academy") % m["species"],
+		I18n.t("%s leaves the club's youth setup. The staff wish them well.") % m["species"], {
 			"cat": "staff", "sender": head_youth_coach(),
 			"academy_kind": "release",
 			"uid": "academy:release:%s:%s" % [_gs.current_date, String(m["uid"])],
@@ -617,15 +788,15 @@ func upgrade_cost() -> int:
 
 func request_upgrade() -> String:
 	if facility_level >= 5:
-		return "The academy is already state of the art."
+		return I18n.t("The academy is already state of the art.")
 	if not pending.is_empty():
-		return "A request is already with the board."
+		return I18n.t("A request is already with the board.")
 	var cost := upgrade_cost()
 	pending = {"to_level": facility_level + 1, "cost": cost, "status": "pending",
 		"requested": _gs.current_date, "decide_on": Season.date_add(_gs.current_date, 3),
 		"complete_on": ""}
-	_post_mail(_gs.current_date, "Board considering academy investment",
-		"You have asked the board to fund Level %d academy facilities (%s). They will respond within days." % [
+	_post_mail(_gs.current_date, I18n.t("Board considering academy investment"),
+		I18n.t("You have asked the board to fund Level %d academy facilities (%s). They will respond within days.") % [
 			facility_level + 1, format_money(cost)], {
 			"cat": "board", "sender": _board_sender(),
 			"academy_kind": "board_request",
@@ -650,9 +821,9 @@ func _tick_upgrade(date: String) -> void:
 			fin["balance"] = int(fin["balance"]) - cost
 			pending["status"] = "building"
 			pending["complete_on"] = Season.date_add(date, int(CONSTRUCTION_DAYS[to]))
-			_post_mail(date, "Board approves academy expansion",
-				"The board has released %s for Level %d facilities. Construction completes on %s." % [
-					format_money(cost), to, pending["complete_on"]], {
+			_post_mail(date, I18n.t("Board approves academy expansion"),
+				I18n.t("The board has released %s for Level %d facilities. Construction completes on %s.") % [
+					format_money(cost), to, I18n.pretty_date(str(pending["complete_on"]))], {
 					"cat": "board", "sender": _board_sender(),
 					"academy_kind": "board_approve",
 					"uid": "academy:board:ok:" + date,
@@ -662,8 +833,8 @@ func _tick_upgrade(date: String) -> void:
 				})
 		else:
 			pending = {}
-			_post_mail(date, "Board rejects academy request",
-				"The club cannot commit %s while keeping a %s operating reserve. Improve the balance and ask again." % [
+			_post_mail(date, I18n.t("Board rejects academy request"),
+				I18n.t("The club cannot commit %s while keeping a %s operating reserve. Improve the balance and ask again.") % [
 					format_money(cost), format_money(BOARD_RESERVE)], {
 					"cat": "board", "sender": _board_sender(),
 					"academy_kind": "board_reject",
@@ -674,9 +845,9 @@ func _tick_upgrade(date: String) -> void:
 	elif String(pending["status"]) == "building" and date >= String(pending["complete_on"]):
 		facility_level = to
 		pending = {}
-		_post_mail(date, "New academy facilities open",
-			"The %s (Level %d) are ready. Expect larger, higher-quality intakes from the %dth of each month." % [
-				FACILITY_NAMES[facility_level], facility_level, INTAKE_DAY], {
+		_post_mail(date, I18n.t("New academy facilities open"),
+			I18n.t("The %s (Level %d) are ready. Expect larger, higher-quality intakes from the %dth of each month.") % [
+				I18n.t(FACILITY_NAMES[facility_level]), facility_level, INTAKE_DAY], {
 				"cat": "board", "sender": _board_sender(),
 				"academy_kind": "facility_open",
 				"uid": "academy:board:open:" + date,
@@ -686,9 +857,4 @@ func _tick_upgrade(date: String) -> void:
 
 
 static func format_money(v: int) -> String:
-	var s := str(v)
-	var out := ""
-	while s.length() > 3:
-		out = "," + s.substr(s.length() - 3) + out
-		s = s.substr(0, s.length() - 3)
-	return "$" + s + out
+	return "$" + I18n.number(v)
