@@ -579,17 +579,21 @@ func _sack_manager(gs, reason: String) -> void:
 # ------------------------------------------------------------------ inbox hygiene
 
 ## Does this mail still owe the manager an answer? (Mirror of the Inbox
-## screen's decision test — those must stay unread through any tidy-up.)
+## screen's LIVE-decision test — those must stay unread through any tidy-up.)
+## Offer mail and people-mail decisions go stale (offers expire/resolve, mind
+## games end at kickoff, welfare notes age out); their generators keep the
+## `urgent` flag equal to "still needs a decision", so gate on it here — a
+## season's worth of dead offers must not survive the rollover tidy unread.
 func _mail_needs_decision(m: Dictionary) -> bool:
 	if m.has("offer_id"):
-		return true
+		return bool(m.get("urgent", false))
 	if str(m.get("kind", "")) == "evo_ready":
 		return str(m.get("decided", "")) == ""
 	if str(m.get("academy_kind", "")) == "cull":
 		return not bool(m.get("resolved", false))
 	var uid := str(m.get("uid", ""))
 	return (uid.begins_with("mind:") or uid.begins_with("monlow:")) \
-		and str(m.get("replied", "")) == ""
+		and str(m.get("replied", "")) == "" and bool(m.get("urgent", false))
 
 
 ## Rollover housekeeping: mark every ROUTINE unread mail read (urgent news and
