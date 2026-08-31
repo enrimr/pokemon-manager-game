@@ -52,3 +52,12 @@ godot --path . res://tools/screenshots.tscn -- --screens=all --out=artifacts/sho
 Screens are discovered by convention: any `res://screens/<name>/screen.tscn` + `screen.json` appears in the sidebar. Daily-tick systems drop a script into `res://shared/sim/services/` and get lifecycle + save/load hooks automatically.
 
 Saves live in Godot's user dir (`user://save.json`, `user://settings.json`).
+
+## License
+
+Dual-licensed — see [LICENSE.md](LICENSE.md):
+
+- **Noncommercial** use, modification and distribution are free under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/). Forks and clones are welcome — keep them free and credit **Trainer Manager**.
+- **Commercial** use of any kind requires a paid license from the author — get in touch.
+
+Pokémon character names and related terms are trademarks of Nintendo, Creatures Inc., and GAME FREAK Inc.; this project grants no rights to them.
