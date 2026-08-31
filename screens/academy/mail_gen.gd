@@ -261,4 +261,4 @@ func _board(msg: Dictionary) -> Dictionary:
 
 
 static func _money(v: int) -> String:
-	return "$" + I18n.number(v)
+	return AcademyService.format_money(v)

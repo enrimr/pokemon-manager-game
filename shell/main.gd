@@ -1542,6 +1542,11 @@ func _open_game_over() -> void:
 		return
 	if not GameState.is_game_over():
 		return
+	# Kill the stadium/menu music before the SACKED overlay — upbeat chiptune
+	# (or a roaring crowd, if the mail lands on the match screen) over a career
+	# funeral is tonally wrong. Navigation after the overlay restores ambience.
+	AudioManager.set_ambience("")
+	AudioManager.play("error", -6.0, 0.8)
 	_game_over = GameOverScreen.new()
 	_game_over.setup(_font_bold, _font_semibold, _font_header)
 	_game_over.offer_accepted.connect(func(club_id: String):

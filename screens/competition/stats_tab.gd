@@ -1213,7 +1213,7 @@ func _refresh_hub() -> void:
 			"color": UI.club_color(club) if not club.is_empty() else TB.COL_ACCENT,
 			"tip": I18n.t("%s (%s, Lv %d) — %s\nAvg rating %s over %d apps · %d KOs") % [
 				str(r["name"]), str(r["species"]), int(r["level"]),
-				str(club.get("name", "unattached")), float(r["rating"]),
+				str(club.get("name", "unattached")), I18n.decimal(float(r["rating"]), 2),
 				int(r["apps"]), int(r["kos"])],
 		})
 	_hub_top_rated.set_data(bars)

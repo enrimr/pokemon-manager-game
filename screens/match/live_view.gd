@@ -372,6 +372,12 @@ func _build_touchline() -> Control:
 	row2.add_child(_force_btn)
 	row2.add_child(UI.spacer_h())
 	_bag_label = UI.label("", 12, UI.COL_DIM)
+	# Long localized bag summaries must never force the screen wider than the
+	# viewport (they pushed the commentary panel off-screen in Spanish): let the
+	# label shrink with an ellipsis; the full text rides the tooltip.
+	_bag_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_bag_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_bag_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row2.add_child(_bag_label)
 	return pair[0]
 
@@ -474,6 +480,7 @@ func _refresh_bag() -> void:
 	var mine := tr("empty") if parts.is_empty() else " · ".join(parts)
 	_bag_label.text = tr("MATCH BAG:  %s      |   items used — you %d, them %d") % [
 		mine, runner.items_spent(runner.player_side), runner.items_spent(1 - runner.player_side)]
+	_bag_label.tooltip_text = _bag_label.text  # full text when trimmed
 
 
 func _refresh_card(side: int, animate: bool) -> void:

@@ -857,4 +857,5 @@ func _tick_upgrade(date: String) -> void:
 
 
 static func format_money(v: int) -> String:
-	return "$" + I18n.number(v)
+	var cur := str(GameState.world.get("meta", {}).get("currency", "P$")) if GameState.world is Dictionary else "P$"
+	return cur + I18n.number(v)

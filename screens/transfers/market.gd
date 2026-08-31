@@ -420,7 +420,10 @@ func _make_ext_instance(rng: RandomNumberGenerator, sp: Dictionary, lvl_lo: int,
 		"held_item": null, "condition": 70 + int(rng.randi() % 31),
 		"fitness": 75 + int(rng.randi() % 26), "morale": 50 + int(rng.randi() % 46),
 		"age_months": 12 + int(rng.randi() % 109), "region": region,
-		"contract": {"salary": salary, "expiry": "%04d-%02d-30" % [yr, mo]},
+		# Day clamped to the month's real length — "%04d-02-30" used to mint
+		# invalid February dates that crash every Time.* date-diff helper.
+		"contract": {"salary": salary,
+			"expiry": "%04d-%02d-%02d" % [yr, mo, mini(30, [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo - 1])]},
 	}
 
 

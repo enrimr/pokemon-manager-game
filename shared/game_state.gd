@@ -866,6 +866,10 @@ func game_over_info() -> Dictionary:
 func trigger_game_over(info: Dictionary) -> void:
 	world["meta"]["game_over"] = info
 	game_over.emit(info)
+	# The documented contract is that a reload lands back on the game-over
+	# screen. No date change follows the sacking (the overlay blocks play), so
+	# autosave never fires — persist the moment explicitly.
+	save_game()
 
 
 ## Continue the career at one of the offered clubs. "" = ok, else error.

@@ -107,27 +107,27 @@ static func flags(inst: Dictionary) -> Array:
 	var fit := int(inst.get("fitness", 100))
 	var morale := int(inst.get("morale", 100))
 	if cond < 45:
-		out.append({"code": "EXH", "sev": 2, "color": UI.COL_BAD,
+		out.append({"code": I18n.t("EXH"), "sev": 2, "color": UI.COL_BAD,
 			"tip": I18n.t("Exhausted — condition %d%%. Battling now invites a poor rating; rest before picking.") % cond})
 	elif cond < 70:
-		out.append({"code": "TRD", "sev": 1, "color": UI.COL_WARN,
+		out.append({"code": I18n.t("TRD"), "sev": 1, "color": UI.COL_WARN,
 			"tip": I18n.t("Tired — condition %d%%, below matchday freshness.") % cond})
 	if fit < 50:
-		out.append({"code": "UNF", "sev": 2, "color": UI.COL_BAD,
+		out.append({"code": I18n.t("UNF"), "sev": 2, "color": UI.COL_BAD,
 			"tip": I18n.t("Unfit — fitness %d%%. Needs training time before competitive battles.") % fit})
 	elif fit < 72:
-		out.append({"code": "FIT", "sev": 1, "color": UI.COL_WARN,
+		out.append({"code": I18n.t("FIT"), "sev": 1, "color": UI.COL_WARN,
 			"tip": I18n.t("Short of match fitness (%d%%).") % fit})
 	var ail := str(inst.get("status", ""))
 	if ail != "" and ail != "none" and ail != "<null>":
-		out.append({"code": ail.substr(0, 3).to_upper(), "sev": 2, "color": UI.COL_BAD,
+		out.append({"code": I18n.t(ail).substr(0, 3).to_upper(), "sev": 2, "color": UI.COL_BAD,
 			"tip": I18n.t("Carrying a %s ailment into the next match.") % I18n.t(ail)})
 	if bool(inst.get("transfer_listed", false)):
-		out.append({"code": "LST", "sev": 1, "color": UI.COL_WARN,
+		out.append({"code": I18n.t("LST"), "sev": 1, "color": UI.COL_WARN,
 			"tip": I18n.t("Transfer listed at %s — expects to leave the club.") % UI.money(int(inst.get("asking_price", 0)))})
 	if morale < 55:
 		var bad := morale < 30
-		out.append({"code": "UNH", "sev": 2 if bad else 1,
+		out.append({"code": I18n.t("UNH"), "sev": 2 if bad else 1,
 			"color": UI.COL_BAD if bad else UI.COL_WARN,
 			"tip": I18n.t("Unhappy — morale %s (%d). Performances suffer until it lifts.") % [UI.morale_word(morale), morale]})
 	return out

@@ -211,7 +211,7 @@ func _fill_cull(s: RefCounted) -> void:
 		row.add_child(who)
 		var why := Label.new()
 		var rel: bool = String(it["rec"]) == "release"
-		why.text = tr("coach: %s — %s") % ["RELEASE" if rel else "KEEP", String(it["reason"])]
+		why.text = tr("coach: %s — %s") % [tr("RELEASE") if rel else tr("KEEP"), String(it["reason"])]
 		why.add_theme_font_size_override("font_size", 12)
 		why.add_theme_color_override("font_color", TB.COL_BAD if rel else TB.COL_GOOD)
 		row.add_child(why)

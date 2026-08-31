@@ -593,6 +593,12 @@ Buoyed by the manager's praise,Animado por los elogios del entrenador
 Praised on %s (morale %+d).,Elogiado el %s (moral %+d).
 Smarting from criticism,Escocido por la crítica
 Criticised on %s (morale %+d).,Criticado el %s (moral %+d).
+EXH,AGO
+TRD,CAN
+UNF,BAJ
+FIT,RIT
+LST,TRF
+UNH,DES
 Lv,Nv.
 NOR,NOR
 FIR,FUE
@@ -1010,6 +1016,7 @@ Your season (%s),Tu temporada (%s)
 %s in the %s · %d pts · %s: %s,%s en la %s · %d ptos. · %s: %s
 %s run-in:  %s,Desenlace de la %s:  %s
 %.2f avg rating · %d battles,nota media %.2f · %d combates
+%s avg rating · %d battles,nota media %s · %d combates
 SEASON STATS,ESTADÍSTICAS DE LA TEMPORADA
 Players,Jugadores
 Teams,Equipos
@@ -1353,15 +1360,15 @@ Ask anyone in my dugout —,Pregunta a cualquiera de mi banquillo:
 Between us and the record:,Entre nosotros y para el acta:
 Here's the truth of it:,Esta es la verdad:
 my squad,mi plantilla
-my battlers,mi bloque de combatientes
+my battlers,mis combatientes
 this group,este grupo
-my lads,mi vestuario
+my lads,los míos
 our roster,nuestro equipo
 the group I've built,el grupo que he construido
-my trainers,mi tropa
+my trainers,mis entrenadores
 my front six,mi seis titular
 my people,mi gente
-the battlers I trust,la gente en la que confío
+the battlers I trust,los combatientes en los que confío
 on the field,sobre el terreno
 when the battles start,cuando empiecen los combates
 on matchday,el día de partido
@@ -1385,10 +1392,10 @@ The rest is for Saturday.,"El resto, para el sábado."
 "People keep asking me about {pcs}. What is there to say? We are the bigger club, and {arena} everyone will see why. {closer}","No paran de preguntarme por el {pcs}. ¿Qué quieren que diga? Somos el club más grande, y {arena} todos verán por qué. {closer}"
 We scouted {pcs} for ninety minutes and stopped taking notes after twenty. {crowd} know what's coming. So does their manager.,Estudiamos al {pcs} durante noventa minutos y dejamos de tomar notas a los veinte. {crowd} sabe lo que viene. Y su entrenador también.
 "If we perform at even eighty percent, {pc} cannot live with us. {tic} that's not arrogance, it's arithmetic.","Si rendimos siquiera al ochenta por ciento, {pc} no puede seguirnos el ritmo. {tic} no es arrogancia, es aritmética."
-"My only job this week was keeping {crowd} focused, because nobody here is nervous about {pcs}. {closer}","Mi único trabajo esta semana ha sido mantener la concentración de {crowd}, porque aquí nadie está nervioso por el {pcs}. {closer}"
+"My only job this week was keeping {crowd} focused, because nobody here is nervous about {pcs}. {closer}","Mi único trabajo esta semana ha sido mantener concentrado a {crowd}, porque aquí nadie está nervioso por el {pcs}. {closer}"
 {pc}? A good story for the neutrals. Stories end — and this one ends quickly {arena}.,"¿{pc}? Una bonita historia para los neutrales. Las historias se acaban, y esta se acaba rápido {arena}."
 "You want a bold prediction? I don't do bold. I do obvious: {club} win, and {pcs} go home wondering what hit them.","¿Quieres una predicción atrevida? Yo no hago atrevidas, hago obvias: gana {club}, y el {pcs} se va a casa preguntándose qué le ha pasado por encima."
-There are ties that keep a manager up at night. {tic} this is not one of them. {crowd} could handle it half-asleep — they won't need to.,Hay eliminatorias que quitan el sueño a un entrenador. {tic} esta no es una de ellas. {crowd} podría resolverla con los ojos cerrados... y no le hará falta.
+There are ties that keep a manager up at night. {tic} this is not one of them. {crowd} could handle it half-asleep — they won't need to.,Hay eliminatorias que quitan el sueño a un entrenador. {tic} esta no es una de ellas. {crowd} podría resolverla medio dormido... y no le hará falta.
 "Every league has a gap between where clubs think they are and where they actually are. This weekend, {pcs} learn which side of that gap they live on. {closer}","En toda liga hay una distancia entre donde los clubes creen estar y donde están de verdad. Este fin de semana, el {pcs} descubrirá en qué lado vive. {closer}"
 "Everything favours {pc} — the budget, the depth, the expectation. {tic} that suits me fine. The pressure is all theirs; {crowd} travel with nothing to lose.","Todo favorece a {pc}: el presupuesto, el fondo de armario, la expectativa. {tic} a mí eso me va bien. La presión es toda suya; {crowd} viaja sin nada que perder."
 "{pcs} should win. The table says it, their wage bill says it. But 'should' is a dangerous word {arena}.","El {pcs} debería ganar. Lo dice la tabla, lo dice su masa salarial. Pero «debería» es una palabra peligrosa {arena}."
@@ -1480,14 +1487,14 @@ Nobody outside the {pcs} dressing room saw this coming. A club with a reputation
 "The league table does not care about reputations, and neither, evidently, do {opp}. Their {them}-{us} win over {pcs} was thoroughly earned — which is precisely what should worry {mgr}.","A la tabla no le importan las reputaciones y, por lo visto, a {opp} tampoco. Su {them}-{us} sobre el {pcs} fue merecido de principio a fin... que es exactamente lo que debería preocupar a {mgr}."
 "Call it a shock if you like. Around {opps} they are calling it inevitable — they saw a flat {pc} side coming, and took them for {them}-{us}.",Llámalo sorpresa si quieres. En el entorno del {opps} lo llaman inevitable: vieron venir a un {pc} plano y se lo llevaron por {them}-{us}.
 "Some defeats are noise. This one — {them}-{us} to {opp}, a club {pc} are supposed to look down on — is signal. The board will say the right things publicly. Privately, they counted every battle.","Hay derrotas que son ruido. Esta —{them}-{us} ante {opp}, un club al que {pc} debería mirar desde arriba— es señal. La directiva dirá lo correcto en público. En privado, contó cada combate."
-"The cup run is alive. [b]{pc}[/b] saw off {opp} {us}-{them} in the {round}, and the draw for the {next_round} suddenly matters a great deal in this corner of the league.","La andadura copera sigue viva. [b]{pc}[/b] despachó a {opp} {us}-{them} en {round}, y el sorteo de {next_round} importa de repente mucho en este rincón de la liga."
-"Cup battles reward nerve, and {pcs} showed plenty of it — {opp} dispatched {us}-{them}, a place in the {next_round} secured, and a support daring to whisper about silverware.","La copa premia el temple, y al {pcs} le sobró: {opp} despachado {us}-{them}, plaza asegurada en {next_round} y una afición que ya se atreve a susurrar la palabra título."
-"Tick another round off. {pc} handled {opp} {us}-{them} in the {round}, and handled is the right word: professional, controlled, never truly threatened.","Otra ronda tachada. {pc} manejó a {opp} {us}-{them} en {round}, y manejar es la palabra: profesional, controlado, nunca realmente amenazado."
-"The romance of the cup usually belongs to someone else. Not this year, perhaps: {pcs} beat {opp} {us}-{them} and march into the {next_round} with genuine momentum.",El romanticismo de la copa suele ser de otros. Quizá este año no: el {pcs} venció a {opp} {us}-{them} y entra en {next_round} con impulso de verdad.
-"Knockout ties have a way of exposing soft squads. {pc} are not one of them — {opp} were beaten {us}-{them} in the {round}, and the {next_round} awaits.","Las eliminatorias tienen la costumbre de desnudar a las plantillas blandas. {pc} no es una de ellas: {opp} cayó {us}-{them} en {round}, y {next_round} espera."
-"A {us}-{them} win over {opp}, a spot in the {next_round}, and a manager refusing to talk about the final. Managers always refuse. Supporters never do.","Un {us}-{them} sobre {opp}, un puesto en {next_round} y un entrenador que se niega a hablar de la final. Los entrenadores siempre se niegan. Las aficiones, nunca."
-The {round} is where cup runs usually go to die. {pcs} walked out of theirs with a {us}-{them} win over {opp} and the sound of a support starting to believe.,No hay ronda donde mueran más andaduras coperas. El {pcs} salió de la suya con un {us}-{them} sobre {opp} y el sonido de una afición que empieza a creer.
-"Write it down: {pc} are in the {next_round}. {opp} pushed, probed and were seen off {us}-{them} — the mark of a side that has decided this competition is worth winning.","Apúntalo: {pc} está en {next_round}. {opp} apretó, tanteó y fue despedido {us}-{them}: la marca de un equipo que ha decidido que esta competición merece ganarse."
+"The cup run is alive. [b]{pc}[/b] saw off {opp} {us}-{them} in the {round}, and the draw for the {next_round} suddenly matters a great deal in this corner of the league.","La andadura copera sigue viva. [b]{pc}[/b] despachó a {opp} {us}-{them} en la {round}, y el sorteo de la {next_round} importa de repente mucho en este rincón de la liga."
+"Cup battles reward nerve, and {pcs} showed plenty of it — {opp} dispatched {us}-{them}, a place in the {next_round} secured, and a support daring to whisper about silverware.","La copa premia el temple, y al {pcs} le sobró: {opp} despachado {us}-{them}, plaza asegurada en la {next_round} y una afición que ya se atreve a susurrar la palabra título."
+"Tick another round off. {pc} handled {opp} {us}-{them} in the {round}, and handled is the right word: professional, controlled, never truly threatened.","Otra ronda tachada. {pc} manejó a {opp} {us}-{them} en la {round}, y manejar es la palabra: profesional, controlado, nunca realmente amenazado."
+"The romance of the cup usually belongs to someone else. Not this year, perhaps: {pcs} beat {opp} {us}-{them} and march into the {next_round} with genuine momentum.",El romanticismo de la copa suele ser de otros. Quizá este año no: el {pcs} venció a {opp} {us}-{them} y entra en la {next_round} con impulso de verdad.
+"Knockout ties have a way of exposing soft squads. {pc} are not one of them — {opp} were beaten {us}-{them} in the {round}, and the {next_round} awaits.","Las eliminatorias tienen la costumbre de desnudar a las plantillas blandas. {pc} no es una de ellas: {opp} cayó {us}-{them} en la {round}, y la {next_round} espera."
+"A {us}-{them} win over {opp}, a spot in the {next_round}, and a manager refusing to talk about the final. Managers always refuse. Supporters never do.","Un {us}-{them} sobre {opp}, un puesto en la {next_round} y un entrenador que se niega a hablar de la final. Los entrenadores siempre se niegan. Las aficiones, nunca."
+The {round} is where cup runs usually go to die. {pcs} walked out of theirs with a {us}-{them} win over {opp} and the sound of a support starting to believe.,La {round} es donde suelen morir las andaduras coperas. El {pcs} salió de la suya con un {us}-{them} sobre {opp} y el sonido de una afición que empieza a creer.
+"Write it down: {pc} are in the {next_round}. {opp} pushed, probed and were seen off {us}-{them} — the mark of a side that has decided this competition is worth winning.","Apúntalo: {pc} está en la {next_round}. {opp} apretó, tanteó y fue despedido {us}-{them}: la marca de un equipo que ha decidido que esta competición merece ganarse."
 "[b]{streak} wins in a row.[/b] Streaks like this are not luck — they are structure, squad depth and a dugout that trusts itself. {pc} made it {streak} straight by beating {opp} {us}-{them}, and the chasing pack has noticed.","[b]{streak} victorias seguidas.[/b] Rachas así no son suerte: son estructura, fondo de plantilla y un banquillo que confía en sí mismo. {pc} llegó a {streak} seguidas al vencer a {opp} {us}-{them}, y el grupo perseguidor ha tomado nota."
 "The number of the week is {streak}. That is how many consecutive matches {pcs} have now won after seeing off {opp} {us}-{them}, and nobody else in the league is enjoying the arithmetic.","El número de la semana es {streak}. Esos son los partidos consecutivos que ya ha ganado el {pcs} tras despachar a {opp} {us}-{them}, y a nadie más en la liga le divierte la aritmética."
 "Form is temporary, they say. Somebody should tell {pc}, whose {us}-{them} win over {opp} stretched the run to {streak} — and whose battlers look sharper with every week.","La forma es pasajera, dicen. Que alguien se lo cuente a {pc}, cuyo {us}-{them} sobre {opp} estiró la racha hasta {streak}... y cuyos combatientes se ven más finos cada semana."
@@ -1514,11 +1521,11 @@ Gazette verdict: no excuses for {pcs} after {opps} defeat,Veredicto de la Gazett
 Gazette verdict: alarm bells at {pcs} after {opps} loss,Veredicto de la Gazette: alarmas en el {pcs} tras la derrota con el {opps}
 Gazette verdict: {opps} expose a flat {pcs},Veredicto de la Gazette: el {opps} desnuda a un {pcs} plano
 Gazette verdict: a defeat {pcs} cannot explain away,Veredicto de la Gazette: una derrota que el {pcs} no puede justificar
-Cup fever: {pcs} march into the {next_round},Fiebre de copa: el {pcs} desfila hacia {next_round}
-Cup fever: {pcs} book their place in the {next_round},Fiebre de copa: el {pcs} sella su plaza en {next_round}
+Cup fever: {pcs} march into the {next_round},Fiebre de copa: el {pcs} desfila hacia la {next_round}
+Cup fever: {pcs} book their place in the {next_round},Fiebre de copa: el {pcs} sella su plaza en la {next_round}
 Cup fever: {pcs} keep the run alive against {opps},Fiebre de copa: el {pcs} mantiene viva la andadura ante el {opps}
 Cup fever: {pcs} through — and dreaming of more,Fiebre de copa: el {pcs} pasa... y sueña con más
-Cup fever: no slip-ups as {pcs} reach the {next_round},"Fiebre de copa: sin tropiezos, el {pcs} alcanza {next_round}"
+Cup fever: no slip-ups as {pcs} reach the {next_round},"Fiebre de copa: sin tropiezos, el {pcs} alcanza la {next_round}"
 {streak} and counting — the league is talking about {pc},{streak} y sumando: la liga habla de {pc}
 Make it {streak} straight: {pcs} roll on,Ya van {streak} seguidas: el {pcs} sigue rodando
 Unstoppable? {pcs} win number {streak} in a row,¿Imparable? El {pcs} suma la victoria número {streak} consecutiva
@@ -1651,9 +1658,9 @@ No Comment,Sin comentarios
 "
 STAR,ESTRELLA
 ONE BRIGHT SPOT,ÚNICA NOTA POSITIVA
-"[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d damage across %d battle%s. Match rating [/color][color=#%s][b]%s[/b][/color]
+"[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d damage across %d battle%s. Match rating [/color][color=#%s][b]%.1f[/b][/color]
 
-","[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d de daño en %d combate(s)%s. Nota del partido: [/color][color=#%s][b]%s[/b][/color]
+","[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d de daño en %d combate(s)%s. Nota del partido: [/color][color=#%s][b]%.1f[/b][/color]
 
 "
 "[color=#%s]%s sat [b]%s[/b] in the %s as this went to print.[/color]
@@ -1726,8 +1733,8 @@ Keep Them Grounded,Mantenerle los pies en el suelo
 1st,1.º
 2nd,2.º
 3rd,3.º
-"[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d battles, %d KOs, %d dmg · avg rating [/color][color=#%s][b]%s[/b][/color]%s
-","[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d combates, %d KO, %d daño · nota media [/color][color=#%s][b]%s[/b][/color]%s
+"[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d battles, %d KOs, %d dmg · avg rating [/color][color=#%s][b]%.2f[/b][/color]%s
+","[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d combates, %d KO, %d daño · nota media [/color][color=#%s][b]%.2f[/b][/color]%s
 "
   [color=#%s][b]← OURS[/b][/color],  [color=#%s][b]← NUESTRO[/b][/color]
 "[color=#%s][b]TEAM OF THE MONTH[/b][/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%d-%d in the league)%s[/color]
@@ -1778,8 +1785,8 @@ a final blow,un golpe final
 ","
 [color=#%s][b]FIGURA DEL PARTIDO[/b][/color]
 "
-"[color=#%s][b]%s[/b][/color] [color=#%s]— %d KO%s, %d damage dealt across the tie. Rating: [/color][color=#%s][b]%s[/b][/color]
-","[color=#%s][b]%s[/b][/color] [color=#%s]— %d KO%s, %d de daño infligido en la eliminatoria. Nota: [/color][color=#%s][b]%s[/b][/color]
+"[color=#%s][b]%s[/b][/color] [color=#%s]— %d KO%s, %d damage dealt across the tie. Rating: [/color][color=#%s][b]%.1f[/b][/color]
+","[color=#%s][b]%s[/b][/color] [color=#%s]— %d KO%s, %d de daño infligido en la eliminatoria. Nota: [/color][color=#%s][b]%.1f[/b][/color]
 "
 "
 [color=#%s]The result leaves %s [/color][color=#%s][b]%s[/b][/color][color=#%s] in the %s.[/color]","
@@ -1840,14 +1847,14 @@ travel to,Visitamos
 "
 "
 [color=#%s][b]ASSISTANT'S NOTE[/b][/color]
-[color=#%s]%s's [b]%s[/b] attacks profile well against their likely six (avg %sx effectiveness) — worth a place in the lineup.[/color]
+[color=#%s]%s's [b]%s[/b] attacks profile well against their likely six (avg %.1fx effectiveness) — worth a place in the lineup.[/color]
 ","
 [color=#%s][b]NOTA DEL SEGUNDO[/b][/color]
-[color=#%s]%s y sus ataques de tipo [b]%s[/b] encajan bien contra su probable seis (eficacia media %sx): merece un puesto en la alineación.[/color]
+[color=#%s]%s y sus ataques de tipo [b]%s[/b] encajan bien contra su probable seis (eficacia media %.1fx): merece un puesto en la alineación.[/color]
 "
 "[color=#%s]The [b]%s[/b] draw for the Indigo Cup has been made. Ties will be played on %s.[/color]
 
-","[color=#%s]Se ha realizado el sorteo de la Copa Añil — [b]%s[/b]. Los duelos se jugarán el %s.[/color]
+","[color=#%s]Se ha realizado el sorteo de la [b]%s[/b] de la Copa Añil. Los duelos se jugarán el %s.[/color]
 
 "
 "[color=#%s]We have been drawn [b]%s[/b] against [b]%s[/b] (%s, reputation %d/20).[/color]
@@ -2120,7 +2127,7 @@ Next match: %s %s (%s),Próximo partido: %s %s (%s)
 at,en casa del
  cup tie, de copa
 Pre-match briefing prepared ahead of the %s meeting with %s on %s.,Informe de previa preparado para el duelo de %s contra %s el %s.
-The %s draw for the Indigo Cup has been made.,Se ha realizado el sorteo de la Copa Añil: %s.
+The %s draw for the Indigo Cup has been made.,Se ha realizado el sorteo de la %s de la Copa Añil.
 challenge for the league title,luche por el título de liga
 push for a top-four finish,pelee por acabar entre los cuatro primeros
 finish in the top half of the table,termine en la mitad alta de la tabla
@@ -2327,7 +2334,7 @@ Favourites,Favoritos
 Even contest,Duelo igualado
 Underdogs,No favoritos
 Big underdogs,Grandes tapados
-%s  ·  avg level %s vs %s,%s  ·  nivel medio %s vs %s
+%s  ·  avg level %0.1f vs %0.1f,%s  ·  nivel medio %0.1f vs %0.1f
 Their expected six,Su seis esperado
      HP %d · Atk %d · Def %d · SpA %d · SpD %d · Spe %d,     PS %d · Ata. %d · Def. %d · AtE. %d · DfE. %d · Vel. %d
      ◆ holds %s,     ◆ lleva %s
@@ -2373,10 +2380,10 @@ BENCH,BANQUILLO
 HELD,OBJETO
 MOVES,MOVIMIENTOS
 Touchline,Banda
-Sim rest of battle ⏭,Simular el resto del combate ⏭
-Sim to result ⏭⏭,Simular hasta el final ⏭⏭
+Sim rest of battle ⏭,Simular resto del combate ⏭
+Sim to result ⏭⏭,Ir al resultado ⏭⏭
 Key moments only,Solo momentos clave
-Auto-pilot (coach decides),Piloto automático (decide el técnico)
+Auto-pilot (coach decides),Piloto automático
 "On: the AI coach follows your touchline instructions and may use the bag.
 Off: you call every move, switch and item yourself.","Activado: el técnico sigue tus instrucciones de banda y puede usar la mochila.
 Desactivado: tú cantas cada movimiento, cambio y objeto."
@@ -2396,8 +2403,7 @@ BEST OF 3  ·  BATTLE %d%s  ·  TURN %d  ·  %s,AL MEJOR DE 3  ·  COMBATE %d%s 
   ·  2v2 DOUBLES,  ·  DOBLES 2c2
 LEAGUE ROUND %d,"LIGA, JORNADA %d"
  (CUP), (COPA)
-  ·  %d turn left,  ·  queda %d turno
-  ·  %d turns left,  ·  quedan %d turnos
+  ·  %d turn%s left,  ·  queda(n) %d turno%s
 "MATCH BAG:  %s      |   items used — you %d, them %d","MOCHILA:  %s      |   objetos usados — tú %d, ellos %d"
 "
 Holds: ","
@@ -2436,8 +2442,11 @@ FLINCHED,AMEDRENTADO
 HIT ITSELF,SE GOLPEÓ A SÍ MISMO
 FULLY PARALYSED,TOTALMENTE PARALIZADO
 FROZEN,CONGELADO
-ATHE SKIES CLEAR,EL CIELO SE DESPEJA
+ASLEEP,DORMIDO
+THE SKIES CLEAR,EL CIELO SE DESPEJA
 SAND,ARENA
+%d / %d HP  (%d%%),%d / %d PS  (%d %%)
+%s  Lv%d  %d%%,%s  Nv%d  %d %%
 BATTLE %d — %s TAKE IT,COMBATE %d — SE LO LLEVA %s
  · at %s, · contra %s
  · SPREAD, · ÁREA
@@ -2478,14 +2487,14 @@ Accuracy,Precisión
 Evasion,Evasión
 [b]Battle %d of 3 is underway — 2v2 DOUBLES! Two on the floor for each side; targeting wins these.[/b],[b]¡Arranca el combate %d de 3 — DOBLES 2c2! Dos sobre la pista por bando; aquí ganan los objetivos bien elegidos.[/b]
 [b]Battle %d of 3 is underway.[/b],[b]Arranca el combate %d de 3.[/b]
-%s's %s finds nothing left to hit!,¡%s lanza %s y no encuentra nada que golpear!
+%s's %s finds nothing left to hit!,¡El %s de %s no encuentra nada que golpear!
 %s unleashes %s across the whole field!,¡%s desata %s por todo el campo!
 %s goes wide with %s — everyone braces!,%s abre el abanico con %s... ¡todos se preparan!
 %s singles out %s — %s!,%s señala a %s... ¡%s!
 %s calls for %s.,%s recurre a %s.
 %s takes a breather and uses %s.,%s toma aire y usa %s.
 %s goes to the playbook: %s.,%s tira de pizarra: %s.
-%s's %s misses the mark!,¡%s no da en el blanco con %s!
+%s's %s misses the mark!,¡El %s de %s no da en el blanco!
 It sails wide — %s wastes a turn on %s.,Se marcha desviado: %s desperdicia un turno con %s.
 %s whiffs %s completely!,¡%s falla %s por completo!
 DOWN GOES %s! %s have %d left standing.,¡CAE %s! A %s le quedan %d en pie.
@@ -2528,41 +2537,41 @@ The tide is turning — %s are on top now!,¡La marea cambia: ahora manda %s!
 %s have wrestled back control of this battle!,¡%s ha recuperado el control de este combate!
 %s nibbles at its %s and recovers.,%s mordisquea sus %s y se recupera.
 %s bites into its %s at just the right moment!,¡%s muerde su %s en el momento justo!
-%s's %s locks it into that move.,%s queda fijado en ese movimiento: obra de su %s.
-[b]%s's %s is spent — it survives on 1 HP![/b],[b]%s gasta su %s... ¡y sobrevive con 1 PS![/b]
-%s's %s chimes — a sliver of HP back.,A %s le repica su %s: una pizca de PS de vuelta.
-%s's %s rattles its target!,¡%s sacude a su objetivo con su %s!
-%s's %s clouds the attacker's aim!,¡%s nubla la puntería del atacante con su %s!
+%s's %s locks it into that move.,El %s de %s lo encierra en ese movimiento.
+[b]%s's %s is spent — it survives on 1 HP![/b],[b]La %s de %s se gasta... ¡y sobrevive con 1 PS![/b]
+%s's %s chimes — a sliver of HP back.,La %s de %s repica: una pizca de PS de vuelta.
+%s's %s rattles its target!,¡La %s de %s sacude a su objetivo!
+%s's %s clouds the attacker's aim!,¡El %s de %s nubla la puntería del atacante!
 held item,objeto equipado
-%s's [b]%s[/b] makes itself felt the moment it steps on!,¡%s hace notar su [b]%s[/b] en cuanto pisa el campo!
-[b]No effect — %s's %s shrugs the attack off completely![/b],[b]Sin efecto: ¡%s ignora el ataque por completo gracias a su %s![/b]
-[b]%s's %s drinks the attack right up![/b],[b]¡%s se bebe el ataque entero con su %s![/b]
+%s's [b]%s[/b] makes itself felt the moment it steps on!,¡La [b]%s[/b] de %s se hace notar en cuanto pisa el campo!
+[b]No effect — %s's %s shrugs the attack off completely![/b],[b]Sin efecto: ¡la %s de %s ignora el ataque por completo![/b]
+[b]%s's %s drinks the attack right up![/b],[b]¡La %s de %s se bebe el ataque entero![/b]
 [b]%s refuses to go down — %s keeps it standing on 1 HP![/b],[b]%s se niega a caer: ¡%s lo mantiene en pie con 1 PS![/b]
-%s's [b]%s[/b] punishes the contact!,¡%s castiga el contacto con su [b]%s[/b]!
+%s's [b]%s[/b] punishes the contact!,¡La [b]%s[/b] de %s castiga el contacto!
 %s is in trouble — and its [b]%s[/b] roars to life!,%s está en apuros... ¡y su [b]%s[/b] ruge con fuerza!
-%s's [b]%s[/b] blunts the blow.,%s amortigua el golpe con su [b]%s[/b].
-%s's [b]%s[/b] throws the condition right back!,¡%s devuelve el estado a su emisor con su [b]%s[/b]!
-%s's [b]%s[/b] cures it on the way to the bench.,%s se cura camino del banquillo gracias a su [b]%s[/b].
-%s's [b]%s[/b] ticks over at the end of the turn.,%s: su [b]%s[/b] hace su trabajo al final del turno.
-End of the turn — %s's [b]%s[/b] does its quiet work.,Final del turno: %s deja que su [b]%s[/b] haga su trabajo silencioso.
-%s's [b]%s[/b] shakes off the drowsiness early.,%s se sacude el sueño antes de tiempo gracias a su [b]%s[/b].
-%s's [b]%s[/b] blocks the stat drop.,%s bloquea la bajada de estadísticas con su [b]%s[/b].
-%s's [b]%s[/b] protects it — no dice.,%s está protegido por su [b]%s[/b]: no hay manera.
-%s's [b]%s[/b] comes into play.,%s pone en juego su [b]%s[/b].
+%s's [b]%s[/b] blunts the blow.,La [b]%s[/b] de %s amortigua el golpe.
+%s's [b]%s[/b] throws the condition right back!,¡La [b]%s[/b] de %s devuelve el estado a su emisor!
+%s's [b]%s[/b] cures it on the way to the bench.,La [b]%s[/b] de %s lo cura camino del banquillo.
+%s's [b]%s[/b] ticks over at the end of the turn.,La [b]%s[/b] de %s hace su trabajo al final del turno.
+End of the turn — %s's [b]%s[/b] does its quiet work.,Final del turno: la [b]%s[/b] de %s hace su trabajo silencioso.
+%s's [b]%s[/b] shakes off the drowsiness early.,La [b]%s[/b] de %s sacude el sueño antes de tiempo.
+%s's [b]%s[/b] blocks the stat drop.,La [b]%s[/b] de %s bloquea la bajada de estadísticas.
+%s's [b]%s[/b] protects it — no dice.,La [b]%s[/b] de %s lo protege: no hay manera.
+%s's [b]%s[/b] comes into play.,La [b]%s[/b] de %s entra en juego.
 %s is hurt by recoil (-%d%%).,%s se resiente del retroceso (-%d %%).
-%s's own %s washes over %s — no harm done.,%s baña con su propio %s a %s: sin daño alguno.
-FRIENDLY FIRE — %s's %s clips its own partner %s (-%d%%)!,FUEGO AMIGO: ¡%s roza con su %s a su propio compañero %s (-%d %%)!
-%s's %s has no effect on %s — poor call!,%s lanza %s y no afecta a %s: ¡mala elección!
-HUGE hit! %s's %s tears into %s — %d%% gone in one blow!,¡Golpe TREMENDO! ¡%s conecta %s y destroza a %s: %d %% de un plumazo!
+%s's own %s washes over %s — no harm done.,El %s del propio %s baña a %s: sin daño alguno.
+FRIENDLY FIRE — %s's %s clips its own partner %s (-%d%%)!,FUEGO AMIGO: ¡el %s de %s roza a su propio compañero %s (-%d %%)!
+%s's %s has no effect on %s — poor call!,El %s de %s no afecta a %s: ¡mala elección!
+HUGE hit! %s's %s tears into %s — %d%% gone in one blow!,¡Golpe TREMENDO! El %s de %s destroza a %s: ¡%d %% de un plumazo!
 %s unloads %s and %s takes a massive %d%% hit!,¡%s descarga %s y %s encaja un %d %% de golpe!
-%s is rocked! %s's %s rips away %d%% of its health!,¡%s se tambalea! ¡%s le arranca con %s un %d %% de salud!
-%s's %s slams into %s for %d%%.,%s conecta %s en %s: %d %%.
+%s is rocked! %s's %s rips away %d%% of its health!,¡%s se tambalea! ¡El %s de %s le arranca un %d %% de salud!
+%s's %s slams into %s for %d%%.,El %s de %s impacta en %s: %d %%.
 Heavy blow — %s catches %s with %s (%d%%).,Golpe serio: %s alcanza a %s con %s (%d %%).
 %s connects with %s and %s feels it: -%d%%.,%s conecta %s y %s lo nota: -%d %%.
 %s lands %s on %s (-%d%%).,%s acierta %s sobre %s (-%d %%).
-%s's %s finds its target — %s down %d%%.,%s acierta con %s: %s pierde un %d %%.
+%s's %s finds its target — %s down %d%%.,El %s de %s encuentra su blanco: %s pierde un %d %%.
 %s chips away with %s (-%d%%).,%s araña con %s (-%d %%).
-%s's %s barely scratches %s.,El ataque de %s con %s apenas rasca a %s.
+%s's %s barely scratches %s.,El %s de %s apenas rasca a %s.
 [color=#%s][b]CRIT![/b][/color] ,[color=#%s][b]¡CRÍTICO![/b][/color] 
 It's super effective!,¡Es supereficaz!
 %s never saw it coming!,¡%s no lo vio venir!
@@ -2750,8 +2759,7 @@ No veterans in the squad.,No hay veteranos en la plantilla.
 ELIGIBLE JUNIORS (RAPID DEVELOPERS),JÓVENES APTOS (DESARROLLO RÁPIDO)
 learning from %s,aprende de %s
 no valid mentor (level/age gap),sin mentor válido (brecha de nivel/edad)
-unmentored — %d possible mentor,sin mentor — %d mentor posible
-unmentored — %d possible mentors,sin mentor — %d mentores posibles
+unmentored — %d possible mentor%s,sin mentor — %d mentor%ses posibles
 No rapid developers in the squad — sign or promote young Pokémon.,No hay jóvenes en desarrollo rápido en la plantilla: ficha o asciende Pokémon jóvenes.
 MENTOR PERSONALITIES,PERSONALIDADES DE MENTOR
 Best developers · last 28 days,Mejores progresiones · últimos 28 días
@@ -2849,8 +2857,7 @@ DIRECTOR OF BATTLING — DELEGATION,DIRECTOR DEPORTIVO — DELEGACIÓN
 RUMOUR MILL,RUMOROLOGÍA
 %d target%s shortlisted,%d objetivo%s en la lista
 %d of them TRANSFER-LISTED — bargain window,%d de ellos TRANSFERIBLES: ventana de gangas
-%d new scout recommendation,%d recomendación nueva de ojeadores
-%d new scout recommendations,%d recomendaciones nuevas de ojeadores
+%d new scout recommendation%s,%d recomendacion%ses nuevas de ojeadores
 %d agent offer%s open,%d oferta%s de agentes abiertas
 RECRUITMENT PIPELINE,CADENA DE FICHAJES
 "The shortlist is empty.
@@ -2975,6 +2982,7 @@ Focus: %s — sweeping %d targets/day (caps at %d%%),Enfoque: %s — barre %d ob
 No staff with scouting ability at the club.,No hay personal con capacidad de ojeo en el club.
 %s · %s · started %s,%s · %s · desde el %s
 IN TRANSIT — %d day%s until they reach %s,EN TRÁNSITO — %d día%s hasta llegar a %s
+IN TRANSIT — %s until they reach %s,EN TRÁNSITO — %s hasta llegar a %s
 the patch,la zona
 %d%% — %s · full report ~%s,%d %% — %s · informe completo ~%s
 Focus: %s,Enfoque: %s
@@ -2989,8 +2997,7 @@ Selecciona un objetivo en Buscar y pulsa Enviar ojeador, o fija un enfoque por t
 Dedicated scouts for hire (%d/%d slots free). New candidates monthly. Wages come off the wage budget.,Ojeadores dedicados en el mercado (%d/%d plazas libres). Candidatos nuevos cada mes. Sus salarios salen del presupuesto salarial.
 JA %d · JP %d  ·  network: %s,VN %d · VP %d  ·  red: %s
 No candidates left this month — the pool refreshes on the 1st.,No quedan candidatos este mes; la bolsa se renueva el día 1.
-%d scout,%d ojeador
-%d scouts,%d ojeadores
+%d scout%s,%d ojeador%ses
 Scouts work faster on their home patch; region focuses build knowledge across it.,Los ojeadores trabajan más rápido en su zona; los enfoques regionales construyen conocimiento en toda ella.
 "[b][font_size=20]%s[/font_size][/b]   [color=#8b91a8]Lv %d · %s[/color]
 ","[b][font_size=20]%s[/font_size][/b]   [color=#8b91a8]Nv. %d · %s[/color]
@@ -3412,7 +3419,7 @@ SHORTLIST ALERT: %s circling %s,AVISO DE LA LISTA: %s ronda a %s
 "The rumour mill says %s %s our shortlisted target %s. If we want him, the safe move is to bid before they do.","La rumorología dice que el %s %s nuestro objetivo %s. Si lo queremos, lo seguro es pujar antes que ellos."
 %s are rumoured to be readying an offer for OUR %s.,Se rumorea que el %s prepara una oferta por NUESTRO %s.
 Paper talk: %s linked with our %s,Ruido de prensa: %s vinculado con nuestro %s
-"The rumour mill has %s preparing a bid for %s. Nothing official yet — but if you would sell, decide your price now; if not, brace for the phone call.","La rumorología sitúa al %s preparando una puja por %s. Nada oficial todavía; pero si estás abierto a vender, decide ya tu precio, y si no, prepárate para la llamada."
+"The rumour mill has %s preparing a bid for %s. Nothing official yet — but if you would sell, decide your price now; if not, brace for the phone call.","La rumorología sitúa al %s preparando una puja por %s. Nada oficial todavía; pero si venderías, decide ya tu precio, y si no, prepárate para la llamada."
 %s's board is said to have released a war chest — expect them to be busy this window.,Se dice que la directiva del %s ha soltado un buen cofre: espera verlos activos esta ventana.
 %s bid %s — just as the rumour mill predicted.,"%s puja %s, tal y como predecía la rumorología."
 The rumours were true: %s bid %s for %s,Los rumores eran ciertos: %s puja %s por %s
@@ -3653,22 +3660,22 @@ WE ARE IN — the board is delighted. Go and win it.","
 
 ESTAMOS DENTRO: la directiva está encantada. Ve y gánala."
 %s: %s line-up set,%s: definido el cartel de %s
-Through to the %s on %s: %s.,Clasificados para la %s del %s: %s.
+Through to the %s on %s: %s.,Clasificados para %s el %s: %s.
 Off-season:,Descanso:
 Off-season: Season %d starts %s,Descanso: la temporada %d empieza el %s
 The season is complete. The squad gets a break — pressing Continue past %s ,La temporada está completa. La plantilla se toma un respiro: pulsar Continuar más allá del %s 
 "fast-forwards to preseason on %s, with fresh fixtures for both championships ","avanza directo a la pretemporada del %s, con calendarios nuevos para ambos campeonatos "
 "and a new %s draw. Squads, finances and development all carry over.","y un nuevo sorteo de la %s. Plantillas, finanzas y desarrollo se conservan."
 Board: ultimatum met — well done,Directiva: ultimátum cumplido; bien hecho
-You finished %s — inside the top %d the board demanded after last season's ,"Terminaste %s, dentro del top %d que la directiva exigió tras el final en "
+You finished %d%s — inside the top %d the board demanded after last season's ,"Terminaste %d%s, dentro del top %d que la directiva exigió tras el final en "
 Danger Zone finish. Confidence is restored and extra transfer funds released.,Zona de peligro de la pasada temporada. La confianza queda restaurada y se liberan fondos extra de fichajes.
-the board demanded a top-%d finish and you delivered %s — the ,la directiva exigió acabar entre los %d primeros y entregaste un %s: el 
+the board demanded a top-%d finish and you delivered %d%s — the ,la directiva exigió acabar entre los %d primeros y entregaste un %d%s: el 
 second failure in a row,segundo fracaso consecutivo
 a catastrophic season — dead last in the %s with just %d points,una temporada catastrófica: colista de la %s con solo %d puntos
-Board ultimatum: finish %s or better next season,Ultimátum de la directiva: termina %s o mejor la próxima temporada
-Finishing %s puts us in the Danger Zone and the board is not hiding its anger: ,Terminar %s nos mete en la Zona de peligro y la directiva no esconde su enfado: 
+Board ultimatum: finish %d%s or better next season,Ultimátum de la directiva: termina %d%s o mejor la próxima temporada
+Finishing %d%s puts us in the Danger Zone and the board is not hiding its anger: ,Terminar %d%s nos mete en la Zona de peligro y la directiva no esconde su enfado: 
 "sponsors have pulled back, the transfer budget has been cut by a quarter and the ","los patrocinadores se han retirado, el presupuesto de fichajes se ha recortado una cuarta parte y la "
-club's reputation has taken a hit. The demand is plain — finish %s or better ,reputación del club ha sufrido un golpe. La exigencia es clara: termina %s o mejor 
+club's reputation has taken a hit. The demand is plain — finish %d%s or better ,reputación del club ha sufrido un golpe. La exigencia es clara: termina %d%s o mejor 
 next season. Fall short and there will be further consequences.,la próxima temporada. Quédate corto y habrá más consecuencias.
 %s is demanding to leave,%s exige salir
 Your star %s (Lv %d) has no interest in another Danger Zone fight and has ,"Tu estrella, %s (Nv. %d), no tiene interés en otra pelea por la Zona de peligro y ha "
@@ -3682,20 +3689,20 @@ La directiva del %s te ha relevado de tus funciones con efecto "
 immediately: %s. The dressing room has been informed and a caretaker ,inmediato: %s. El vestuario ha sido informado y un técnico interino 
 "will see out the off-season.
 
-Your career to date: %s, ","cerrará el descanso de temporada.
+Your career to date: %d season%s, ","cerrará el descanso de temporada.
 
-Tu carrera hasta hoy: %s, "
-"%d–%d in matches, %s. Clubs lower down the pyramid are ","%d–%d en partidos, %s. Clubes de menor nivel ya están "
+Tu carrera hasta hoy: %d temporada%s, "
+"%d–%d in matches, %d honour%s. Clubs lower down the pyramid are ","%d–%d en partidos, %d título%s. Clubes de menor nivel ya están "
 already calling — your next move is on the career screen.,llamando: tu próximo paso está en la pantalla de carrera.
 out in the %s,eliminado en %s
 did not lose a tie,no perdió ninguna eliminatoria
 %s: %s (def. %s in the Final),%s: %s (venció a %s en la Final)
 %s winners: %s,Ganador de la %s: %s
-Pokémon of the Season: %s — avg rating %s over %d battles,Pokémon de la Temporada: %s — nota media %s en %d combates
-%s MVP: %s — %s avg rating in the cup,MVP de la %s: %s — nota media %s en la copa
+Pokémon of the Season: %s — avg rating %.2f over %d battles,Pokémon de la Temporada: %s — nota media %.2f en %d combates
+%s MVP: %s — %.2f avg rating in the cup,MVP de la %s: %s — nota media %.2f en la copa
 Golden Guard (wall of the season): %s — soaked %d damage across %d battles,Guardián Dorado (muro de la temporada): %s — encajó %d de daño en %d combates
-Best Developer (young Pokémon of the season): %s — %s avg rating at %d months old,Mejor Formación (Pokémon joven de la temporada): %s — nota media %s con %d meses
-Best Newcomer%s: %s — %s avg rating in a debut season,Mejor Debutante%s: %s — nota media %s en su primera temporada
+Best Developer (young Pokémon of the season): %s — %.2f avg rating at %d months old,Mejor Formación (Pokémon joven de la temporada): %s — nota media %.2f con %d meses
+Best Newcomer%s: %s — %.2f avg rating in a debut season,Mejor Debutante%s: %s — nota media %.2f en su primera temporada
  (academy graduate), (graduado de la academia)
 "The league has held its end-of-season ceremony.
 
@@ -3710,20 +3717,20 @@ Todos los honores quedan registrados para siempre en Competición > Historia."
 did not qualify for the %s,no se clasificó para la %s
 won the %s — %s!,¡ganó la %s — %s!
 reached the %s Final,alcanzó la Final de la %s
-went out of the %s in the %s,quedó fuera de la %s en %s
+went out of the %s in the %s,cayó de la %s en %s
 "Season %d review, %s:
 
-- League: finished %s in the %s with %d points
+- League: finished %d%s in the %s with %d points
 ","Repaso de la temporada %d, %s:
 
-- Liga: terminó %s en la %s con %d puntos
+- Liga: terminó %d%s en la %s con %d puntos
 "
 "- %s: %s
 - %s: we %s","- %s: %s
 - %s: %s"
 "
-- Star performer: %s (%s avg rating, %d battles)","
-- Figura destacada: %s (nota media %s, %d combates)"
+- Star performer: %s (%.2f avg rating, %d battles)","
+- Figura destacada: %s (nota media %.2f, %d combates)"
 "
 
 Preseason starts %s. The full honours list lives in Competition > History.","
@@ -3733,7 +3740,7 @@ Cup gate share — vs %s (att %s),Parte de taquilla de copa — vs %s (asist. %s
 Matchday operations — vs %s,Operaciones de jornada — vs %s
 Cup gate share — at %s (att %s),Parte de taquilla de copa — en %s (asist. %s)
 Team travel — at %s,Desplazamiento — en %s
-Prize money — %s won,Premio — victoria en %s
+Prize money — %s won,Premio — %s ganada
 Gate receipts — vs %s (att %s),Taquilla — vs %s (asist. %s)
 "Payroll — squad wages, %s (%d battlers)","Nóminas — salarios de la plantilla, %s (%d combatientes)"
 Facilities & staff upkeep — %s,Mantenimiento de instalaciones y personal — %s
@@ -4436,6 +4443,9 @@ Daño recibido / combate: %d
 "%s (%s, Lv %d) — %s
 Avg rating %.2f over %d apps · %d KOs","%s (%s, Nv %d) — %s
 Nota media %.2f en %d apariciones · %d KOs"
+"%s (%s, Lv %d) — %s
+Avg rating %s over %d apps · %d KOs","%s (%s, Nv %d) — %s
+Nota media %s en %d apariciones · %d KOs"
 "%s
 KOs scored %d · conceded %d · difference %+d","%s
 KOs a favor %d · en contra %d · diferencia %+d"
@@ -4520,7 +4530,7 @@ Nobody outside the %s dressing room saw this coming. A club with a reputation of
 "[b]%d wins in a row.[/b] Streaks like this are not luck — they are structure, squad depth and a dugout that trusts itself. %s made it %d straight by beating %s %d-%d, and the chasing pack has noticed.","[b]%d victorias seguidas.[/b] Estas rachas no son suerte: son estructura, fondo de plantilla y un banquillo que confía en sí mismo. %s llegó a %d seguidas al vencer a %s por %d-%d, y el pelotón perseguidor ha tomado nota."
 "There is no dressing this up. [b]%s[/b] (reputation %d/20) were beaten %d-%d by %s (%d/20) — a side they were built, budgeted and expected to beat. Questions travel fast in this league, and today they are all pointed at %s's office.","No hay forma de maquillarlo. [b]%s[/b] (reputación %d/20) cayó %d-%d ante %s (%d/20), un rival al que estaba construido, presupuestado y obligado a ganar. Las preguntas viajan rápido en esta liga y hoy apuntan todas al despacho de %s."
 "Boss — a quiet word before this becomes a loud one. [b]%s[/b] (%s, Lv %d) has featured in [b]%d of our %d[/b] matches this season. The mood around the training pens is turning: less appetite in drills, snapping at the younger battlers. In my experience this only goes one way if it's left alone.","Jefe: una palabra en voz baja antes de que esto suba de tono. [b]%s[/b] (%s, Nv %d) ha participado en [b]%d de nuestros %d[/b] partidos esta temporada. El ambiente en los corrales de entrenamiento está cambiando: menos apetito en los ejercicios, malas contestaciones a los jóvenes. Por experiencia, esto solo va en una dirección si se deja estar."
-"Boss — thought you'd want this one in writing. [b]%s[/b] (%s, Lv %d) has been outstanding. Across the last [b]%d[/b] matches: [b]%d KOs[/b] and an average match rating of [b]%s[/b]. Technique, timing, temperament — everything we drill is showing up on matchday.","Jefe: pensé que querrías esto por escrito. [b]%s[/b] (%s, Nv %d) está siendo sobresaliente. En los últimos [b]%d[/b] partidos: [b]%d KOs[/b] y una nota media de [b]%s[/b]. Técnica, tiempos, temperamento: todo lo que entrenamos aparece el día de partido."
+"Boss — thought you'd want this one in writing. [b]%s[/b] (%s, Lv %d) has been outstanding. Across the last [b]%d[/b] matches: [b]%d KOs[/b] and an average match rating of [b]%.2f[/b]. Technique, timing, temperament — everything we drill is showing up on matchday.","Jefe: pensé que querrías esto por escrito. [b]%s[/b] (%s, Nv %d) está siendo sobresaliente. En los últimos [b]%d[/b] partidos: [b]%d KOs[/b] y una nota media de [b]%.2f[/b]. Técnica, tiempos, temperamento: todo lo que entrenamos aparece el día de partido."
 %s was simply a level above everything else on the circuit this month.,%s estuvo sencillamente un nivel por encima de todo lo demás del circuito este mes.
 Steady,Estable
 Warm-up,Calentamiento
@@ -4598,18 +4608,18 @@ Sacked: %s dismiss you as manager,Despedido: el %s te destituye como entrenador
 staff updates,novedades del cuerpo técnico
 transfer market,mercado de traspasos
 club news,noticias del club
-"Season %d is in the books. Your secretary has archived the routine correspondence — %s marked read%s so the inbox opens clean for the new campaign:
+"Season %d is in the books. Your secretary has archived the routine correspondence — %d message%s marked read%s so the inbox opens clean for the new campaign:
 
-%s","La temporada %d queda para los libros. Tu secretaría ha archivado la correspondencia rutinaria (%s)%s para que la bandeja arranque limpia la nueva campaña:
+%s","La temporada %d queda para los libros. Tu secretaría ha archivado la correspondencia rutinaria — %d mensaje%s marcados como leídos%s para que la bandeja arranque limpia la nueva campaña:
 
 %s"
  (%d old read items filed away), (%d mensajes antiguos ya leídos archivados)
 - nothing needed filing,- no hizo falta archivar nada
 "
 
-Season %d in one line: finished %s in the %s (%d pts), %s in the %s; %s were crowned %s.","
+Season %d in one line: finished %d%s in the %s (%d pts), %s in the %s; %s were crowned %s.","
 
-La temporada %d en una línea: acabaste %s en la %s (%d pts), %s en la %s; %s se coronó como %s."
+La temporada %d en una línea: acabaste %d%s en la %s (%d pts), %s en la %s; %s se coronó como %s."
 "
 
 Anything urgent or awaiting a decision was left untouched at the top of your inbox.","
@@ -4913,85 +4923,139 @@ Withdraw,Refugio
 Wrap,Constricción
 Zap Cannon,Electrocañón
 INTENSITY,INTENSIDAD
-W,V
-L,D
-FT,FIN
-LGE,LGA
-CUP,COPA
-CS,SC
-nothing,nada
-empty,vacía
-none,ninguno
-fainted,debilitado
-pw %d,pot. %d
-PHYS,FÍS.
-SPEC,ESP.
-STATUS,ESTADO
-resisted,resistido
-ITEM — %s,OBJETO — %s
-used on %s · costs the turn,usado en %s · gasta el turno
-→ %s (bench),→ %s (banquillo)
-summoned by %s,invocado por %s
-%s's ability set it off,lo desató la habilidad de %s
-HITS BOTH FOES,GOLPEA A AMBOS RIVALES
- + ALLY, + ALIADO
-%s — using an item costs this turn.,%s — usar un objeto gasta este turno.
-SLEEP,DORMIDO
-%d of %d,%d de %d
-%d%% (%d of %d),%d %% (%d de %d)
-%d hits (%d%%),%d golpes (%d %%)
-Lv%d,Nv%d
-Switches the whole interface at once. Mail already delivered to your Inbox keeps the language it was written in — new mail arrives in the selected language.,Cambia toda la interfaz al momento. El correo ya entregado en tu bandeja conserva el idioma en que se escribió; el correo nuevo llega en el idioma elegido.
-LV,NV
-LGE %d,LGA %d
-%s win,victoria del %s
+"
+
+Season %d in one line: finished %s in the %s (%d pts), %s in the %s; %s were crowned %s.","
+
+La temporada %d en una línea: acabaste %s en la %s (%d pts), %s en la %s; %s se coronó como %s."
+"
+- Star performer: %s (%s avg rating, %d battles)","
+- Figura destacada: %s (nota media %s, %d combates)"
+"
+[color=#%s][b]ASSISTANT'S NOTE[/b][/color]
+[color=#%s]%s's [b]%s[/b] attacks profile well against their likely six (avg %sx effectiveness) — worth a place in the lineup.[/color]
+","
+[color=#%s][b]NOTA DEL SEGUNDO[/b][/color]
+[color=#%s]%s y sus ataques de tipo [b]%s[/b] encajan bien contra su probable seis (eficacia media %sx): merece un puesto en la alineación.[/color]
+"
   (replaces %s),  (sustituye a %s)
+  ·  %d turn left,  ·  queda %d turno
+  ·  %d turns left,  ·  quedan %d turnos
+ + ALLY, + ALIADO
+%d day,%d día
+%d hits (%d%%),%d golpes (%d %%)
+%d honour,%d título
+%d honours,%d títulos
+%d message,%d mensaje
+%d messages,%d mensajes
+%d new scout recommendation,%d recomendación nueva de ojeadores
+%d new scout recommendations,%d recomendaciones nuevas de ojeadores
+%d of %d,%d de %d
+%d scout,%d ojeador
+%d scouts,%d ojeadores
+%d season,%d temporada
+%d seasons,%d temporadas
+%d%% (%d of %d),%d %% (%d de %d)
+"%d–%d in matches, %s. Clubs lower down the pyramid are ","%d–%d en partidos, %s. Clubes de menor nivel ya están "
+%s  ·  avg level %s vs %s,%s  ·  nivel medio %s vs %s
+%s (Season %d),%s (Temporada %d)
+%s MVP: %s — %s avg rating in the cup,MVP de la %s: %s — nota media %s en la copa
+%s Transfer Centre,Centro de traspasos del %s
+%s are preparing a bid for %s (%s).,El %s prepara una oferta por %s (%s).
 %s are said to be monitoring %s (%s).,Se dice que el %s sigue de cerca a %s (%s).
 %s are weighing a move for %s (%s).,El %s sopesa un movimiento por %s (%s).
-%s are preparing a bid for %s (%s).,El %s prepara una oferta por %s (%s).
+%s win,victoria del %s
+%s — using an item costs this turn.,%s — usar un objeto gasta este turno.
 %s's %s %s (%+d).,%s: %s %s (%+d).
-Auto Pick,Selección automática
-Cup R%d,Copa R%d
-Atk,Ata
-SpA,AtE
-SpD,DfE
-Spe,Vel
-Acc,Pre
+%s's ability set it off,lo desató la habilidad de %s
+(OVER),(EXCEDIDO)
+(unavailable),(no disponible)
+1 match this week — the schedule rests the squad on matchday and the morning after.,1 partido esta semana: el programa da descanso a la plantilla el día de partido y la mañana siguiente.
+ACC,PRE
 ATK,ATA
+Acc,Pre
+Any,Cualquiera
+Atk,Ata
+Auto Pick,Selección automática
+Best Developer (young Pokémon of the season): %s — %s avg rating at %d months old,Mejor Formación (Pokémon joven de la temporada): %s — nota media %s con %d meses
+Best Newcomer%s: %s — %s avg rating in a debut season,Mejor Debutante%s: %s — nota media %s en su primera temporada
+Board ultimatum: finish %s or better next season,Ultimátum de la directiva: termina %s o mejor la próxima temporada
+"Boss — thought you'd want this one in writing. [b]%s[/b] (%s, Lv %d) has been outstanding. Across the last [b]%d[/b] matches: [b]%d KOs[/b] and an average match rating of [b]%s[/b]. Technique, timing, temperament — everything we drill is showing up on matchday.","Jefe: pensé que querrías esto por escrito. [b]%s[/b] (%s, Nv %d) está siendo sobresaliente. En los últimos [b]%d[/b] partidos: [b]%d KOs[/b] y una nota media de [b]%s[/b]. Técnica, tiempos, temperamento: todo lo que entrenamos aparece el día de partido."
+CS,SC
+CUP,COPA
+Coastal Circuit,Circuito Costero
+Cup R%d,Copa R%d
+FT,FIN
+Finishing %s puts us in the Danger Zone and the board is not hiding its anger: ,Terminar %s nos mete en la Zona de peligro y la directiva no esconde su enfado: 
+Growth rate,Ritmo de crecimiento
+HITS BOTH FOES,GOLPEA A AMBOS RIVALES
+ITEM — %s,OBJETO — %s
+KEEP,SE QUEDA
+L,D
+LGE,LGA
+LGE %d,LGA %d
+LV,NV
+Lv%d,Nv%d
+Orange Archipelago,Archipiélago Naranja
+Pokémon of the Season: %s — avg rating %s over %d battles,Pokémon de la Temporada: %s — nota media %s en %d combates
+RELEASE,BAJA
 SPA,ATE
 SPD,DFE
 SPE,VEL
-ACC,PRE
-Growth rate,Ritmo de crecimiento
-in %d day,en %d día
-%d message,%d mensaje
-%d messages,%d mensajes
-%d season,%d temporada
-%d seasons,%d temporadas
-%d honour,%d título
-%d honours,%d títulos
-full,completa
-KEEP,SE QUEDA
-RELEASE,BAJA
-The head youth coach,El jefe de cantera
-The coaching staff,El cuerpo técnico
-%s Transfer Centre,Centro de traspasos del %s
-(OVER),(EXCEDIDO)
-%s (Season %d),%s (Temporada %d)
-Def,Def
-Spa,At. Esp.
-Spd,Def. Esp.
-Hp,PS
-playoff,eliminatoria
-1 match this week — the schedule rests the squad on matchday and the morning after.,1 partido esta semana: el programa da descanso a la plantilla el día de partido y la mañana siguiente.
-target,objetivo
-(unavailable),(no disponible)
-Verdant Interior,Interior Frondoso
-Coastal Circuit,Circuito Costero
-Volcanic Belt,Cinturón Volcánico
-Storm Plateau,Meseta de las Tormentas
+"Season %d is in the books. Your secretary has archived the routine correspondence — %s marked read%s so the inbox opens clean for the new campaign:
+
+%s","La temporada %d queda para los libros. Tu secretaría ha archivado la correspondencia rutinaria (%s)%s para que la bandeja arranque limpia la nueva campaña:
+
+%s"
+"Season %d review, %s:
+
+- League: finished %s in the %s with %d points
+","Repaso de la temporada %d, %s:
+
+- Liga: terminó %s en la %s con %d puntos
+"
 Sevii Islands,Islas Sete
-Orange Archipelago,Archipiélago Naranja
-Johto,Johto
-%d day,%d día
-Any,Cualquiera
+SpA,AtE
+SpD,DfE
+Spe,Vel
+Storm Plateau,Meseta de las Tormentas
+Switches the whole interface at once. Mail already delivered to your Inbox keeps the language it was written in — new mail arrives in the selected language.,Cambia toda la interfaz al momento. El correo ya entregado en tu bandeja conserva el idioma en que se escribió; el correo nuevo llega en el idioma elegido.
+The coaching staff,El cuerpo técnico
+The head youth coach,El jefe de cantera
+Verdant Interior,Interior Frondoso
+Volcanic Belt,Cinturón Volcánico
+W,V
+You finished %s — inside the top %d the board demanded after last season's ,"Terminaste %s, dentro del top %d que la directiva exigió tras el final en "
+"[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d battles, %d KOs, %d dmg · avg rating [/color][color=#%s][b]%s[/b][/color]%s
+","[color=#%s]%s[/color]  [color=#%s][b]%s[/b][/color] [color=#%s](%s, %s) — %d combates, %d KO, %d daño · nota media [/color][color=#%s][b]%s[/b][/color]%s
+"
+"[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d damage across %d battle%s. Match rating [/color][color=#%s][b]%s[/b][/color]
+
+","[color=#%s][b]%s[/b][/color] [color=#%s](%s) — %d KO%s, %d de daño en %d combate(s)%s. Nota del partido: [/color][color=#%s][b]%s[/b][/color]
+
+"
+"[color=#%s][b]%s[/b][/color] [color=#%s]— %d KO%s, %d damage dealt across the tie. Rating: [/color][color=#%s][b]%s[/b][/color]
+","[color=#%s][b]%s[/b][/color] [color=#%s]— %d KO%s, %d de daño infligido en la eliminatoria. Nota: [/color][color=#%s][b]%s[/b][/color]
+"
+club's reputation has taken a hit. The demand is plain — finish %s or better ,reputación del club ha sufrido un golpe. La exigencia es clara: termina %s o mejor 
+empty,vacía
+fainted,debilitado
+full,completa
+in %d day,en %d día
+none,ninguno
+nothing,nada
+playoff,eliminatoria
+pw %d,pot. %d
+resisted,resistido
+summoned by %s,invocado por %s
+target,objetivo
+the board demanded a top-%d finish and you delivered %s — the ,la directiva exigió acabar entre los %d primeros y entregaste un %s: el 
+unmentored — %d possible mentor,sin mentor — %d mentor posible
+unmentored — %d possible mentors,sin mentor — %d mentores posibles
+used on %s · costs the turn,usado en %s · gasta el turno
+"will see out the off-season.
+
+Your career to date: %s, ","cerrará el descanso de temporada.
+
+Tu carrera hasta hoy: %s, "
+→ %s (bench),→ %s (banquillo)

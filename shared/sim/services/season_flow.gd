@@ -219,7 +219,7 @@ func _advance_playoff(gs) -> void:
 	gs.add_inbox_message(gs.current_date, I18n.t("%s: %s line-up set") % [
 		I18n.t(Season.PLAYOFF_NAME), I18n.playoff_round(next_round)],
 		I18n.t("Through to the %s on %s: %s.") % [
-		I18n.playoff_round(next_round), I18n.pretty_date(date), names])
+		I18n.playoff_round_prose(next_round), I18n.pretty_date(date), names])
 	if winners.has(str(gs.world["meta"]["player_club_id"])) and not gs.inbox.is_empty():
 		gs.inbox[0]["urgent"] = true
 

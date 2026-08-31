@@ -211,7 +211,8 @@ func _build_tabs() -> Control:
 		row.add_child(b)
 		_tab_btns[lid] = b
 	var note := Label.new()
-	note.text = "  %d clubs per league · double round-robin championship" % 16
+	note.text = tr("  %d clubs per league · double round-robin championship") % 16
+	note.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED  # composed above
 	note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	note.add_theme_font_size_override("font_size", 12)
 	note.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
