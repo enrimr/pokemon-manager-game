@@ -39,6 +39,28 @@ Capture everything:
 /Applications/Godot.app/Contents/MacOS/Godot --path /Users/enrique/development/projects/pokemon-manager-game res://tools/screenshots.tscn -- --screens=all --out=artifacts/all
 ```
 
+### Direct-boot contract (menu piece — how testing skips the title screen)
+
+The game's main scene is now `res://menu/title.tscn` (title menu + onboarding).
+Testing tools keep booting straight into a career because the title scene
+immediately swaps itself for `res://shell/main.tscn` when ANY of these hold
+(`MenuFlow.quickstart()` in `res://menu/menu_flow.gd`):
+
+- the run is **headless** (`--headless`) — covers smoke pass 1, sim_check and
+  every headless driver;
+- the CLI flag **`--quickstart`** is passed (before or after `--`);
+- the env var **`TM_QUICKSTART`** is set (any non-empty value).
+
+Harness scenes that instantiate `res://shell/main.tscn` themselves
+(tools/screenshots.tscn, shell/picker_shots.tscn, tab_shots, drivers…) never
+see the menu at all, and GameState is an autoload that boots a career
+regardless of scene — so smoke, sim_check and the screenshot harness run
+UNCHANGED. To boot the real windowed game without the menu:
+
+```sh
+/Applications/Godot.app/Contents/MacOS/Godot --path <project> --quickstart
+```
+
 ## Notes
 
 - To test from a fresh career, delete the save first:
@@ -120,3 +142,21 @@ Expected final line: `EXPORT ALL OK`. Outputs:
 - `dist/web/` — no-threads web build (plain static hosting works, no
   COOP/COEP needed). Serve test: `python3 -m http.server -d dist/web 8931`
   then `curl -sI http://127.0.0.1:8931/index.html` → 200, `index.wasm` > 20 MB.
+
+## 7. Title menu + onboarding shots (menu piece, windowed)
+
+```sh
+/Applications/Godot.app/Contents/MacOS/Godot --path /Users/enrique/development/projects/pokemon-manager-game res://menu/menu_shots.tscn
+```
+
+Captures to `artifacts/menu/`, in BOTH locales (es/en): the title screen with
+a save (Continue card shows club · manager — date · season) and without one,
+the Settings overlay, each onboarding step (identity / club selection with
+detail pane / contract summary) and the onboarding opened OVER the shell via
+the in-game "New Career" menu item. Also asserts the start transaction stamps
+`world.meta.manager_name` + the player club's `manager` field and writes the
+save. Prints `MENU SHOTS OK`.
+
+**Back up `user://save.json` first** — the run creates/deletes test saves
+(it deletes its own test save at the end, but an existing career save is
+overwritten during the run).

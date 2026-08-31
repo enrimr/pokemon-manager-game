@@ -1,7 +1,9 @@
 # Trainer Manager — Architecture
 
 Football-Manager-style management game for Pokémon battles. Godot 4.6, GDScript only,
-gl_compatibility renderer, 1600x900 window. Main scene: `res://shell/main.tscn`.
+gl_compatibility renderer, 1600x900 window. Main scene: `res://menu/title.tscn`
+(title menu; it swaps to the career shell `res://shell/main.tscn` — instantly in
+headless/`--quickstart` runs, see "Main menu & onboarding" below).
 
 ## Layout
 
@@ -674,3 +676,43 @@ AudioManager.volume(bus) / set_enabled(on) / enabled()
   autoloads, checks buses/settings write-through/Settings-slider path, drives
   a real BattleEngine log through the router and prints `AUDIO DRIVER OK`
   (proof log: `artifacts/audio/hook_log.txt`; `AUDIO_DEBUG=1` traces plays).
+
+## Main menu & onboarding (menu piece)
+
+`res://menu/` owns FM24-style game entry. The main scene is now
+**`res://menu/title.tscn`** — the ONLY project.godot change this piece made.
+
+- **`title.gd`** — wordmark + animated theme-colored backdrop (`backdrop.gd`,
+  pure drawing, no assets), procedural menu music (instances the shell's
+  AudioManager scene; the shell builds its own once in-game). Doors:
+  **Continue** (only when `user://save.json` exists; card shows club ·
+  manager — date · season, then swaps to `res://shell/main.tscn`),
+  **New Game**, **Settings** (hosts the real `screens/settings/screen.tscn`
+  in an overlay) and **Quit**. Saved locale applies at boot
+  (`I18n.apply_saved_locale()` runs from GameState before any scene).
+- **DIRECT-BOOT CONTRACT** (`MenuFlow.quickstart()`, menu_flow.gd): headless
+  runs, the `--quickstart` CLI flag or the `TM_QUICKSTART` env var make the
+  title swap itself for the shell immediately — smoke/sim_check/screenshot
+  harness and all drivers run unchanged (details in docs/TESTING.md).
+- **`onboarding.gd`** — the multi-step new-career wizard (overlay, works over
+  the title AND over the shell): 1) manager identity (name + optional
+  nickname), 2) club selection (`club_step.gd` — league tabs, club rows with
+  reputation/stars, and a detail pane previewing the board's season
+  expectation with the same sentence + tier maths the Board & Finances screen
+  uses), 3) contract summary → start. Warns (ConfirmationDialog + summary
+  note) before overwriting an existing save. On start it runs
+  `MenuFlow.start_career(club_id, name, nickname)`: delete save →
+  `GameState.new_career(20260801, club_id)` → stamp identity → save.
+- **MANAGER IDENTITY**: `world.meta.manager_name` (+ optional
+  `manager_nickname`), AND written onto the player club's `"manager"` field —
+  the field every board mail / press / mind-games generator already renders,
+  so the name flows world-wide with no other changes and persists in the
+  save. `MenuFlow.manager_name()` falls back to the club's generated manager
+  for pre-menu careers. The shell re-stamps it when a game-over job offer is
+  accepted.
+- **Shell routing**: the top-bar menu's "New Career" and the game-over
+  screen's "Start a fresh career" both open the onboarding
+  (`main.gd/_open_onboarding`). The old club-only picker
+  (`shell/club_picker.gd`, `_open_club_picker`) is kept solely for the
+  `picker_shots.tscn` proof.
+- Proof harness: `res://menu/menu_shots.tscn` (docs/TESTING.md §7).

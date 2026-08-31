@@ -123,10 +123,12 @@ var _toast_label: Label
 var _menu_btn: MenuButton
 const ClubPicker := preload("res://shell/club_picker.gd")
 const GameOverScreen := preload("res://shell/game_over.gd")
+const Onboarding := preload("res://menu/onboarding.gd")
 
 var _load_confirm: ConfirmationDialog
 var _new_confirm: ConfirmationDialog   # unused since the club picker took over
-var _club_picker: Control = null       # new-career club selector overlay
+var _club_picker: Control = null       # legacy club selector (picker_shots proof)
+var _onboarding: Control = null        # new-career onboarding wizard (menu piece)
 var _game_over: Control = null         # sacking / career-summary overlay
 var _foot_label: Label = null          # sidebar footer (league name follows career)
 
@@ -1488,7 +1490,7 @@ func _on_menu_id(id: int) -> void:
 			else:
 				_toast(tr("No save file found"))
 		2:
-			_open_club_picker()
+			_open_onboarding()
 
 
 func _build_dialogs() -> void:
@@ -1511,8 +1513,30 @@ func _build_dialogs() -> void:
 	_new_confirm = null
 
 
-## FM-style new-career flow: full-screen club selector over the shell.
-## Pick any club from either league; plain boot still defaults to Pallet.
+## In-game "New Career": the menu piece's FM-style onboarding wizard
+## (manager identity -> club selection -> confirmation) over the shell.
+## It starts + saves the career itself (MenuFlow.start_career), so the shell
+## only refreshes its chrome afterwards.
+func _open_onboarding() -> void:
+	if _onboarding != null and is_instance_valid(_onboarding):
+		return
+	_onboarding = Onboarding.new()
+	_onboarding.setup(_font_bold, _font_semibold, _font_header)
+	_onboarding.career_created.connect(func():
+		_onboarding = null
+		_reset_history()
+		if not screens.is_empty():
+			navigate_to(screens.keys().front())
+		_refresh_identity()
+		_refresh_topbar()
+		_toast(tr("New career started at %s · %s") %
+			[GameState.player_club().get("name", ""), tr(GameState.league_name())]))
+	_onboarding.cancelled.connect(func(): _onboarding = null)
+	add_child(_onboarding)
+
+
+## LEGACY club-only selector (kept for shell/picker_shots.tscn proof shots;
+## live UI routes through _open_onboarding above).
 func _open_club_picker() -> void:
 	if _club_picker != null and is_instance_valid(_club_picker):
 		return
@@ -1553,6 +1577,12 @@ func _open_game_over() -> void:
 		var err: String = GameState.accept_job_offer(club_id)
 		if err != "":
 			return
+		# the manager's own name follows them to the new club (menu piece —
+		# board mails / press render the player club's "manager" field)
+		var mn := str(GameState.world["meta"].get("manager_name", ""))
+		if mn != "":
+			GameState.player_club()["manager"] = mn
+			GameState.save_game()
 		if _game_over != null and is_instance_valid(_game_over):
 			_game_over.queue_free()
 			_game_over = null
@@ -1567,7 +1597,7 @@ func _open_game_over() -> void:
 		if _game_over != null and is_instance_valid(_game_over):
 			_game_over.queue_free()
 			_game_over = null
-		_open_club_picker())
+		_open_onboarding())
 	add_child(_game_over)
 
 

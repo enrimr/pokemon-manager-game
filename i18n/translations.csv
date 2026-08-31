@@ -5059,3 +5059,43 @@ Your career to date: %s, ","cerrará el descanso de temporada.
 
 Tu carrera hasta hoy: %s, "
 → %s (bench),→ %s (banquillo)
+Continue,Continuar
+New Game,Nueva partida
+Quit,Salir
+POKÉMON BATTLE MANAGEMENT,GESTIÓN DE COMBATES POKÉMON
+Two leagues. One Indigo Cup. Your dugout.,Dos ligas. Una Copa Añil. Tu banquillo.
+"Create your manager and pick a club — 32 clubs, two leagues","Crea tu entrenador y elige club: 32 clubes, dos ligas"
+"Display, audio, gameplay and language","Pantalla, audio, juego e idioma"
+"Create your manager, choose your club, meet the board's expectations.","Crea tu entrenador, elige tu club y cumple las expectativas de la directiva."
+CONFIRM,CONFIRMAR
+WHO IS IN THE DUGOUT?,¿QUIÉN OCUPA EL BANQUILLO?
+"The board, the press and rival managers will address you by this name.","La directiva, la prensa y los entrenadores rivales se dirigirán a ti por este nombre."
+Manager name,Nombre del entrenador
+Nickname (optional),Apodo (opcional)
+e.g. Alex Serrano,p. ej. Alex Serrano
+What the fans chant from the stands,Lo que corea la afición desde la grada
+Next: choose your club,Siguiente: elige tu club
+Next: summary,Siguiente: resumen
+Start career at %s,Empezar la carrera en %s
+Overwrite saved career?,¿Sobrescribir la partida guardada?
+Overwrite and start,Sobrescribir y empezar
+"A saved career already exists: %s · %s — %s, %s.","Ya existe una partida guardada: %s · %s — %s, %s."
+Starting a new career will permanently overwrite it.,Empezar una nueva carrera la sobrescribirá para siempre.
+CONTRACT SUMMARY,RESUMEN DEL CONTRATO
+%s “%s” — manager,%s «%s» — entrenador jefe
+%s — manager,%s — entrenador jefe
+season starts %s,la temporada empieza el %s
+Bank: P$ %s,Banco: P$ %s
+Wages: P$ %s/w,Salarios: P$ %s/sem
+"⚠ Starting this career overwrites your saved one (%s, %s).","⚠ Empezar esta carrera sobrescribe la partida guardada (%s, %s)."
+avg Lv %.0f,nv. medio %.0f
+You will replace %s,Sustituirás a %s
+"Select a club to see the board's expectations, squad strength and budget.","Selecciona un club para ver las expectativas de la directiva, el nivel de plantilla y el presupuesto."
+Expected league position: around %s of the world's %d clubs by reputation,Posición esperada en liga: en torno al %s de los %d clubes del mundo por reputación
+Squad stars,Estrellas de plantilla
+Top-six average level,Nivel medio del seis titular
+Squad size,Tamaño de plantilla
+Reputation,Reputación
+Bank balance,Saldo bancario
+Weekly wage budget,Presupuesto salarial semanal
+Double-click a club row to jump straight to the summary.,Doble clic en un club para ir directamente al resumen.
