@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#20263a"/>
+      <stop offset="1" stop-color="#101420"/>
+    </linearGradient>
+    <linearGradient id="hex" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b3149"/>
+      <stop offset="1" stop-color="#1b2032"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <!-- hex badge -->
+  <path d="M512 130 L830 320 V704 L512 894 L194 704 V320 Z" fill="url(#hex)" stroke="#7c5cff" stroke-width="26"/>
+  <!-- formation: 2-3-1 squad constellation -->
+  <g stroke="#7c5cff" stroke-width="14" opacity="0.9">
+    <line x1="512" y1="300" x2="380" y2="470"/>
+    <line x1="512" y1="300" x2="644" y2="470"/>
+    <line x1="380" y1="470" x2="512" y2="560"/>
+    <line x1="644" y1="470" x2="512" y2="560"/>
+    <line x1="380" y1="470" x2="360" y2="690"/>
+    <line x1="644" y1="470" x2="664" y2="690"/>
+    <line x1="512" y1="560" x2="360" y2="690"/>
+    <line x1="512" y1="560" x2="664" y2="690"/>
+  </g>
+  <circle cx="512" cy="300" r="58" fill="#ffd23e"/>
+  <circle cx="380" cy="470" r="52" fill="#ff6b57"/>
+  <circle cx="644" cy="470" r="52" fill="#4fa8ff"/>
+  <circle cx="512" cy="560" r="52" fill="#59d98c"/>
+  <circle cx="360" cy="690" r="46" fill="#c069d9"/>
+  <circle cx="664" cy="690" r="46" fill="#f4f1ff"/>
+</svg>

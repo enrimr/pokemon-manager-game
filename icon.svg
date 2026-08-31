@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#242b40"/>
+      <stop offset="1" stop-color="#11141d"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9377ff"/>
+      <stop offset="0.55" stop-color="#7c5cff"/>
+      <stop offset="1" stop-color="#5f3fdb"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <!-- subtle arena ring -->
+  <g stroke="#3a4258" stroke-width="6" opacity="0.30" fill="none">
+    <circle cx="512" cy="512" r="334"/>
+    <line x1="112" y1="512" x2="912" y2="512"/>
+  </g>
+  <!-- crest shield -->
+  <path d="M512 142 L806 236 V562 C806 724 676 836 512 898 C348 836 218 724 218 562 V236 Z"
+        fill="url(#shield)" stroke="#cfc2ff" stroke-width="20"/>
+  <path d="M512 168 L782 254 V440 H242 V254 Z" fill="url(#gloss)"/>
+  <!-- TM monogram -->
+  <g fill="#f7f4ff">
+    <path d="M326 336 h186 v64 h-60 v212 h-66 v-212 h-60 z"/>
+    <path d="M542 336 h72 l53 130 53-130 h72 v276 h-64 v-152 l-47 118 h-28 l-47-118 v152 h-64 z"/>
+  </g>
+  <!-- type triad -->
+  <g stroke="#2a2050" stroke-width="10">
+    <circle cx="420" cy="702" r="36" fill="#ff6b57"/>
+    <circle cx="512" cy="718" r="36" fill="#ffd23e"/>
+    <circle cx="604" cy="702" r="36" fill="#4fa8ff"/>
+  </g>
+</svg>

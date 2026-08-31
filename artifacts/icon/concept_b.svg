@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a1f2e"/>
+      <stop offset="1" stop-color="#0f1219"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <!-- momentum graph rising to a star -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M170 780 L330 640 L440 700 L610 470 L700 520 L830 300" stroke="#7c5cff" stroke-width="56"/>
+    <path d="M170 780 L330 640 L440 700 L610 470 L700 520 L830 300" stroke="#b7a4ff" stroke-width="18"/>
+  </g>
+  <!-- squad dots on the line -->
+  <circle cx="330" cy="640" r="40" fill="#ff6b57"/>
+  <circle cx="440" cy="700" r="40" fill="#4fa8ff"/>
+  <circle cx="610" cy="470" r="40" fill="#59d98c"/>
+  <circle cx="700" cy="520" r="40" fill="#ffd23e"/>
+  <!-- star at the peak -->
+  <path d="M830 210 l32 66 72 10 -52 51 12 72 -64 -34 -64 34 12 -72 -52 -51 72 -10 z" fill="#f4f1ff"/>
+</svg>

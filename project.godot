@@ -6,6 +6,8 @@ config_version=5
 
 [application]
 
+config/icon="res://icon.svg"
+
 config/name="Trainer Manager"
 run/main_scene="res://menu/title.tscn"
 config/features=PackedStringArray("4.6")
