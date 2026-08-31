@@ -1,14 +1,14 @@
 # License
 
-**Trainer Manager** — Copyright © 2026 Enrique. All rights reserved where not expressly granted below.
+**Trainer Manager** — Copyright © 2026 Enrique Ismael Mendoza Robaina. All rights reserved where not expressly granted below.
 
 This project is **dual-licensed**:
 
 1. **Noncommercial use — free.** You may use, modify, and share this software and derivative works (mods, forks, clones) at no cost under the terms of the **PolyForm Noncommercial License 1.0.0** reproduced below, provided your use is noncommercial. When you distribute the software or anything derived from it, keep the Required Notice below and please credit **"Trainer Manager"** with a link to this repository.
 
-2. **Commercial use — paid license required.** Selling this software or a derivative, bundling it with a paid product or service, monetizing it with ads or in-app purchases, or any other commercial exploitation requires a separate commercial license from the copyright holder. Contact the author to arrange terms.
+2. **Commercial use — paid license required.** Selling this software or a derivative, bundling it with a paid product or service, monetizing it with ads or in-app purchases, or any other commercial exploitation requires a separate commercial license from the copyright holder. Contact **Enrique Ismael Mendoza Robaina** at <enriquemendozarobaina@gmail.com> to arrange terms.
 
-**Required Notice:** Copyright © 2026 Enrique — Trainer Manager (https://github.com/enrique/pokemon-manager-game)
+**Required Notice:** Copyright © 2026 Enrique Ismael Mendoza Robaina — Trainer Manager (https://github.com/enrimr/pokemon-manager-game)
 
 **Trademark disclaimer:** Pokémon character names and related terms are trademarks of Nintendo, Creatures Inc., and GAME FREAK Inc. This license covers only the original code, design, data structures, and generated assets of this project; it grants **no rights whatsoever** to third-party trademarks or intellectual property referenced by the game's data.
 
