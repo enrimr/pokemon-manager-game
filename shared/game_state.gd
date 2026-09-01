@@ -696,16 +696,30 @@ func _load_services() -> void:
 	var states: Dictionary = world["meta"].get("services", {})
 	var dir := DirAccess.open(dir_path)
 	if dir != null:
-		var files := Array(dir.get_files())
+		# In exported builds scripts live in the PCK as "name.gdc" plus a
+		# "name.gd.remap" pointer (script_export_mode=2), so the directory
+		# listing never contains plain "name.gd". Normalise every listed name
+		# back to its source ".gd" path (which load() resolves via the remap)
+		# and de-duplicate, so services load identically in editor and export.
+		var names := {}
+		for fname in dir.get_files():
+			var f := str(fname).trim_suffix(".remap")
+			if f.ends_with(".gdc"):
+				f = f.trim_suffix(".gdc") + ".gd"
+			if f.ends_with(".gd"):
+				names[f] = true
+		var files := names.keys()
 		files.sort()
 		for fname in files:
-			if not str(fname).ends_with(".gd"):
-				continue
 			var script: Variant = load("%s/%s" % [dir_path, fname])
 			if not (script is GDScript):
 				continue
 			var svc: Variant = (script as GDScript).new()
 			_services.append(svc)
+		if _services.is_empty():
+			push_warning("GameState: no simulation services discovered in %s" % dir_path)
+		else:
+			print("GameState: loaded %d simulation services" % _services.size())
 	for svc in _services:
 		var sid := _service_id(svc)
 		if svc.has_method("load_state") and states.has(sid):

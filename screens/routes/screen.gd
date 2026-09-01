@@ -879,15 +879,17 @@ func _refresh_expeditions() -> void:
 	for c in _exp_box.get_children():
 		c.queue_free()
 	var svc := _svc_ref()
-	if svc == null:
-		return
 	var lsvc := _leg_ref()
 	var hunt_live: bool = lsvc != null and not (lsvc.hunt as Dictionary).is_empty()
-	if (svc.expeditions as Array).is_empty() and not hunt_live:
+	# The empty-state must render even if the service is unavailable — a blank
+	# pane is never acceptable (this bit the exported web build once).
+	if (svc == null or (svc.expeditions as Array).is_empty()) and not hunt_live:
 		var empty := Label.new()
 		empty.text = tr("No parties in the field. Plan an expedition from the Route Map tab.")
 		empty.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
 		_exp_box.add_child(empty)
+	if svc == null:
+		return
 	if hunt_live:
 		_exp_box.add_child(_hunt_card(lsvc.hunt))
 	for exp in svc.expeditions:
@@ -1111,6 +1113,11 @@ func _refresh_history() -> void:
 		c.queue_free()
 	var svc := _svc_ref()
 	if svc == null:
+		# Never leave the pane blank — show the designed empty-state.
+		var none := Label.new()
+		none.text = tr("No expeditions completed yet — the wild routes are waiting.")
+		none.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+		_hist_box.add_child(none)
 		return
 	var hist: Array = svc.history
 	# capture record summary
