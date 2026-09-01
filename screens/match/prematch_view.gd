@@ -48,7 +48,7 @@ func _build_header() -> Control:
 	var f: Dictionary = runner.fixture
 	var comp_txt: String = (tr("League · Round %d") % int(f["round"])) if f["comp"] == "league" \
 		else tr("Cup · %s") % I18n.cup_round(int(f["round"]))
-	row.add_child(UI.monogram(runner.home_club.get("short", "H"), UI.club_color(runner.home_club), 40))
+	row.add_child(UI.club_crest(runner.home_club, 40))
 	var mid := UI.vbox(2)
 	var title := UI.label(tr("%s  vs  %s") % [runner.home_club["name"], runner.away_club["name"]], 21, Color.WHITE)
 	mid.add_child(title)
@@ -62,7 +62,7 @@ func _build_header() -> Control:
 			12, UI.COL_WARN))
 	row.add_child(mid)
 	row.add_child(UI.spacer_h())
-	row.add_child(UI.monogram(runner.away_club.get("short", "A"), UI.club_color(runner.away_club), 40))
+	row.add_child(UI.club_crest(runner.away_club, 40))
 	return pair[0]
 
 

@@ -37,7 +37,7 @@ func _build_header() -> Control:
 	var pair: Array = UI.panel("", true)
 	var row := UI.hbox(14)
 	pair[1].add_child(row)
-	row.add_child(UI.monogram(runner.home_club.get("short", "H"), UI.club_color(runner.home_club), 44))
+	row.add_child(UI.club_crest(runner.home_club, 44))
 	var mid := UI.vbox(2)
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var won: bool = runner.player_won()
@@ -85,7 +85,7 @@ func _build_header() -> Control:
 		il.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		mid.add_child(il)
 	row.add_child(mid)
-	row.add_child(UI.monogram(runner.away_club.get("short", "A"), UI.club_color(runner.away_club), 44))
+	row.add_child(UI.club_crest(runner.away_club, 44))
 	return pair[0]
 
 

@@ -107,6 +107,7 @@ func _summarize(c: Dictionary) -> Dictionary:
 		"squad_n": c.get("squad", []).size(),
 		"avg6": avg, "stars": 3, "expected": 8,
 		"type": _primary_type(c),
+		"club": c,   # full dict so the crest reads the real squad (crests piece)
 	}
 
 
@@ -468,25 +469,8 @@ func _sep() -> Control:
 
 
 func _crest(s: Dictionary, px: int) -> Control:
-	var col: Color = DataStore.type_color(str(s["type"]))
-	var crest := PanelContainer.new()
-	crest.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	crest.custom_minimum_size = Vector2(px, px)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = col.darkened(0.25)
-	sb.border_color = col.lightened(0.25)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(px / 4)
-	crest.add_theme_stylebox_override("panel", sb)
-	var letter := Label.new()
-	letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	letter.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	letter.add_theme_font_override("font", _font_header)
-	letter.add_theme_font_size_override("font_size", int(px * 0.32))
-	letter.add_theme_color_override("font_color", Color.WHITE)
-	letter.text = str(s["short"])
-	crest.add_child(letter)
-	return crest
+	# procedural gym-badge crest (crests piece); rows carry the full club dict
+	return Crest.icon(s.get("club", s), px, {"no_tooltip": true})
 
 
 func _meter(frac: float, col: Color, w: int = 110) -> Control:

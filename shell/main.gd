@@ -989,28 +989,7 @@ func _club_primary_type(c: Dictionary) -> String:
 
 
 func _make_crest(c: Dictionary, px: int) -> Control:
-	var t := _club_primary_type(c)
-	var col: Color = DataStore.type_color(t)
-	var crest := PanelContainer.new()
-	crest.custom_minimum_size = Vector2(px, px)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = col.darkened(0.25)
-	sb.border_color = col.lightened(0.25)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(px / 4)
-	crest.add_theme_stylebox_override("panel", sb)
-	var letter := Label.new()
-	letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	letter.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	letter.add_theme_font_override("font", _font_header)
-	letter.add_theme_font_size_override("font_size", int(px * 0.3))
-	letter.add_theme_color_override("font_color", Color.WHITE)
-	letter.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.45))
-	letter.add_theme_constant_override("shadow_offset_y", 1)
-	letter.text = str(c.get("short", "TM"))
-	crest.add_child(letter)
-	crest.tooltip_text = tr("%s · %s-type core") % [c.get("name", ""), tr(t)]
-	return crest
+	return Crest.icon(c, px)   # procedural gym-badge crest (crests piece)
 
 
 # ------------------------------------------------------------------ nav

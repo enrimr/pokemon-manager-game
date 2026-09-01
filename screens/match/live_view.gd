@@ -174,7 +174,7 @@ func _build_scoreboard() -> Control:
 	pair[1].add_child(row)
 	var home: Dictionary = runner.home_club
 	var away: Dictionary = runner.away_club
-	row.add_child(UI.monogram(home.get("short", "HOM"), UI.club_color(home), 34))
+	row.add_child(UI.club_crest(home, 34))
 	var hl := UI.label(home["name"], 16, Color.WHITE if runner.player_side == 0 else UI.COL_TEXT)
 	row.add_child(hl)
 	row.add_child(UI.spacer_h())
@@ -183,7 +183,7 @@ func _build_scoreboard() -> Control:
 	row.add_child(UI.spacer_h())
 	var al := UI.label(away["name"], 16, Color.WHITE if runner.player_side == 1 else UI.COL_TEXT)
 	row.add_child(al)
-	row.add_child(UI.monogram(away.get("short", "AWY"), UI.club_color(away), 34))
+	row.add_child(UI.club_crest(away, 34))
 	_battle_label = UI.label("", 12, UI.COL_DIM)
 	_battle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pair[1].add_child(_battle_label)

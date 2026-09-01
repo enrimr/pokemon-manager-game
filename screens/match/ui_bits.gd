@@ -87,6 +87,13 @@ static func status_chip(status: String, size := 11) -> Label:
 	return l
 
 
+## Procedural gym-badge crest (crests piece) — same identity as everywhere else.
+static func club_crest(club: Dictionary, px := 34) -> Control:
+	var c := Crest.icon(club, px, {"no_tooltip": true})
+	c.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return c
+
+
 static func monogram(short_name: String, color: Color, diameter := 34) -> Control:
 	var p := Panel.new()
 	p.custom_minimum_size = Vector2(diameter, diameter)

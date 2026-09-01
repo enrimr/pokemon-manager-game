@@ -269,25 +269,9 @@ static func badge_texture(color: Color, size: int = 12) -> ImageTexture:
 
 
 ## Type-colored monogram panel with the club's initials (no copyrighted art).
-static func monogram(club: Dictionary, size: int = 26, font_size: int = 11) -> Control:
-	var col := club_color(club)
-	var p := PanelContainer.new()
-	p.custom_minimum_size = Vector2(size, size)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(col.r, col.g, col.b, 0.22)
-	sb.border_color = col
-	sb.set_border_width_all(1)
-	sb.set_corner_radius_all(3)
-	p.add_theme_stylebox_override("panel", sb)
-	var l := Label.new()
-	var short: String = str(club.get("short", "??"))
-	l.text = short.substr(0, 3)
-	l.add_theme_font_size_override("font_size", font_size)
-	l.add_theme_color_override("font_color", col.lightened(0.35))
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	p.add_child(l)
-	return p
+static func monogram(club: Dictionary, size: int = 26, _font_size: int = 11) -> Control:
+	# procedural gym-badge crest (crests piece) — one identity everywhere
+	return Crest.icon(club, size, {"no_tooltip": true})
 
 
 ## Titled FM-style card. Returns the PanelContainer; body VBox is metadata "body".

@@ -34,10 +34,10 @@ func _build_next_fixture() -> Control:
 	var opp: Dictionary = away if GameState.is_player_club(f["home"]) else home
 
 	var row := UI.hbox(12)
-	row.add_child(UI.monogram(home.get("short", "H"), UI.club_color(home), 40))
+	row.add_child(UI.club_crest(home, 40))
 	row.add_child(UI.label(tr("%s  vs  %s") % [home["name"], away["name"]], 18, Color.WHITE))
 	row.add_child(UI.spacer_h())
-	row.add_child(UI.monogram(away.get("short", "A"), UI.club_color(away), 40))
+	row.add_child(UI.club_crest(away, 40))
 	box.add_child(row)
 
 	var days := _days_until(str(f["date"]))
