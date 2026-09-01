@@ -77,7 +77,7 @@ func _wordmark() -> Control:
 	box.add_child(_gap(10))
 
 	var tag := Label.new()
-	tag.text = tr("Two leagues. One Indigo Cup. Your dugout.")
+	tag.text = tr("You don't catch 'em all. You manage 'em.")
 	tag.add_theme_font_override("font", _fonts["semibold"])
 	tag.add_theme_font_size_override("font_size", 16)
 	tag.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
@@ -242,6 +242,7 @@ func _build_menu_only() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 120)
+	margin.add_theme_constant_override("margin_right", 120)
 	margin.add_theme_constant_override("margin_top", 90)
 	margin.add_theme_constant_override("margin_bottom", 48)
 	add_child(margin)
