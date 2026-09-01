@@ -625,5 +625,104 @@
    "guard_spec"
   ],
   "desc": "Prevents the opponent from lowering your active Pok\u00e9mon's stats for 5 turns."
+ },
+ "fire_stone": {
+  "id": "fire_stone",
+  "name": "Fire Stone",
+  "class": "usable",
+  "price": 24000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:fire"
+  ],
+  "desc": "A peculiar orange stone radiating heat. Evolves certain Pok\u00e9mon."
+ },
+ "water_stone": {
+  "id": "water_stone",
+  "name": "Water Stone",
+  "class": "usable",
+  "price": 24000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:water"
+  ],
+  "desc": "A clear blue stone with a watery sheen. Evolves certain Pok\u00e9mon."
+ },
+ "thunder_stone": {
+  "id": "thunder_stone",
+  "name": "Thunder Stone",
+  "class": "usable",
+  "price": 24000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:thunder"
+  ],
+  "desc": "A yellow stone crackling faintly. Evolves certain Pok\u00e9mon."
+ },
+ "leaf_stone": {
+  "id": "leaf_stone",
+  "name": "Leaf Stone",
+  "class": "usable",
+  "price": 24000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:leaf"
+  ],
+  "desc": "A green stone with a leaf pattern. Evolves certain Pok\u00e9mon."
+ },
+ "moon_stone": {
+  "id": "moon_stone",
+  "name": "Moon Stone",
+  "class": "usable",
+  "price": 28000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:moon"
+  ],
+  "desc": "A jet-black stone that fell from the sky. Evolves certain Pok\u00e9mon."
+ },
+ "sun_stone": {
+  "id": "sun_stone",
+  "name": "Sun Stone",
+  "class": "usable",
+  "price": 28000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:sun"
+  ],
+  "desc": "A ruddy stone as warm as the sun. Evolves certain Pok\u00e9mon."
+ },
+ "dragon_scale": {
+  "id": "dragon_scale",
+  "name": "Dragon Scale",
+  "class": "usable",
+  "price": 32000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:dragon_scale"
+  ],
+  "desc": "A tough, shimmering scale. Triggers the evolution of certain Pok\u00e9mon."
+ },
+ "metal_coat": {
+  "id": "metal_coat",
+  "name": "Metal Coat",
+  "class": "usable",
+  "price": 32000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:metal_coat"
+  ],
+  "desc": "A steel-clad coating. Triggers the evolution of certain Pok\u00e9mon."
+ },
+ "up_grade": {
+  "id": "up_grade",
+  "name": "Up-Grade",
+  "class": "usable",
+  "price": 32000,
+  "rarity": "rare",
+  "effects": [
+   "evolve:up_grade"
+  ],
+  "desc": "A transparent device stuffed with data. Evolves Porygon."
  }
 }

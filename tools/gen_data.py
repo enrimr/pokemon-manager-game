@@ -400,6 +400,28 @@ ITEMS = {
                       "Doubles your active Pokémon's critical-hit chance for the rest of the battle."),
     "guard_spec":    ("Guard Spec.", "usable", 700, "uncommon", ["guard_spec"],
                       "Prevents the opponent from lowering your active Pokémon's stats for 5 turns."),
+    # --- usable: evolution stones + trade-item triggers (evolutions piece).
+    # Consumed via EvolutionService.use_stone(), never in battle; ids are
+    # referenced by shared/data/evolutions.json (which this script does NOT
+    # generate) — regenerating data must keep these in the shop.
+    "fire_stone":    ("Fire Stone", "usable", 24000, "rare", ["evolve:fire"],
+                      "A peculiar orange stone radiating heat. Evolves certain Pokémon."),
+    "water_stone":   ("Water Stone", "usable", 24000, "rare", ["evolve:water"],
+                      "A clear blue stone with a watery sheen. Evolves certain Pokémon."),
+    "thunder_stone": ("Thunder Stone", "usable", 24000, "rare", ["evolve:thunder"],
+                      "A yellow stone crackling faintly. Evolves certain Pokémon."),
+    "leaf_stone":    ("Leaf Stone", "usable", 24000, "rare", ["evolve:leaf"],
+                      "A green stone with a leaf pattern. Evolves certain Pokémon."),
+    "moon_stone":    ("Moon Stone", "usable", 28000, "rare", ["evolve:moon"],
+                      "A jet-black stone that fell from the sky. Evolves certain Pokémon."),
+    "sun_stone":     ("Sun Stone", "usable", 28000, "rare", ["evolve:sun"],
+                      "A ruddy stone as warm as the sun. Evolves certain Pokémon."),
+    "dragon_scale":  ("Dragon Scale", "usable", 32000, "rare", ["evolve:dragon_scale"],
+                      "A tough, shimmering scale. Triggers the evolution of certain Pokémon."),
+    "metal_coat":    ("Metal Coat", "usable", 32000, "rare", ["evolve:metal_coat"],
+                      "A steel-clad coating. Triggers the evolution of certain Pokémon."),
+    "up_grade":      ("Up-Grade", "usable", 32000, "rare", ["evolve:up_grade"],
+                      "A transparent device stuffed with data. Evolves Porygon."),
 }
 
 TYPE_BOOST_BY_TYPE = {}
