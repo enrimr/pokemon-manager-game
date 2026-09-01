@@ -23,7 +23,14 @@ static func compose(p: Dictionary) -> String:
 	s += _shape_path(shape, 3.2, p["field"])
 	s += _pattern(str(p["pattern"]), shape, p)
 	s += "</g>"
-	s += _motif(str(p["motif"]), p["ink"], p["ink2"])
+	if bool(p.get("letters", false)):
+		# monogram design: the motif rides small at the top like a crest
+		# ornament and the centre stays clear for the letters (Label overlay)
+		s += '<g transform="translate(29.4,5.5) scale(0.40)">%s</g>' % \
+			_motif(str(p["motif"]), p["ink"], p["ink2"])
+		s += '<g clip-path="url(#c)"><path d="M20,40 H76" stroke="%s" stroke-width="1.6" opacity="0.5"/></g>' % p["ink"]
+	else:
+		s += _motif(str(p["motif"]), p["ink"], p["ink2"])
 	return '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">%s</svg>' % s
 
 

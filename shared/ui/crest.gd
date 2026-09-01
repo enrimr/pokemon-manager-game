@@ -114,8 +114,10 @@ static func icon(club: Dictionary, px: int = 32, opts: Dictionary = {}) -> Contr
 		l.text = str(club.get("short", "?")).substr(0, 3)
 		l.set_anchors_preset(Control.PRESET_FULL_RECT)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		# banner/kite/diamond taper at the bottom: keep letters in the wide part
 		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		# monogram design reserves the zone under the top-riding motif
+		# (divider at 40/96): centre the letters in that clear band
+		l.offset_top = px * 0.24
 		var fs := maxi(7, int(px * (0.30 if px < 40 else 0.26)))
 		if _font_bold == null:
 			var f := SystemFont.new()   # same stack the shell uses
