@@ -25,7 +25,7 @@
         fill="url(#shield)" stroke="#cfc2ff" stroke-width="20"/>
   <path d="M512 168 L782 254 V440 H242 V254 Z" fill="url(#gloss)"/>
   <!-- TM monogram -->
-  <g fill="#f7f4ff">
+  <g fill="#f7f4ff" transform="translate(-47 0)">
     <path d="M326 336 h186 v64 h-60 v212 h-66 v-212 h-60 z"/>
     <path d="M542 336 h72 l53 130 53-130 h72 v276 h-64 v-152 l-47 118 h-28 l-47-118 v152 h-64 z"/>
   </g>

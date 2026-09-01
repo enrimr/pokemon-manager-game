@@ -153,6 +153,14 @@ func _footer() -> Control:
 	l.add_theme_font_size_override("font_size", 11)
 	l.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	row.add_child(l)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(spacer)
+	var engine := Label.new()
+	engine.text = tr("Made with Godot 4.6")
+	engine.add_theme_font_size_override("font_size", 11)
+	engine.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	row.add_child(engine)
 	return row
 
 
