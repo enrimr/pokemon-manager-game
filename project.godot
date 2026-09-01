@@ -8,6 +8,10 @@ config_version=5
 
 config/icon="res://icon.svg"
 
+boot_splash/bg_color=Color(0.0784, 0.0902, 0.1098, 1)
+boot_splash/image="res://shared/theme/splash.png"
+boot_splash/fullsize=false
+
 config/name="Trainer Manager"
 run/main_scene="res://menu/title.tscn"
 config/features=PackedStringArray("4.6")
