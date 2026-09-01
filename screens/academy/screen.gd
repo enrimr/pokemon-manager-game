@@ -291,7 +291,14 @@ func _fill_table(s: RefCounted) -> void:
 		var it := _tree.create_item(root)
 		it.set_metadata(0, String(m["uid"]))
 		var sp: Dictionary = DataStore.species(int(m["species_id"]))
-		it.set_text(0, String(m["species"]))
+		var nick := String(m.get("nickname", ""))
+		var row_name := ("%s (%s)" % [nick, String(m["species"])]) if nick != "" \
+			and nick != String(m["species"]) else String(m["species"])
+		if bool(m.get("protege", false)):
+			it.set_text(0, tr("%s  · PROTÉGÉ") % row_name)
+			it.set_custom_color(0, GOLD)
+		else:
+			it.set_text(0, row_name)
 		var types: Array = sp.get("types", [])
 		it.set_text(1, I18n.types_join(types, " / "))
 		if not types.is_empty():
@@ -394,7 +401,8 @@ func _star_line(prefix: String, meter: Texture2D, col: Color) -> HBoxContainer:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 8)
 	var l := _dl(prefix, col, 15)
-	h.add_child(l)
+	l.autowrap_mode = TextServer.AUTOWRAP_OFF   # short prefix: wrapping in an
+	h.add_child(l)                              # HBox collapses it letter-wise
 	var t := TextureRect.new()
 	t.texture = meter
 	t.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
@@ -446,8 +454,14 @@ func _fill_detail() -> void:
 		_detail.add_child(_err)
 		return
 	var sp: Dictionary = DataStore.species(int(m["species_id"]))
-	_detail.add_child(_dl(String(m["species"]), TB.COL_TEXT, 20))
+	var nick := String(m.get("nickname", ""))
+	_detail.add_child(_dl(("%s (%s)" % [nick, String(m["species"])]) if nick != ""
+		and nick != String(m["species"]) else String(m["species"]), TB.COL_TEXT, 20))
 	_detail.add_child(_type_badges(sp.get("types", [])))
+	if bool(m.get("protege", false)):
+		var badge := _dl(tr("MANAGER'S PROTÉGÉ — the professor's gift. Develops faster, fiercely loyal to you (never requests an exit), lifts the squad when it performs — and follows you to any club you ever manage."), GOLD, 12)
+		badge.custom_minimum_size = Vector2(316, 0)   # wrapped labels need a real width
+		_detail.add_child(badge)
 	var band: Array = s.potential_stars(m)
 	_detail.add_child(_star_line(tr("Current"),
 		GlyphIcons.rating_tex(float(m["stars"]), 5, 13, TB.COL_ACCENT.lightened(0.25)), TB.COL_ACCENT.lightened(0.25)))

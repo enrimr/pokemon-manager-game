@@ -63,6 +63,12 @@ func _run() -> void:
 			_shot("%s/onboarding_club_%s.png" % [dir, loc])
 			ob._on_next()
 			await _frames(10)
+			ob._starter_panel._select(4)   # the starter ceremony: pick Charmander
+			ob._starter_panel._nick_edit.text = "Brasa" if loc == "es" else "Ember"
+			await _frames(8)
+			_shot("%s/onboarding_starter_%s.png" % [dir, loc])
+			ob._on_next()
+			await _frames(10)
 			_shot("%s/onboarding_summary_%s.png" % [dir, loc])
 			ob.queue_free()
 		_free_title(title)
@@ -87,13 +93,18 @@ func _run() -> void:
 	shell.free()
 
 	# 6) prove the full start transaction wires the manager into the world
-	MenuFlow.start_career("club09", "Alex Serrano", "The Prof")
+	MenuFlow.start_career("club09", "Alex Serrano", "The Prof", 7, "Burbuja")
 	var ok := str(GameState.player_club().get("manager", "")) == "Alex Serrano" \
 		and str(GameState.world["meta"].get("manager_name", "")) == "Alex Serrano" \
 		and str(GameState.world["meta"].get("manager_nickname", "")) == "The Prof" \
 		and MenuFlow.has_save()
 	if not ok:
 		printerr("MENU SHOT ERROR: manager identity did not flow into the world/save")
+		_fails += 1
+	var pro = ProtegeService.instance
+	if pro == null or not pro.has_protege() or pro.academy_entry().is_empty() \
+			or int(pro.academy_entry().get("species_id", 0)) != 7:
+		printerr("MENU SHOT ERROR: starter selection did not land in the academy")
 		_fails += 1
 	GameState.delete_save()   # runner restores the real save afterwards
 

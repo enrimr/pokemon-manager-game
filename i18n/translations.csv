@@ -5386,3 +5386,75 @@ A low rocky border trail into Johto's south.,Un sendero fronterizo bajo y rocoso
 [color=#%s][b]%s[/b][/color]  [color=#%s]Lv %d · %s[/color]  [color=#%s]%s[/color],[color=#%s][b]%s[/b][/color]  [color=#%s]Nv. %d · %s[/color]  [color=#%s]%s[/color]
 "Made with Godot 4.6","Hecho con Godot 4.6"
 "You don't catch 'em all. You manage 'em.","No te hagas con todos: dirígelos."
+%s refuses to be left behind,%s se niega a quedarse atrás
+"When %s cleared out the office at %s, one member of the travelling party was never in doubt. %s — the professor's gift, the manager's protégé — has followed the boss to %s. ""Where the gaffer goes, I go,"" the handlers translate, roughly.","Cuando %s vació el despacho de %s, había un miembro de la expedición que nunca estuvo en duda. %s —el regalo del profesor, el protegido del míster— ha seguido al jefe hasta %s. «Donde va el míster, voy yo», traducen sus cuidadores, más o menos."
+The Indigo Gazette,The Indigo Gazette
+%s joins the first-team squad,%s sube al primer equipo
+The manager's protégé has been promoted from the academy. The coaching staff report the whole group trained sharper the day the youngster's locker was moved upstairs — now the town wants to see a debut.,El protegido del míster ha sido ascendido desde la cantera. El cuerpo técnico cuenta que todo el grupo entrenó más fino el día que la taquilla del chaval subió de planta: ahora la ciudad quiere ver un debut.
+A debut to remember: %s,Un debut para recordar: %s
+"Every manager remembers the day they hand the kid the ball. Against %s, %s gave %s a first-team debut — the professor's starter, raised in the club's own academy, finally under the matchday lights. The bench was on its feet for every exchange.","Todo entrenador recuerda el día en que le da la alternativa al chaval. Contra %s, %s le dio a %s su debut con el primer equipo: el inicial del profesor, criado en la propia cantera del club, por fin bajo los focos de la jornada. El banquillo estuvo en pie en cada intercambio."
+First career KO for %s,Primer KO en la carrera de %s
+"It happened. %s recorded a first competitive knockout against %s, and the dugout celebrated like a title had been won. The manager's protégé is a protégé no more — it is a first-team battler with a taste for the big stage. The dressing room is buzzing.","Ocurrió. %s firmó su primer fuera de combate en partido oficial contra %s, y el banquillo lo celebró como un título. El protegido del míster ya no es un protegido: es un competidor del primer equipo al que le gusta el gran escenario. El vestuario está que arde."
+FULL CIRCLE: %s reaches its final form,CÍRCULO COMPLETO: %s alcanza su forma final
+Front-page material. The starter that %s carried out of the professor's lab has completed its journey: %s is now a fully evolved %s. From a Lv %d juvenile in the academy beds to the club's beating heart — this is the protégé story every manager dreams of writing. The town is planning a mural.,Material de portada. El inicial que %s sacó del laboratorio del profesor ha completado su viaje: %s es ya un %s plenamente evolucionado. De juvenil de nivel %d en las literas de la cantera a corazón del club: esta es la historia de protegido que todo entrenador sueña con escribir. La ciudad ya planea un mural.
+The protégé grows: %s evolved into %s,El protegido crece: %s ha evolucionado a %s
+A landmark day on the training ground: the manager's protégé evolved from %s into %s in front of the whole first-team squad. The coaches noted the applause lasted a while. The professor has asked for a photograph.,Día señalado en la ciudad deportiva: el protegido del míster evolucionó de %s a %s delante de todo el primer equipo. Los técnicos apuntan que el aplauso duró un buen rato. El profesor ha pedido una fotografía.
+Rival watch: %s's protégé evolved,Ojo al rival: el protegido de %s ha evolucionado
+Word from %s: the counter-starter %s has been grooming since the day you got yours has evolved into %s. The rivalry the press manufactured is starting to look real. Yours had better keep pace.,Llegan noticias de %s: el contra-inicial que %s mima desde el día en que tú recibiste el tuyo ha evolucionado a %s. La rivalidad que fabricó la prensa empieza a parecer real. Más le vale al tuyo seguir el ritmo.
+"""Tell %s I still think they picked the wrong one off the professor's table. My %s (Lv %d) has type advantage written all over this tie — and my protégé does not get nervous.""","«Dile a %s que sigo pensando que cogió el equivocado de la mesa del profesor. Mi %s (Nv. %d) tiene la ventaja de tipo escrita en la frente, y mi protegido no se pone nervioso.»"
+"""Two managers, two starters, one professor. %s can polish %s all they like; my %s (Lv %d) was born with the matchup in its favour. See you at the arena.""","«Dos entrenadores, dos iniciales, un profesor. Que %s pula a %s todo lo que quiera; mi %s (Nv. %d) nació con el duelo a favor. Nos vemos en el estadio.»"
+"""I hear the academy raves about %s's little project. Sweet. When my %s (Lv %d) is across the field, sentiment is a weakness — the chart does not lie.""","«Me cuentan que en la cantera están encantados con el proyectito de %s. Qué bonito. Cuando mi %s (Nv. %d) esté enfrente, el sentimentalismo es una debilidad: la tabla de tipos no miente.»"
+"""%s and I both left that lab with a Poké Ball and a promise. Difference is, my %s (Lv %d) eats theirs for breakfast. Nothing personal, boss — it's the rivalry the fans deserve.""","«%s y yo salimos de aquel laboratorio con una Poké Ball y una promesa. La diferencia es que mi %s (Nv. %d) desayuna iniciales como el suyo. Nada personal, jefe: es la rivalidad que la afición merece.»"
+Protégé rivalry: %s stokes the fire,Rivalidad de protegidos: %s aviva el fuego
+"Ahead of the %s tie, %s went to the press about the starter rivalry the whole league has adopted:
+
+%s
+
+Your %s will hear about it. How the tie goes may echo in both dressing rooms.","En la previa del duelo contra %s, %s habló con la prensa sobre la rivalidad de iniciales que ha adoptado toda la liga:
+
+%s
+
+Tu %s se va a enterar. Lo que pase en el partido puede resonar en los dos vestuarios."
+"
+
+One more thing, straight from the lab: %s of %s collected the %s from the same bench — the one with the type advantage over yours. The professor smiled when asked if that was deliberate.","
+
+Una cosa más, directa del laboratorio: %s, de %s, recogió a %s del mismo banco — el que tiene ventaja de tipo sobre el tuyo. Al profesor se le escapó una sonrisa cuando le preguntaron si fue deliberado."
+%s entrusts you with %s,%s te confía a %s
+"%s shook your hand a moment longer than protocol demands. ""This one is special. Raise it your way."" %s (Lv %d) has been registered to the club's academy as your personal protégé: elite potential in the coaches' book, fiercely loyal to you — and to you alone. Bring it up through the youth beds, hand it a debut when it's ready, and it will follow you for the rest of your career.%s","%s te estrechó la mano un instante más de lo que manda el protocolo. «Este es especial. Críalo a tu manera.» %s (Nv. %d) ha quedado inscrito en la cantera del club como tu protegido personal: potencial de élite en el cuaderno de los técnicos y una lealtad feroz hacia ti, y solo hacia ti. Fórmalo en la cantera, dale el debut cuando esté listo y te seguirá durante el resto de tu carrera.%s"
+A name only you would give it,Un nombre que solo tú le pondrías
+%s IS WAITING IN THE LOBBY,%s TE ESPERA EN EL VESTÍBULO
+"""Welcome to %s, boss. Before the board gets its claws into you, an old tradition: every new manager in this league leaves my lab with a companion. Three Poké Balls, three temperaments. I won't show you their numbers — my scouts only deal in impressions. Pick with your heart. It will follow yours for the rest of your career... and mind the one you leave behind; another manager's hands are already hovering.""","«Bienvenido a %s, jefe. Antes de que la directiva te hinque las garras, una vieja tradición: todo entrenador nuevo de esta liga sale de mi laboratorio con un compañero. Tres Poké Balls, tres temperamentos. No te enseñaré sus números; mis ojeadores solo trabajan con impresiones. Elige con el corazón. Te seguirá el suyo durante toda tu carrera... y vigila al que dejes atrás: otras manos ya están rondando la mesa.»"
+The professor nods. %s it is.,"El profesor asiente. %s, pues."
+"The dependable one. It naps in the sun outside the lab and never starts a fight — but it has never once backed out of one either. Patient, steady, blooms late and blooms big.","El formal. Se echa la siesta al sol a la puerta del laboratorio y jamás empieza una pelea, aunque tampoco ha rehuido ninguna. Paciente, constante; florece tarde y florece a lo grande."
+The heart-on-tail one. It follows the professor around like a small shadow and burns brightest when it has something to prove. Handle with warmth and it will scorch the record books.,El del corazón en la cola. Sigue al profesor como una sombrita y arde con más fuerza cuando tiene algo que demostrar. Trátalo con cariño y chamuscará los libros de récords.
+"The cheeky one. It hides in its shell, waits for you to look away, then soaks you. Loves a crowd, and plays visibly better when one is watching.","El descarado. Se esconde en su caparazón, espera a que mires a otro lado y te empapa. Adora al público, y se le nota: juega mejor cuando alguien lo mira."
+"The sweet-scented one. It calms every room it walks into and sulks magnificently when ignored. Wins hearts first, battles shortly after.",El de aroma dulce. Calma cualquier sala en la que entra y se enfurruña con una elegancia magnífica cuando lo ignoran. Conquista corazones primero y combates poco después.
+"The shy flame. It keeps its fire banked until the moment matters — then its back ignites and the room goes quiet. Timid in the corridor, fearless between the lines.","La llama tímida. Guarda el fuego hasta que el momento importa; entonces su lomo se enciende y la sala se queda en silencio. Apocado en el pasillo, intrépido entre las líneas."
+"The biter. It chews everything: ropes, benches, clipboards, reputations. Boundless energy that a patient manager could shape into something genuinely frightening.","El mordedor. Lo mastica todo: cuerdas, banquillos, carpetas, reputaciones. Una energía sin fondo que un entrenador paciente podría convertir en algo verdaderamente temible."
+Scout's whisper: grows into a wall that wins wars of patience.,Susurro del ojeador: acabará siendo un muro que gana guerras de paciencia.
+Scout's whisper: the ceiling on this one frightens our instruments.,Susurro del ojeador: el techo de este asusta a nuestros aparatos.
+"Scout's whisper: balanced everywhere, brittle nowhere. A captain someday.","Susurro del ojeador: equilibrado en todo, frágil en nada. Un capitán, algún día."
+Scout's whisper: the squad trains calmer on days it's around.,Susurro del ojeador: la plantilla entrena más tranquila los días que anda cerca.
+Scout's whisper: quickest ignition we have ever measured in a juvenile.,Susurro del ojeador: el encendido más rápido que hemos medido nunca en un juvenil.
+Scout's whisper: that jaw will decide cup ties one day.,Susurro del ojeador: esa mandíbula decidirá copas algún día.
+I choose %s,Elijo a %s
+STARTER,INICIAL
+Next: meet the professor,Siguiente: conocer al profesor
+%s “%s” — your protégé,%s «%s» — tu protegido
+%s — your protégé,%s — tu protegido
+The professor's gift joins the academy at Lv 10 — and follows you for your whole career.,El regalo del profesor entra en la cantera a Nv. 10 — y te seguirá durante toda tu carrera.
+%s  · PROTÉGÉ,%s  · PROTEGIDO
+"MANAGER'S PROTÉGÉ — the professor's gift. Develops faster, fiercely loyal to you (never requests an exit), lifts the squad when it performs — and follows you to any club you ever manage.","PROTEGIDO DEL MÍSTER — el regalo del profesor. Se desarrolla más rápido, te es ferozmente leal (nunca pedirá salir), contagia a la plantilla cuando rinde — y te seguirá a cualquier club que dirijas."
+Visit the Academy,Visitar la cantera
+THE CEREMONY,LA CEREMONIA
+MILESTONE — FIRST-TEAM DEBUT,HITO — DEBUT CON EL PRIMER EQUIPO
+MILESTONE — FIRST KO,HITO — PRIMER KO
+MILESTONE — EVOLUTION,HITO — EVOLUCIÓN
+FRONT PAGE — FINAL FORM,PORTADA — FORMA FINAL
+RIVAL WATCH,OJO AL RIVAL
+THE PROTÉGÉ FOLLOWS,EL PROTEGIDO TE SIGUE
+PROTÉGÉ RIVALRY,RIVALIDAD DE PROTEGIDOS
+MANAGER'S PROTÉGÉ,PROTEGIDO DEL MÍSTER
+Professor Oak,Profesor Oak
+Professor Elm,Profesor Elm

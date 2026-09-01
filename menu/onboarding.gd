@@ -15,6 +15,7 @@ signal career_created
 signal cancelled
 
 const ClubStep := preload("res://menu/club_step.gd")
+const StarterStep := preload("res://menu/starter_step.gd")
 const PANEL_W := 1240.0
 const PANEL_H := 800.0
 
@@ -24,10 +25,12 @@ var _font_header: Font
 
 var _step := 0
 var _selected: Dictionary = {}      # club summary from club_step
+var _starter: Dictionary = {}       # starter summary from starter_step
 
 var _content: MarginContainer
 var _identity_panel: Control = null
 var _club_panel: Control = null
+var _starter_panel: Control = null
 var _name_edit: LineEdit
 var _nick_edit: LineEdit
 var _back_btn: Button
@@ -46,7 +49,7 @@ func _notification(what: int) -> void:
 	# step panels live detached while another step is shown — free them with
 	# the wizard so no orphan Controls leak on cancel/start
 	if what == NOTIFICATION_PREDELETE:
-		for p in [_identity_panel, _club_panel]:
+		for p in [_identity_panel, _club_panel, _starter_panel]:
 			if p != null and is_instance_valid(p) and not p.is_inside_tree():
 				p.free()
 
@@ -115,14 +118,14 @@ func _build_header() -> Control:
 	sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	col.add_child(sub)
 	row.add_child(col)
-	# step chips: 1 MANAGER · 2 CLUB · 3 CONFIRM
+	# step chips: 1 MANAGER · 2 CLUB · 3 STARTER · 4 CONFIRM
 	var chips := HBoxContainer.new()
 	chips.add_theme_constant_override("separation", 8)
 	chips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	for i in 3:
+	for i in 4:
 		var chip := PanelContainer.new()
 		var lbl := Label.new()
-		lbl.text = "%d · %s" % [i + 1, [tr("MANAGER"), tr("CLUB"), tr("CONFIRM")][i]]
+		lbl.text = "%d · %s" % [i + 1, [tr("MANAGER"), tr("CLUB"), tr("STARTER"), tr("CONFIRM")][i]]
 		lbl.add_theme_font_override("font", _font_header)
 		lbl.add_theme_font_size_override("font_size", 11)
 		chip.add_child(lbl)
@@ -170,10 +173,10 @@ func _build_footer() -> Control:
 # ------------------------------------------------------------------ steps
 
 func _show_step(i: int) -> void:
-	_step = clampi(i, 0, 2)
+	_step = clampi(i, 0, 3)
 	for child in _content.get_children():
 		_content.remove_child(child)
-		if child != _identity_panel and child != _club_panel:
+		if child != _identity_panel and child != _club_panel and child != _starter_panel:
 			child.queue_free()
 	match _step:
 		0:
@@ -193,6 +196,20 @@ func _show_step(i: int) -> void:
 						_show_step(2))
 			_content.add_child(_club_panel)
 		2:
+			if _starter_panel == null:
+				_starter_panel = StarterStep.new()
+				_starter_panel.setup(_font_bold, _font_semibold, _font_header)
+				_starter_panel.starter_selected.connect(func(s: Dictionary):
+					_starter = s
+					_refresh_footer())
+				_starter_panel.starter_confirmed.connect(func():
+					if not _starter.is_empty():
+						_show_step(3))
+			_content.add_child(_starter_panel)
+			_starter_panel.set_context(str(_selected.get("league", "kanto")),
+				str(_selected.get("name", "")))
+			_starter = _starter_panel.selected_summary()
+		3:
 			_content.add_child(_build_summary())
 	_refresh_footer()
 	_refresh_chips()
@@ -218,15 +235,18 @@ func _refresh_footer() -> void:
 			_next_btn.text = tr("Next: choose your club")
 			_next_btn.disabled = _manager_name() == ""
 		1:
-			_next_btn.text = tr("Next: summary")
+			_next_btn.text = tr("Next: meet the professor")
 			_next_btn.disabled = _selected.is_empty()
 		2:
+			_next_btn.text = tr("Next: summary")
+			_next_btn.disabled = _starter.is_empty()
+		3:
 			_next_btn.text = tr("Start career at %s") % str(_selected.get("name", ""))
 			_next_btn.disabled = false
 
 
 func _on_next() -> void:
-	if _step < 2:
+	if _step < 3:
 		_show_step(_step + 1)
 		return
 	# step 3: start — warn before overwriting an existing save (FM-style)
@@ -243,9 +263,11 @@ func _on_next() -> void:
 
 
 func _do_start() -> void:
-	if _selected.is_empty() or _manager_name() == "":
+	if _selected.is_empty() or _starter.is_empty() or _manager_name() == "":
 		return
-	MenuFlow.start_career(str(_selected["id"]), _manager_name(), _nick_edit.text)
+	MenuFlow.start_career(str(_selected["id"]), _manager_name(), _nick_edit.text,
+		int(_starter.get("species_id", 0)),
+		_starter_panel.nickname() if _starter_panel != null else "")
 	AudioManager.play("confirm")
 	career_created.emit()
 	queue_free()
@@ -369,6 +391,49 @@ func _build_summary() -> Control:
 	club_row.add_child(club_col)
 	col.add_child(club_row)
 	col.add_child(_hline())
+
+	# the protégé (starter ceremony, step 3)
+	if not _starter.is_empty():
+		var srow := HBoxContainer.new()
+		srow.add_theme_constant_override("separation", 12)
+		var sty: Array = _starter.get("types", [])
+		var scol: Color = DataStore.type_color(str(sty[0]) if not sty.is_empty() else "normal")
+		var disc := PanelContainer.new()
+		disc.custom_minimum_size = Vector2(46, 46)
+		var dsb := StyleBoxFlat.new()
+		dsb.bg_color = scol.darkened(0.35)
+		dsb.border_color = scol.lightened(0.25)
+		dsb.set_border_width_all(2)
+		dsb.set_corner_radius_all(23)
+		disc.add_theme_stylebox_override("panel", dsb)
+		var dl := Label.new()
+		dl.text = str(_starter.get("name", "?")).substr(0, 1)
+		dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		dl.add_theme_font_override("font", _font_header)
+		dl.add_theme_font_size_override("font_size", 20)
+		dl.add_theme_color_override("font_color", Color.WHITE)
+		disc.add_child(dl)
+		srow.add_child(disc)
+		var scol2 := VBoxContainer.new()
+		scol2.alignment = BoxContainer.ALIGNMENT_CENTER
+		scol2.add_theme_constant_override("separation", 0)
+		var snick: String = _starter_panel.nickname() if _starter_panel != null else ""
+		var sname := Label.new()
+		sname.text = (tr("%s “%s” — your protégé") % [str(_starter.get("name", "")), snick]) \
+			if snick != "" else (tr("%s — your protégé") % str(_starter.get("name", "")))
+		sname.add_theme_font_override("font", _font_bold)
+		sname.add_theme_font_size_override("font_size", 15)
+		sname.add_theme_color_override("font_color", Color.WHITE)
+		scol2.add_child(sname)
+		var sline := Label.new()
+		sline.text = tr("The professor's gift joins the academy at Lv 10 — and follows you for your whole career.")
+		sline.add_theme_font_size_override("font_size", 11)
+		sline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		scol2.add_child(sline)
+		srow.add_child(scol2)
+		col.add_child(srow)
+		col.add_child(_hline())
 
 	var exp := Label.new()
 	exp.text = tr("\"%s expect the club to %s and to %s.\"") % [str(_selected.get("name", "")),

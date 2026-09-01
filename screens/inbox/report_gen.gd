@@ -21,6 +21,8 @@ var _academy_gen: RefCounted   # academy mail renderer (lazy, defensive)
 var _academy_tried := false
 var _exped_gen: RefCounted     # routes/expedition mail renderer (lazy, defensive)
 var _exped_tried := false
+var _protege_ren: RefCounted   # protégé arc mail renderer (lazy, defensive)
+var _protege_tried := false
 
 
 func _init(news_gen: RefCounted) -> void:
@@ -45,6 +47,12 @@ func render(msg: Dictionary) -> Dictionary:
 		var xg := _exped()
 		if xg != null:
 			return xg.render(msg)
+	# manager's-protégé arc (starter-companion piece): ceremony, milestones,
+	# rivalry mind-games, follow-the-manager notes.
+	if uid.begins_with("protege:") or msg.has("protege_kind"):
+		var pg := _protege_gen()
+		if pg != null:
+			return pg.render(msg)
 	match str(msg.get("cat", "")):
 		"match":
 			if uid.begins_with("prematch:"):
@@ -105,6 +113,17 @@ func _academy() -> RefCounted:
 			if scr != null:
 				_academy_gen = scr.new()
 	return _academy_gen
+
+
+## Lazy, defensive handle on the protégé arc's mail renderer.
+func _protege_gen() -> RefCounted:
+	if not _protege_tried:
+		_protege_tried = true
+		if ResourceLoader.exists("res://screens/inbox/protege_mail.gd"):
+			var scr = load("res://screens/inbox/protege_mail.gd")
+			if scr != null:
+				_protege_ren = scr.new()
+	return _protege_ren
 
 
 ## Lazy, defensive handle on the routes piece's expedition mail renderer.

@@ -1,0 +1,24 @@
+{
+ "piece": "starter",
+ "fm_reference": "FM24 signature career moments (youth-intake-day excitement, 'my player' attachment, wonderkid arc, manager-follows moments) + the mainline Pokemon starter-selection ceremony's authenticity and warmth",
+ "status": "passed",
+ "round": 1,
+ "verdict": "ours",
+ "biggest_gap": "The rival's counter-pick is never dramatized ON SCREEN at the ceremony itself - it arrives as a postscript in the professor's mail. In the mainline games the rival walks up and takes the counter in front of you; here the beat is text-only and easy to skim past. Secondary: Oak and Elm deliver the identical speech verbatim (only club name swapped), and the trio cards share an identical 4.5-5.0 Potential band, slightly flattening the 'choose with your heart' tension.",
+ "history": [
+  {
+   "round": 1,
+   "phase": "build",
+   "winner": null,
+   "gap": "Built the STARTER COMPANION arc end to end. (1) Onboarding gained a 4th ceremony step (menu/starter_step.gd) between club and confirm: the regional professor (Oak for Kanto clubs, Elm for Johto) lays out the classic trio of the chosen club's region on three type-coloured monogram cards with warm personality blurbs, FM-style MASKED scout ranges (star bands, no numbers) plus a 'scout's whisper' hint, pick + optional nickname; the contract summary shows the protege and skipping is not offered. (2) Career-long protege via the services convention (shared/sim/services/protege.gd, no game_state.gd edits): joins the ACADEMY at Lv 10 with elite hidden potential (19-20, 17-20 coach band), 'Manager's Protege' trait = +development speed (attributed academy XP bonus; protege_pts training bonus once promoted), max loyalty (exit_request cleared, morale floor 85), squad-morale ripple on big performances (rate-limited). (3) Follows the MANAGER on any club change (sacking arc's continue flow drives it through career_started) with a press note. (4) Milestone press arc via inbox renderer (screens/inbox/protege_mail.gd + surgical report_gen route): selection announcement, first-team debut, first KO, each evolution stage, final form = big media piece, all snapshot-carrying and once-only. (5) Deterministic rival: a reputation-adjacent club in the player's league fields the type-advantaged counter-starter (rival_protege instance); head-to-head fixtures come with rotating mind-games mail (no verbatim repeats), rival evolutions make the press. Academy screen shows the gold PROTEGE badge + nickname (also fixed a pre-existing detail-pane star-line collapse). i18n: 60 new strings with natural Spanish. Proofs: artifacts/starter/driver.tscn (headless, 25 assertions incl. determinism replay, save/load x2, sack-move via real accept_job_offer -> STARTER DRIVER OK) and artifacts/starter/ui_driver.tscn (windowed, drives the REAL title->wizard picking Cyndaquil 'Fuego' at New Bark Gales, real card button + real footer start, academy badge shot, debut milestone mail shot, sacking continued through the REAL game-over 'Take over' button, protege verified at the new club -> STARTER UI DRIVER OK; 7 screenshots). Regressions green: SMOKE OK, MENU SHOTS OK (starter step added to the flow), PROSE CHECK OK, EVOLUTION DRIVER OK, ACADEMY DRIVER OK, POLISH SACK/SEASON DRIVER OK."
+  },
+  {
+   "round": 1,
+   "phase": "starter",
+   "winner": "ours",
+   "gap": "The rival's counter-pick is never dramatized ON SCREEN at the ceremony itself - it arrives as a postscript in the professor's mail. In the mainline games the rival walks up and takes the counter in front of you; here the beat is text-only and easy to skim past. Secondary: Oak and Elm deliver the identical speech verbatim (only club name swapped), and the trio cards share an identical 4.5-5.0 Potential band, slightly flattening the 'choose with your heart' tension.",
+   "evidence": "Judge R1 (blind): SMOKE OK; STARTER DRIVER OK (31 headless assertions incl. determinism replay, dev-speed accrual +9.6xp/Lv10->12 in 30 days, loyalty floor, debut/first-KO/evolution/final-form press, rotating mind-games, sack-move club16->club17, 2x save/load); STARTER UI DRIVER OK (real title->wizard->card->footer, real game-over 'Take over'); judge's own windowed driver (artifacts/starter/judge_r1/) drove the REAL onboarding twice - Johto club (Violet Skylarks) -> Chikorita/Cyndaquil/Totodile with Elm, Kanto club (Cerulean Tides) -> Bulbasaur/Charmander/Squirtle with Oak, screenshotted all 8 card states + summaries, verified masked star-band stats (no raw numbers), nickname 'Hoja' stamped, rival took the type-advantaged counter in BOTH regions in-league, fresh selection survives save/load. Ceremony reads as a genuine moment: professor speech, temperament blurbs, scout whispers, selection nod, protege line on the contract summary; trait is mechanically real (attributed xp/pts, exit-request immunity, morale ripple) and the rival resurfaces in press across the career."
+  }
+ ],
+ "updated": "2026-09-01"
+}

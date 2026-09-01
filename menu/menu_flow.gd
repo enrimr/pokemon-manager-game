@@ -76,11 +76,16 @@ static func apply_manager_identity(name: String, nickname: String = "") -> void:
 
 ## The full "start a fresh career" transaction used by the onboarding wizard:
 ## drop the old save, boot the new world at the chosen club, stamp the manager
-## identity onto it and persist. Same fixed seed the shell has always used.
-static func start_career(club_id: String, name: String, nickname: String = "") -> void:
+## identity onto it, hand over the professor's starter (the protégé ceremony —
+## starter_id 0 skips it, for legacy/tool callers) and persist. Same fixed
+## seed the shell has always used.
+static func start_career(club_id: String, name: String, nickname: String = "",
+		starter_id: int = 0, starter_nick: String = "") -> void:
 	GameState.delete_save()
 	GameState.new_career(20260801, club_id)
 	apply_manager_identity(name, nickname)
+	if starter_id > 0 and ProtegeService.instance != null:
+		ProtegeService.instance.select_starter(starter_id, starter_nick)
 	GameState.save_game()
 
 
