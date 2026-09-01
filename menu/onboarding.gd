@@ -407,7 +407,8 @@ func _build_summary() -> Control:
 	# who
 	var who_row := HBoxContainer.new()
 	who_row.add_theme_constant_override("separation", 12)
-	who_row.add_child(Portrait.avatar(_manager_name(), 40, {"variant": _face_variant}))
+	# 46px matches the club crest and the starter disc below — same icon column
+	who_row.add_child(Portrait.avatar(_manager_name(), 46, {"variant": _face_variant}))
 	var who := Label.new()
 	var nick := _nick_edit.text.strip_edges()
 	who.text = (tr("%s “%s” — manager") % [_manager_name(), nick]) if nick != "" \
