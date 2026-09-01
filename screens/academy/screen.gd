@@ -496,6 +496,11 @@ func _fill_detail() -> void:
 		_refresh()
 		_err.text = e)
 	brow.add_child(rel)
+	var cmp := Button.new()
+	cmp.text = tr("Compare")
+	cmp.tooltip_text = tr("Compare with my squad")
+	cmp.pressed.connect(func(): MonActions.open_compare_inst(self, m))
+	brow.add_child(cmp)
 	_detail.add_child(brow)
 	_detail.add_child(_dl(tr("Squad %d/%d — promotion respects the squad cap.") % [
 		GameState.player_club()["squad"].size(), Academy.FIRST_TEAM_CAP], TB.COL_TEXT_DIM, 12))

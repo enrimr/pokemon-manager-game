@@ -5094,3 +5094,293 @@ Reputation,Reputación
 Bank balance,Saldo bancario
 Weekly wage budget,Presupuesto salarial semanal
 Double-click a club row to jump straight to the summary.,Doble clic en un club para ir directamente al resumen.
+Actions,Acciones
+"Actions: offer, scout, shortlist, compare...","Acciones: ofertar, ojear, lista de deseos, comparar..."
+"Right-click: offer, scout, shortlist...","Clic derecho: ofertar, ojear, lista de deseos..."
+your squad,tu plantilla
+Scouted: %d%% · %s,Ojeado: %d%% · %s
+View Profile,Ver perfil
+View Club (%s),Ver club (%s)
+Go to Negotiation...,Ir a la negociación...
+Make Transfer Offer...,Hacer oferta de traspaso...
+Make Offer — Scout First...,Ofertar — primero ojear...
+Approach to Sign...,Tantear para fichar...
+Approach to Sign — Scout First...,Tantear para fichar — primero ojear...
+"We know too little to negotiate (below Part scouted, 50%). Send a scout to build the file first.","Sabemos demasiado poco para negociar (por debajo de Parcialmente ojeado, 50%). Envía antes a un ojeador para completar el informe."
+Send Scout...,Enviar ojeador...
+Scout on the case (~%dd left),Ojeador en ello (~%dd restantes)
+Add to Shortlist,Añadir a la lista de deseos
+Remove from Shortlist,Quitar de la lista de deseos
+Compare with My Squad...,Comparar con mi plantilla...
+Open in Transfer Search,Abrir en búsqueda de fichajes
+Removed from shortlist,Quitado de la lista de deseos
+Added to shortlist — see Transfers » Recruitment,Añadido a la lista de deseos — ver Fichajes » Captación
+Offer submitted — track it in the Transfer Centre,Oferta enviada — síguela en el Centro de Fichajes
+Contract offered — track it in the Transfer Centre,Contrato ofrecido — síguelo en el Centro de Fichajes
+Scout dispatched — reports land in your inbox,Ojeador enviado — los informes llegan a tu bandeja
+Negotiations unlock at Part scouted (50%) — the report also prices the deal honestly.,Las negociaciones se desbloquean con Parcialmente ojeado (50%) — el informe también tasa el traspaso con honestidad.
+Compare with my squad — %s,Comparar con mi plantilla — %s
+"Scouted %d%% — their numbers are our scouts' estimated ranges, not facts.","Ojeado al %d%% — sus números son rangos estimados por nuestros ojeadores, no hechos."
+Battle-real stats (nature applied) — the same numbers the engine fights with.,Estadísticas reales de combate (con naturaleza aplicada) — los mismos números con los que lucha el motor.
+POKÉMON,POKÉMON
+Compare,Comparar
+Compare with my squad,Comparar con mi plantilla
+Unknown route.,Ruta desconocida.
+Both expedition parties are already in the field.,Las dos partidas de expedición ya están sobre el terreno.
+A party is already working that route.,Ya hay una partida trabajando esa ruta.
+That route needs to settle — open again on %s.,Esa ruta necesita asentarse; volverá a abrirse el %s.
+Field duration must be between %d and %d days.,La duración sobre el terreno debe ser de entre %d y %d días.
+"Pick an approach: cautious, balanced or aggressive.","Elige un enfoque: cauto, equilibrado o agresivo."
+Captures must be routed to the academy or the squad.,Las capturas deben ir a la academia o a la plantilla.
+That leader is already out on an expedition.,Ese líder ya está fuera en una expedición.
+Pick an expedition leader.,Elige un líder de expedición.
+"Party of %s departs for %s (%d field days, %d capture attempts budgeted).","La partida de %s parte hacia %s (%d días de campo, %d intentos de captura presupuestados)."
+Board notes your absence,La junta toma nota de tu ausencia
+"The board has been informed that you are personally leading the %s expedition. They trust the assistant staff to mind the shop — but a manager in the field is a manager away from the squad, and the dressing room feels it.","La junta ha sido informada de que dirigirás en persona la expedición a %s. Confían en que el cuerpo técnico cuide de la casa, pero un míster sobre el terreno es un míster lejos de la plantilla, y el vestuario lo nota."
+Expedition departs: %s,Sale la expedición: %s
+%s leads a %d-day expedition to %s (%s). Travel: %d day(s) each way. Budget: %s for supplies plus capture gear for %d attempts. Approach: %s. First field report expected on arrival.,%s dirige una expedición de %d días a %s (%s). Viaje: %d día(s) por trayecto. Presupuesto: %s en suministros más equipo de captura para %d intentos. Enfoque: %s. El primer parte de campo llegará al llegar.
+Field report: %s — day %d of %d,Parte de campo: %s — día %d de %d
+Capture gear left: %d of %d. Captures so far: %d.,Equipo de captura restante: %d de %d. Capturas hasta ahora: %d.
+Expedition returns: %s (%d caught),Vuelve la expedición: %s (%d capturas)
+"%s is back from %s: %d days in the field, %d sightings, %d capture(s), %d near miss(es). Total cost %s.","%s vuelve de %s: %d días de campo, %d avistamientos, %d captura(s), %d intento(s) fallido(s). Coste total: %s."
+- Lv %d %s — %s.,- Nv. %d %s — %s.
+joins the academy,se incorpora a la academia
+goes straight into the first-team squad,entra directamente en la plantilla del primer equipo
+waits in the holding pen until a bed opens,espera en el recinto de acogida hasta que quede una plaza libre
+The crates came home empty this time — the intel gathered still sharpens our picture of the route.,"Esta vez las jaulas volvieron vacías, pero la información reunida afina nuestro conocimiento de la ruta."
+Route knowledge updated. %s reopens for expeditions on %s.,Conocimiento de la ruta actualizado. %s vuelve a abrirse a expediciones el %s.
+%s has settled in at the club,%s ya se ha instalado en el club
+The %s caught on the %s expedition finally has a place: it joins the %s today.,El %s capturado en la expedición a %s por fin tiene sitio: hoy se incorpora a %s.
+academy,la academia
+first-team squad,la plantilla del primer equipo
+first team,primer equipo
+Wild capture: %s land a %s,Captura salvaje: %s se hace con un %s
+Word from %s: an expedition party sent to %s has returned with a Lv %d %s for the club's development ranks. Rival recruitment never sleeps.,"Noticias de %s: una partida de expedición enviada a %s ha vuelto con un ejemplar de Nv. %d, un %s, para su cantera. La captación rival nunca duerme."
+a real find,un verdadero hallazgo
+solid stock,material sólido
+The party has pitched camp at {route}. {leader} likes the look of the terrain.,La partida ha montado el campamento en {route}. A {leader} le gusta el aspecto del terreno.
+Camp is up at {route}; trails were marked before sundown.,Campamento montado en {route}; los senderos quedaron marcados antes del anochecer.
+{leader} reports the party safely arrived and glassing {route} at first light.,{leader} informa de que la partida llegó sin novedad y otea {route} con las primeras luces.
+"Tracked a Lv {lv} {species} through the {terrain} — logged for the files, no gear spent.","Rastreado un {species} de Nv. {lv} por la zona de {terrain}; anotado en el registro, sin gastar equipo."
+A Lv {lv} {species} crossed the trail at dawn; the party held back and took notes.,Un {species} de Nv. {lv} cruzó el sendero al alba; la partida se contuvo y tomó notas.
+Spotted a Lv {lv} {species} from the ridge. {leader} judged it not worth the gear.,Avistado un {species} de Nv. {lv} desde la cresta. {leader} juzgó que no valía el equipo.
+A {species} (Lv {lv}) kept its distance all afternoon; sketches and prints archived.,Un {species} (Nv. {lv}) mantuvo las distancias toda la tarde; bocetos y huellas archivados.
+Fresh {species} signs everywhere — one Lv {lv} specimen observed at length.,Rastros frescos de {species} por todas partes; un ejemplar de Nv. {lv} observado con calma.
+Cornered a Lv {lv} {species} but it slipped the net at the last instant. Gear spent.,"Acorralado un {species} de Nv. {lv}, pero se escurrió de la red en el último instante. Equipo gastado."
+A Lv {lv} {species} broke for the undergrowth mid-attempt — so close {leader} could taste it.,Un {species} de Nv. {lv} escapó hacia la maleza en pleno intento; {leader} lo tuvo al alcance de la mano.
+Failed attempt on a Lv {lv} {species}; it outlasted the snare and vanished.,Intento fallido con un {species} de Nv. {lv}; aguantó más que la trampa y se esfumó.
+The Lv {lv} {species} fought free of the capture ring. One attempt written off.,El {species} de Nv. {lv} se zafó del cerco de captura. Un intento perdido.
+Had a Lv {lv} {species} half-secured before it wriggled loose. The team is furious.,Tuvimos un {species} de Nv. {lv} medio asegurado antes de que se soltara. El equipo está furioso.
+CAPTURE — a Lv {lv} {species} secured cleanly. {leader} rates it {stars}.,CAPTURA: un {species} de Nv. {lv} asegurado con limpieza. {leader} lo valora como {stars}.
+CAPTURE — the party brought in a Lv {lv} {species} after a long stalk.,CAPTURA: la partida se hizo con un {species} de Nv. {lv} tras un largo acecho.
+CAPTURE — Lv {lv} {species} netted at dusk; calm in the travel crate already.,CAPTURA: {species} de Nv. {lv} atrapado al atardecer; ya viaja tranquilo en la jaula.
+CAPTURE — a Lv {lv} {species} taken on the first pass. Textbook work.,CAPTURA: un {species} de Nv. {lv} al primer intento. Trabajo de manual.
+CAPTURE — Lv {lv} {species} secured after a two-hour standoff.,CAPTURA: {species} de Nv. {lv} asegurado tras dos horas de pulso.
+EXCEPTIONAL CAPTURE — a Lv {lv} {species}! {leader} says finds like this come once a career.,CAPTURA EXCEPCIONAL: ¡un {species} de Nv. {lv}! {leader} dice que hallazgos así se dan una vez en una carrera.
+EXCEPTIONAL CAPTURE — the rumours were true: a Lv {lv} {species} is in the crate.,CAPTURA EXCEPCIONAL: los rumores eran ciertos; hay un {species} de Nv. {lv} en la jaula.
+Unconfirmed sighting of something extraordinary — {leader} swears it was a {species}.,Avistamiento sin confirmar de algo extraordinario; {leader} jura que era un {species}.
+The locals spoke of a {species} in these parts; today the party saw it with their own eyes.,Los lugareños hablaban de un {species} por estos lares; hoy la partida lo vio con sus propios ojos.
+A rough day: the party was chased off its grid by an angry swarm. No fieldwork logged.,Un día duro: un enjambre furioso expulsó a la partida de su cuadrícula. Sin trabajo de campo registrado.
+"Storms flooded the camp overnight; the day went to repairs, not scouting.","Las tormentas inundaron el campamento por la noche; el día se fue en reparaciones, no en exploración."
+A wrong turn cost the whole day — {leader} takes the blame and promises better tomorrow.,Un desvío equivocado costó el día entero; {leader} asume la culpa y promete mejorar mañana.
+"A quiet day on {route} — trails cold, hides empty. It happens.",Un día tranquilo en {route}: rastros fríos y escondites vacíos. Pasa.
+Nothing worth the logbook today; the party rotated to fresh ground for tomorrow.,Nada digno del cuaderno hoy; la partida rotó a terreno nuevo para mañana.
+"Long hours, no encounters. {leader} suspects the weather pushed everything to ground.",Muchas horas y ningún encuentro. {leader} sospecha que el tiempo lo mandó todo a sus madrigueras.
+Route Map,Mapa de rutas
+Expeditions,Expediciones
+Routes,Rutas
+Send scouting parties into the wild — captures join the academy.,Envía partidas de exploración a la naturaleza; las capturas se unen a la academia.
+Species intel unlocks with field days spent on a route.,La información de especies se desbloquea con días de campo en cada ruta.
+Kanto,Kanto
+Johto,Johto
+Terrain,Terreno
+Levels,Niveles
+Species intel,Info de especies
+Travel,Viaje
+Cost/day,Coste/día
+Unsurveyed — send a party to chart it,Sin explorar: envía una partida a cartografiarla
+  · more to chart,  · queda por cartografiar
+  · rare dens unchecked,  · madrigueras raras sin revisar
+  · whispers of something exceptional,  · rumores de algo excepcional
+~%d-%d,~%d-%d
+Unsurveyed,Sin explorar
+Full,Completa
+Level band,Franja de nivel
+Settling — reopens %s,Asentándose; reabre el %s
+A party is on site now,Hay una partida sobre el terreno
+PLAN AN EXPEDITION,PLANIFICAR UNA EXPEDICIÓN
+Field days,Días de campo
+Leader,Líder
+Manager (you),Míster (tú)
+ — in the field, — en el campo
+Approach,Enfoque
+Capture gear,Equipo de captura
+%s per attempt,%s por intento
+Captures go to,Las capturas van a
+Academy (develop them),Academia (para desarrollarlos)
+First-team squad,Plantilla del primer equipo
+Launch expedition,Lanzar expedición
+"Total: %s  (%d days away incl. %d travel each way)
+Transfer budget available: %s","Total: %s  (%d días fuera, incl. %d de viaje por trayecto)
+Presupuesto de fichajes disponible: %s"
+"Fewer encounters, but attempts are safer and gear is saved for the good finds.","Menos encuentros, pero los intentos son más seguros y el equipo se reserva para los buenos hallazgos."
+A steady sweep of the route — a fair mix of encounters and attempts.,Un barrido constante de la ruta: una mezcla equilibrada de encuentros e intentos.
+"Maximum ground covered and every sighting contested — riskier attempts, and rough days happen.","Se cubre el máximo terreno y se disputa cada avistamiento: intentos más arriesgados, y hay días duros."
+No parties in the field. Plan an expedition from the Route Map tab.,No hay partidas sobre el terreno. Planifica una expedición desde la pestaña Mapa de rutas.
+HOLDING PEN — WAITING FOR SPACE,RECINTO DE ACOGIDA — A LA ESPERA DE SITIO
+Lv %d %s (caught at %s) — will settle in as soon as a bed or squad slot opens.,Nv. %d %s (capturado en %s): se instalará en cuanto quede libre una plaza.
+Travelling out (day %d of %d),"De viaje, ida (día %d de %d)"
+Travelling home (day %d of %d),"De viaje, vuelta (día %d de %d)"
+In the field — day %d of %d,Sobre el terreno: día %d de %d
+Gear %d/%d · Captures %d · Sightings %d,Equipo %d/%d · Capturas %d · Avistamientos %d
+Day %d — CAPTURED a Lv %d %s,Día %d: CAPTURADO un ejemplar de Nv. %d de %s
+Day %d — a Lv %d %s got away,Día %d: un ejemplar de Nv. %d de %s se escapó
+Day %d — sighted a Lv %d %s,Día %d: avistado un ejemplar de Nv. %d de %s
+Day %d — a mishap cost the party the day,Día %d: un percance costó el día a la partida
+CAPTURE RECORD,REGISTRO DE CAPTURAS
+Expeditions run,Expediciones realizadas
+Pokémon captured,Pokémon capturados
+Total invested,Total invertido
+Best find,Mejor hallazgo
+Lv %d %s (%s),Nv. %d %s (%s)
+Rival captures reported,Capturas rivales conocidas
+No expeditions completed yet — the wild routes are waiting.,Aún no se ha completado ninguna expedición; las rutas salvajes esperan.
+Returned,Regreso
+Sightings,Avistamientos
+Captures,Capturas
+Route,Ruta
+Cost,Coste
+Go to Routes,Ir a Rutas
+EXPEDITION DEPARTS,SALE LA EXPEDICIÓN
+FIELD REPORT — DAY %d/%d,PARTE DE CAMPO — DÍA %d/%d
+EXPEDITION RETURNS,VUELVE LA EXPEDICIÓN
+SIGHTED,AVISTADO
+CAPTURED,CAPTURADO
+GOT AWAY,SE ESCAPÓ
+MISHAP,PERCANCE
+COMMON,COMÚN
+UNCOMMON,POCO COMÚN
+RARE,RARO
+EXCEPTIONAL,EXCEPCIONAL
+grassland,pradera
+forest,bosque
+cave,cueva
+water,agua
+mountain,montaña
+wetland,humedal
+park,parque
+urban,urbano
+coastal,costa
+ice,hielo
+Route 1,Ruta 1
+Rolling meadows between Pallet Town and Viridian City.,Prados ondulados entre Pueblo Paleta y Ciudad Verde.
+Route 2,Ruta 2
+A quiet stretch skirting the southern edge of Viridian Forest.,Un tramo tranquilo que bordea el sur del Bosque Verde.
+Viridian Forest,Bosque Verde
+"A deep, maze-like forest buzzing with bug Pokemon.",Un bosque profundo y laberíntico que bulle de Pokémon bicho.
+Route 3,Ruta 3
+"The rocky approach to Mt. Moon, favoured by bird keepers.","La subida rocosa al Monte Moon, predilecta de los criadores de aves."
+Mt. Moon,Monte Moon
+Meteor-scarred tunnels where Clefairy dance on quiet nights.,Túneles marcados por meteoritos donde los Clefairy bailan en las noches tranquilas.
+Route 4,Ruta 4
+A dusty descent from Mt. Moon toward Cerulean City.,Un descenso polvoriento del Monte Moon hacia Ciudad Celeste.
+Route 5,Ruta 5
+Hedgerows and day-care paddocks north of Saffron City.,Setos y prados de guardería al norte de Ciudad Azafrán.
+Route 7,Ruta 7
+"A short, busy corridor between Celadon and Saffron.",Un corredor corto y concurrido entre Azulona y Azafrán.
+Route 9,Ruta 9
+A jagged cliffside trail carved toward Rock Tunnel.,Un sendero escarpado tallado en el acantilado hacia el Túnel Roca.
+Rock Tunnel,Túnel Roca
+A pitch-black passage; bring lamps and steady nerves.,Un pasadizo negro como el carbón; trae lámparas y nervios templados.
+Route 11,Ruta 11
+Windswept grass east of Vermilion's docks.,Hierba azotada por el viento al este de los muelles de Carmín.
+Route 12,Ruta 12
+A long fishing pier route along the Silence Bridge.,Una larga ruta de pesca a lo largo del Puente del Silencio.
+Route 14,Ruta 14
+Tall grass and telephone poles south of Lavender.,Hierba alta y postes de teléfono al sur de Lavanda.
+Route 16,Ruta 16
+The Cycling Road gateway west of Celadon City.,La entrada a la Ruta Bici al oeste de Ciudad Azulona.
+Route 21,Ruta 21
+A sea lane south of Pallet where Tangela tangle the shallows.,Una vía marítima al sur de Paleta donde los Tangela enredan los bajíos.
+Route 22,Ruta 22
+The short road toward the Pokemon League gate.,El camino corto hacia la puerta de la Liga Pokémon.
+Route 24,Ruta 24
+Nugget Bridge and the flower meadows north of Cerulean.,El Puente Pepita y los prados floridos al norte de Celeste.
+Route 25,Ruta 25
+"The cape trail to Bill's cottage, popular with couples.","El sendero del cabo hasta la casa de Bill, popular entre parejas."
+Route 26,Ruta 26
+The victory road approach south of the Indigo Plateau.,"La antesala de la Calle Victoria, al sur de la Meseta Añil."
+Power Plant,Central Energía
+An abandoned generator hall crackling with loose current.,Una sala de generadores abandonada que crepita con corriente suelta.
+Seafoam Islands,Islas Espuma
+Twin sea caves of ice-cold tidepools and rookeries.,Dos cuevas marinas gemelas de pozas heladas y colonias de cría.
+Safari Zone,Zona Safari
+"The famous Fuchsia preserve; rare species, strict wardens.",La famosa reserva de Fucsia; especies raras y guardas estrictos.
+Route 29,Ruta 29
+Gentle farmland between New Bark Town and Cherrygrove.,Suaves tierras de labranza entre Pueblo Primavera y Cerezo.
+Route 30,Ruta 30
+Berry orchards and ponds on the way to Mr. Pokemon's house.,Huertos de bayas y estanques camino de la casa del Sr. Pokémon.
+Route 32,Ruta 32
+A long lakeside road where Mareep graze the verges.,Un largo camino junto al lago donde los Mareep pastan en los márgenes.
+Union Cave,Cueva Unión
+A damp limestone cave; something sings in the deep pools.,Una húmeda cueva caliza; algo canta en las pozas profundas.
+Route 33,Ruta 33
+A short rainy pass outside Azalea Town.,Un paso corto y lluvioso a las afueras de Pueblo Azalea.
+Slowpoke Well,Pozo Slowpoke
+"Azalea's sacred well, home to its dozing mascots.","El pozo sagrado de Azalea, hogar de sus dormilonas mascotas."
+Ilex Forest,Bosque Encinar
+A dark shrine forest; headbutt the trees and see.,Un bosque oscuro con santuario; da cabezazos a los árboles y verás.
+Route 34,Ruta 34
+Day-care country south of Goldenrod City.,Tierra de guarderías al sur de Ciudad Trigal.
+Route 35,Ruta 35
+Hedged lanes just north of Goldenrod's gate.,Caminos entre setos justo al norte de la puerta de Trigal.
+National Park,Parque Nacional
+Manicured lawns of the Bug-Catching Contest grounds.,Céspedes cuidados del recinto del Concurso de Captura de Bichos.
+Route 36,Ruta 36
+A crossroads once blocked by a very stubborn tree.,Un cruce que un árbol muy terco bloqueó en su día.
+Route 38,Ruta 38
+MooMoo Farm pastures west of Ecruteak City.,Los pastos de la Granja MuuMuu al oeste de Ciudad Iris.
+Route 42,Ruta 42
+A ridge trail split by Mt. Mortar's streams.,Un sendero de cresta partido por los arroyos del Monte Mortero.
+Mt. Mortar,Monte Mortero
+A vast hollow mountain where a karate master trains.,Una vasta montaña hueca donde entrena un maestro de kárate.
+Route 43,Ruta 43
+Tollbooth marshland on the way up to the Lake of Rage.,Marismas con peaje camino del Lago de la Furia.
+Lake of Rage,Lago de la Furia
+A storm-fed lake infamous for furious Gyarados.,"Un lago alimentado por tormentas, tristemente célebre por sus Gyarados furiosos."
+Route 44,Ruta 44
+A misty valley road of fishing holes and vines.,"Un camino de valle brumoso, de pozas de pesca y enredaderas."
+Ice Path,Senda Helada
+Frozen galleries of black ice between Mahogany and Blackthorn.,Galerías congeladas de hielo negro entre Caoba y Endrino.
+Dark Cave,Cueva Oscura
+A lightless cavern few teams ever chart fully.,Una caverna sin luz que pocos equipos llegan a cartografiar del todo.
+Route 45,Ruta 45
+Sheer switchbacks tumbling south from Blackthorn.,Zigzags vertiginosos que caen hacia el sur desde Endrino.
+Route 46,Ruta 46
+A low rocky border trail into Johto's south.,Un sendero fronterizo bajo y rocoso hacia el sur de Johto.
+%d field day,%d día de campo
+%d field days,%d días de campo
+%s Lv %d,%s Nv. %d
+"[color=#%s][font_size=12]%s  ·  %s  ·  LED BY %s (%s)[/font_size][/color]
+","[color=#%s][font_size=12]%s  ·  %s  ·  DIRIGIDA POR %s (%s)[/font_size][/color]
+"
+"[color=#%s]A quiet day in the field — no encounters logged.[/color]
+","[color=#%s]Un día tranquilo sobre el terreno; sin encuentros registrados.[/color]
+"
+[color=#%s][b]MISHAP[/b][/color]  [color=#%s]The day was lost — no fieldwork completed.[/color],[color=#%s][b]PERCANCE[/b][/color]  [color=#%s]El día se perdió; no se completó trabajo de campo.[/color]
+"
+
+[color=#%s]Capture gear left %d/%d   ·   Captures so far %d[/color]","
+
+[color=#%s]Equipo de captura restante %d/%d   ·   Capturas hasta ahora %d[/color]"
+"
+[color=#%s]Field days %d   ·   Capture gear %d   ·   Cost %s   ·   Captures to the %s[/color]","
+[color=#%s]Días de campo %d   ·   Equipo de captura %d   ·   Coste %s   ·   Capturas a %s[/color]"
+"[color=#%s]The crates came home empty — but every field day sharpened our route intel.[/color]
+","[color=#%s]Las jaulas volvieron vacías, pero cada día de campo afinó nuestra información de la ruta.[/color]
+"
+"
+[font_size=12][color=#%s]Coach-judged potential %s – %s[/color][/font_size]","
+[font_size=12][color=#%s]Potencial según los técnicos %s – %s[/color][/font_size]"
+[color=#%s][b]%s[/b][/color]  [color=#%s][b]%s[/b][/color]  [color=#%s]Lv %d[/color]  %s,[color=#%s][b]%s[/b][/color]  [color=#%s][b]%s[/b][/color]  [color=#%s]Nv. %d[/color]  %s
+[color=#%s][b]%s[/b][/color]  [color=#%s]Lv %d · %s[/color]  [color=#%s]%s[/color],[color=#%s][b]%s[/b][/color]  [color=#%s]Nv. %d · %s[/color]  [color=#%s]%s[/color]

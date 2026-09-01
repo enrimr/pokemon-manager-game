@@ -102,9 +102,23 @@ func _build_ratings(side: int, title: String) -> Control:
 	box.add_child(grid)
 	for h in ["POKÉMON", "LV", tr("DMG OUT"), tr("DMG IN"), "KO", "RATING"]:
 		grid.add_child(UI.label(h, 10, UI.COL_DIM))
+	var foreign: bool = side != runner.player_side
 	for r in runner.rating_rows(side):
-		grid.add_child(UI.label(str(r["name"]) + ("  †" if int(r["fainted"]) > 0 else ""), 13,
-			Color.WHITE if int(r["fainted"]) == 0 else UI.COL_DIM))
+		var nl := UI.label(str(r["name"]) + ("  †" if int(r["fainted"]) > 0 else ""), 13,
+			Color.WHITE if int(r["fainted"]) == 0 else UI.COL_DIM)
+		var ruid := str(r.get("uid", ""))
+		if foreign and MonActions.can_act(ruid):
+			# rival performer = live entity: right-click / "..." for the global
+			# action menu (scout the star that just beat you, shortlist, offer)
+			var nh := HBoxContainer.new()
+			nh.add_theme_constant_override("separation", 2)
+			MonActions.attach(nl, ruid)
+			nl.tooltip_text = tr("Right-click: offer, scout, shortlist...")
+			nh.add_child(nl)
+			nh.add_child(MonActions.action_button(ruid, 12))
+			grid.add_child(nh)
+		else:
+			grid.add_child(nl)
 		grid.add_child(UI.label(str(r["level"]), 12, UI.COL_DIM))
 		grid.add_child(UI.label(str(r["dealt"]), 12, UI.COL_TEXT))
 		grid.add_child(UI.label(str(r["taken"]), 12, UI.COL_TEXT))

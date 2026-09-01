@@ -283,6 +283,8 @@ func _make_shortlist_card(t: Dictionary) -> PanelContainer:
 	vb.add_child(head)
 	head.add_child(GlyphIcons.icon("star", 13, Color(0.88, 0.69, 0.31)))
 	head.add_child(_dlabel(market.display_name(inst), Color.WHITE, 14))
+	head.add_child(MonActions.action_button(uid))
+	MonActions.attach(card, uid)
 	var where: String
 	match String(t["pool"]):
 		"club": where = String(market.club_of(t["club_id"])["short"])
@@ -364,6 +366,9 @@ func _refresh_recs_col() -> void:
 		vb.add_child(head)
 		head.add_child(_dlabel("(gone)" if t.is_empty() else market.display_name(t["inst"]), Color.WHITE, 14))
 		head.add_child(_dlabel("%s / %s" % [_stars(float(r["ability"])), _stars(float(r["potential"]))], Color(0.88, 0.69, 0.31), 12))
+		if not t.is_empty():
+			head.add_child(MonActions.action_button(String(r["uid"])))
+			MonActions.attach(card, String(r["uid"]))
 		vb.add_child(_dlabel(String(r["note"]), ThemeBuilder.COL_TEXT_DIM, 11, true))
 		var btns := HFlowContainer.new()
 		btns.add_theme_constant_override("h_separation", 6)
@@ -402,6 +407,8 @@ func _refresh_agents_col() -> void:
 		head.add_theme_constant_override("separation", 8)
 		vb.add_child(head)
 		head.add_child(_dlabel(market.display_name(inst), Color.WHITE, 14))
+		head.add_child(MonActions.action_button(uid))
+		MonActions.attach(card, uid)
 		if String(a["kind"]) == "club":
 			head.add_child(_dlabel(tr("wants out of %s") % String(market.club_of(t["club_id"])["short"]), ThemeBuilder.COL_ACCENT, 11))
 		else:
@@ -498,6 +505,26 @@ func _go_to_target(uid: String) -> void:
 	_tabs.current_tab = 1
 	_refresh_search()
 	_refresh_detail()
+
+
+## Shell deep-link contract: global search results, the mon action menu and
+## other screens land here with {"kind":"pokemon","id":uid} (+ optional
+## "action": "offer"|"sign"|"scout") — the target opens preselected in Search
+## and, when asked, straight into the right deal sheet. No dead ends.
+func reveal_search_target(ctx: Dictionary) -> void:
+	if str(ctx.get("kind", "")) != "pokemon":
+		return
+	var uid := str(ctx.get("id", ""))
+	if uid == "" or market.find_target(uid).is_empty():
+		return
+	_go_to_target(uid)
+	match str(ctx.get("action", "")):
+		"offer":
+			_open_offer_sheet(uid)
+		"sign", "contract":
+			_open_contract_sheet(uid)
+		"scout":
+			_open_scout_dialog(uid)
 
 
 # ------------------------------------------------------------ SEARCH TAB
@@ -631,6 +658,9 @@ func _build_search_tab() -> void:
 	_tree.item_selected.connect(_on_row_selected)
 	# Double-click / Enter on a row jumps straight into the deal flow.
 	_tree.item_activated.connect(_on_row_activated)
+	# Right-click / the row's "..." button: the global mon action menu (the
+	# same component every other screen uses — one action grammar everywhere).
+	MonActions.wire_tree(_tree, func(item: TreeItem) -> String: return str(item.get_metadata(0)))
 	body.add_child(_tree)
 
 	var dpanel := PanelContainer.new()
@@ -832,6 +862,7 @@ func _refresh_search() -> void:
 			wage_txt = market.fmt_money(int(inst["contract"]["salary"]))
 		it.set_text(12, wage_txt)
 		it.set_custom_color(12, ThemeBuilder.COL_TEXT_DIM)
+		MonActions.tree_dots(it, 0)
 		var st_i: int = int(market.stage_for(know)["idx"])
 		it.set_text(13, "%s %d%%" % [tr(STAGE_SHORT[st_i]), int(know)] if know > 0.0 else "—")
 		it.set_tooltip_text(13, tr("Knowledge stage: %s — unlocks %s") % [
@@ -1099,6 +1130,12 @@ func _refresh_detail() -> void:
 		sign_btn.disabled = not offer.is_empty() or (locked and t["pool"] == "prospect")
 		sign_btn.pressed.connect(func(): _open_contract_sheet(uid))
 		brow.add_child(sign_btn)
+	var cmp_btn := Button.new()
+	cmp_btn.text = tr("Compare")
+	cmp_btn.tooltip_text = tr("Compare with my squad")
+	cmp_btn.pressed.connect(func(): MonActions.open_compare(self, uid))
+	brow.add_child(cmp_btn)
+	brow.add_child(MonActions.action_button(uid))
 	if locked and t["pool"] != "fa":
 		_detail.add_child(_dlabel(market.market_locked_reason(), ThemeBuilder.COL_TEXT_DIM, 11, true))
 	elif not locked and market.days_to_deadline() <= 7 and t["pool"] == "club":
@@ -1883,204 +1920,14 @@ func _sheet_row(grid: GridContainer, label_txt: String, ctl: Control, note: Stri
 
 
 func _open_offer_sheet(uid: String, offer_id: int = -1) -> void:
-	## The FM-style offer sheet: structure a permanent package (up-front fee,
-	## installments, sell-on clause) or a season loan (wage split, option to
-	## buy). Live negotiator feedback reacts to every component.
-	var t: Dictionary = market.find_target(uid)
-	if t.is_empty() or t["pool"] != "club":
-		return
-	var inst: Dictionary = t["inst"]
-	var existing: Dictionary = market._offer_out(offer_id) if offer_id >= 0 else {}
-	var locked_kind := "" if existing.is_empty() else String(existing["kind"])
-
-	var dlg := ConfirmationDialog.new()
-	dlg.title = (tr("Offer for %s") if existing.is_empty() else tr("Revise offer — %s")) % market.display_name(inst)
-	dlg.min_size = Vector2i(520, 0)
-	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 6)
-	dlg.add_child(vb)
-
-	vb.add_child(_dlabel(tr("Selling club: %s   ·   their likely valuation: %s") % [
-		market.club_of(t["club_id"])["name"],
-		market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))], ThemeBuilder.COL_TEXT_DIM, 13, true))
-	vb.add_child(_dlabel(tr("Transfer budget: %s   ·   wage room: %s/wk") % [
-		market.fmt_money_full(maxi(0, market.spendable_budget())), market.fmt_money(market.wage_room())],
-		ThemeBuilder.COL_TEXT_DIM, 13))
-	var dd: int = market.days_to_deadline()
-	if dd == 0:
-		vb.add_child(_dlabel(tr("DEADLINE DAY — they will answer within hours. This deal completes today or never."), ThemeBuilder.COL_BAD, 12, true))
-	elif dd >= 1 and dd <= 7:
-		vb.add_child(_dlabel(tr("Window closes in %d day%s. Unfinished deals collapse at the deadline, and rival clubs are circling.") % [dd, "" if dd == 1 else "s"], ThemeBuilder.COL_WARN, 12, true))
-
-	var mode := OptionButton.new()
-	mode.add_item(tr("Permanent transfer"))
-	mode.add_item(tr("Season loan"))
-	if locked_kind != "":
-		mode.selected = 1 if locked_kind == "loan" else 0
-		mode.disabled = true
-	vb.add_child(mode)
-	vb.add_child(HSeparator.new())
-
-	# --- permanent package controls
-	var pgrid := GridContainer.new()
-	pgrid.columns = 2
-	pgrid.add_theme_constant_override("h_separation", 16)
-	pgrid.add_theme_constant_override("v_separation", 4)
-	vb.add_child(pgrid)
-	var pre: Dictionary = market.blank_package(mini(maxi(0, market.spendable_budget()), market.value_of(inst)))
-	if not existing.is_empty() and existing["kind"] == "buy":
-		pre = existing["ask_package"] if not existing.get("ask_package", {}).is_empty() else existing["package"]
-	var up_spin := _sheet_spin(0, 10000000, 1000, int(pre.get("upfront", 0)))
-	_sheet_row(pgrid, tr("Up-front fee"), up_spin, tr("cash now, from our transfer budget"))
-	var inst_spin := _sheet_spin(0, 10000000, 1000, int(pre.get("inst_amount", 0)))
-	_sheet_row(pgrid, tr("Installments (total)"), inst_spin, tr("paid yearly — they discount deferred money"))
-	var years_opt := OptionButton.new()
-	for y in [1, 2, 3]:
-		years_opt.add_item(tr("over %d year%s") % [y, "" if y == 1 else "s"])
-	years_opt.selected = clampi(int(pre.get("inst_years", 2)), 1, 3) - 1
-	_sheet_row(pgrid, tr("Installment term"), years_opt)
-	var sellon_spin := _sheet_spin(0, 50, 5, int(pre.get("sell_on", 0)))
-	_sheet_row(pgrid, tr("Sell-on clause %"), sellon_spin, tr("% of the NEXT sale fee they keep"))
-
-	# --- loan controls
-	var lgrid := GridContainer.new()
-	lgrid.columns = 2
-	lgrid.add_theme_constant_override("h_separation", 16)
-	lgrid.add_theme_constant_override("v_separation", 4)
-	vb.add_child(lgrid)
-	var lpre := {"wage_split": 100, "option_fee": 0}
-	if not existing.is_empty() and existing["kind"] == "loan":
-		lpre = existing["loan_ask"] if not existing.get("loan_ask", {}).is_empty() else existing["loan_terms"]
-	var split_spin := _sheet_spin(0, 100, 10, int(lpre.get("wage_split", 100)))
-	_sheet_row(lgrid, tr("Wages we cover %"), split_spin, tr("of their %s/wk") % market.masked_money(uid, "wage", int(inst["contract"]["salary"])))
-	var opt_spin := _sheet_spin(0, 10000000, 1000, int(lpre.get("option_fee", 0)))
-	_sheet_row(lgrid, tr("Option to buy fee"), opt_spin, tr("buy them outright mid-loan"))
-	vb.add_child(_dlabel(tr("Loan runs until %s.") % I18n.pretty_date(market.loan_until()), ThemeBuilder.COL_TEXT_DIM, 11))
-
-	var summary := _dlabel("", ThemeBuilder.COL_TEXT, 13, true)
-	vb.add_child(summary)
-	var hint := _dlabel("", ThemeBuilder.COL_WARN, 12, true)
-	hint.custom_minimum_size.x = 470
-	vb.add_child(hint)
-
-	var refresh := func():
-		var is_loan: bool = mode.selected == 1
-		pgrid.visible = not is_loan
-		lgrid.visible = is_loan
-		lgrid.get_parent().get_child(lgrid.get_index() + 1).visible = is_loan  # loan-until note
-		if is_loan:
-			summary.text = market.describe_loan({"wage_split": int(split_spin.value), "option_fee": int(opt_spin.value)})
-			hint.text = market.loan_hint(uid)
-		else:
-			var pkg := {"upfront": int(up_spin.value), "inst_amount": int(inst_spin.value),
-				"inst_years": years_opt.selected + 1, "sell_on": int(sellon_spin.value)}
-			summary.text = tr("Package: %s   (headline %s)") % [market.describe_package(pkg), market.fmt_money(market.package_total(pkg))]
-			hint.text = market.offer_hint(uid, pkg)
-	mode.item_selected.connect(func(_i): refresh.call())
-	for s in [up_spin, inst_spin, sellon_spin, split_spin, opt_spin]:
-		s.value_changed.connect(func(_v): refresh.call())
-	years_opt.item_selected.connect(func(_i): refresh.call())
-	refresh.call()
-
-	dlg.get_ok_button().text = tr("Submit Offer")
-	dlg.confirmed.connect(func():
-		var msg: String
-		if mode.selected == 1:
-			if offer_id >= 0:
-				msg = market.revise_loan(offer_id, int(split_spin.value), int(opt_spin.value))
-			else:
-				msg = market.make_loan_offer(uid, int(split_spin.value), int(opt_spin.value))
-		else:
-			var pkg := {"upfront": int(up_spin.value), "inst_amount": int(inst_spin.value),
-				"inst_years": years_opt.selected + 1, "sell_on": int(sellon_spin.value)}
-			if offer_id >= 0:
-				msg = market.revise_offer(offer_id, pkg)
-			else:
-				msg = market.make_offer(uid, pkg)
-		_err(msg)
-		dlg.queue_free())
-	dlg.canceled.connect(dlg.queue_free)
-	ThemeBuilder.popup_fitted(self, dlg, vb)
+	## Delegated to the GLOBAL action layer (shared/ui/mon_actions.gd) so the
+	## exact same negotiation sheet opens from ANY screen's context menu.
+	MonActions.open_offer_sheet(self, uid, offer_id)
 
 
 func _open_contract_sheet(uid: String, offer_id: int = -1) -> void:
-	## Personal terms sheet: weekly wage, contract length, signing bonus and
-	## promised squad status all trade off against each other.
-	var t: Dictionary = market.find_target(uid)
-	if t.is_empty():
-		return
-	var inst: Dictionary = t["inst"]
-	var existing: Dictionary = market._offer_out(offer_id) if offer_id >= 0 else {}
-	var demand: Dictionary = {} if existing.is_empty() else existing.get("contract_demand", {})
-	var known_wage := int(demand.get("wage", 0))
-
-	var dlg := ConfirmationDialog.new()
-	dlg.title = tr("Personal terms — %s") % market.display_name(inst)
-	dlg.min_size = Vector2i(520, 0)
-	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 6)
-	dlg.add_child(vb)
-
-	if known_wage > 0:
-		vb.add_child(_dlabel(tr("Their demand: %s/wk (prefers a %d-year deal as %s)") % [
-			market.fmt_money(known_wage), int(demand.get("years", 3)), String(demand.get("status", tr("First team")))],
-			ThemeBuilder.COL_WARN, 13, true))
-	else:
-		vb.add_child(_dlabel(tr("Estimated wage demand: %s/wk") % market.masked_money(uid, "wage", int(inst["contract"]["salary"])),
-			ThemeBuilder.COL_TEXT_DIM, 13))
-	if t["pool"] == "prospect":
-		vb.add_child(_dlabel(tr("Development compensation due: %s") % market.fmt_money(int(round(market.value_of(inst) * 0.35 / 1000.0)) * 1000),
-			ThemeBuilder.COL_WARN, 13))
-	vb.add_child(_dlabel(tr("Our wage room: %s/wk   ·   transfer budget: %s") % [
-		market.fmt_money(market.wage_room()), market.fmt_money(maxi(0, market.spendable_budget()))],
-		ThemeBuilder.COL_TEXT_DIM, 13))
-	vb.add_child(HSeparator.new())
-
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 16)
-	grid.add_theme_constant_override("v_separation", 4)
-	vb.add_child(grid)
-	var def_wage := known_wage if known_wage > 0 else int(float(inst["contract"]["salary"]) * 1.2)
-	var wage_spin := _sheet_spin(0, 100000, 10, def_wage)
-	_sheet_row(grid, tr("Weekly wage"), wage_spin)
-	var years_opt := OptionButton.new()
-	for y in [1, 2, 3, 4]:
-		years_opt.add_item(tr("%d year%s") % [y, "" if y == 1 else "s"])
-	years_opt.selected = clampi(int(demand.get("years", 3)), 1, 4) - 1
-	_sheet_row(grid, tr("Contract length"), years_opt, tr("longer = security, they take less/wk"))
-	var bonus_spin := _sheet_spin(0, 2000000, 500, 0)
-	_sheet_row(grid, tr("Signing bonus"), bonus_spin, tr("one-off cash, sweetens low wages"))
-	var status_opt := OptionButton.new()
-	for st in market.SQUAD_STATUSES:
-		status_opt.add_item(st)
-	status_opt.selected = maxi(0, market.SQUAD_STATUSES.find(String(demand.get("status", tr("First team")))))
-	_sheet_row(grid, tr("Promised role"), status_opt, tr("a bigger promise trims the wage"))
-
-	var hint := _dlabel("", ThemeBuilder.COL_WARN, 12, true)
-	hint.custom_minimum_size.x = 470
-	vb.add_child(hint)
-	var build_con := func() -> Dictionary:
-		return {"wage": int(wage_spin.value), "years": years_opt.selected + 1,
-			"bonus": int(bonus_spin.value), "status": market.SQUAD_STATUSES[status_opt.selected]}
-	var refresh := func():
-		hint.text = market.contract_hint(uid, build_con.call(), known_wage)
-	wage_spin.value_changed.connect(func(_v): refresh.call())
-	bonus_spin.value_changed.connect(func(_v): refresh.call())
-	years_opt.item_selected.connect(func(_i): refresh.call())
-	status_opt.item_selected.connect(func(_i): refresh.call())
-	refresh.call()
-
-	dlg.get_ok_button().text = tr("Offer Contract")
-	dlg.confirmed.connect(func():
-		var con: Dictionary = build_con.call()
-		if offer_id >= 0:
-			_err(market.offer_contract(offer_id, con))
-		else:
-			_err(market.sign_free_agent(uid, con))
-		dlg.queue_free())
-	dlg.canceled.connect(dlg.queue_free)
-	ThemeBuilder.popup_fitted(self, dlg, vb)
+	## Delegated to the global action layer (see _open_offer_sheet).
+	MonActions.open_contract_sheet(self, uid, offer_id)
 
 
 func _open_counter_in_dialog(offer_id: int) -> void:
@@ -2116,34 +1963,8 @@ func _open_counter_in_dialog(offer_id: int) -> void:
 
 
 func _open_scout_dialog(uid: String) -> void:
-	var idle: Array = market.player_scouts().filter(func(s): return market.assignment_for_scout(s["name"]).is_empty())
-	if idle.is_empty():
-		_err(tr("All scouts are on assignment. Recall one from the Scouting tab first."))
-		return
-	var dlg := ConfirmationDialog.new()
-	dlg.title = tr("Assign scout")
-	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 6)
-	var t: Dictionary = market.find_target(uid)
-	vb.add_child(_dlabel(tr("Target: %s") % ("" if t.is_empty() else market.display_name(t["inst"])), ThemeBuilder.COL_TEXT, 14))
-	var opt := OptionButton.new()
-	var treg: String = "" if t.is_empty() else market.region_of(t["inst"])
-	if not t.is_empty():
-		vb.add_child(_dlabel(tr("Region: %s · a full report takes real days — travel first, then fieldwork; home-patch scouts read faster and truer.") % treg,
-			ThemeBuilder.COL_TEXT_DIM, 11, true))
-	for s in idle:
-		var home: String = tr(" · home patch") if market.scout_region(s) == treg else ""
-		var trav: int = market.travel_days(market.scout_location(s), treg)
-		opt.add_item(tr("%s (JA %d · ~%d days to full%s%s)") % [s["name"], int(s["ratings"]["judging_ability"]),
-			market.scout_days_for(s, uid), (tr(" · %dd travel") % trav) if trav > 0 else "", home])
-	vb.add_child(opt)
-	dlg.add_child(vb)
-	dlg.get_ok_button().text = "Send"
-	dlg.confirmed.connect(func():
-		_err(market.assign_scout_to_target(idle[opt.selected]["name"], uid))
-		dlg.queue_free())
-	dlg.canceled.connect(dlg.queue_free)
-	ThemeBuilder.popup_fitted(self, dlg, vb)
+	## Delegated to the global action layer (see _open_offer_sheet).
+	MonActions.open_scout_dialog(self, uid)
 
 
 func _open_focus_dialog(scout_name: String) -> void:

@@ -19,6 +19,8 @@ var evolutions: RefCounted     # evolution_gen.gd instance (set by screen.gd)
 var _resim_cache: Dictionary = {}
 var _academy_gen: RefCounted   # academy mail renderer (lazy, defensive)
 var _academy_tried := false
+var _exped_gen: RefCounted     # routes/expedition mail renderer (lazy, defensive)
+var _exped_tried := false
 
 
 func _init(news_gen: RefCounted) -> void:
@@ -37,6 +39,12 @@ func render(msg: Dictionary) -> Dictionary:
 		var ag := _academy()
 		if ag != null:
 			return ag.render(msg)
+	# routes piece's expedition mail (field reports, captures, AI news):
+	# route to its renderer if the routes screen is installed.
+	if uid.begins_with("exped:") or msg.has("exped_kind"):
+		var xg := _exped()
+		if xg != null:
+			return xg.render(msg)
 	match str(msg.get("cat", "")):
 		"match":
 			if uid.begins_with("prematch:"):
@@ -97,6 +105,17 @@ func _academy() -> RefCounted:
 			if scr != null:
 				_academy_gen = scr.new()
 	return _academy_gen
+
+
+## Lazy, defensive handle on the routes piece's expedition mail renderer.
+func _exped() -> RefCounted:
+	if not _exped_tried:
+		_exped_tried = true
+		if ResourceLoader.exists("res://screens/routes/mail_gen.gd"):
+			var scr = load("res://screens/routes/mail_gen.gd")
+			if scr != null:
+				_exped_gen = scr.new()
+	return _exped_gen
 
 
 # ------------------------------------------------------------- match report
@@ -566,8 +585,11 @@ func _scout_report(msg: Dictionary) -> Dictionary:
 	bb += I18n.t("[color=#%s][b]WAGE DEMAND[/b][/color]  [color=#%s]%s / month[/color]\n\n") % \
 		[C_DIM, C_WHITE, wage_txt]
 	bb += I18n.t("[color=#%s]\"%s\"[/color]\n\n[color=#%s][b]%s[/b][/color]") % [C_WHITE, verdict, rec_col, rec]
+	# the dossier's subject is a LIVE entity: full action menu right here
+	# (shortlist / offer / send scout / compare — the global MonActions layer)
 	return {"bbcode": bb,
-		"actions": [{"label": I18n.t("Go to Transfers"), "screen": "transfers"}], "banner": {}}
+		"actions": [{"kind": "mon", "uid": puid, "label": news.display_name(p)},
+			{"label": I18n.t("Go to Transfers"), "screen": "transfers"}], "banner": {}}
 
 
 # ------------------------------------------------------------- transfers
@@ -695,6 +717,8 @@ func _live_offer(msg: Dictionary, o: Dictionary) -> Dictionary:
 			bb += I18n.t("[color=#%s][b]This offer expired[/b] without a decision.[/color]") % C_DIM
 		_:
 			bb += I18n.t("[color=#%s]Negotiation state: %s.[/color]") % [C_DIM, stage]
+	if not inst.is_empty():
+		actions.append({"kind": "mon", "uid": str(o["uid"]), "label": news.display_name(inst)})
 	actions.append({"label": I18n.t("Transfer Centre"), "screen": "transfers", "tab": "centre"})
 	actions.append({"label": I18n.t("View Squad"), "screen": "squad"})
 	return {"bbcode": bb, "actions": actions, "banner": {}}
@@ -721,9 +745,16 @@ func _archived_offer(msg: Dictionary) -> Dictionary:
 			[C_DIM, I18n.pretty_date(deadline)]
 	else:
 		bb += I18n.t("[color=#%s]This item is no longer negotiable — the full record lives in the Transfer Centre.[/color]") % C_DIM
-	return {"bbcode": bb,
-		"actions": [{"label": I18n.t("Transfer Centre"), "screen": "transfers", "tab": "centre"},
-			{"label": I18n.t("View Squad"), "screen": "squad"}], "banner": {}}
+	var acts: Array = []
+	var tuid := str(msg.get("target_uid", ""))
+	var mkt2: RefCounted = news.market()
+	if tuid != "" and mkt2 != null:
+		var tt: Dictionary = mkt2.find_target(tuid)
+		if not tt.is_empty():
+			acts.append({"kind": "mon", "uid": tuid, "label": news.display_name(tt["inst"])})
+	acts.append({"label": I18n.t("Transfer Centre"), "screen": "transfers", "tab": "centre"})
+	acts.append({"label": I18n.t("View Squad"), "screen": "squad"})
+	return {"bbcode": bb, "actions": acts, "banner": {}}
 
 
 # ------------------------------------------------------------- board

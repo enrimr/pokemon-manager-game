@@ -54,12 +54,17 @@ static func navigate(from: Node, ctx: Dictionary) -> void:
 		n = n.get_parent()
 
 
-## Hyperlink label that navigates to `ctx` when clicked.
+## Hyperlink label that navigates to `ctx` when clicked. Pokémon links also
+## carry the GLOBAL action menu (offer/scout/shortlist/compare — FM's
+## "right-click anyone"): right-click opens it anywhere this link appears.
 static func link(text: String, font_size: int, col: Color, ctx: Dictionary,
 		tooltip: String = "") -> Button:
 	var b := Link.new(text, font_size, col)
 	b.tooltip_text = tooltip if tooltip != "" else _default_tooltip(ctx)
 	b.pressed.connect(func(): navigate(b, ctx))
+	if str(ctx.get("kind", "")) == "pokemon":
+		MonActions.attach(b, str(ctx.get("id", "")))
+		b.tooltip_text += "\n" + I18n.t("Right-click: offer, scout, shortlist...")
 	return b
 
 
@@ -79,17 +84,28 @@ static func _default_tooltip(ctx: Dictionary) -> String:
 
 ## Make a Tree navigable: cells carrying {"kind","id"} metadata become links
 ## (left-click follows them; pointer cursor + tooltip signal the affordance).
+## Pokémon cells additionally get the global action layer: right-click OR the
+## cell's "..." button opens the offer/scout/shortlist/compare menu.
 static func wire_tree_links(tree: Tree) -> void:
+	tree.allow_rmb_select = true   # right-click must reach the action layer
 	tree.item_mouse_selected.connect(func(pos: Vector2, btn_index: int):
-		if btn_index != MOUSE_BUTTON_LEFT:
-			return
 		var item := tree.get_item_at_position(pos)
 		var col := tree.get_column_at_position(pos)
 		if item == null or col < 0:
 			return
 		var md: Variant = item.get_metadata(col)
-		if md is Dictionary and md.has("kind"):
-			navigate(tree, md))
+		if not (md is Dictionary) or not md.has("kind"):
+			return
+		if btn_index == MOUSE_BUTTON_LEFT:
+			navigate(tree, md)
+		elif btn_index == MOUSE_BUTTON_RIGHT and str(md.get("kind", "")) == "pokemon":
+			MonActions.open_menu(tree, str(md.get("id", ""))))
+	tree.button_clicked.connect(func(item: TreeItem, col: int, id: int, mbtn: int):
+		if id != MonActions.TREE_BTN_ID or mbtn != MOUSE_BUTTON_LEFT:
+			return
+		var md: Variant = item.get_metadata(col)
+		if md is Dictionary and str(md.get("kind", "")) == "pokemon":
+			MonActions.open_menu(tree, str(md.get("id", ""))))
 	tree.gui_input.connect(func(ev: InputEvent):
 		if ev is InputEventMouseMotion:
 			var item := tree.get_item_at_position(ev.position)
@@ -100,9 +116,13 @@ static func wire_tree_links(tree: Tree) -> void:
 
 
 ## Mark one Tree cell as a link to ctx (metadata consumed by wire_tree_links).
+## Pokémon cells whose uid is a live market target also get the "..." action
+## affordance (web-safe stand-in for right-click).
 static func cell_link(item: TreeItem, col: int, ctx: Dictionary, tooltip: String = "") -> void:
 	item.set_metadata(col, ctx)
 	item.set_tooltip_text(col, tooltip if tooltip != "" else _default_tooltip(ctx))
+	if str(ctx.get("kind", "")) == "pokemon" and MonActions.can_act(str(ctx.get("id", ""))):
+		MonActions.tree_dots(item, col)
 
 
 ## Owning club of a squad member uid ({} if not in any club squad).

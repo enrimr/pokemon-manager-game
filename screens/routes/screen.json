@@ -1,0 +1,5 @@
+{"title": "Routes", "order": 52, "icon_letter": "W", "tabs": [
+	{"id": "map", "title": "Route Map"},
+	{"id": "expeditions", "title": "Expeditions"},
+	{"id": "history", "title": "History"}
+]}

@@ -617,6 +617,12 @@ func _render_reading_pane() -> void:
 		_read_pane.add_child(arow)
 		for a in actions:
 			var kind := str(a.get("kind", "screen"))
+			if kind == "mon":
+				# live entity button: opens the global Pokémon action menu
+				# (offer / scout / shortlist / compare) right from the mail
+				if MonActions.can_act(str(a.get("uid", ""))):
+					arow.add_child(MonActions.action_pill(str(a["uid"]), str(a.get("label", tr("Actions")))))
+				continue
 			if kind == "screen":
 				var target: String = a["screen"]
 				if target != "@board" and not _shell_has_screen(target):

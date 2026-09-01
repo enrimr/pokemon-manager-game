@@ -1347,3 +1347,192 @@ print(f"OK: {len(pokemon_all)} pokemon, {len(moves_out)} moves, {len(clubs)} clu
       f"{len(free_agents)} free agents, {len(prospects)} prospects, "
       f"{len(items_out)} items ({held_n} held / {usable_n} usable), {equipped} mons equipped, "
       f"{len(natures_out)} natures, {len(abilities_out)} abilities")
+
+# ---------------------------------------------------------------- routes (expeditions piece)
+# shared/data/routes.json — the wild-encounter world map for scouting
+# expeditions: authentic Kanto/Johto routes + landmark spots, each with an
+# encounter pool drawn from the 251 (no legendaries), a level band, terrain
+# tags, travel days from each region hub and a daily operating cost.
+# Pools are authentic-ish to the mainline encounter tables (documented
+# liberties: version-exclusive species merged; a few gift/roadblock mons
+# appear as ultra-rare "special" finds, e.g. Sudowoodo on Route 36).
+# name: (region, [terrain], (lv_lo, lv_hi), commons, uncommons, rares,
+#        specials, travel_kanto, travel_johto, cost_day, blurb)
+ROUTES = [
+ ("Route 1", "kanto", ["grassland"], (2, 4),
+  ["Pidgey", "Rattata"], ["Sentret"], ["Hoothoot"], [],
+  1, 4, 800, "Rolling meadows between Pallet Town and Viridian City."),
+ ("Route 2", "kanto", ["grassland", "forest"], (3, 5),
+  ["Pidgey", "Rattata", "Caterpie"], ["Weedle", "Metapod"], ["Nidoran F", "Nidoran M"], [],
+  1, 4, 850, "A quiet stretch skirting the southern edge of Viridian Forest."),
+ ("Viridian Forest", "kanto", ["forest"], (3, 6),
+  ["Caterpie", "Weedle"], ["Metapod", "Kakuna"], ["Pikachu"], ["Scyther"],
+  1, 4, 1100, "A deep, maze-like forest buzzing with bug Pokemon."),
+ ("Route 3", "kanto", ["mountain", "grassland"], (5, 8),
+  ["Spearow", "Pidgey"], ["Nidoran F", "Nidoran M"], ["Jigglypuff"], [],
+  1, 4, 950, "The rocky approach to Mt. Moon, favoured by bird keepers."),
+ ("Mt. Moon", "kanto", ["cave"], (7, 11),
+  ["Zubat", "Geodude"], ["Paras", "Sandshrew"], ["Clefairy"], [],
+  2, 5, 1600, "Meteor-scarred tunnels where Clefairy dance on quiet nights."),
+ ("Route 4", "kanto", ["mountain", "grassland"], (8, 12),
+  ["Spearow", "Rattata", "Ekans"], ["Sandshrew"], ["Mankey"], [],
+  2, 5, 1000, "A dusty descent from Mt. Moon toward Cerulean City."),
+ ("Route 5", "kanto", ["grassland", "urban"], (10, 14),
+  ["Pidgey", "Oddish", "Meowth"], ["Bellsprout", "Mankey"], ["Growlithe"], [],
+  1, 4, 1000, "Hedgerows and day-care paddocks north of Saffron City."),
+ ("Route 7", "kanto", ["urban", "grassland"], (15, 19),
+  ["Pidgey", "Oddish", "Meowth"], ["Growlithe", "Mankey"], ["Vulpix"], [],
+  1, 4, 1100, "A short, busy corridor between Celadon and Saffron."),
+ ("Route 9", "kanto", ["mountain"], (14, 18),
+  ["Rattata", "Spearow", "Ekans"], ["Sandshrew", "Voltorb"], ["Machop"], [],
+  2, 5, 1200, "A jagged cliffside trail carved toward Rock Tunnel."),
+ ("Rock Tunnel", "kanto", ["cave"], (15, 20),
+  ["Zubat", "Geodude"], ["Machop", "Onix"], ["Cubone"], [],
+  2, 5, 1800, "A pitch-black passage; bring lamps and steady nerves."),
+ ("Route 11", "kanto", ["grassland", "coastal"], (12, 16),
+  ["Spearow", "Ekans", "Sandshrew"], ["Drowzee"], ["Fearow"], [],
+  2, 5, 1100, "Windswept grass east of Vermilion's docks."),
+ ("Route 12", "kanto", ["water", "grassland"], (22, 26),
+  ["Oddish", "Bellsprout", "Pidgey"], ["Gloom", "Weepinbell", "Venonat"], ["Farfetch'd"], [],
+  2, 5, 1400, "A long fishing pier route along the Silence Bridge."),
+ ("Route 14", "kanto", ["grassland"], (22, 26),
+  ["Oddish", "Bellsprout", "Venonat"], ["Gloom", "Pidgeotto"], ["Venomoth"], [],
+  2, 5, 1400, "Tall grass and telephone poles south of Lavender."),
+ ("Route 16", "kanto", ["grassland", "urban"], (18, 25),
+  ["Spearow", "Doduo", "Rattata"], ["Raticate", "Fearow"], ["Dodrio"], [],
+  2, 5, 1300, "The Cycling Road gateway west of Celadon City."),
+ ("Route 21", "kanto", ["water", "grassland"], (20, 30),
+  ["Pidgey", "Rattata"], ["Tangela", "Tentacool"], ["Pidgeotto"], [],
+  3, 6, 1700, "A sea lane south of Pallet where Tangela tangle the shallows."),
+ ("Route 22", "kanto", ["grassland"], (3, 5),
+  ["Rattata", "Spearow"], ["Nidoran F", "Nidoran M"], ["Mankey"], [],
+  1, 4, 850, "The short road toward the Pokemon League gate."),
+ ("Route 24", "kanto", ["grassland", "water"], (8, 14),
+  ["Caterpie", "Weedle", "Pidgey"], ["Oddish", "Bellsprout"], ["Abra"], [],
+  2, 5, 1100, "Nugget Bridge and the flower meadows north of Cerulean."),
+ ("Route 25", "kanto", ["coastal", "grassland"], (8, 14),
+  ["Caterpie", "Weedle", "Pidgey"], ["Oddish", "Venonat"], ["Abra"], [],
+  2, 5, 1150, "The cape trail to Bill's cottage, popular with couples."),
+ ("Route 26", "kanto", ["grassland", "mountain"], (28, 32),
+  ["Raticate", "Doduo", "Ponyta"], ["Dodrio", "Sandslash"], ["Arbok"], [],
+  3, 3, 2000, "The victory road approach south of the Indigo Plateau."),
+ ("Power Plant", "kanto", ["urban", "cave"], (30, 35),
+  ["Voltorb", "Magnemite"], ["Pikachu", "Magneton"], ["Electabuzz"], [],
+  3, 6, 2600, "An abandoned generator hall crackling with loose current."),
+ ("Seafoam Islands", "kanto", ["cave", "water"], (26, 32),
+  ["Zubat", "Krabby"], ["Seel", "Slowpoke", "Staryu"], ["Dewgong"], ["Lapras"],
+  3, 6, 3000, "Twin sea caves of ice-cold tidepools and rookeries."),
+ ("Safari Zone", "kanto", ["wetland", "grassland"], (15, 28),
+  ["Exeggcute", "Doduo", "Paras"], ["Rhyhorn", "Tauros", "Venonat"],
+  ["Chansey", "Scyther", "Pinsir", "Kangaskhan"], ["Dratini"],
+  2, 5, 4200, "The famous Fuchsia preserve; rare species, strict wardens."),
+ # ---- Johto ----
+ ("Route 29", "johto", ["grassland"], (2, 4),
+  ["Pidgey", "Sentret"], ["Hoothoot"], ["Hoppip"], [],
+  4, 1, 800, "Gentle farmland between New Bark Town and Cherrygrove."),
+ ("Route 30", "johto", ["grassland", "forest"], (3, 6),
+  ["Caterpie", "Weedle", "Pidgey"], ["Ledyba", "Spinarak", "Hoothoot"], ["Poliwag"], [],
+  4, 1, 850, "Berry orchards and ponds on the way to Mr. Pokemon's house."),
+ ("Route 32", "johto", ["grassland", "water"], (4, 8),
+  ["Rattata", "Bellsprout", "Hoppip"], ["Mareep", "Wooper"], ["Qwilfish"], [],
+  4, 1, 950, "A long lakeside road where Mareep graze the verges."),
+ ("Union Cave", "johto", ["cave"], (6, 10),
+  ["Zubat", "Geodude", "Sandshrew"], ["Onix", "Wooper"], ["Quagsire"], ["Lapras"],
+  4, 1, 1500, "A damp limestone cave; something sings in the deep pools."),
+ ("Route 33", "johto", ["grassland"], (6, 8),
+  ["Rattata", "Zubat", "Hoppip"], ["Spearow"], ["Ekans"], [],
+  4, 1, 900, "A short rainy pass outside Azalea Town."),
+ ("Slowpoke Well", "johto", ["cave", "water"], (5, 10),
+  ["Zubat", "Magikarp"], ["Slowpoke"], ["Slowbro"], [],
+  4, 1, 1200, "Azalea's sacred well, home to its dozing mascots."),
+ ("Ilex Forest", "johto", ["forest"], (5, 10),
+  ["Caterpie", "Weedle", "Zubat"], ["Paras", "Oddish", "Psyduck"], ["Pineco"], ["Heracross"],
+  4, 1, 1300, "A dark shrine forest; headbutt the trees and see."),
+ ("Route 34", "johto", ["grassland", "coastal"], (10, 14),
+  ["Rattata", "Drowzee"], ["Abra"], ["Ditto"], [],
+  4, 1, 1000, "Day-care country south of Goldenrod City."),
+ ("Route 35", "johto", ["grassland"], (10, 14),
+  ["Nidoran F", "Nidoran M", "Pidgey"], ["Drowzee", "Abra"], ["Yanma"], [],
+  4, 1, 1050, "Hedged lanes just north of Goldenrod's gate."),
+ ("National Park", "johto", ["park", "grassland"], (10, 16),
+  ["Caterpie", "Weedle", "Hoppip", "Sunkern"], ["Metapod", "Kakuna", "Paras"],
+  ["Scyther", "Pinsir"], [],
+  4, 1, 2400, "Manicured lawns of the Bug-Catching Contest grounds."),
+ ("Route 36", "johto", ["grassland", "forest"], (12, 16),
+  ["Pidgey", "Nidoran F", "Nidoran M"], ["Growlithe", "Vulpix", "Stantler"],
+  ["Sudowoodo"], [],
+  4, 1, 1150, "A crossroads once blocked by a very stubborn tree."),
+ ("Route 38", "johto", ["grassland"], (14, 18),
+  ["Rattata", "Meowth", "Magnemite"], ["Snubbull", "Tauros"], ["Miltank", "Farfetch'd"], [],
+  4, 1, 1250, "MooMoo Farm pastures west of Ecruteak City."),
+ ("Route 42", "johto", ["mountain", "water"], (14, 18),
+  ["Spearow", "Zubat", "Rattata"], ["Mankey", "Goldeen"], ["Raticate"], [],
+  4, 2, 1300, "A ridge trail split by Mt. Mortar's streams."),
+ ("Mt. Mortar", "johto", ["cave"], (14, 20),
+  ["Zubat", "Geodude"], ["Machop", "Marill"], ["Golbat"], ["Tyrogue"],
+  4, 2, 1900, "A vast hollow mountain where a karate master trains."),
+ ("Route 43", "johto", ["grassland", "wetland"], (15, 20),
+  ["Sentret", "Pidgeotto", "Venonat"], ["Farfetch'd"], ["Girafarig"], [],
+  4, 2, 1350, "Tollbooth marshland on the way up to the Lake of Rage."),
+ ("Lake of Rage", "johto", ["water"], (15, 25),
+  ["Magikarp"], ["Goldeen", "Seaking"], ["Gyarados"], [],
+  5, 2, 2200, "A storm-fed lake infamous for furious Gyarados."),
+ ("Route 44", "johto", ["grassland", "water"], (20, 24),
+  ["Bellsprout", "Poliwag"], ["Tangela", "Weepinbell"], ["Lickitung"], [],
+  5, 2, 1500, "A misty valley road of fishing holes and vines."),
+ ("Ice Path", "johto", ["cave", "ice"], (20, 25),
+  ["Zubat", "Swinub"], ["Golbat", "Jynx"], ["Sneasel"], ["Delibird"],
+  5, 2, 2800, "Frozen galleries of black ice between Mahogany and Blackthorn."),
+ ("Dark Cave", "johto", ["cave"], (20, 30),
+  ["Zubat", "Geodude"], ["Golbat", "Wobbuffet"], ["Dunsparce"], ["Ursaring"],
+  4, 1, 2000, "A lightless cavern few teams ever chart fully."),
+ ("Route 45", "johto", ["mountain"], (23, 30),
+  ["Geodude", "Phanpy"], ["Gligar", "Graveler"], ["Skarmory"], [],
+  5, 2, 1800, "Sheer switchbacks tumbling south from Blackthorn."),
+ ("Route 46", "johto", ["mountain", "grassland"], (2, 5),
+  ["Rattata", "Spearow", "Geodude"], ["Jigglypuff"], ["Phanpy"], [],
+  4, 1, 850, "A low rocky border trail into Johto's south."),
+]
+
+_name_to_id = {p["name"]: p["id"] for p in pokemon_all}
+_LEGENDARY_IDS = {144, 145, 146, 150, 151, 201, 243, 244, 245, 249, 250, 251}
+
+def _ids(names):
+    out = []
+    for n in names:
+        assert n in _name_to_id, f"routes: unknown species {n}"
+        assert _name_to_id[n] not in _LEGENDARY_IDS, f"routes: legendary {n}"
+        out.append(_name_to_id[n])
+    return out
+
+routes_out = []
+_seen_route_ids = set()
+for (rname, region, terrain, band, com, unc, rar, spec, tk, tj, cost, blurb) in ROUTES:
+    rid = region + ":" + rname.lower().replace(" ", "_").replace(".", "").replace("'", "")
+    assert rid not in _seen_route_ids, rid
+    _seen_route_ids.add(rid)
+    routes_out.append({
+        "id": rid, "name": rname, "region": region, "terrain": terrain,
+        "levels": [band[0], band[1]],
+        "pool": {"common": _ids(com), "uncommon": _ids(unc), "rare": _ids(rar),
+                 "special": _ids(spec)},
+        "travel": {"kanto": tk, "johto": tj},
+        "cost_day": cost, "blurb": blurb,
+    })
+
+dump("routes.json", {"meta": {
+    "regions": ["kanto", "johto"],
+    "rarity_weights": {"common": 68.0, "uncommon": 26.0, "rare": 6.0},
+    "special_chance": 0.02,
+}, "routes": routes_out})
+
+assert len(routes_out) == len(ROUTES) and len(routes_out) >= 40
+assert sum(1 for r in routes_out if r["region"] == "kanto") >= 20
+assert sum(1 for r in routes_out if r["region"] == "johto") >= 20
+for r in routes_out:
+    assert r["levels"][0] <= r["levels"][1] and r["cost_day"] > 0
+    assert r["travel"]["kanto"] >= 1 and r["travel"]["johto"] >= 1
+    assert r["pool"]["common"] and r["pool"]["uncommon"] and r["pool"]["rare"]
+print(f"OK: {len(routes_out)} routes "
+      f"({sum(1 for r in routes_out if r['region']=='kanto')} kanto / "
+      f"{sum(1 for r in routes_out if r['region']=='johto')} johto)")

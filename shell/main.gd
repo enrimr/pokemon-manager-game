@@ -1616,7 +1616,17 @@ func _build_search_overlay() -> void:
 	_search_list = ItemList.new()
 	_search_list.custom_minimum_size = Vector2(420, 100)
 	_search_list.focus_mode = Control.FOCUS_NONE
-	_search_list.item_clicked.connect(func(idx, _pos, _btn): _activate_search_index(idx))
+	_search_list.allow_rmb_select = true
+	# Left-click follows the result; right-click on a Pokémon result opens the
+	# global action menu (offer / scout / shortlist / compare) in place.
+	_search_list.item_clicked.connect(func(idx, _pos, btn):
+		if btn == MOUSE_BUTTON_RIGHT:
+			if idx >= 0 and idx < _search_results.size() \
+					and str(_search_results[idx].get("kind", "")) == "pokemon" \
+					and MonActions.can_act(str(_search_results[idx].get("id", ""))):
+				MonActions.open_menu(self, str(_search_results[idx]["id"]))
+			return
+		_activate_search_index(idx))
 	_search_panel.add_child(_search_list)
 	add_child(_search_panel)
 
@@ -1710,7 +1720,10 @@ func _on_search_text(text: String) -> void:
 			var dest: String = tr(str(screens.get(entry["screen"], {}).get("title", entry["screen"])))
 			if entry.has("tab"):
 				dest += " › %s" % tr(_tab_title(entry["screen"], str(entry["tab"])))
-			_search_list.set_item_tooltip(idx, tr("Open %s") % dest)
+			var tip: String = tr("Open %s") % dest
+			if str(entry.get("kind", "")) == "pokemon":
+				tip += "\n" + tr("Right-click: offer, scout, shortlist...")
+			_search_list.set_item_tooltip(idx, tip)
 	if not _search_results.is_empty():
 		_search_list.select(0)
 	var rows: int = maxi(_search_list.item_count, 1)
@@ -1784,6 +1797,12 @@ func _build_toast() -> void:
 	_toast_label.add_theme_color_override("font_color", Color.WHITE)
 	_toast_panel.add_child(_toast_label)
 	add_child(_toast_panel)
+
+
+## Public toast — shared components (e.g. MonActions, the global Pokémon
+## action layer) confirm their actions through the shell's toast.
+func toast(msg: String) -> void:
+	_toast(msg)
 
 
 func _toast(msg: String) -> void:

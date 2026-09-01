@@ -699,6 +699,7 @@ func rating_rows(side: int) -> Array:
 		if int(s["side"]) != side or int(s.get("battles", 0)) == 0:
 			continue
 		rows.append({
+			"uid": str(uid),
 			"name": s["name"], "level": s["level"], "dealt": int(s["dmg"]),
 			"taken": int(s["taken"]), "kos": int(s["kos"]),
 			"fainted": int(s.get("faints", 0)), "status": 0,

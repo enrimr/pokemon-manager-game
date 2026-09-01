@@ -506,6 +506,14 @@ func _pokemon_header(inst: Dictionary, sp: Dictionary, club: Dictionary, stats: 
 		sv.add_child(UI.label(str(stat[1]), 16, stat[2]))
 		sv.add_child(UI.dim(str(stat[0]), 10))
 		h.add_child(sv)
+	# global action layer: offer / scout / shortlist / compare from the profile
+	var uid := str(inst.get("uid", ""))
+	if MonActions.can_act(uid):
+		h.add_child(VSeparator.new())
+		var act := MonActions.action_pill(uid, tr("Actions"))
+		act.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		h.add_child(act)
+		MonActions.attach(panel, uid)
 	return panel
 
 
