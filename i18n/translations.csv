@@ -5067,7 +5067,7 @@ WHO IS IN THE DUGOUT?,¿QUIÉN OCUPA EL BANQUILLO?
 "The board, the press and rival managers will address you by this name.","La directiva, la prensa y los entrenadores rivales se dirigirán a ti por este nombre."
 Manager name,Nombre del entrenador
 Nickname (optional),Apodo (opcional)
-e.g. Alex Serrano,p. ej. Alex Serrano
+e.g. Ash Ketchum,p. ej. Ash Ketchum
 What the fans chant from the stands,Lo que corea la afición desde la grada
 Next: choose your club,Siguiente: elige tu club
 Next: summary,Siguiente: resumen
@@ -5582,3 +5582,10 @@ Cerulean Cave,Cueva Celeste
 Whirl Islands — Abyss,Islas Remolino — Abismo
 Tin Tower — Summit,Torre Hojalata — Cumbre
 "Day %d — %s","Día %d — %s"
+Your portrait,Tu retrato
+New look,Nuevo aspecto
+"The press, the boardroom and rival dugouts will all see this face.","La prensa, la sala de juntas y los banquillos rivales verán esta cara."
+The Manager,El míster
+Chair,Presidencia
+Director,Vocal
+Other staff:,Resto del personal:

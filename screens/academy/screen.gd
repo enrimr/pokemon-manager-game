@@ -14,6 +14,7 @@ var _fac_name: Label
 var _fac_pips: HBoxContainer
 var _fac_intake: Label
 var _fac_roster: Label
+var _hyc_face: Control
 var _upg_btn: Button
 var _upg_status: Label
 var _tree: Tree
@@ -121,9 +122,16 @@ func _build_header() -> Control:
 	_fac_intake = Label.new()
 	_fac_intake.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
 	fac.add_child(_fac_intake)
+	var roster_row := HBoxContainer.new()
+	roster_row.add_theme_constant_override("separation", 6)
+	fac.add_child(roster_row)
+	_hyc_face = Control.new()
+	_hyc_face.custom_minimum_size = Vector2(20, 20)
+	roster_row.add_child(_hyc_face)
 	_fac_roster = Label.new()
 	_fac_roster.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
-	fac.add_child(_fac_roster)
+	_fac_roster.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	roster_row.add_child(_fac_roster)
 
 	var upg := VBoxContainer.new()
 	upg.add_theme_constant_override("separation", 4)
@@ -543,6 +551,15 @@ func _refresh() -> void:
 	var cap: int = s.roster_cap()
 	_fac_roster.text = tr("Academy roster: %d / %d beds   ·   Head youth coach: %s") % [
 		s.roster.size(), cap, s.head_youth_coach()]
+	# head youth coach face (portraits piece)
+	for c in _hyc_face.get_children():
+		c.queue_free()
+	var hyc := str(s.head_youth_coach())
+	if Portrait.is_person(hyc):
+		_hyc_face.add_child(Portrait.avatar(Portrait.person_key(hyc), 20,
+			{"collar": Portrait.club_collar(GameState.player_club())}))
+	else:
+		_hyc_face.visible = false
 	if s.roster.size() >= cap:
 		_fac_roster.text += tr("   ·   FULL — intakes suspended")
 		_fac_roster.add_theme_color_override("font_color", TB.COL_BAD)

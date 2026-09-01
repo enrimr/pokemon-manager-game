@@ -1489,12 +1489,22 @@ func _refresh_coaches() -> void:
 	var physios: Array = GameState.player_club().get("staff", []).filter(
 		func(s): return s["role"] != "coach")
 	if not physios.is_empty():
+		var orow := HBoxContainer.new()
+		orow.add_theme_constant_override("separation", 6)
 		var other := Label.new()
-		var names: Array = physios.map(func(s): return "%s (%s)" % [s["name"], s["role"]])
-		other.text = tr("Other staff: %s") % ", ".join(names)
+		other.text = tr("Other staff:")
 		other.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		other.add_theme_font_size_override("font_size", 12)
-		_coach_cards_box.add_child(other)
+		orow.add_child(other)
+		var collar := Portrait.club_collar(GameState.player_club())
+		for s in physios:
+			orow.add_child(Portrait.avatar(str(s["name"]), 20, {"collar": collar}))
+			var pl := Label.new()
+			pl.text = "%s (%s)  " % [s["name"], s["role"]]
+			pl.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+			pl.add_theme_font_size_override("font_size", 12)
+			orow.add_child(pl)
+		_coach_cards_box.add_child(orow)
 
 	_clear(_assign_box)
 	var mons_per_coach := float(svc.squad().size()) / maxf(1.0, float(svc.coaching_staff().size()))
@@ -1522,10 +1532,13 @@ func _coach_card(coach: Dictionary) -> Control:
 	var v: VBoxContainer = wrap[1]
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 10)
+	head.add_child(Portrait.avatar(str(coach["name"]), 34,
+		{"collar": Portrait.club_collar(GameState.player_club())}))
 	var nm := Label.new()
 	nm.text = coach["name"]
 	nm.add_theme_font_size_override("font_size", 17)
 	nm.add_theme_color_override("font_color", Color.WHITE)
+	nm.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	head.add_child(nm)
 	var role := Label.new()
 	role.text = "Coach"

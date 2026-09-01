@@ -31,8 +31,9 @@ extends RefCounted
 ## extra keys stored on messages are JSON-safe so they persist in the save.
 
 const PAPER := "The Indigo Gazette"
-const JOURNALISTS := ["Marin Kessler", "Tobias Wren", "Ada Okafor", "Ren Kowalski",
-	"Petra Lindqvist", "Hugo Beaumont"]
+# Media bylines from the name canon (anime reporters/photographers + world surnames).
+const JOURNALISTS := ["Alexa Cerise", "Todd Snap", "Rhonda Silph", "Gabby Devon",
+	"Mary Goodshow", "Trevor Westwood"]
 
 const C_GOOD := "57c979"
 const C_BAD := "e06060"

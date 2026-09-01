@@ -94,6 +94,7 @@ var _nav_pinned: Dictionary = {}        # name -> bool (user pinned open)
 var _crest_holder: Control
 var _club_name_label: Label
 var _club_sub_label: Label
+var _mgr_face_holder: Control
 var _club_sub2_label: Label
 var _date_value: Label
 var _date_caption: Label
@@ -786,10 +787,18 @@ func _build_sidebar() -> Control:
 	_club_name_label.add_theme_color_override("font_color", Color.WHITE)
 	_club_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	idcol.add_child(_club_name_label)
+	var mgr_row := HBoxContainer.new()
+	mgr_row.add_theme_constant_override("separation", 5)
+	mgr_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_mgr_face_holder = Control.new()
+	_mgr_face_holder.custom_minimum_size = Vector2(16, 16)
+	_mgr_face_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mgr_row.add_child(_mgr_face_holder)
 	_club_sub_label = Label.new()
 	_club_sub_label.add_theme_font_size_override("font_size", 11)
 	_club_sub_label.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
-	idcol.add_child(_club_sub_label)
+	mgr_row.add_child(_club_sub_label)
+	idcol.add_child(mgr_row)
 	_club_sub2_label = Label.new()
 	_club_sub2_label.add_theme_font_size_override("font_size", 11)
 	_club_sub2_label.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -1305,6 +1314,11 @@ func _refresh_identity() -> void:
 	_ident_block.tooltip_text = tr("Open Squad — %s") % pc.get("name", "")
 	_club_name_label.text = str(pc.get("name", "—"))
 	_club_sub_label.text = str(pc.get("manager", ""))
+	# the manager's own procedural portrait (portraits piece)
+	for c2 in _mgr_face_holder.get_children():
+		c2.queue_free()
+	var mf := Portrait.avatar(Portrait.manager_seed(), 16, {"collar": Portrait.club_collar(pc)})
+	_mgr_face_holder.add_child(mf)
 	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), tr(GameState.world["meta"]["league_name"])]
 
 

@@ -1239,8 +1239,13 @@ func _refresh_scouting() -> void:
 		vb.add_theme_constant_override("separation", 4)
 		card.add_child(vb)
 		var name_row := HBoxContainer.new()
+		name_row.add_theme_constant_override("separation", 8)
 		vb.add_child(name_row)
-		name_row.add_child(_dlabel(s["name"], Color.WHITE, 15))
+		name_row.add_child(Portrait.avatar(str(s["name"]), 28,
+			{"collar": Portrait.club_collar(GameState.player_club())}))
+		var s_name := _dlabel(s["name"], Color.WHITE, 15)
+		s_name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		name_row.add_child(s_name)
 		var sp2 := Control.new()
 		sp2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		name_row.add_child(sp2)
@@ -1378,7 +1383,10 @@ func _refresh_scout_market() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
 		vb.add_child(row)
-		row.add_child(_dlabel(String(c["name"]), Color.WHITE, 13))
+		row.add_child(Portrait.avatar(String(c["name"]), 22))   # free agents: no club collar
+		var c_name := _dlabel(String(c["name"]), Color.WHITE, 13)
+		c_name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(c_name)
 		var sp := Control.new()
 		sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(sp)

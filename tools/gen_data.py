@@ -1007,12 +1007,18 @@ CLUBS = [
     ("Seafoam Islanders", "SEA"), ("Mt. Moon Comets", "MTM"), ("Safari Rangers", "SFR"),
     ("Victory Road Wanderers", "VRW"),
 ]
-FIRST = ["Akira","Brendan","Carla","Daisuke","Elena","Franco","Gwen","Hiro","Ines","Jonah",
-         "Kaede","Lucas","Mira","Noel","Olga","Pau","Quinn","Rosa","Silas","Tomoko",
-         "Uma","Viktor","Wanda","Ximena","Yuki","Zane","Marta","Ander","Leire","Iker"]
-LAST = ["Okada","Serrano","Voss","Ibarra","Kline","Duarte","Hoshino","Marchetti","Novak","Petit",
-        "Reyes","Sato","Tanaka","Ulloa","Vidal","Watanabe","Yamamoto","Zubiri","Fowler","Grant",
-        "Hale","Iwata","Joyce","Kimura","Lorca","Mendez","Nishida","Oteiza"]
+# Name canon (anime + games) — MUST stay in sync with shared/ui/portrait.gd
+# (FEM_FIRST + MASC_FIRST + LASTS), which infers face gender from first names.
+FIRST = ["Misty","Serena","Dawn","May","Iris","Lillie","Mallow","Lana","Bianca","Erika",
+         "Sabrina","Whitney","Jasmine","Clair","Cynthia","Lorelei","Karen","Flannery",
+         "Winona","Phoebe","Jessie","Daisy","Casey","Zoey","Alexa","Rhonda","Gabby","Mary",
+         "Ash","Brock","Gary","Tracey","Ritchie","Paul","Cilan","Clemont","Kiawe","Goh",
+         "Lance","Steven","Wallace","Blaine","Koga","Bruno","Falkner","Bugsy","Morty",
+         "Chuck","Pryce","Will","Volkner","Flint","Barry","Silver","Wally","James",
+         "Todd","Trevor"]
+LAST = ["Ketchum","Oak","Elm","Birch","Rowan","Juniper","Sycamore","Kukui","Magnolia",
+        "Cerise","Stone","Waterflower","Harrison","Maple","Berlitz","Fuji","Goodshow",
+        "Ivy","Westwood","Hale","Silph","Devon","Laramie","Snap"]
 ROLES = ["coach", "coach", "scout", "physio"]
 
 def person_name():

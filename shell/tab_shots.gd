@@ -5,12 +5,12 @@ extends Node
 ##
 ## Run:  Godot --path . res://shell/tab_shots.tscn
 
-const OUT := "artifacts/shell/fix2"
+const OUT := "artifacts/portraits-check"
 const SHOTS := [
-	["competition", "cup", "competition_cup"],
-	["competition", "fixtures", "competition_fixtures"],
 	["inbox", "board", "inbox_board"],
-	["squad", "Contracts", "squad_contracts"],
+	["training", "coaches", "training_coaches"],
+	["transfers", "scouting", "transfers_scouting"],
+	["competition", "table", "competition_profile"],
 ]
 
 

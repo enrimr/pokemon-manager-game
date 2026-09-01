@@ -33,6 +33,8 @@ var _club_panel: Control = null
 var _starter_panel: Control = null
 var _name_edit: LineEdit
 var _nick_edit: LineEdit
+var _face_holder: Control = null
+var _face_variant := 0
 var _back_btn: Button
 var _next_btn: Button
 var _step_chips: Array = []
@@ -268,6 +270,9 @@ func _do_start() -> void:
 	MenuFlow.start_career(str(_selected["id"]), _manager_name(), _nick_edit.text,
 		int(_starter.get("species_id", 0)),
 		_starter_panel.nickname() if _starter_panel != null else "")
+	if _face_variant != 0:   # chosen look follows the manager everywhere
+		GameState.world["meta"]["manager_face_variant"] = _face_variant
+		GameState.save_game()
 	AudioManager.play("confirm")
 	career_created.emit()
 	queue_free()
@@ -303,7 +308,7 @@ func _build_identity() -> Control:
 
 	col.add_child(_field_label(tr("Manager name")))
 	_name_edit = LineEdit.new()
-	_name_edit.placeholder_text = tr("e.g. Alex Serrano")
+	_name_edit.placeholder_text = tr("e.g. Ash Ketchum")
 	_name_edit.max_length = 40
 	_name_edit.custom_minimum_size.y = 42
 	_name_edit.text_changed.connect(func(_t): _refresh_footer())
@@ -318,7 +323,48 @@ func _build_identity() -> Control:
 	_nick_edit.custom_minimum_size.y = 42
 	_nick_edit.text_submitted.connect(func(_t): _on_next())
 	col.add_child(_nick_edit)
+
+	# portrait preview — seeded off the name, rerollable (portraits piece)
+	col.add_child(_vgap(14))
+	col.add_child(_field_label(tr("Your portrait")))
+	var prow := HBoxContainer.new()
+	prow.add_theme_constant_override("separation", 14)
+	col.add_child(prow)
+	_face_holder = Control.new()
+	_face_holder.custom_minimum_size = Vector2(84, 84)
+	prow.add_child(_face_holder)
+	var pcol := VBoxContainer.new()
+	pcol.alignment = BoxContainer.ALIGNMENT_CENTER
+	pcol.add_theme_constant_override("separation", 6)
+	prow.add_child(pcol)
+	var reroll := Button.new()
+	reroll.text = tr("New look")
+	reroll.custom_minimum_size = Vector2(140, 34)
+	reroll.pressed.connect(func():
+		_face_variant += 1
+		_refresh_face())
+	pcol.add_child(reroll)
+	var phint := Label.new()
+	phint.text = tr("The press, the boardroom and rival dugouts will all see this face.")
+	phint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	phint.custom_minimum_size.x = 300
+	phint.add_theme_font_size_override("font_size", 11)
+	phint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	pcol.add_child(phint)
+	_name_edit.text_changed.connect(func(_t): _refresh_face())
+	_refresh_face()
 	return center
+
+
+func _refresh_face() -> void:
+	if _face_holder == null:
+		return
+	for c in _face_holder.get_children():
+		c.queue_free()
+	var nm := _manager_name()
+	if nm == "":
+		nm = tr("The Manager")
+	_face_holder.add_child(Portrait.avatar(nm, 84, {"variant": _face_variant}))
 
 
 func _field_label(text: String) -> Label:
@@ -359,6 +405,9 @@ func _build_summary() -> Control:
 	col.add_child(_hline())
 
 	# who
+	var who_row := HBoxContainer.new()
+	who_row.add_theme_constant_override("separation", 12)
+	who_row.add_child(Portrait.avatar(_manager_name(), 40, {"variant": _face_variant}))
 	var who := Label.new()
 	var nick := _nick_edit.text.strip_edges()
 	who.text = (tr("%s “%s” — manager") % [_manager_name(), nick]) if nick != "" \
@@ -366,7 +415,9 @@ func _build_summary() -> Control:
 	who.add_theme_font_override("font", _font_bold)
 	who.add_theme_font_size_override("font_size", 17)
 	who.add_theme_color_override("font_color", Color.WHITE)
-	col.add_child(who)
+	who.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	who_row.add_child(who)
+	col.add_child(who_row)
 
 	# where
 	var club_row := HBoxContainer.new()

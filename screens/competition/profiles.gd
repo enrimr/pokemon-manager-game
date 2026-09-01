@@ -122,9 +122,17 @@ func _club_header(club: Dictionary, pos: int, row: Dictionary) -> Control:
 		name_row.add_child(yours)
 	v.add_child(name_row)
 	var cur: String = str(GameState.world["meta"].get("currency", "P$"))
-	v.add_child(UI.dim(I18n.t("Manager %s  ·  Reputation %d/20  ·  Balance %s%s  ·  Wage budget %s%s/m") % [
+	var mgr_row := HBoxContainer.new()
+	mgr_row.add_theme_constant_override("separation", 6)
+	var mgr_seed: String = Portrait.manager_seed() if GameState.is_player_club(str(club["id"])) \
+		else str(club["manager"])
+	mgr_row.add_child(Portrait.avatar(mgr_seed, 26, {"collar": Portrait.club_collar(club)}))
+	var mgr_line := UI.dim(I18n.t("Manager %s  ·  Reputation %d/20  ·  Balance %s%s  ·  Wage budget %s%s/m") % [
 		club["manager"], int(club["reputation"]), cur, _thousands(int(club["finances"]["balance"])),
-		cur, _thousands(int(club["finances"]["wage_budget"]))], 12))
+		cur, _thousands(int(club["finances"]["wage_budget"]))], 12)
+	mgr_line.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	mgr_row.add_child(mgr_line)
+	v.add_child(mgr_row)
 	h.add_child(v)
 
 	for stat in [
@@ -219,8 +227,10 @@ func _staff_card(club: Dictionary) -> PanelContainer:
 	for st in staff:
 		var h := HBoxContainer.new()
 		h.add_theme_constant_override("separation", 8)
+		h.add_child(Portrait.avatar(str(st["name"]), 22, {"collar": Portrait.club_collar(club)}))
 		var role := UI.dim(str(st["role"]).capitalize(), 12)
 		role.custom_minimum_size.x = 56
+		role.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(role)
 		var nm := UI.label(str(st["name"]), 13)
 		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL

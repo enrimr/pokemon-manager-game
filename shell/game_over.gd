@@ -71,10 +71,16 @@ func _build_header(box: VBoxContainer) -> void:
 	if _font_header != null:
 		kicker.add_theme_font_override("font", _font_header)
 	box.add_child(kicker)
+	var trow := HBoxContainer.new()
+	trow.add_theme_constant_override("separation", 16)
+	box.add_child(trow)
+	# the dismissed manager's own face (portraits piece)
+	trow.add_child(Portrait.avatar(Portrait.manager_seed(), 64))
 	var title := _lbl("SACKED", 34, TB.COL_BAD)
 	if _font_bold != null:
 		title.add_theme_font_override("font", _font_bold)
-	box.add_child(title)
+	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	trow.add_child(title)
 	box.add_child(_lbl(tr("%s have terminated your contract: %s.") % [
 		str(_info.get("club", tr("The club"))), tr(str(_info.get("reason", "results were not good enough")))],
 		15, TB.COL_TEXT, true))

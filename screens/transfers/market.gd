@@ -143,10 +143,13 @@ const EXT_SQUAD_SIZE := 13
 const EXT_PROSPECTS_DOMESTIC := 34
 const EXT_PROSPECTS_OVERSEAS := 24
 
-const SCOUT_FIRST := ["Marta", "Kenji", "Rosa", "Dario", "Yuki", "Petra", "Silas", "Noor",
-	"Ivo", "Carmen", "Talia", "Bruno", "Sachi", "Olek", "Ines", "Ramon", "Freya", "Goro"]
-const SCOUT_LAST := ["Okabe", "Ferreira", "Lindqvist", "Marchetti", "Sunada", "Volkov",
-	"Reyes", "Ashford", "Kimura", "Duarte", "Novak", "Grieve", "Tanaka", "Bellamy"]
+# Name canon (anime + games) — subset of the shared banks in shared/ui/portrait.gd
+# so Portrait gender inference stays correct for hired scouts.
+const SCOUT_FIRST := ["Misty", "Brock", "Dawn", "Tracey", "Jasmine", "Koga", "Winona",
+	"Falkner", "Phoebe", "Bruno", "Zoey", "Volkner", "Karen", "Silver", "Casey",
+	"Wally", "Lorelei", "Todd"]
+const SCOUT_LAST := ["Oak", "Elm", "Birch", "Rowan", "Juniper", "Sycamore", "Kukui",
+	"Stone", "Waterflower", "Fuji", "Ivy", "Laramie", "Silph", "Devon"]
 
 # Pacing of unsolicited incoming bids (days). Deadline pressure halves them.
 const COOLDOWN_ANY := 4             # league-wide: at most one cold bid every N days

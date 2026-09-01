@@ -369,7 +369,7 @@ func _make_row(m: Dictionary) -> Button:
 	strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(strip)
 
-	row.add_child(_cat_icon(meta, 30))
+	row.add_child(_msg_icon(m, meta, 30))
 
 	var mid := VBoxContainer.new()
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -439,6 +439,26 @@ func _make_row(m: Dictionary) -> Button:
 	right.add_child(flag_row)
 
 	return btn
+
+
+## Portraits piece: mail from a PERSON (rival manager, journalist, coach,
+## scout, assistant) shows their procedural face; institutional mail (board,
+## committee, clubs) keeps the category badge.
+func _msg_icon(m: Dictionary, meta: Dictionary, size_px: int) -> Control:
+	var cat: String = str(m.get("cat", "board"))
+	var sender: String = str(m.get("sender", ""))
+	if cat in ["media", "staff", "scout", "match"] and Portrait.is_person(sender):
+		var who := Portrait.person_key(sender)
+		var opts := {}
+		var club: Dictionary = Portrait.club_of_manager(who)
+		if club.is_empty() and cat != "media":
+			club = GameState.player_club()   # own staff wear the club's colours
+		if not club.is_empty():
+			opts["collar"] = Portrait.club_collar(club)
+		var av := Portrait.avatar(who, size_px, opts)
+		av.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		return av
+	return _cat_icon(meta, size_px)
 
 
 func _cat_icon(meta: Dictionary, size_px: int) -> Control:
@@ -544,7 +564,7 @@ func _render_reading_pane() -> void:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 12)
 	_read_pane.add_child(head)
-	head.add_child(_cat_icon(meta, 38))
+	head.add_child(_msg_icon(m, meta, 38))
 	var hv := VBoxContainer.new()
 	hv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hv.add_theme_constant_override("separation", 2)
@@ -931,6 +951,33 @@ func _kv_row(parent: VBoxContainer, key: String, value: String, val_color: Color
 func _board_confidence_panel(conf: Dictionary) -> Control:
 	var pv := _panel("BOARD CONFIDENCE")
 	var v: VBoxContainer = pv[1]
+
+	# the people behind the statements (portraits piece): stable per club
+	var pc := GameState.player_club()
+	var brow := HBoxContainer.new()
+	brow.add_theme_constant_override("separation", 18)
+	v.add_child(brow)
+	for member in Portrait.board_members(pc):
+		var mcol := HBoxContainer.new()
+		mcol.add_theme_constant_override("separation", 7)
+		mcol.add_child(Portrait.avatar(str(member["name"]), 34,
+			{"collar": Portrait.club_collar(pc), "age": int(member["age"])}))
+		var mtxt := VBoxContainer.new()
+		mtxt.alignment = BoxContainer.ALIGNMENT_CENTER
+		mtxt.add_theme_constant_override("separation", 0)
+		var mn := Label.new()
+		mn.text = str(member["name"])
+		mn.add_theme_font_size_override("font_size", 12)
+		mn.add_theme_color_override("font_color", Color("e8ebf5"))
+		mtxt.add_child(mn)
+		var mr := Label.new()
+		mr.text = tr("Chair") if str(member["role"]) == "Chair" else tr("Director")
+		mr.add_theme_font_size_override("font_size", 10)
+		mr.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		mtxt.add_child(mr)
+		mcol.add_child(mtxt)
+		brow.add_child(mcol)
+	v.add_child(HSeparator.new())
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
