@@ -290,7 +290,10 @@ func _make_shortlist_card(t: Dictionary) -> PanelContainer:
 		"club": where = String(market.club_of(t["club_id"])["short"])
 		"fa": where = tr("Free agent")
 		_: where = "Prospect"
-	head.add_child(_dlabel(tr("Lv %d · %s · %s") % [int(inst["level"]), where, tr(market.region_of(inst))], ThemeBuilder.COL_TEXT_DIM, 11, true))
+	var meta := _dlabel(tr("Lv %d · %s · %s") % [int(inst["level"]), where, tr(market.region_of(inst))], ThemeBuilder.COL_TEXT_DIM, 11, true)
+	meta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	meta.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	head.add_child(meta)
 
 	var cost_txt: String
 	if t["pool"] == "club":
