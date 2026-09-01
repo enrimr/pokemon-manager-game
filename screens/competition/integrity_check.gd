@@ -41,7 +41,10 @@ func _ready() -> void:
 
 
 ## Fresh career; sim until 30+ fixtures are played; verify; save.
+## Leaves its sim career in the main slot for the verify pass, so the player's
+## real save is parked at user://save.player.bak first (never overwritten).
 func _run_sim() -> void:
+	preload("res://tools/save_guard.gd").preserve_player_save()
 	GameState.new_career()
 	var guard := 0
 	while _played().size() < 34 and guard < 80:

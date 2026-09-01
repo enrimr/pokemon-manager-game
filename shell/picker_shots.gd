@@ -1,11 +1,14 @@
 extends Node
 ## Windowed screenshot proof for the new-career club picker (shell-owned).
 ## Run:  Godot --path . res://shell/picker_shots.tscn
+## Starts a test career — the player's real save is backed up and restored.
 
+const SaveGuard := preload("res://tools/save_guard.gd")
 const OUT := "artifacts/leagues"
 
 
 func _ready() -> void:
+	SaveGuard.backup()
 	var shell: Control = load("res://shell/main.tscn").instantiate()
 	add_child(shell)
 	await _frames(10)
@@ -30,7 +33,7 @@ func _ready() -> void:
 		printerr("PICKER SHOT ERROR: career did not start at the chosen Johto club")
 	_shot("%s/shell_johto_career.png" % dir)
 
-	GameState.delete_save()   # leave no test career behind
+	SaveGuard.restore()   # put the real save back / leave no test career behind
 	print("PICKER SHOTS OK")
 	get_tree().quit(0)
 

@@ -4,7 +4,10 @@ extends Node
 ## bleed between the leagues, and the screen-level competition switcher. Run:
 ##   Godot --headless --path . res://screens/competition/league_check.tscn
 ## Prints "LEAGUE CHECK OK" and exits 0 on success.
-## WARNING: starts a fresh career in user://save.json.
+## Starts a fresh career in user://save.json — the player's real save is
+## backed up on entry and restored on exit (SaveGuard).
+
+const SaveGuard := preload("res://tools/save_guard.gd")
 
 var _fails := 0
 
@@ -18,7 +21,9 @@ func _check(cond: bool, what: String) -> void:
 
 
 func _ready() -> void:
+	SaveGuard.backup()
 	await _run()
+	SaveGuard.restore()
 	if _fails == 0:
 		print("LEAGUE CHECK OK")
 	get_tree().quit(0 if _fails == 0 else 1)
@@ -139,4 +144,4 @@ func _run() -> void:
 	stats_tab._set_option(stats_tab._lg_sel, "")
 	var arows: Array = stats_tab._build_team_rows("all")
 	_check(arows.size() == 32, "all-regions merge shows all 32 clubs")
-	GameState.delete_save()
+	GameState.delete_save()   # SaveGuard.restore() puts the real save back

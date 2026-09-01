@@ -2,9 +2,12 @@ extends Node
 ## Screenshot-prep harness (competition piece, headless): builds a career
 ## sitting right AFTER the Championship Series Final + awards ceremony (the
 ## off-season week), so the playoff bracket, History tab and season-end header
-## can be captured. Writes user://save.json — the runner script backs up and
-## restores the player's real save around this.
+## can be captured. Writes user://save.json — the player's real save is parked
+## at user://save.player.bak first (SaveGuard.preserve_player_save, never
+## overwritten), because this harness MUST leave its dev career in the slot.
 ## Run: godot --headless --path . res://screens/competition/season_shot_prep.tscn
+
+const SaveGuard := preload("res://tools/save_guard.gd")
 
 
 func _ready() -> void:
@@ -12,6 +15,7 @@ func _ready() -> void:
 
 
 func _run() -> void:
+	SaveGuard.preserve_player_save()
 	GameState.delete_save()
 	GameState.new_career(20260830)
 	# real sims first so awards come from genuine match ratings
