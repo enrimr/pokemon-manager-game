@@ -3,8 +3,10 @@ extends Node
 ## Run:  Godot --path . res://menu/menu_shots.tscn
 ## Captures, in BOTH locales (en/es): the title with a save (Continue card),
 ## the title fresh (no save), and each onboarding step. Prints MENU SHOTS OK.
-## NOTE: mutates user://save.json — the runner backs it up and restores it.
+## NOTE: mutates user://save.json — guarded here with SaveGuard (backup on
+## entry, restore before every exit), so running it directly is always safe.
 
+const SaveGuard := preload("res://tools/save_guard.gd")
 const OUT := "artifacts/menu"
 
 var _fails := 0
@@ -15,6 +17,7 @@ func _ready() -> void:
 
 
 func _run() -> void:
+	SaveGuard.backup()
 	var dir := ProjectSettings.globalize_path("res://") + OUT
 	DirAccess.make_dir_recursive_absolute(dir)
 	for loc in ["es", "en"]:
@@ -22,7 +25,7 @@ func _run() -> void:
 		await _frames(2)
 
 		# 1) title WITH a save -> Continue card (club/manager/date/season)
-		GameState.world["meta"]["manager_name"] = "Alex Serrano" if loc == "en" else "María Oak"
+		GameState.world["meta"]["manager_name"] = "Ash Ketchum" if loc == "en" else "María Oak"
 		GameState.player_club()["manager"] = str(GameState.world["meta"]["manager_name"])
 		GameState.save_game()
 		var title: Control = await _fresh_title()
@@ -51,7 +54,7 @@ func _run() -> void:
 			printerr("MENU SHOT ERROR: onboarding did not open")
 			_fails += 1
 		else:
-			ob._name_edit.text = "Alex Serrano"
+			ob._name_edit.text = "Ash Ketchum"
 			ob._nick_edit.text = "The Prof"
 			ob._refresh_footer()
 			await _frames(6)
@@ -93,9 +96,9 @@ func _run() -> void:
 	shell.free()
 
 	# 6) prove the full start transaction wires the manager into the world
-	MenuFlow.start_career("club09", "Alex Serrano", "The Prof", 7, "Burbuja")
-	var ok := str(GameState.player_club().get("manager", "")) == "Alex Serrano" \
-		and str(GameState.world["meta"].get("manager_name", "")) == "Alex Serrano" \
+	MenuFlow.start_career("club09", "Ash Ketchum", "The Prof", 7, "Burbuja")
+	var ok := str(GameState.player_club().get("manager", "")) == "Ash Ketchum" \
+		and str(GameState.world["meta"].get("manager_name", "")) == "Ash Ketchum" \
 		and str(GameState.world["meta"].get("manager_nickname", "")) == "The Prof" \
 		and MenuFlow.has_save()
 	if not ok:
@@ -106,7 +109,7 @@ func _run() -> void:
 			or int(pro.academy_entry().get("species_id", 0)) != 7:
 		printerr("MENU SHOT ERROR: starter selection did not land in the academy")
 		_fails += 1
-	GameState.delete_save()   # runner restores the real save afterwards
+	SaveGuard.restore()   # put the player's real save back (or remove ours)
 
 	if _fails > 0:
 		printerr("MENU SHOTS FAILED: %d error(s)" % _fails)
