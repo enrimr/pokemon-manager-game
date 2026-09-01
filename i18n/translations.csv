@@ -5490,3 +5490,95 @@ In the academy,En la academia
 Holding pen,En espera de plaza
 Moved on,Ya no está en el club
  (recalled), (regresada)
+PRESS: %s sighted near %s!,PRENSA: ¡%s avistado cerca de %s!
+PRESS: %s sighted at %s!,PRENSA: ¡%s avistado en %s!
+PRESS: %s has resurfaced near %s!,PRENSA: ¡%s ha reaparecido cerca de %s!
+Trainers across the region are talking about one thing only: a confirmed sighting of the legendary %s. Field experts believe the trail stays warm for %d days at most — a club with the nerve (and the budget) could mount a special expedition before it goes cold. Capture chances are minimal. Nobody cares: this is %s.,En toda la región no se habla de otra cosa: un avistamiento confirmado del legendario %s. Los expertos de campo creen que el rastro seguirá caliente %d días como mucho — un club con nervio (y presupuesto) podría montar una expedición especial antes de que se enfríe. Las opciones de captura son mínimas. A nadie le importa: es %s.
+The trail has gone cold — the window is closed.,El rastro se ha enfriado: la ventana está cerrada.
+The special task force is already in the field.,El destacamento especial ya está sobre el terreno.
+The club's reputation (%d/20) is too low — %d needed before anyone sells us this trail.,La reputación del club (%d/20) es demasiado baja: hace falta %d para que alguien nos venda este rastro.
+Too far: the trail would be %d day(s) cold before the party arrived.,Demasiado lejos: el rastro llevaría %d día(s) frío cuando llegara el grupo.
+A hunt like this demands your very best leader (judging %d/20).,Una cacería así exige a tu mejor líder (juicio %d/20).
+Special expedition departs: the hunt for %s,Sale la expedición especial: la caza de %s
+"%s leads the club's finest into the field: destination %s, on the trail of %s (Lv %d). %s of travel, then every remaining day of the window on the hunt. Cost: %s, paid up front. The odds are terrible. Godspeed.","%s lidera a lo mejor del club sobre el terreno: destino %s, tras el rastro de %s (Nv %d). %s de viaje y, después, cada día restante de la ventana dedicado a la caza. Coste: %s, pagado por adelantado. Las probabilidades son terribles. Suerte."
+CONTACT — and this time the ring HELD. %s is secured. Nobody in this party will ever forget today.,CONTACTO — y esta vez el aro AGUANTÓ. %s está asegurado. Nadie de este grupo olvidará el día de hoy.
+"CONTACT — %s met our eyes, turned, and simply LEFT the region. The trail is dead. It will resurface somewhere, someday.","CONTACTO — %s nos sostuvo la mirada, se dio la vuelta y sencillamente ABANDONÓ la región. El rastro está muerto. Reaparecerá en alguna parte, algún día."
+CONTACT — we had %s in front of us and it slipped away. The party is shaking. We go again tomorrow.,CONTACTO — tuvimos a %s delante y se nos escurrió. El grupo está temblando. Mañana volvemos a intentarlo.
+"Cold trail today: prints, scorched ground, nothing more. The party holds its nerve.","Rastro frío hoy: huellas, tierra chamuscada y nada más. El grupo no pierde los nervios."
+Hunt report: %s — day %d,Parte de caza: %s — día %d
+Capture chance per contact: %d%%. Contacts so far: %d.,Probabilidad de captura por contacto: %d %%. Contactos hasta ahora: %d.
+the first-team squad,la plantilla del primer equipo
+the academy,la academia
+the holding pen (the club is full!),la sala de espera (¡el club está lleno!)
+HISTORY MADE: %s captures %s!,HISTORIA VIVA: ¡%s captura a %s!
+"Every front page in both regions carries the same photograph: %s, secured by %s after %d day(s) on the trail at %s. Veteran reporters are calling it the recruitment coup of the era. The legendary %s (Lv %d) joins %s. Nothing about this club will be seen the same way again — reputation +1.","Todas las portadas de ambas regiones llevan la misma fotografía: %s, asegurado por %s tras %d día(s) de rastreo en %s. Los periodistas veteranos ya lo llaman el fichaje del siglo. El legendario %s (Nv %d) se incorpora a %s. Nada en este club volverá a mirarse igual — reputación +1."
+The board is ecstatic,La directiva está eufórica
+"Boss — the chairman has been on the phone since dawn. Sponsors want signing ceremonies, season tickets are moving, and the dressing room is walking two feet off the ground. The board records its formal congratulations on the capture of %s. Days like this buy a manager years.","Jefe: el presidente lleva al teléfono desde el amanecer. Los patrocinadores quieren actos de presentación, los abonos vuelan y el vestuario camina a dos palmos del suelo. La directiva deja constancia de su felicitación formal por la captura de %s. Días así le compran años a un mánager."
+Field report: the hunt for %s is over,Parte de campo: la caza de %s ha terminado
+"%s files the closing report from %s: '%d contacts. On the last one it looked straight through us, and then it was gone — out of the region entirely. You do not corner a legend twice in one week.' The party is home. Watch the press: it WILL resurface.",%s firma el parte de cierre desde %s: «%d contactos. En el último nos miró como si no estuviéramos y desapareció — fuera de la región por completo. A una leyenda no se la acorrala dos veces en una semana». El grupo está en casa. Atentos a la prensa: VOLVERÁ a aparecer.
+"%s files the closing report from %s: 'We had it in front of us and it escaped. %d contacts, every snare tested, and the window closed on us. But we mapped its dens, its water, its habits — next time the trail opens, we start ahead.' Scouting knowledge banked: capture odds rise to %d%% on the next attempt.","%s firma el parte de cierre desde %s: «Lo tuvimos delante y escapó. %d contactos, cada trampa puesta a prueba, y la ventana se nos cerró encima. Pero cartografiamos sus guaridas, su agua, sus costumbres — la próxima vez que se abra el rastro, saldremos con ventaja». Conocimiento de campo archivado: las opciones de captura suben al %d %% en el próximo intento."
+PRESS: %s capture %s — the one that got away,PRENSA: %s captura a %s — el que dejamos escapar
+"The photographs are real: while the rest of the league sat on its hands, %s quietly mounted an expedition of their own — and this morning the legendary %s (Lv %d) trains in their colours. The window was open for everyone. Only one club walked through it.","Las fotografías son reales: mientras el resto de la liga se quedaba de brazos cruzados, %s montó en silencio su propia expedición — y esta mañana el legendario %s (Nv %d) entrena con sus colores. La ventana estaba abierta para todos. Solo un club la cruzó."
+%s captured by %s,%s capturado por %s
+%s captured by rivals %s,%s capturado por los rivales %s
+"%s hunted, not caught",%s cazado sin éxito
+%s escaped mid-hunt,%s escapó en plena cacería
+%s sighted,%s avistado
+Legendary,Legendario
+%s — window closes in %s,%s — la ventana se cierra en %s
+%s sighted — %s,%s avistado — %s
+window closes in %s,la ventana se cierra en %s
+Plan the hunt,Planear la caza
+LEGENDARY HUNT: %s,CAZA LEGENDARIA: %s
+Target,Objetivo
+Trail,Rastro
+Window,Ventana
+closes %s (%s left),se cierra el %s (quedan %s)
+Reputation gate,Requisito de reputación
+%d/20 required (club: %d),Se requiere %d/20 (club: %d)
+Behaviour,Comportamiento
+Roaming — it can flee the region mid-hunt and resurface later,Errante: puede huir de la región en plena caza y reaparecer más tarde
+%d previous attempt — its habits are charted,%d intento previo — sus costumbres están cartografiadas
+%d previous attempts — its habits are charted,%d intentos previos — sus costumbres están cartografiadas
+MOUNT THE SPECIAL EXPEDITION,MONTAR LA EXPEDICIÓN ESPECIAL
+ — not good enough for this trail, — no da la talla para este rastro
+"If captured, joins","Si se captura, va a"
+Mount the hunt,Montar la cacería
+"Patient stalking: fewer contacts, slightly better odds, and a roamer is less likely to bolt.","Acecho paciente: menos contactos, probabilidades algo mejores y menos riesgo de que un errante huya."
+"A steady hunt — a fair line between contacts, odds and spooking the target.","Una caza constante: equilibrio justo entre contactos, probabilidades y no espantar al objetivo."
+"Push for contact every day — more chances, worse odds, and a roamer may flee the region.","Buscar el contacto cada día: más ocasiones, peores probabilidades y un errante puede huir de la región."
+"Capture odds per contact: %d%%  (base %d%% · leader %+d · facility %+d · scouting %+d · approach %+d)
+Cost: %s flat — %s travel, then up to %s on the trail.
+Transfer budget available: %s","Probabilidad de captura por contacto: %d %%  (base %d %% · líder %+d · instalaciones %+d · exploración %+d · enfoque %+d)
+Coste: %s fijo — %s de viaje y luego hasta %s sobre el rastro.
+Presupuesto de fichajes disponible: %s"
+%d hunt day,%d día de caza
+%d hunt days,%d días de caza
+THE HUNT FOR %s — %s,LA CAZA DE %s — %s
+On the trail — day %d of %d,Sobre el rastro — día %d de %d
+Site %s · Odds %d%% · Contacts %d,Lugar %s · Prob. %d %% · Contactos %d
+LEGENDARY RECORD,REGISTRO LEGENDARIO
+S%d · %s CAPTURED (Lv %d) by %s — a day for the club museum,T%d · %s CAPTURADO (Nv %d) por %s — un día para el museo del club
+"S%d · Hunted %s — %d contact(s), it escaped. The files grew thicker.","T%d · Caza de %s — %d contacto(s), escapó. Los archivos engordaron."
+S%d · %s fled the region mid-hunt,T%d · %s huyó de la región en plena caza
+S%d · %s captured by rivals %s,T%d · %s capturado por los rivales %s
+S%d · %s sighted near %s,T%d · %s avistado cerca de %s
+LEGENDARY SIGHTING,AVISTAMIENTO LEGENDARIO
+"
+[color=#%s][b]Trail: %s   ·   Window closes %s (%d days)[/b][/color]","
+[color=#%s][b]Rastro: %s   ·   La ventana se cierra el %s (%d días)[/b][/color]"
+HISTORY MADE,HISTORIA VIVA
+CAPTURED BY A RIVAL,CAPTURADO POR UN RIVAL
+SPECIAL EXPEDITION,EXPEDICIÓN ESPECIAL
+"
+
+[color=#%s]Site %s   ·   Led by %s   ·   Capture odds %d%%[/color]","
+
+[color=#%s]Lugar %s   ·   Al mando %s   ·   Prob. de captura %d %%[/color]"
+Seafoam Islands — Deep Chambers,Islas Espuma — Cámaras profundas
+Abandoned Power Plant,Central Energía abandonada
+Ember Summit — Victory Road,Cumbre de Ascuas — Calle Victoria
+Cerulean Cave,Cueva Celeste
+Whirl Islands — Abyss,Islas Remolino — Abismo
+Tin Tower — Summit,Torre Hojalata — Cumbre
+"Day %d — %s","Día %d — %s"

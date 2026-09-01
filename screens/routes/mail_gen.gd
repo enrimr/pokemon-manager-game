@@ -19,8 +19,10 @@ const TIER_LABEL := {"common": "COMMON", "uncommon": "UNCOMMON", "rare": "RARE",
 const TIER_COL := {"common": "8b91a8", "uncommon": "4dc3e6", "rare": "b07be8", "special": "e8c15a"}
 
 
-func _go_routes() -> Dictionary:
-	return {"label": I18n.t("Go to Routes"), "screen": "routes"}
+## Deep link into the Routes screen. Field reports land on the live tracker,
+## return reports on History, everything else on the Route Map.
+func _go_routes(tab: String = "expeditions") -> Dictionary:
+	return {"label": I18n.t("Go to Routes"), "screen": "routes", "tab": tab}
 
 
 func render(msg: Dictionary) -> Dictionary:
@@ -31,12 +33,64 @@ func render(msg: Dictionary) -> Dictionary:
 			return _final(msg)
 		"plan":
 			return _plan(msg)
+		"intro":
+			return _plain(msg, true, "map")
+		"recall":
+			return _plain(msg, true, "expeditions")
+		"leg_sighting":
+			return _leg_sighting(msg)
+		"leg_success", "leg_ai":
+			return _leg_press(msg)
+		"leg_depart", "leg_day":
+			return _leg_hunt(msg, "expeditions")
+		"leg_final":
+			return _leg_hunt(msg, "history")
+		"leg_board":
+			return _plain(msg, false)
 	return _plain(msg, str(msg.get("exped_kind", "")) != "ai_news")
 
 
-func _plain(msg: Dictionary, with_action: bool = true) -> Dictionary:
+# ------------------------------------------------------------------ legendaries
+
+func _leg_banner(msg: Dictionary, tag: String, edge: String) -> String:
+	var b := "[table=1][cell border=#%s bg=#%s padding=12,8,12,8]" % [edge, CARD_BG]
+	b += "[color=#%s][font_size=12]%s[/font_size][/color]\n" % [C_GOLD, tag]
+	b += "[color=#%s][b][font_size=18]%s[/font_size][/b][/color]  %s" % [
+		C_WHITE, str(msg.get("leg_name", "?")), _type_chips(msg.get("types", []))]
+	b += "[/cell][/table]\n"
+	return b
+
+
+func _leg_sighting(msg: Dictionary) -> Dictionary:
+	var b := _leg_banner(msg, I18n.t("LEGENDARY SIGHTING"), C_GOLD)
+	b += "[color=#%s]%s[/color]\n" % [C_WHITE, str(msg.get("body", ""))]
+	b += I18n.t("\n[color=#%s][b]Trail: %s   ·   Window closes %s (%d days)[/b][/color]") % [
+		C_GOLD, str(msg.get("site", "?")),
+		I18n.pretty_date(str(msg.get("window_end", ""))), int(msg.get("window_days", 0))]
+	return {"bbcode": b, "actions": [_go_routes("map")], "banner": {}}
+
+
+func _leg_press(msg: Dictionary) -> Dictionary:
+	var ours := str(msg.get("exped_kind", "")) == "leg_success"
+	var b := _leg_banner(msg, I18n.t("HISTORY MADE") if ours else I18n.t("CAPTURED BY A RIVAL"),
+		C_GOLD if ours else C_BAD)
+	b += "[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", ""))]
+	return {"bbcode": b, "actions": [_go_routes("history")], "banner": {}}
+
+
+func _leg_hunt(msg: Dictionary, tab: String) -> Dictionary:
+	var b := _leg_banner(msg, I18n.t("SPECIAL EXPEDITION"), C_ACC)
+	b += "[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", ""))]
+	if msg.has("odds"):
+		b += I18n.t("\n\n[color=#%s]Site %s   ·   Led by %s   ·   Capture odds %d%%[/color]") % [
+			C_DIM, str(msg.get("site", "?")), str(msg.get("leader", "?")),
+			int(round(float(msg.get("odds", 0.0)) * 100.0))]
+	return {"bbcode": b, "actions": [_go_routes(tab)], "banner": {}}
+
+
+func _plain(msg: Dictionary, with_action: bool = true, tab: String = "expeditions") -> Dictionary:
 	return {"bbcode": "[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", ""))],
-		"actions": [_go_routes()] if with_action else [], "banner": {}}
+		"actions": [_go_routes(tab)] if with_action else [], "banner": {}}
 
 
 func _header(msg: Dictionary, tag: String) -> String:
@@ -67,8 +121,20 @@ func _plan(msg: Dictionary) -> Dictionary:
 func _day(msg: Dictionary) -> Dictionary:
 	var b := _header(msg, I18n.t("FIELD REPORT — DAY %d/%d") % [
 		int(msg.get("day_no", 1)), int(msg.get("field_days", 1))])
+	# The leader's prose (arrival notes, stalking stories, mishap excuses) IS
+	# the report — render it above the event cards. The body's final line is
+	# the gear summary the footer already covers, so it is dropped here.
+	var prose: Array = str(msg.get("body", "")).split("\n")
+	while not prose.is_empty() and str(prose.back()).strip_edges() == "":
+		prose.pop_back()
+	if not prose.is_empty():
+		prose.pop_back()  # trailing "Capture gear left ..." line
+	while not prose.is_empty() and str(prose.back()).strip_edges() == "":
+		prose.pop_back()
+	if not prose.is_empty():
+		b += "[color=#%s]%s[/color]\n" % [C_WHITE, "\n".join(prose)]
 	var events: Array = msg.get("events", [])
-	if events.is_empty():
+	if events.is_empty() and prose.is_empty():
 		b += I18n.t("[color=#%s]A quiet day in the field — no encounters logged.[/color]\n") % C_DIM
 	for ev in events:
 		var kind := str(ev.get("kind", "sight"))
@@ -122,4 +188,4 @@ func _final(msg: Dictionary) -> Dictionary:
 			AcademyService.star_text(clampf(float(int(cp.get("pot_max", 8))) / 4.0, 0.5, 5.0))]
 		b += "[/cell][/table]"
 	b += "\n\n[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", "")).split("\n")[0]]
-	return {"bbcode": b, "actions": [_go_routes()], "banner": {}}
+	return {"bbcode": b, "actions": [_go_routes("history")], "banner": {}}

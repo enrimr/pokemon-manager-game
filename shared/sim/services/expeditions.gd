@@ -60,6 +60,7 @@ var cooldowns: Dictionary = {}   # route_id -> ISO date the route reopens
 var holding: Array = []          # captured mons waiting for a free bed/slot
 var next_uid: int = 1
 var ai_captures: int = 0         # world-flavour counter (news, history tab)
+var intro_sent: bool = false     # one-time "expeditions explained" inbox mail
 var _used_lines: Array = []      # [{tid, date}] report-line recency registry
 var _gs = null
 
@@ -97,6 +98,7 @@ func on_career_started(gs) -> void:
 	_gs = gs
 	active = self
 	routes()
+	_send_intro(str(gs.current_date))
 	expeditions_changed.emit()
 
 
@@ -109,11 +111,26 @@ func on_day(gs, date: String) -> void:
 	expeditions_changed.emit()
 
 
+## One-time discoverability mail: explains expeditions with a deep link to the
+## Routes screen. Fires at career start (or on the first load of a save that
+## predates the feature) and never again.
+func _send_intro(date: String) -> void:
+	if intro_sent:
+		return
+	intro_sent = true
+	if not history.is_empty() or not expeditions.is_empty():
+		return  # veteran save — they clearly found the screen already
+	_post_mail(date, I18n.t("Scouting the wild routes — how expeditions work"),
+		I18n.t("Boss — the wild routes of Kanto and Johto are open for fieldwork. From the Routes screen you can send a party (led by a scout, a coach, or yourself) to any route for 3-14 field days: pick an approach, buy capture gear, and the party mails back a report every day. Captures come home to the academy or straight into the squad, and every field day charts the route's species for good. Costs come out of the transfer budget. Two parties can be out at once."),
+		{"cat": "scout", "exped_kind": "intro", "uid": "exped:intro"})
+
+
 func save_state() -> Dictionary:
 	return {"expeditions": expeditions.duplicate(true), "history": history.duplicate(true),
 		"knowledge": knowledge.duplicate(true), "cooldowns": cooldowns.duplicate(true),
 		"holding": holding.duplicate(true), "next_uid": next_uid,
-		"ai_captures": ai_captures, "used_lines": _used_lines.duplicate(true)}
+		"ai_captures": ai_captures, "intro_sent": intro_sent,
+		"used_lines": _used_lines.duplicate(true)}
 
 
 func load_state(state: Dictionary) -> void:
@@ -127,6 +144,7 @@ func load_state(state: Dictionary) -> void:
 	cooldowns = state.get("cooldowns", {})
 	next_uid = int(state.get("next_uid", 1))
 	ai_captures = int(state.get("ai_captures", 0))
+	intro_sent = bool(state.get("intro_sent", false))
 	_used_lines = state.get("used_lines", [])
 	for exp in expeditions:
 		_cast_expedition(exp)
@@ -141,7 +159,8 @@ func load_state(state: Dictionary) -> void:
 
 func _cast_expedition(exp: Dictionary) -> void:
 	for k in ["field_days", "attempts_bought", "attempts_left", "travel_days",
-			"days_in_phase", "day_no", "cost", "sightings", "near_misses", "mishaps"]:
+			"days_in_phase", "day_no", "cost", "sightings", "near_misses", "mishaps",
+			"refund"]:
 		exp[k] = int(exp.get(k, 0))
 	exp["leader_skill"] = int(exp.get("leader_skill", 10))
 	for m in exp.get("captures", []):
@@ -244,7 +263,11 @@ func leaders() -> Array:
 
 
 func _leader_busy(leader_id: String) -> bool:
-	return expeditions.any(func(e): return str(e["leader_id"]) == leader_id)
+	if expeditions.any(func(e): return str(e["leader_id"]) == leader_id):
+		return true
+	# legendary hunts (legendaries.gd) borrow the same leader pool
+	var leg: RefCounted = LegendaryService.active
+	return leg != null and leg.leader_on_hunt(leader_id)
 
 
 func _manager_name() -> String:
@@ -306,7 +329,7 @@ func plan(route_id: String, field_days: int, leader_id: String, approach: String
 		"dest": dest, "phase": "travel_out", "days_in_phase": 0, "day_no": 0,
 		"travel_days": travel, "started": str(_gs.current_date), "cost": cost,
 		"sightings": 0, "near_misses": 0, "captures": [], "log": [],
-		"special_seen": false, "mishaps": 0,
+		"special_seen": false, "mishaps": 0, "recalled": false, "refund": 0,
 	}
 	next_uid += 1
 	expeditions.append(exp)
@@ -331,6 +354,42 @@ func _depart_body(exp: Dictionary, r: Dictionary) -> String:
 		I18n.t(str(r["region"]).capitalize()), int(exp["travel_days"]),
 		AcademyService.format_money(int(exp["cost"])), int(exp["attempts_bought"]),
 		I18n.t(str(exp["approach"]).capitalize())]
+
+
+## Order a party home early. Returns "" or an error string.
+## Cost implication: days already paid are sunk; unused capture gear is sold
+## back to the outfitter at HALF price (credited to balance + transfer budget).
+func recall(exp_id: String) -> String:
+	var exp := find_expedition(exp_id)
+	if exp.is_empty():
+		return I18n.t("That party is no longer in the field.")
+	if str(exp["phase"]) == "travel_home":
+		return I18n.t("The party is already on its way home.")
+	var refund := recall_refund(exp)
+	if refund > 0:
+		var fin: Dictionary = _gs.player_club()["finances"]
+		fin["balance"] = int(fin["balance"]) + refund
+		fin["transfer_budget"] = int(fin.get("transfer_budget", 0)) + refund
+		_gs.inventory_changed.emit()
+	exp["attempts_left"] = 0
+	exp["recalled"] = true
+	exp["refund"] = refund
+	var covered := int(exp["days_in_phase"]) if str(exp["phase"]) == "travel_out" else int(exp["travel_days"])
+	exp["phase"] = "travel_home"
+	exp["days_in_phase"] = int(exp["travel_days"]) - maxi(1, covered)
+	_log(exp, "recall", I18n.t("Recall order received — the party breaks camp and turns for home."))
+	_post_mail(_gs.current_date, I18n.t("Recall order sent to %s") % I18n.t(str(exp["route_name"])),
+		I18n.t("%s acknowledges the recall: the party breaks camp at %s and heads home. Unused capture gear sold back for %s; the days already funded are not recoverable.") % [
+			str(exp["leader"]), I18n.t(str(exp["route_name"])), AcademyService.format_money(refund)],
+		{"cat": "scout", "exped_kind": "recall",
+		"uid": "exped:recall:%s" % str(exp["id"]), "route_name": str(exp["route_name"])})
+	expeditions_changed.emit()
+	return ""
+
+
+## What a recall would hand back right now (half the unspent gear).
+func recall_refund(exp: Dictionary) -> int:
+	return int(exp["attempts_left"]) * ATTEMPT_COST / 2
 
 
 # ------------------------------------------------------------------ daily tick
@@ -490,8 +549,9 @@ func _arrive_home(exp: Dictionary, date: String) -> void:
 	cooldowns[str(exp["route_id"])] = Season.date_add(date, COOLDOWN_DAYS)
 	var placements: Array = []
 	for mon in exp["captures"]:
-		placements.append({"species": str(mon["species"]), "level": int(mon["level"]),
-			"tier": str(mon["tier"]), "where": _deliver(mon, str(exp["dest"]), date)})
+		placements.append({"uid": str(mon["uid"]), "species": str(mon["species"]),
+			"level": int(mon["level"]), "tier": str(mon["tier"]),
+			"where": _deliver(mon, str(exp["dest"]), date)})
 	if str(exp["leader_id"]) == "manager":
 		for m in _gs.player_club()["squad"]:
 			m["morale"] = clampi(int(m.get("morale", 70)) + 1, 0, 100)
@@ -503,6 +563,7 @@ func _arrive_home(exp: Dictionary, date: String) -> void:
 		"field_days": int(exp["field_days"]), "cost": int(exp["cost"]),
 		"sightings": int(exp["sightings"]), "near_misses": int(exp["near_misses"]),
 		"mishaps": int(exp["mishaps"]),
+		"recalled": bool(exp.get("recalled", false)),
 		"captures": placements,
 	}
 	history.push_front(entry)
@@ -795,6 +856,8 @@ func _day_body(exp: Dictionary, events: Array, date: String) -> String:
 
 func _final_body(exp: Dictionary, placements: Array) -> String:
 	var lines: Array = []
+	if bool(exp.get("recalled", false)):
+		lines.append(I18n.t("The party returned early on your recall order (%s recovered from unused gear).") % AcademyService.format_money(int(exp.get("refund", 0))))
 	lines.append(I18n.t("%s is back from %s: %d days in the field, %d sightings, %d capture(s), %d near miss(es). Total cost %s.") % [
 		str(exp["leader"]), I18n.t(str(exp["route_name"])), int(exp["field_days"]),
 		int(exp["sightings"]), placements.size(), int(exp["near_misses"]),

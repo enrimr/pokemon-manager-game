@@ -9,6 +9,8 @@ extends Control
 
 const TB := preload("res://shared/theme/theme_builder.gd")
 const Exped := preload("res://shared/sim/services/expeditions.gd")
+const Leg := preload("res://shared/sim/services/legendaries.gd")
+const COL_LEGEND := Color("e8c15a")
 
 const TIER_COL := {"common": Color("8b91a8"), "uncommon": Color("4dc3e6"),
 	"rare": Color("b07be8"), "special": Color("e8c15a")}
@@ -39,6 +41,8 @@ var _att_spin: SpinBox
 var _dest_opt: OptionButton
 var _quote_lbl: Label
 var _start_btn: Button
+var _leg_banner_box: VBoxContainer   # legendary sighting banner (map tab)
+var _lsvc: RefCounted = null
 
 
 func _ready() -> void:
@@ -79,6 +83,15 @@ func _svc_ref() -> RefCounted:
 		if not _svc.expeditions_changed.is_connected(_refresh):
 			_svc.expeditions_changed.connect(_refresh)
 	return _svc
+
+
+func _leg_ref() -> RefCounted:
+	var s: RefCounted = Leg.active
+	if s != null and s != _lsvc:
+		_lsvc = s
+		if not _lsvc.legendaries_changed.is_connected(_refresh):
+			_lsvc.legendaries_changed.connect(_refresh)
+	return _lsvc
 
 
 func _select_tab(id: String) -> void:
@@ -126,6 +139,10 @@ func _build_map_tab() -> Control:
 	left.size_flags_stretch_ratio = 1.75
 	left.add_theme_constant_override("separation", 6)
 	main.add_child(left)
+
+	_leg_banner_box = VBoxContainer.new()
+	_leg_banner_box.add_theme_constant_override("separation", 4)
+	left.add_child(_leg_banner_box)
 
 	var regions := HBoxContainer.new()
 	regions.add_theme_constant_override("separation", 4)
@@ -203,7 +220,13 @@ func _intel_text(r: Dictionary, tier: int) -> String:
 	var pool: Dictionary = r.get("pool", {})
 	match tier:
 		0:
-			return tr("Unsurveyed — send a party to chart it")
+			# Public guidebooks give counts, never names — enough to compare
+			# routes at a glance without spoiling the charting game.
+			var n_c := (pool.get("common", []) as Array).size()
+			var n_u := (pool.get("uncommon", []) as Array).size()
+			var n_r := (pool.get("rare", []) as Array).size() + (pool.get("special", []) as Array).size()
+			return tr("Unsurveyed — guides list %d species (%d common · %d uncommon · %d rare)") % [
+				n_c + n_u + n_r, n_c, n_u, n_r]
 		1:
 			return _species_names(pool.get("common", [])) + tr("  · more to chart")
 		2:
@@ -232,6 +255,7 @@ func _refresh_tree() -> void:
 		(_region_btns[k] as Button).button_pressed = k == region
 	_tree.clear()
 	var root := _tree.create_item()
+	_add_leg_rows(root, region)
 	for r in Exped.region_routes(region):
 		var rid := str(r["id"])
 		var tier: int = svc.knowledge_tier(rid) if svc != null else 0
@@ -273,6 +297,85 @@ func _refresh_tree() -> void:
 		if first != null:
 			first.select(0)
 			_sel_route = str(first.get_metadata(0))
+
+
+## Legendary sighting sites: at the TOP of the list, only while a window is open.
+func _add_leg_rows(root: TreeItem, region: String) -> void:
+	var lsvc := _leg_ref()
+	if lsvc != null:
+		for s in lsvc.active_sightings():
+			var leg: Dictionary = Leg.legendary(str(s["leg_id"]))
+			if str(leg.get("region", "")) != region:
+				continue
+			var lit := _tree.create_item(root)
+			var lid := "leg:" + str(s["uid"])
+			lit.set_metadata(0, lid)
+			lit.set_text(0, str(leg["name"]))
+			lit.set_icon(0, GlyphIcons.tex("star", 12, COL_LEGEND))
+			lit.set_custom_color(0, COL_LEGEND)
+			lit.set_text(1, tr("Legendary"))
+			lit.set_custom_color(1, COL_LEGEND)
+			lit.set_text(2, str(int(leg["level"])))
+			lit.set_custom_color(2, COL_LEGEND)
+			lit.set_text(3, tr("%s — window closes in %s") % [lsvc.site_label(s),
+				I18n.np(lsvc.days_left(s), "%d day", "%d days")])
+			lit.set_custom_color(3, COL_LEGEND)
+			lit.set_text(4, I18n.np(lsvc.travel_days_to(str(s["leg_id"])), "%d day", "%d days"))
+			lit.set_custom_color(4, TB.COL_TEXT_DIM)
+			lit.set_text(5, AcademyService.format_money(lsvc.hunt_cost(str(s["leg_id"]))))
+			lit.set_custom_color(5, TB.COL_TEXT_DIM)
+			if _sel_route == lid:
+				lit.select(0)
+
+
+## Highlighted banner above the route list: one card per open sighting window
+## in the world (both regions — this is league-wide front-page news).
+func _refresh_leg_banner() -> void:
+	if _leg_banner_box == null:
+		return
+	for c in _leg_banner_box.get_children():
+		c.queue_free()
+	var lsvc := _leg_ref()
+	if lsvc == null:
+		return
+	for s in lsvc.active_sightings():
+		var leg: Dictionary = Leg.legendary(str(s["leg_id"]))
+		var panel := PanelContainer.new()
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(COL_LEGEND, 0.10)
+		sb.border_color = COL_LEGEND
+		sb.set_border_width_all(1)
+		sb.set_content_margin_all(8)
+		panel.add_theme_stylebox_override("panel", sb)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		panel.add_child(row)
+		row.add_child(GlyphIcons.icon("star", 15, COL_LEGEND))
+		var txt := Label.new()
+		txt.text = tr("%s sighted — %s") % [str(leg["name"]), lsvc.site_label(s)]
+		txt.add_theme_color_override("font_color", COL_LEGEND)
+		txt.add_theme_font_size_override("font_size", 14)
+		row.add_child(txt)
+		var cnt := Label.new()
+		cnt.text = tr("window closes in %s") % I18n.np(lsvc.days_left(s), "%d day", "%d days")
+		cnt.add_theme_color_override("font_color", TB.COL_WARN)
+		cnt.add_theme_font_size_override("font_size", 12)
+		row.add_child(cnt)
+		var spacer := Control.new()
+		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(spacer)
+		var go := Button.new()
+		go.text = tr("Plan the hunt")
+		go.icon = GlyphIcons.tex("star", 12, COL_LEGEND)
+		go.focus_mode = Control.FOCUS_NONE
+		var uid := str(s["uid"])
+		var region := str(leg.get("region", "kanto"))
+		go.pressed.connect(func() -> void:
+			_region = region
+			_sel_route = "leg:" + uid
+			_refresh())
+		row.add_child(go)
+		_leg_banner_box.add_child(panel)
 
 
 func _on_route_selected() -> void:
@@ -325,6 +428,9 @@ func _kv(box: VBoxContainer, key: String, value: String, val_col: Color = TB.COL
 func _refresh_planner() -> void:
 	for c in _planner.get_children():
 		c.queue_free()
+	if _sel_route.begins_with("leg:"):
+		_refresh_hunt_planner(_sel_route.substr(4))
+		return
 	var svc := _svc_ref()
 	var r := Exped.route(_sel_route)
 	if r.is_empty() or svc == null:
@@ -391,6 +497,8 @@ func _refresh_planner() -> void:
 	var roles := {"scout": tr("Scout"), "coach": tr("Coach"), "manager": tr("Manager (you)")}
 	for l in svc.leaders():
 		var tag := tr(" — in the field") if bool(l["busy"]) else ""
+		if str(l["role"]) == "manager" and tag == "":
+			tag = tr(" — squad morale dips while you are away")
 		_leader_opt.add_item("%s · %s %d/20%s" % [str(l["name"]),
 			str(roles.get(str(l["role"]), l["role"])), int(l["skill"]), tag])
 		_leader_ids.append(str(l["id"]))
@@ -514,12 +622,34 @@ func _refresh_quote() -> void:
 	var travel: int = svc.travel_days_to(r)
 	var fin: Dictionary = GameState.player_club()["finances"]
 	var spendable: int = mini(int(fin["balance"]), int(fin.get("transfer_budget", 0)))
-	var ok := spendable >= cost
-	_quote_lbl.text = tr("Total: %s  (%d days away incl. %d travel each way)\nTransfer budget available: %s") % [
+	var quote := tr("Total: %s  (%d days away incl. %d travel each way)\nTransfer budget available: %s") % [
 		AcademyService.format_money(cost), days + travel * 2, travel,
 		AcademyService.format_money(spendable)]
-	_quote_lbl.add_theme_color_override("font_color", TB.COL_GOOD if ok else TB.COL_BAD)
+	var lid := ""
+	if _leader_opt.selected >= 0 and _leader_opt.selected < _leader_ids.size():
+		lid = str(_leader_ids[_leader_opt.selected])
+	if lid == "manager":
+		quote += "\n" + tr("You lead in person: squad morale -%d while you are away, and the board takes note.") % Exped.MANAGER_MORALE_COST
+	_quote_lbl.text = quote
+	# Every blocker disables the big button WITH its reason spelled out —
+	# the player should never have to click to find out why they can't go.
+	var reason := ""
+	if (svc.expeditions as Array).size() >= Exped.MAX_ACTIVE:
+		reason = tr("Both expedition parties are already in the field.")
+	elif not svc.expedition_on(_sel_route).is_empty():
+		reason = tr("A party is already working that route.")
+	elif svc.cooldown_until(_sel_route) != "":
+		reason = tr("That route needs to settle — open again on %s.") % I18n.pretty_date(svc.cooldown_until(_sel_route))
+	elif lid == "" or _leader_opt.is_item_disabled(_leader_opt.selected):
+		reason = tr("That leader is already out on an expedition.")
+	elif spendable < cost:
+		reason = tr("Not enough transfer budget for this plan — trim the days or the gear.")
+	var ok := reason == ""
+	_quote_lbl.add_theme_color_override("font_color", TB.COL_GOOD if spendable >= cost else TB.COL_BAD)
 	_start_btn.disabled = not ok
+	_start_btn.tooltip_text = reason
+	_err.text = reason
+	_err.add_theme_color_override("font_color", TB.COL_WARN)
 
 
 func _launch() -> void:
@@ -533,6 +663,199 @@ func _launch() -> void:
 	var err: String = svc.plan(_sel_route, int(_dur_slider.value), leader_id,
 		_approach, int(_att_spin.value), dest)
 	if err != "":
+		_err.add_theme_color_override("font_color", TB.COL_BAD)
+		_err.text = err
+		return
+	_err.text = ""
+	GameState.save_game()
+	_select_tab("expeditions")
+
+
+# ------------------------------------------------------------------ hunt planner
+# Fixed-target mode: a legendary sighting site. No duration slider, no gear
+# spinner — a flat premium cost, the best leader, an approach and a prayer.
+
+func _refresh_hunt_planner(uid: String) -> void:
+	var lsvc := _leg_ref()
+	var svc := _svc_ref()
+	if lsvc == null or svc == null:
+		return
+	var s: Dictionary = lsvc.find_sighting(uid)
+	if s.is_empty():
+		return
+	var leg: Dictionary = Leg.legendary(str(s["leg_id"]))
+	var sp: Dictionary = DataStore.species(int(leg["species_id"]))
+
+	var doss := _panel(tr("LEGENDARY HUNT: %s") % str(leg["name"]).to_upper())
+	_planner.add_child(doss[0])
+	var dbox: VBoxContainer = doss[1]
+	_kv(dbox, tr("Target"), "%s · %s · Lv %d" % [str(leg["name"]),
+		I18n.types_join(sp.get("types", [])), int(leg["level"])], COL_LEGEND)
+	_kv(dbox, tr("Trail"), lsvc.site_label(s), COL_LEGEND)
+	_kv(dbox, tr("Window"), tr("closes %s (%s left)") % [I18n.pretty_date(str(s["window_end"])),
+		I18n.np(lsvc.days_left(s), "%d day", "%d days")], TB.COL_WARN)
+	_kv(dbox, tr("Reputation gate"), tr("%d/20 required (club: %d)") % [
+		int(leg["min_rep"]), int(GameState.player_club().get("reputation", 10))],
+		TB.COL_GOOD if int(GameState.player_club().get("reputation", 10)) >= int(leg["min_rep"]) else TB.COL_BAD)
+	if bool(leg.get("roaming", false)):
+		_kv(dbox, tr("Behaviour"), tr("Roaming — it can flee the region mid-hunt and resurface later"), TB.COL_WARN)
+	var prior: int = int(lsvc.attempts.get(str(s["leg_id"]), 0))
+	if prior > 0:
+		_kv(dbox, tr("Scouting"), I18n.np(prior, "%d previous attempt — its habits are charted", "%d previous attempts — its habits are charted"), TB.COL_GOOD)
+
+	var plan := _panel(tr("MOUNT THE SPECIAL EXPEDITION"))
+	_planner.add_child(plan[0])
+	var pbox: VBoxContainer = plan[1]
+
+	var lrow := HBoxContainer.new()
+	var lkey := Label.new()
+	lkey.text = tr("Leader")
+	lkey.custom_minimum_size.x = 120
+	lkey.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+	lkey.add_theme_font_size_override("font_size", 12)
+	lrow.add_child(lkey)
+	_leader_opt = OptionButton.new()
+	_leader_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_leader_ids.clear()
+	var best: int = lsvc.best_leader_skill()
+	var roles := {"scout": tr("Scout"), "coach": tr("Coach"), "manager": tr("Manager (you)")}
+	for l in svc.leaders():
+		var tag := ""
+		if bool(l["busy"]):
+			tag = tr(" — in the field")
+		elif int(l["skill"]) < best:
+			tag = tr(" — not good enough for this trail")
+		_leader_opt.add_item("%s · %s %d/20%s" % [str(l["name"]),
+			str(roles.get(str(l["role"]), l["role"])), int(l["skill"]), tag])
+		_leader_ids.append(str(l["id"]))
+		if bool(l["busy"]) or int(l["skill"]) < best:
+			_leader_opt.set_item_disabled(_leader_opt.item_count - 1, true)
+	for i in _leader_ids.size():
+		if not _leader_opt.is_item_disabled(i):
+			_leader_opt.select(i)
+			break
+	_leader_opt.item_selected.connect(func(_i): _refresh_hunt_quote(uid))
+	lrow.add_child(_leader_opt)
+	pbox.add_child(lrow)
+
+	var arow := HBoxContainer.new()
+	var akey := Label.new()
+	akey.text = tr("Approach")
+	akey.custom_minimum_size.x = 120
+	akey.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+	akey.add_theme_font_size_override("font_size", 12)
+	arow.add_child(akey)
+	_approach_btns.clear()
+	for ap in [["cautious", "Cautious"], ["balanced", "Balanced"], ["aggressive", "Aggressive"]]:
+		var b := Button.new()
+		b.text = tr(ap[1])
+		b.toggle_mode = true
+		b.focus_mode = Control.FOCUS_NONE
+		b.button_pressed = _approach == ap[0]
+		b.pressed.connect(func() -> void:
+			_approach = ap[0]
+			for k in _approach_btns:
+				(_approach_btns[k] as Button).button_pressed = k == _approach
+			_refresh_hunt_quote(uid))
+		arow.add_child(b)
+		_approach_btns[ap[0]] = b
+	pbox.add_child(arow)
+	var ap_hint := Label.new()
+	ap_hint.name = "HuntApproachHint"
+	ap_hint.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+	ap_hint.add_theme_font_size_override("font_size", 11)
+	ap_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pbox.add_child(ap_hint)
+
+	var drow := HBoxContainer.new()
+	var dkey := Label.new()
+	dkey.text = tr("If captured, joins")
+	dkey.custom_minimum_size.x = 120
+	dkey.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+	dkey.add_theme_font_size_override("font_size", 12)
+	drow.add_child(dkey)
+	_dest_opt = OptionButton.new()
+	_dest_opt.add_item(tr("First-team squad"))
+	_dest_opt.add_item(tr("Academy (develop them)"))
+	drow.add_child(_dest_opt)
+	pbox.add_child(drow)
+
+	_quote_lbl = Label.new()
+	_quote_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_quote_lbl.add_theme_font_size_override("font_size", 12)
+	pbox.add_child(_quote_lbl)
+
+	_start_btn = Button.new()
+	_start_btn.text = tr("Mount the hunt")
+	_start_btn.icon = GlyphIcons.tex("star", 13, COL_LEGEND)
+	_start_btn.pressed.connect(_launch_hunt.bind(uid))
+	pbox.add_child(_start_btn)
+
+	_err = Label.new()
+	_err.add_theme_color_override("font_color", TB.COL_WARN)
+	_err.add_theme_font_size_override("font_size", 12)
+	_err.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pbox.add_child(_err)
+	_refresh_hunt_quote(uid)
+
+
+const HUNT_APPROACH_HINTS := {
+	"cautious": "Patient stalking: fewer contacts, slightly better odds, and a roamer is less likely to bolt.",
+	"balanced": "A steady hunt — a fair line between contacts, odds and spooking the target.",
+	"aggressive": "Push for contact every day — more chances, worse odds, and a roamer may flee the region.",
+}
+
+
+func _refresh_hunt_quote(uid: String) -> void:
+	var lsvc := _leg_ref()
+	if lsvc == null or _quote_lbl == null or not is_instance_valid(_quote_lbl):
+		return
+	var s: Dictionary = lsvc.find_sighting(uid)
+	if s.is_empty():
+		return
+	var leg: Dictionary = Leg.legendary(str(s["leg_id"]))
+	var hint := _planner.find_child("HuntApproachHint", true, false)
+	if hint != null:
+		(hint as Label).text = tr(HUNT_APPROACH_HINTS[_approach])
+	var lid := ""
+	var lskill := 10
+	if _leader_opt.selected >= 0 and _leader_opt.selected < _leader_ids.size():
+		lid = str(_leader_ids[_leader_opt.selected])
+	var svc := _svc_ref()
+	for l in svc.leaders():
+		if str(l["id"]) == lid:
+			lskill = int(l["skill"])
+	var q: Dictionary = lsvc.odds_quote(str(s["leg_id"]), lskill, _approach)
+	var cost: int = lsvc.hunt_cost(str(s["leg_id"]))
+	var travel: int = lsvc.travel_days_to(str(s["leg_id"]))
+	var hunt_days: int = maxi(0, lsvc.days_left(s) - travel)
+	var fin: Dictionary = GameState.player_club()["finances"]
+	var spendable: int = mini(int(fin["balance"]), int(fin.get("transfer_budget", 0)))
+	_quote_lbl.text = tr("Capture odds per contact: %d%%  (base %d%% · leader %+d · facility %+d · scouting %+d · approach %+d)\nCost: %s flat — %s travel, then up to %s on the trail.\nTransfer budget available: %s") % [
+		int(round(float(q["total"]) * 100.0)), int(round(float(q["base"]) * 100.0)),
+		int(round(float(q["skill"]) * 100.0)), int(round(float(q["facility"]) * 100.0)),
+		int(round(float(q["scouting"]) * 100.0)), int(round(float(q["approach"]) * 100.0)),
+		AcademyService.format_money(cost), I18n.np(travel, "%d day", "%d days"),
+		I18n.np(hunt_days, "%d hunt day", "%d hunt days"),
+		AcademyService.format_money(spendable)]
+	var reason: String = lsvc.hunt_blocker(uid, lid)
+	_quote_lbl.add_theme_color_override("font_color", TB.COL_GOOD if spendable >= cost else TB.COL_BAD)
+	_start_btn.disabled = reason != ""
+	_start_btn.tooltip_text = reason
+	_err.text = reason
+
+
+func _launch_hunt(uid: String) -> void:
+	var lsvc := _leg_ref()
+	if lsvc == null:
+		return
+	var lid := ""
+	if _leader_opt.selected >= 0 and _leader_opt.selected < _leader_ids.size():
+		lid = str(_leader_ids[_leader_opt.selected])
+	var dest := "squad" if _dest_opt.selected == 0 else "academy"
+	var err: String = lsvc.start_hunt(uid, lid, _approach, dest)
+	if err != "":
+		_err.add_theme_color_override("font_color", TB.COL_BAD)
 		_err.text = err
 		return
 	_err.text = ""
@@ -558,11 +881,15 @@ func _refresh_expeditions() -> void:
 	var svc := _svc_ref()
 	if svc == null:
 		return
-	if (svc.expeditions as Array).is_empty():
+	var lsvc := _leg_ref()
+	var hunt_live: bool = lsvc != null and not (lsvc.hunt as Dictionary).is_empty()
+	if (svc.expeditions as Array).is_empty() and not hunt_live:
 		var empty := Label.new()
 		empty.text = tr("No parties in the field. Plan an expedition from the Route Map tab.")
 		empty.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
 		_exp_box.add_child(empty)
+	if hunt_live:
+		_exp_box.add_child(_hunt_card(lsvc.hunt))
 	for exp in svc.expeditions:
 		_exp_box.add_child(_expedition_card(exp))
 	if not (svc.holding as Array).is_empty():
@@ -611,6 +938,14 @@ func _expedition_card(exp: Dictionary) -> Control:
 	stats.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
 	stats.add_theme_font_size_override("font_size", 12)
 	head.add_child(stats)
+	if str(exp["phase"]) != "travel_home":
+		var rc := Button.new()
+		rc.text = tr("Recall early")
+		rc.icon = GlyphIcons.tex("undo", 12, TB.COL_WARN)
+		rc.focus_mode = Control.FOCUS_NONE
+		rc.tooltip_text = tr("Order the party home — funded days are lost, unused gear is refunded at half price.")
+		rc.pressed.connect(_confirm_recall.bind(exp))
+		head.add_child(rc)
 	box.add_child(head)
 
 	var prog := ProgressBar.new()
@@ -669,6 +1004,96 @@ func _expedition_card(exp: Dictionary) -> Control:
 	return card[0]
 
 
+## Live card for the special legendary expedition (fixed target, no recall —
+## nobody turns back from a trail like this).
+func _hunt_card(h: Dictionary) -> Control:
+	var card := _panel("")
+	var box: VBoxContainer = card[1]
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 8)
+	head.add_child(GlyphIcons.icon("star", 16, COL_LEGEND))
+	var title := Label.new()
+	title.text = tr("THE HUNT FOR %s — %s") % [str(h["leg_name"]).to_upper(), str(h["leader"])]
+	title.add_theme_color_override("font_color", COL_LEGEND)
+	title.add_theme_font_size_override("font_size", 15)
+	head.add_child(title)
+	var phase := Label.new()
+	match str(h["phase"]):
+		"travel_out":
+			phase.text = tr("Travelling out (day %d of %d)") % [int(h["days_in_phase"]) + 1, int(h["travel_days"])]
+		"travel_home":
+			phase.text = tr("Travelling home (day %d of %d)") % [int(h["days_in_phase"]) + 1, int(h["travel_days"])]
+		_:
+			phase.text = tr("On the trail — day %d of %d") % [int(h["day_no"]), int(h["hunt_days"])]
+	phase.add_theme_color_override("font_color", TB.COL_ACCENT)
+	phase.add_theme_font_size_override("font_size", 12)
+	head.add_child(phase)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(spacer)
+	var stats := Label.new()
+	stats.text = tr("Site %s · Odds %d%% · Contacts %d") % [str(h["site"]),
+		int(round(float(h["odds"]) * 100.0)), int(h["contacts"])]
+	stats.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+	stats.add_theme_font_size_override("font_size", 12)
+	head.add_child(stats)
+	box.add_child(head)
+	var log: Array = h.get("log", [])
+	var recent := log.slice(maxi(0, log.size() - 6))
+	recent.reverse()
+	for e in recent:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		var icon := "dot"
+		var col := TB.COL_TEXT_DIM
+		match str(e.get("kind", "")):
+			"capture":
+				icon = "check"
+				col = COL_LEGEND
+			"contact":
+				icon = "target"
+				col = TB.COL_WARN
+			"escape":
+				icon = "warning"
+				col = TB.COL_BAD
+		row.add_child(GlyphIcons.icon(icon, 11, col))
+		var l := Label.new()
+		l.text = tr("Day %d — %s") % [int(e.get("day", 0)), str(e.get("note", ""))]
+		l.add_theme_color_override("font_color", col)
+		l.add_theme_font_size_override("font_size", 12)
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(l)
+		box.add_child(row)
+	return card[0]
+
+
+## Recall confirmation: spells out exactly what the order costs and returns.
+func _confirm_recall(exp: Dictionary) -> void:
+	var svc := _svc_ref()
+	if svc == null:
+		return
+	var refund: int = svc.recall_refund(exp)
+	var dlg := ConfirmationDialog.new()
+	dlg.title = tr("Recall the expedition?")
+	dlg.ok_button_text = tr("Recall the party")
+	dlg.cancel_button_text = tr("Let them work")
+	var body := Label.new()
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.custom_minimum_size.x = 420
+	body.text = tr("%s and the party will break camp at %s and head straight home (%s of travel).\n\nThe %s already spent on this trip is NOT recoverable — but the outfitter buys back the %d unused capture attempts at half price: %s returns to the transfer budget.") % [
+		str(exp["leader"]), tr(str(exp["route_name"])),
+		I18n.np(int(exp["travel_days"]), "%d day", "%d days"),
+		AcademyService.format_money(int(exp["cost"])),
+		int(exp["attempts_left"]), AcademyService.format_money(refund)]
+	dlg.confirmed.connect(func() -> void:
+		var err: String = svc.recall(str(exp["id"]))
+		if err == "":
+			GameState.save_game()
+		_refresh())
+	TB.popup_fitted(self, dlg, body)
+
+
 # ------------------------------------------------------------------ history tab
 
 func _build_history_tab() -> Control:
@@ -710,6 +1135,65 @@ func _refresh_history() -> void:
 			tr(str(best["tier"]).capitalize())], TIER_COL.get(str(best["tier"]), TB.COL_TEXT))
 	_kv(sbox, tr("Rival captures reported"), str(svc.ai_captures), TB.COL_TEXT_DIM)
 
+	# --- the permanent legendary record ---
+	var lsvc := _leg_ref()
+	if lsvc != null and not (lsvc.log as Array).is_empty():
+		var lpanel := _panel(tr("LEGENDARY RECORD"))
+		_hist_box.add_child(lpanel[0])
+		var lbox: VBoxContainer = lpanel[1]
+		for e in lsvc.log:
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 8)
+			var icon := "star"
+			var col := TB.COL_TEXT_DIM
+			var txt := ""
+			match str(e.get("kind", "")):
+				"capture":
+					icon = "check"
+					col = COL_LEGEND
+					txt = tr("S%d · %s CAPTURED (Lv %d) by %s — a day for the club museum") % [
+						int(e["season"]), str(e["leg_name"]), int(e.get("level", 0)), str(e.get("leader", "?"))]
+				"fail":
+					icon = "cross"
+					col = TB.COL_WARN
+					txt = tr("S%d · Hunted %s — %d contact(s), it escaped. The files grew thicker.") % [
+						int(e["season"]), str(e["leg_name"]), int(e.get("contacts", 0))]
+				"escape":
+					icon = "warning"
+					col = TB.COL_BAD
+					txt = tr("S%d · %s fled the region mid-hunt") % [int(e["season"]), str(e["leg_name"])]
+				"rival":
+					icon = "flag"
+					col = TB.COL_BAD
+					txt = tr("S%d · %s captured by rivals %s") % [int(e["season"]), str(e["leg_name"]), str(e.get("club", "?"))]
+				_:
+					txt = tr("S%d · %s sighted near %s") % [int(e["season"]), str(e["leg_name"]), str(e.get("site", "?"))]
+			row.add_child(GlyphIcons.icon(icon, 11, col))
+			var l := Label.new()
+			l.text = txt
+			l.add_theme_color_override("font_color", col)
+			l.add_theme_font_size_override("font_size", 12)
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(l)
+			lbox.add_child(row)
+
+	# --- latest captures, each linked to where the mon lives today ---
+	var latest: Array = []
+	for h in hist:
+		for cp in h.get("captures", []):
+			if latest.size() < 10:
+				var c: Dictionary = (cp as Dictionary).duplicate()
+				c["route_name"] = str(h["route_name"])
+				c["ended"] = str(h["ended"])
+				latest.append(c)
+	if not latest.is_empty():
+		var cappanel := _panel(tr("LATEST CAPTURES"))
+		_hist_box.add_child(cappanel[0])
+		var cbox: VBoxContainer = cappanel[1]
+		for c in latest:
+			cbox.add_child(_capture_row(c))
+
 	if hist.is_empty():
 		var empty := Label.new()
 		empty.text = tr("No expeditions completed yet — the wild routes are waiting.")
@@ -746,7 +1230,7 @@ func _refresh_history() -> void:
 		var it := tree.create_item(root)
 		it.set_text(0, I18n.short_date(str(h["ended"])))
 		it.set_custom_color(0, TB.COL_TEXT_DIM)
-		it.set_text(1, tr(str(h["route_name"])))
+		it.set_text(1, tr(str(h["route_name"])) + (tr(" (recalled)") if bool(h.get("recalled", false)) else ""))
 		it.set_text(2, "%s (%s)" % [str(h["leader"]), tr(str(h["leader_role"]).capitalize())])
 		it.set_custom_color(2, TB.COL_TEXT_DIM)
 		it.set_text(3, str(int(h["field_days"])))
@@ -776,6 +1260,85 @@ func _tier_rank(t: String) -> int:
 	return {"common": 0, "uncommon": 1, "rare": 2, "special": 3}.get(t, 0)
 
 
+## Where does a captured mon live TODAY (it may have been promoted or moved on
+## since delivery)? -> "squad" | "academy" | "holding" | "".
+func _mon_location(uid: String) -> String:
+	if uid == "":
+		return ""
+	for m in GameState.player_club().get("squad", []):
+		if str(m.get("uid", "")) == uid:
+			return "squad"
+	var aca: RefCounted = AcademyService.active
+	if aca != null:
+		for m in aca.roster:
+			if str(m.get("uid", "")) == uid:
+				return "academy"
+	var svc := _svc_ref()
+	if svc != null:
+		for m in svc.holding:
+			if str(m.get("uid", "")) == uid:
+				return "holding"
+	return ""
+
+
+## One "latest captures" row: tiered name + route/date, linked to the mon.
+func _capture_row(c: Dictionary) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var tier := str(c.get("tier", "common"))
+	row.add_child(GlyphIcons.icon("diamond" if tier != "common" else "dot", 11,
+		TIER_COL.get(tier, TB.COL_TEXT_DIM)))
+	var name := Label.new()
+	name.text = tr("%s Lv %d") % [str(c.get("species", "?")), int(c.get("level", 1))]
+	name.add_theme_font_size_override("font_size", 12)
+	row.add_child(name)
+	var meta := Label.new()
+	meta.text = "%s · %s" % [tr(str(c.get("route_name", ""))), I18n.short_date(str(c.get("ended", "")))]
+	meta.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+	meta.add_theme_font_size_override("font_size", 12)
+	row.add_child(meta)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(spacer)
+	var uid := str(c.get("uid", ""))
+	var loc := _mon_location(uid)
+	if uid != "" and MonActions.can_act(uid):
+		MonActions.attach(name, uid)
+		row.add_child(MonActions.action_button(uid))
+	match loc:
+		"squad":
+			row.add_child(_link_btn(tr("In the squad"), "squad"))
+		"academy":
+			row.add_child(_link_btn(tr("In the academy"), "academy"))
+		"holding":
+			var l := Label.new()
+			l.text = tr("Holding pen")
+			l.add_theme_color_override("font_color", TB.COL_WARN)
+			l.add_theme_font_size_override("font_size", 12)
+			row.add_child(l)
+		_:
+			var g := Label.new()
+			g.text = tr("Moved on")
+			g.add_theme_color_override("font_color", TB.COL_TEXT_DIM)
+			g.add_theme_font_size_override("font_size", 12)
+			row.add_child(g)
+	return row
+
+
+func _link_btn(label: String, screen: String) -> Button:
+	var b := Button.new()
+	b.text = label
+	b.icon = GlyphIcons.tex("arrow_right", 11, TB.COL_ACCENT)
+	b.focus_mode = Control.FOCUS_NONE
+	b.pressed.connect(func() -> void:
+		var n: Node = get_parent()
+		while n != null and not n.has_method("navigate_to"):
+			n = n.get_parent()
+		if n != null:
+			n.call("navigate_to", screen))
+	return b
+
+
 # ------------------------------------------------------------------ refresh
 
 func _refresh() -> void:
@@ -783,6 +1346,7 @@ func _refresh() -> void:
 		return
 	match _tab:
 		"map":
+			_refresh_leg_banner()
 			_refresh_tree()
 			_refresh_planner()
 		"expeditions":
