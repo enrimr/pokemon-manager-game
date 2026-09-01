@@ -295,8 +295,13 @@ func _fill_table(s: RefCounted) -> void:
 		var row_name := ("%s (%s)" % [nick, String(m["species"])]) if nick != "" \
 			and nick != String(m["species"]) else String(m["species"])
 		if bool(m.get("protege", false)):
-			it.set_text(0, tr("%s  · PROTÉGÉ") % row_name)
+			# gold star badge (GlyphIcons — engine-drawn, no unicode symbols).
+			# Badged rows show the short name so the badge word never clips.
+			var short_name := nick if nick != "" and nick != String(m["species"]) else String(m["species"])
+			it.set_icon(0, GlyphIcons.tex("star", 13, GOLD))
+			it.set_text(0, tr("%s — PROTÉGÉ") % short_name)
 			it.set_custom_color(0, GOLD)
+			it.set_tooltip_text(0, row_name + "\n" + tr("MANAGER'S PROTÉGÉ — the professor's gift. Develops faster, fiercely loyal to you (never requests an exit), lifts the squad when it performs — and follows you to any club you ever manage."))
 		else:
 			it.set_text(0, row_name)
 		var types: Array = sp.get("types", [])

@@ -15,6 +15,7 @@ const Personality := preload("res://screens/squad/personality.gd")
 const Views := preload("res://screens/squad/views.gd")
 const ViewEditor := preload("res://screens/squad/view_editor.gd")
 
+const PROTEGE_GOLD := Color("e8c35a")
 const VERDICT_RANK := {"Key battler": 5, "First team": 4, "Develop": 3,
 	"Squad depth": 2, "Aging": 1, "Surplus": 0}
 const TIER_RANK := {"star": 5, "important": 4, "prospect": 3, "rotation": 2, "backup": 1}
@@ -31,6 +32,8 @@ var _selected_uid := ""
 var _table_view: VBoxContainer
 var _tree: Tree
 var _header_info: Label
+var _protege_notice: PanelContainer
+var _protege_notice_lbl: Label
 var _chips_box: HFlowContainer
 var _views_bar: HFlowContainer
 var _view_buttons: Dictionary = {}
@@ -183,6 +186,40 @@ func _build_layout() -> void:
 	_chips_box.size_flags_stretch_ratio = 1.6
 	head.add_child(_chips_box)
 
+	# --- protégé notice: while the professor's starter is still an academy
+	# juvenile it is NOT in this table — say so, with a jump link, so the
+	# player never wonders where their chosen starter went.
+	_protege_notice = PanelContainer.new()
+	_protege_notice.visible = false
+	var nsb := StyleBoxFlat.new()
+	nsb.bg_color = Color(PROTEGE_GOLD, 0.08)
+	nsb.border_color = Color(PROTEGE_GOLD, 0.45)
+	nsb.set_border_width_all(1)
+	nsb.set_corner_radius_all(4)
+	nsb.content_margin_left = 10
+	nsb.content_margin_right = 10
+	nsb.content_margin_top = 6
+	nsb.content_margin_bottom = 6
+	_protege_notice.add_theme_stylebox_override("panel", nsb)
+	var nrow := HBoxContainer.new()
+	nrow.add_theme_constant_override("separation", 10)
+	_protege_notice.add_child(nrow)
+	nrow.add_child(GlyphIcons.icon("star", 14, PROTEGE_GOLD))
+	_protege_notice_lbl = Label.new()
+	_protege_notice_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_protege_notice_lbl.add_theme_font_size_override("font_size", 13)
+	_protege_notice_lbl.add_theme_color_override("font_color", PROTEGE_GOLD)
+	_protege_notice_lbl.clip_text = true
+	_protege_notice_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_protege_notice_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
+	nrow.add_child(_protege_notice_lbl)
+	var ngo := Button.new()
+	ngo.text = tr("Open Academy")
+	ngo.custom_minimum_size = Vector2(0, 30)
+	ngo.pressed.connect(_goto_academy)
+	nrow.add_child(ngo)
+	_table_view.add_child(_protege_notice)
+
 	# --- views row (presets + custom views + editor; wraps, never clips)
 	_views_bar = HFlowContainer.new()
 	_views_bar.add_theme_constant_override("h_separation", 6)
@@ -285,6 +322,7 @@ func _refresh() -> void:
 	for inst in club["squad"]:
 		_records.append(_make_record(inst, wage_bill))
 	_update_header(club, wage_bill)
+	_update_protege_notice()
 	var bids: Array = _svc.active_offers()
 	_bids_btn.visible = not bids.is_empty()
 	if not bids.is_empty():
@@ -370,6 +408,29 @@ func _make_record(inst: Dictionary, wage_bill: int) -> Dictionary:
 		"demand": int(_svc.contract_demand(inst)["wage"]),
 		"talks_locked": _svc.talks_locked(uid),
 	}
+
+
+## Visible only while the manager's protégé (starter-companion piece) is
+## still an academy juvenile — i.e. exactly when a player would look for
+## their chosen starter here and not find it.
+func _update_protege_notice() -> void:
+	if _protege_notice == null:
+		return
+	var svc = ProtegeService.instance
+	var waiting: bool = svc != null and svc.has_protege() \
+		and not (svc.academy_entry() as Dictionary).is_empty()
+	_protege_notice.visible = waiting
+	if waiting:
+		_protege_notice_lbl.text = tr("Your protégé %s is waiting in the Academy — develop it and promote it to the first team when ready.") % svc.display_name()
+		_protege_notice_lbl.tooltip_text = _protege_notice_lbl.text
+
+
+func _goto_academy() -> void:
+	var n: Node = get_parent()
+	while n != null and not n.has_method("navigate_to"):
+		n = n.get_parent()
+	if n != null:
+		n.call("navigate_to", "academy")
 
 
 func _update_header(club: Dictionary, wage_bill: int) -> void:
@@ -828,7 +889,13 @@ func _rebuild_table() -> void:
 			it.set_tooltip_text(s_col, tip)
 		var name_col := cols.find("name")
 		if name_col >= 0:
-			it.set_icon(name_col, UI.dot_icon(DataStore.type_color(rec["types"][0]), 9))
+			if bool((rec["inst"] as Dictionary).get("protege", false)):
+				# the manager's protégé: gold star instead of the type dot
+				it.set_icon(name_col, GlyphIcons.tex("star", 11, PROTEGE_GOLD))
+				it.set_custom_color(name_col, PROTEGE_GOLD)
+				it.set_tooltip_text(name_col, tr("MANAGER'S PROTÉGÉ — the professor's gift. Develops faster, fiercely loyal to you (never requests an exit), lifts the squad when it performs — and follows you to any club you ever manage."))
+			else:
+				it.set_icon(name_col, UI.dot_icon(DataStore.type_color(rec["types"][0]), 9))
 		if rec["uid"] == _selected_uid:
 			it.select(0)
 		row_i += 1

@@ -44,7 +44,7 @@ func render(msg: Dictionary) -> Dictionary:
 
 	var actions: Array = []
 	if bool(msg.get("in_academy", false)):
-		actions.append({"label": I18n.t("Visit the Academy"), "screen": "academy"})
+		actions.append({"label": I18n.t("Go to Academy"), "screen": "academy"})
 	else:
 		actions.append({"label": I18n.t("View Squad"), "screen": "squad"})
 	if kind == "mind":

@@ -417,6 +417,7 @@ func _build_summary() -> Control:
 		srow.add_child(disc)
 		var scol2 := VBoxContainer.new()
 		scol2.alignment = BoxContainer.ALIGNMENT_CENTER
+		scol2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		scol2.add_theme_constant_override("separation", 0)
 		var snick: String = _starter_panel.nickname() if _starter_panel != null else ""
 		var sname := Label.new()
@@ -427,7 +428,9 @@ func _build_summary() -> Control:
 		sname.add_theme_color_override("font_color", Color.WHITE)
 		scol2.add_child(sname)
 		var sline := Label.new()
-		sline.text = tr("The professor's gift joins the academy at Lv 10 — and follows you for your whole career.")
+		sline.text = tr("It will start in your YOUTH ACADEMY at Lv 10, not in your matchday squad — develop it there and promote it when it is ready. It follows you for your whole career.")
+		sline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		sline.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		sline.add_theme_font_size_override("font_size", 11)
 		sline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		scol2.add_child(sline)

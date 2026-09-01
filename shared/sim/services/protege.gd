@@ -524,7 +524,8 @@ func _post_selection_mail(league: String) -> void:
 			str(DataStore.species(int(rv["species_id"])).get("name", "?"))]
 	_post_mail(str(_gs.current_date), I18n.t("%s entrusts you with %s") % [prof, name],
 		I18n.t("%s shook your hand a moment longer than protocol demands. \"This one is special. Raise it your way.\" %s (Lv %d) has been registered to the club's academy as your personal protégé: elite potential in the coaches' book, fiercely loyal to you — and to you alone. Bring it up through the youth beds, hand it a debut when it's ready, and it will follow you for the rest of your career.%s") % [
-			prof, name, JOIN_LEVEL, rival_line],
+			prof, name, JOIN_LEVEL, rival_line]
+		+ "\n\n" + I18n.t("Where is it now? In your YOUTH ACADEMY — it will not appear in the first-team squad until you promote it. Open the Academy screen to follow its development."),
 		"media", prof, "selection")
 
 

@@ -5443,8 +5443,12 @@ STARTER,INICIAL
 Next: meet the professor,Siguiente: conocer al profesor
 %s “%s” — your protégé,%s «%s» — tu protegido
 %s — your protégé,%s — tu protegido
-The professor's gift joins the academy at Lv 10 — and follows you for your whole career.,El regalo del profesor entra en la cantera a Nv. 10 — y te seguirá durante toda tu carrera.
-%s  · PROTÉGÉ,%s  · PROTEGIDO
+"It will start in your YOUTH ACADEMY at Lv 10, not in your matchday squad — develop it there and promote it when it is ready. It follows you for your whole career.","Empezará en tu ACADEMIA JUVENIL a Nv. 10, no en tu plantilla — desarróllalo allí y promociónalo cuando esté listo. Te seguirá durante toda tu carrera."
+%s — PROTÉGÉ,%s — PROTEGIDO
+Where is it now? In your YOUTH ACADEMY — it will not appear in the first-team squad until you promote it. Open the Academy screen to follow its development.,¿Dónde está ahora? En tu ACADEMIA JUVENIL: no aparecerá en la plantilla del primer equipo hasta que lo promociones. Abre la pantalla de la Academia para seguir su desarrollo.
+Your protégé %s is waiting in the Academy — develop it and promote it to the first team when ready.,Tu protegido %s espera en la Academia: desarróllalo y promociónalo al primer equipo cuando esté listo.
+Go to Academy,Ir a la Academia
+Open Academy,Abrir la Academia
 "MANAGER'S PROTÉGÉ — the professor's gift. Develops faster, fiercely loyal to you (never requests an exit), lifts the squad when it performs — and follows you to any club you ever manage.","PROTEGIDO DEL MÍSTER — el regalo del profesor. Se desarrolla más rápido, te es ferozmente leal (nunca pedirá salir), contagia a la plantilla cuando rinde — y te seguirá a cualquier club que dirijas."
 Visit the Academy,Visitar la cantera
 THE CEREMONY,LA CEREMONIA
@@ -5458,3 +5462,31 @@ PROTÉGÉ RIVALRY,RIVALIDAD DE PROTEGIDOS
 MANAGER'S PROTÉGÉ,PROTEGIDO DEL MÍSTER
 Professor Oak,Profesor Oak
 Professor Elm,Profesor Elm
+Scouting the wild routes — how expeditions work,Explorando las rutas salvajes: así funcionan las expediciones
+"Boss — the wild routes of Kanto and Johto are open for fieldwork. From the Routes screen you can send a party (led by a scout, a coach, or yourself) to any route for 3-14 field days: pick an approach, buy capture gear, and the party mails back a report every day. Captures come home to the academy or straight into the squad, and every field day charts the route's species for good. Costs come out of the transfer budget. Two parties can be out at once.","Míster: las rutas salvajes de Kanto y Johto están abiertas para el trabajo de campo. Desde la pantalla de Rutas puedes enviar una partida (liderada por un ojeador, un técnico o tú mismo) a cualquier ruta durante 3-14 días de campo: elige un enfoque, compra equipo de captura y la partida enviará un informe cada día. Las capturas llegan a la academia o directamente a la plantilla, y cada día de campo cartografía las especies de la ruta para siempre. Los costes salen del presupuesto de fichajes. Puede haber dos partidas fuera a la vez."
+That party is no longer in the field.,Esa partida ya no está sobre el terreno.
+The party is already on its way home.,La partida ya está de camino a casa.
+Recall order received — the party breaks camp and turns for home.,Orden de regreso recibida: la partida levanta el campamento y pone rumbo a casa.
+Recall order sent to %s,Orden de regreso enviada a %s
+"%s acknowledges the recall: the party breaks camp at %s and heads home. Unused capture gear sold back for %s; the days already funded are not recoverable.","%s confirma la orden de regreso: la partida levanta el campamento en %s y vuelve a casa. El equipo de captura sin usar se ha revendido por %s; los días ya financiados no se recuperan."
+The party returned early on your recall order (%s recovered from unused gear).,La partida volvió antes de tiempo por tu orden de regreso (%s recuperados del equipo sin usar).
+Unsurveyed — guides list %d species (%d common · %d uncommon · %d rare),"Sin explorar: las guías citan %d especies (%d comunes · %d poco comunes · %d raras)"
+ — squad morale dips while you are away, — la moral de la plantilla baja mientras estás fuera
+"You lead in person: squad morale -%d while you are away, and the board takes note.","Lideras en persona: la moral de la plantilla baja %d mientras estás fuera, y la directiva toma nota."
+Not enough transfer budget for this plan — trim the days or the gear.,No hay presupuesto de fichajes suficiente para este plan; recorta los días o el equipo.
+Recall early,Ordenar regreso
+"Order the party home — funded days are lost, unused gear is refunded at half price.","Ordena a la partida volver a casa: los días pagados se pierden y el equipo sin usar se reembolsa a mitad de precio."
+Recall the expedition?,¿Ordenar el regreso de la expedición?
+Recall the party,Que vuelvan
+Let them work,Que sigan trabajando
+"%s and the party will break camp at %s and head straight home (%s of travel).
+
+The %s already spent on this trip is NOT recoverable — but the outfitter buys back the %d unused capture attempts at half price: %s returns to the transfer budget.","%s y la partida levantarán el campamento en %s y volverán directos a casa (%s de viaje).
+
+Los %s ya gastados en este viaje NO se recuperan, pero el proveedor recompra los %d intentos de captura sin usar a mitad de precio: %s vuelven al presupuesto de fichajes."
+LATEST CAPTURES,ÚLTIMAS CAPTURAS
+In the squad,En la plantilla
+In the academy,En la academia
+Holding pen,En espera de plaza
+Moved on,Ya no está en el club
+ (recalled), (regresada)
