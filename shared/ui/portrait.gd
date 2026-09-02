@@ -18,10 +18,10 @@ extends Object
 
 const SKINS := ["6b4226", "7d4a2b", "8d5a33", "a06a3f", "b97f52", "c98f63",
 	"d9a577", "e5b88d", "efc9a3", "f6d7b8"]
-const HAIRS := ["17110c", "241a12", "3b2a1a", "54371f", "6e4a2a", "8c5a33",
-	"b3612f", "d9b36a"]
+const HAIRS := ["16161e", "2b2027", "3b2a1a", "6e4a2a", "a03c2e", "c2622f",
+	"d9b36a", "2f4f8f", "2e7a55", "6a4a8c", "c46a8a"]
 const HAIRS_OLD := ["9a9da6", "c6c9d1", "e8e9ee"]
-const EYES := ["2b2320", "3a2b20", "32405e", "2f4a38", "413049"]
+const EYES := ["4a2e1c", "2f5fae", "2f7a4c", "6a4a9c", "a04434", "31739e"]
 const COLLARS := ["4a5568", "5b4a68", "3f5a4e", "6b4a3f", "44506e", "5e4444",
 	"3d5b66", "565d3f"]
 const STYLES_M := ["crop", "side", "buzz", "spiky", "curly", "afro", "receding",
@@ -105,7 +105,7 @@ static func params(seed: String, opts: Dictionary = {}) -> Dictionary:
 		hair_c = Color(HAIRS_OLD[0])
 	else:
 		hair_c = Color(HAIRS[_pick(s, "hair", HAIRS.size())])
-	var style: String = (STYLES_F if fem else STYLES_M)[_pick(s, "style", 12)]
+	var style: String = str(opts.get("style", (STYLES_F if fem else STYLES_M)[_pick(s, "style", 12)]))
 	if old and _pick(s, "oldbald", 3) == 0:
 		style = "receding" if not fem else "bun"
 	var fhair := ""
@@ -129,6 +129,7 @@ static func params(seed: String, opts: Dictionary = {}) -> Dictionary:
 		"mouth": MOUTHS[_pick(s, "mouth", MOUTHS.size())], "fhair": fhair,
 		"glasses": "round" if gl < 8 else ("square" if gl < 16 else ""),
 		"old": 1 if old else 0,
+		"blush": 1 if not old and age < 40 and _pick(s, "blush", 3) == 0 else 0,
 		"collar": _h(collar), "collar2": _h(collar.darkened(0.35)), "bg": _h(bg),
 	}
 
