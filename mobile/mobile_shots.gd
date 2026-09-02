@@ -1,0 +1,95 @@
+extends Node
+## Windowed screenshot proof for the mobile-first portrait shell (mobile
+## piece). Run WINDOWED with the mobile flag and a phone-portrait window:
+##   TM_MOBILE=1 Godot --path . res://mobile/mobile_shots.tscn
+## Captures every tab plus the inbox/squad detail views to artifacts/mobile/.
+## Save-safe: SaveGuard backs up user://save.json and restores it on exit.
+
+const SaveGuard := preload("res://tools/save_guard.gd")
+const OUT := "artifacts/mobile"
+
+var _fails := 0
+
+
+func _ready() -> void:
+	SaveGuard.backup()
+	get_window().size = Vector2i(390, 844)
+	_run.call_deferred()
+
+
+func _run() -> void:
+	var dir := ProjectSettings.globalize_path("res://") + OUT
+	DirAccess.make_dir_recursive_absolute(dir)
+	if GameState.player_club().is_empty():
+		GameState.new_career()
+	var shell: Control = load("res://mobile/shell.tscn").instantiate()
+	add_child(shell)
+	await _frames(12)
+	_shot("%s/home.png" % dir)
+
+	for tab in ["inbox", "squad", "league", "more"]:
+		shell.open_tab(tab)
+		await _frames(10)
+		_shot("%s/%s.png" % [dir, tab])
+
+	# inbox detail: open the first message the way a tap would
+	shell.open_tab("inbox")
+	await _frames(6)
+	var inbox_page: Node = shell._pages["inbox"]
+	if not GameState.inbox.is_empty():
+		inbox_page._selected = GameState.inbox[0]
+		GameState.inbox[0]["read"] = true
+		inbox_page.refresh()
+		await _frames(10)
+		_shot("%s/inbox_detail.png" % dir)
+
+	# squad detail
+	shell.open_tab("squad")
+	await _frames(6)
+	var squad_page: Node = shell._pages["squad"]
+	var squad: Array = GameState.player_club().get("squad", [])
+	if not squad.is_empty():
+		squad_page._selected = squad[0]
+		squad_page.refresh()
+		await _frames(10)
+		_shot("%s/squad_detail.png" % dir)
+
+	# league fixtures mode
+	shell.open_tab("league")
+	await _frames(4)
+	var league_page: Node = shell._pages["league"]
+	league_page._mode = "fixtures"
+	league_page.refresh()
+	await _frames(8)
+	_shot("%s/league_fixtures.png" % dir)
+
+	SaveGuard.restore()
+	if _fails > 0:
+		printerr("MOBILE SHOTS FAILED: %d error(s)" % _fails)
+		get_tree().quit(1)
+	else:
+		print("MOBILE SHOTS OK")
+		get_tree().quit(0)
+
+
+func _shot(path: String) -> void:
+	var img := get_viewport().get_texture().get_image()
+	if img == null or img.save_png(path) != OK:
+		printerr("MOBILE SHOT ERROR: %s" % path)
+		_fails += 1
+		return
+	var black := true
+	for x in range(0, img.get_width(), 61):
+		if img.get_pixel(x, img.get_height() / 2).get_luminance() > 0.01:
+			black = false
+			break
+	if black:
+		printerr("MOBILE SHOT ERROR (black frame): %s" % path)
+		_fails += 1
+	else:
+		print("mobile shot: %s" % path)
+
+
+func _frames(n: int) -> void:
+	for i in n:
+		await get_tree().process_frame

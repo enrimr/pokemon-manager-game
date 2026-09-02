@@ -106,13 +106,22 @@ func is_mobile() -> bool:
 		or OS.has_feature("web_android") or OS.has_feature("web_ios")
 
 
-## The desktop layout wants ~1280 design units of width; derive the stretch
-## factor from the actual canvas and re-derive it on rotation/resize.
-## ui_scale remains a user multiplier on top.
+## Landscape shows the desktop layout (~1280 design units wide); portrait
+## shows the mobile-first shell (~440 units wide). content_scale_factor
+## MULTIPLIES the scale the canvas_items stretch already computed against the
+## 1600x900 design size, so correct against the MEASURED visible design width
+## (one-shot: the ratio makes the new visible width exactly the target).
+## ui_scale remains a user multiplier on top; re-derived on rotation/resize.
 func _apply_mobile_scale() -> void:
 	var win := get_window()
-	win.content_scale_factor = clampf(float(win.size.x) / 1280.0, 0.5, 1.0) \
-		* clampf(float(get_setting("ui_scale")), 0.75, 1.25)
+	var target := (440.0 if win.size.y > win.size.x else 1280.0) \
+		/ clampf(float(get_setting("ui_scale")), 0.75, 1.25)
+	var design_w := get_viewport().get_visible_rect().size.x
+	if design_w <= 0.0:
+		return
+	var new_factor := clampf(win.content_scale_factor * design_w / target, 0.3, 6.0)
+	if not is_equal_approx(new_factor, win.content_scale_factor):
+		win.content_scale_factor = new_factor
 
 
 func _apply_display() -> void:

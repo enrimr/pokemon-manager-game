@@ -31,6 +31,18 @@ static func has_save() -> bool:
 	return FileAccess.file_exists(GameState.SAVE_PATH)
 
 
+## Which shell to boot into (mobile piece): phones in portrait get the
+## mobile-first shell; everything else gets the desktop shell (which runs
+## compact mode on phones in landscape). Rotating swaps scenes — all game
+## state lives in the GameState autoload.
+static func shell_scene() -> String:
+	if Settings.is_mobile():
+		var s: Vector2i = DisplayServer.window_get_size()
+		if s.y > s.x:
+			return "res://mobile/shell.tscn"
+	return "res://shell/main.tscn"
+
+
 ## The player manager's display name (world.meta.manager_name; falls back to
 ## the club's generated manager for careers started before the menu existed).
 static func manager_name() -> String:

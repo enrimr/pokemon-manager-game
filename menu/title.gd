@@ -168,7 +168,7 @@ func _footer() -> Control:
 
 func _on_continue() -> void:
 	AudioManager.play("continue")
-	get_tree().change_scene_to_file("res://shell/main.tscn")
+	get_tree().change_scene_to_file(MenuFlow.shell_scene())
 
 
 func _on_new_game() -> void:
@@ -179,7 +179,7 @@ func _on_new_game() -> void:
 	_onboarding.setup(_fonts["bold"], _fonts["semibold"], _fonts["header"])
 	_onboarding.career_created.connect(func():
 		_onboarding = null
-		get_tree().change_scene_to_file("res://shell/main.tscn"))
+		get_tree().change_scene_to_file(MenuFlow.shell_scene()))
 	_onboarding.cancelled.connect(func(): _onboarding = null)
 	add_child(_onboarding)
 

@@ -177,6 +177,8 @@ func _retranslate_chrome() -> void:
 
 
 func _ready() -> void:
+	if Settings.is_mobile():   # phone rotated to portrait -> mobile-first shell
+		get_window().size_changed.connect(_check_mobile_portrait)
 	add_child(load("res://shared/audio/audio_manager.tscn").instantiate())  # audio piece
 	theme = ThemeBuilder.build()
 	_make_fonts()
@@ -775,6 +777,25 @@ func _vsep() -> Control:
 	v.custom_minimum_size = Vector2(1, 34)
 	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	return v
+
+
+## Phone rotated to portrait: swap to the mobile-first shell (mobile piece).
+## Debounced — browsers fire a burst of resizes mid-rotation. All game state
+## lives in the GameState autoload, so this is a plain scene change.
+var _portrait_swap_pending := false
+func _check_mobile_portrait() -> void:
+	if _portrait_swap_pending:
+		return
+	var s := get_window().size
+	if s.y > s.x:
+		_portrait_swap_pending = true
+		get_tree().create_timer(0.35).timeout.connect(func():
+			var s2 := get_window().size
+			if s2.y > s2.x:
+				GameState.save_game()
+				get_tree().change_scene_to_file("res://mobile/shell.tscn")
+			else:
+				_portrait_swap_pending = false)
 
 
 ## Compact mobile mode: the sidebar becomes a left drawer OVER the content —
