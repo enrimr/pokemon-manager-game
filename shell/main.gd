@@ -83,6 +83,7 @@ var current_tab_id: String = ""
 
 # chrome nodes
 var _content: MarginContainer
+var _side_overlay: Control = null       # compact mobile mode: sidebar drawer
 var _nav_box: VBoxContainer
 var _nav_buttons: Dictionary = {}       # name -> Button
 var _nav_badges: Dictionary = {}        # name -> Label (pill badge)
@@ -237,6 +238,8 @@ func navigate_to(screen_name: String, context: Dictionary = {}) -> bool:
 	if not screens.has(screen_name):
 		push_error("Shell: unknown screen '%s'" % screen_name)
 		return false
+	if _side_overlay != null and _side_overlay.visible:
+		_side_overlay.visible = false   # compact mode: navigating closes the drawer
 	var want_tab := str(context.get("tab", ""))
 	# Pure tab switch on the screen we're already on: apply in place, no
 	# reinstantiation (FM never rebuilds the page when you hop subsections).
@@ -549,7 +552,10 @@ func _build_chrome() -> void:
 	body.add_theme_constant_override("separation", 0)
 	layout.add_child(body)
 
-	body.add_child(_build_sidebar())
+	if Settings.is_mobile():
+		_build_sidebar_overlay()   # compact mode: nav lives behind the ☰
+	else:
+		body.add_child(_build_sidebar())
 
 	var right := VBoxContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -563,7 +569,7 @@ func _build_chrome() -> void:
 	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
-		_content.add_theme_constant_override(side, 14)
+		_content.add_theme_constant_override(side, 8 if Settings.is_mobile() else 14)
 	right.add_child(_content)
 
 
@@ -579,6 +585,21 @@ func _build_topbar() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
 	top.add_child(row)
+
+	# compact mobile mode: the drawer toggle leads the topbar
+	if Settings.is_mobile():
+		var burger := Button.new()
+		burger.icon = GlyphIcons.tex("menu", 16, ThemeBuilder.COL_ACCENT)
+		burger.focus_mode = Control.FOCUS_NONE
+		burger.custom_minimum_size = Vector2(46, 38)
+		burger.add_theme_stylebox_override("normal",
+			ThemeBuilder._flat(ThemeBuilder.COL_PANEL, ThemeBuilder.COL_BORDER, 5, 8, 6))
+		burger.add_theme_stylebox_override("hover",
+			ThemeBuilder._flat(Color("2a3150"), ThemeBuilder.COL_ACCENT_DIM, 5, 8, 6))
+		burger.add_theme_stylebox_override("pressed",
+			ThemeBuilder._flat(ThemeBuilder.COL_ACCENT_DIM, ThemeBuilder.COL_ACCENT, 5, 8, 6))
+		burger.pressed.connect(_toggle_drawer)
+		row.add_child(burger)
 
 	# game menu (save / load / new career)
 	_menu_btn = MenuButton.new()
@@ -605,8 +626,9 @@ func _build_topbar() -> Control:
 
 	# global search
 	_search = LineEdit.new()
-	_search.placeholder_text = "Search Pokémon or clubs…   (Ctrl+F)"
-	_search.custom_minimum_size = Vector2(280, 34)
+	_search.placeholder_text = "Search…" if Settings.is_mobile() \
+		else "Search Pokémon or clubs…   (Ctrl+F)"
+	_search.custom_minimum_size = Vector2(150 if Settings.is_mobile() else 280, 34)
 	_search.text_changed.connect(_on_search_text)
 	_search.text_submitted.connect(func(_t): _activate_search_selection())
 	_search.gui_input.connect(_on_search_gui_input)
@@ -753,6 +775,36 @@ func _vsep() -> Control:
 	v.custom_minimum_size = Vector2(1, 34)
 	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	return v
+
+
+## Compact mobile mode: the sidebar becomes a left drawer OVER the content —
+## opened from the ☰ in the topbar, closed by navigating or tapping the dim.
+func _build_sidebar_overlay() -> void:
+	_side_overlay = Control.new()
+	_side_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_side_overlay.visible = false
+	add_child(_side_overlay)
+	var dim := ColorRect.new()
+	dim.color = Color(0, 0, 0, 0.45)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.gui_input.connect(func(e):
+		if e is InputEventMouseButton and e.pressed:
+			_side_overlay.visible = false)
+	_side_overlay.add_child(dim)
+	var scroll := ScrollContainer.new()   # phone height < sidebar height
+	scroll.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	scroll.custom_minimum_size.x = SIDEBAR_W
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_side_overlay.add_child(scroll)
+	var side := _build_sidebar()
+	side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	side.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(side)
+
+
+func _toggle_drawer() -> void:
+	if _side_overlay != null:
+		_side_overlay.visible = not _side_overlay.visible
 
 
 func _build_sidebar() -> Control:

@@ -98,10 +98,32 @@ func _apply_one(key: String) -> void:
 		_apply_display()
 
 
+## Compact mobile mode (phone browsers; TM_MOBILE=1 forces it in dev runs).
+## The shell collapses the sidebar into an overlay and the display scale is
+## picked from the real canvas width instead of the desktop ui_scale table.
+func is_mobile() -> bool:
+	return OS.get_environment("TM_MOBILE") != "" \
+		or OS.has_feature("web_android") or OS.has_feature("web_ios")
+
+
+## The desktop layout wants ~1280 design units of width; derive the stretch
+## factor from the actual canvas and re-derive it on rotation/resize.
+## ui_scale remains a user multiplier on top.
+func _apply_mobile_scale() -> void:
+	var win := get_window()
+	win.content_scale_factor = clampf(float(win.size.x) / 1280.0, 0.5, 1.0) \
+		* clampf(float(get_setting("ui_scale")), 0.75, 1.25)
+
+
 func _apply_display() -> void:
 	if _headless:
 		return
 	var win := get_window()
+	if is_mobile():
+		if not win.size_changed.is_connected(_apply_mobile_scale):
+			win.size_changed.connect(_apply_mobile_scale)
+		_apply_mobile_scale()
+		return
 	if OS.has_feature("web"):
 		# Browser owns the window: the exported canvas uses the "adaptive"
 		# resize policy, so the canvas tracks the browser window and the

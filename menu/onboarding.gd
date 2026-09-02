@@ -71,7 +71,12 @@ func _ready() -> void:
 	add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(PANEL_W, PANEL_H)
+	var panel_size := Vector2(PANEL_W, PANEL_H)
+	if Settings.is_mobile():
+		# compact mode: never taller/wider than the phone viewport
+		var vp := get_viewport_rect().size
+		panel_size = Vector2(minf(PANEL_W, vp.x - 12.0), minf(PANEL_H, vp.y - 12.0))
+	panel.custom_minimum_size = panel_size
 	panel.add_theme_stylebox_override("panel",
 		ThemeBuilder._flat(ThemeBuilder.COL_PANEL, ThemeBuilder.COL_ACCENT_DIM, 8, 0, 0))
 	center.add_child(panel)
