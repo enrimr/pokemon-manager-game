@@ -219,6 +219,14 @@ func _refresh_badges() -> void:
 func _on_continue() -> void:
 	if _advancing:
 		return
+	# a matchday is held for your decision: NEVER advance past it (that would
+	# abandon the fixture unplayed and the league would pull ahead of you)
+	if not due_fixture().is_empty():
+		open_tab("home")
+		if _pages["home"].has_method("refresh"):
+			_pages["home"].refresh()
+		toast(tr("Matchday! Resolve today's match first."))
+		return
 	AudioManager.play("continue")
 	_advancing = true
 	_continue_btn.disabled = true

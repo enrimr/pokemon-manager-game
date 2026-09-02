@@ -157,6 +157,7 @@ func load_game() -> bool:
 	var rec := Season.reconcile_fixture_details(fixtures)
 	if int(rec["adopted"]) + int(rec["cleared"]) > 0:
 		save_game()
+	_heal_skipped_fixtures()
 	_table_dirty = true
 	_load_services()
 	career_started.emit()
@@ -583,6 +584,24 @@ func advance_to_next_event(max_days: int = 14) -> void:
 					stop = true
 		if stop:
 			break
+	save_game()
+
+
+## Load-time repair: a shell bug (mobile Continue, fixed 2026-09-02) could
+## advance the calendar PAST a held player matchday, abandoning the fixture
+## unplayed forever — the league table then shows everyone else pulling ahead
+## (user report: 9 played vs the league's 26). Any past-dated unplayed
+## fixture is simulated now, in date order, and the cup draw is caught up.
+func _heal_skipped_fixtures() -> void:
+	var skipped: Array = fixtures.filter(func(f):
+		return not f.get("played", false) and str(f["date"]) < current_date)
+	if skipped.is_empty():
+		return
+	skipped.sort_custom(func(a, b): return str(a["date"]) < str(b["date"]))
+	for f in skipped:
+		_play_fixture(f)
+	push_warning("GameState: healed %d skipped fixture(s) left behind by the calendar" % skipped.size())
+	_maybe_generate_next_cup_round()
 	save_game()
 
 
