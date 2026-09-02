@@ -468,7 +468,10 @@ func _build_summary() -> Control:
 		srow.add_theme_constant_override("separation", 12)
 		var sty: Array = _starter.get("types", [])
 		var scol: Color = DataStore.type_color(str(sty[0]) if not sty.is_empty() else "normal")
+		if PokeArt.has_art(int(_starter.get("species_id", 0))):
+			srow.add_child(PokeArt.icon(int(_starter.get("species_id", 0)), 46))
 		var disc := PanelContainer.new()
+		disc.visible = not PokeArt.has_art(int(_starter.get("species_id", 0)))
 		disc.custom_minimum_size = Vector2(46, 46)
 		var dsb := StyleBoxFlat.new()
 		dsb.bg_color = scol.darkened(0.35)

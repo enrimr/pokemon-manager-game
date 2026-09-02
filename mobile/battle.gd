@@ -218,16 +218,23 @@ func _build_live() -> void:
 func _battler_card(b: Dictionary, foe: bool) -> Control:
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", ThemeBuilder._flat(
-		ThemeBuilder.COL_PANEL, ThemeBuilder.COL_BAD if foe else ThemeBuilder.COL_ACCENT, 6, 10, 6))
+		ThemeBuilder.COL_PANEL.darkened(0.25) if bool(b.get("fainted", false)) else ThemeBuilder.COL_PANEL,
+		ThemeBuilder.COL_BORDER if bool(b.get("fainted", false))
+		else (ThemeBuilder.COL_BAD if foe else ThemeBuilder.COL_ACCENT), 6, 10, 6))
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 2)
 	card.add_child(v)
+	var fainted: bool = bool(b.get("fainted", false))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	v.add_child(row)
-	row.add_child(PokeArt.icon(PokeArt.id_of(str(b.get("species", b.get("name", "")))), 44,
-		{"flip": not foe}))
-	var nm := MUI.label(str(b.get("name", "?")), 13, Color.WHITE)
+	var art := PokeArt.icon(PokeArt.id_of(str(b.get("species", b.get("name", "")))), 44,
+		{"flip": not foe})
+	if fainted:   # knocked out = drained of colour, not just a label
+		art.modulate = Color(0.42, 0.42, 0.5, 0.85)
+	row.add_child(art)
+	var nm := MUI.label(str(b.get("name", "?")), 13,
+		ThemeBuilder.COL_TEXT_DIM if fainted else Color.WHITE)
 	nm.add_theme_font_override("font", MUI.bold())
 	row.add_child(nm)
 	row.add_child(MUI.dim(tr("Lv%d") % int(b.get("level", 1)), 10))
@@ -235,7 +242,7 @@ func _battler_card(b: Dictionary, foe: bool) -> Control:
 		row.add_child(MUI.type_chip(str(t)))
 	row.add_child(MUI.hspacer())
 	var st := str(b.get("status", ""))
-	if bool(b.get("fainted", false)):
+	if fainted:
 		st = "fainted"
 	if st != "":
 		row.add_child(MUI.label(I18n.t(st).to_upper(), 9, ThemeBuilder.COL_WARN))

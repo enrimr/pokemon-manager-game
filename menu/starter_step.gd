@@ -19,6 +19,10 @@ var _club_name := ""
 var _selected: Dictionary = {}
 var _cards: Array = []          # [{panel, id}]
 var _cards_row: BoxContainer
+var _narrow := false            # portrait phones: Poké Ball picker (mobile piece)
+var _inspect_id := 0            # narrow mode: which ball is open
+var _balls_row: HBoxContainer = null
+static var _ball_cache: Dictionary = {}
 var _prof_title: Label
 var _prof_text: Label
 var _nick_edit: LineEdit
@@ -70,11 +74,16 @@ func _ready() -> void:
 	_prof_text.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	col.add_child(_prof_text)
 
-	var narrow := get_viewport_rect().size.x < 700.0   # portrait phones stack
-	_cards_row = VBoxContainer.new() if narrow else HBoxContainer.new()
-	_cards_row.add_theme_constant_override("separation", 10 if narrow else 14)
+	_narrow = get_viewport_rect().size.x < 700.0   # portrait phones: ball picker
+	_cards_row = VBoxContainer.new() if _narrow else HBoxContainer.new()
+	_cards_row.add_theme_constant_override("separation", 10 if _narrow else 14)
 	_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	if narrow:
+	if _narrow:
+		# the lab counter: three Poké Balls — tap one to meet what's inside
+		_balls_row = HBoxContainer.new()
+		_balls_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		_balls_row.add_theme_constant_override("separation", 22)
+		col.add_child(_balls_row)
 		var cscroll := ScrollContainer.new()
 		cscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		cscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -116,10 +125,88 @@ func _refresh() -> void:
 	for c in _cards_row.get_children():
 		c.queue_free()
 	_cards.clear()
-	for id in Protege.trio_for_league(_league):
-		var card := _build_card(int(id))
-		_cards_row.add_child(card)
+	var trio: Array = Protege.trio_for_league(_league)
+	if _narrow:
+		if not trio.has(_inspect_id):
+			_inspect_id = 0
+		_rebuild_balls(trio)
+		if _inspect_id > 0:
+			_cards_row.add_child(_build_card(_inspect_id))
+		else:
+			var hint := Label.new()
+			hint.text = tr("Tap a Poké Ball to meet what's inside.")
+			hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			hint.add_theme_font_size_override("font_size", 13)
+			hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+			_cards_row.add_child(hint)
+	else:
+		for id in trio:
+			_cards_row.add_child(_build_card(int(id)))
 	_apply_styles()
+
+
+func _rebuild_balls(trio: Array) -> void:
+	for c in _balls_row.get_children():
+		c.queue_free()
+	for id_v in trio:
+		var id := int(id_v)
+		var cellv := VBoxContainer.new()
+		cellv.alignment = BoxContainer.ALIGNMENT_CENTER
+		cellv.add_theme_constant_override("separation", 3)
+		var b := Button.new()
+		b.flat = true
+		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(78, 78)
+		b.icon = _ball_tex(78, id == _inspect_id,
+			id == int(_selected.get("species_id", -1)))
+		b.expand_icon = true
+		b.pressed.connect(func():
+			_inspect_id = id
+			_refresh())
+		cellv.add_child(b)
+		var nm := Label.new()
+		var sp: Dictionary = DataStore.species(id)
+		nm.text = str(sp.get("name", "?"))
+		nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		nm.add_theme_font_size_override("font_size", 11)
+		nm.add_theme_color_override("font_color",
+			Color.WHITE if id == _inspect_id else ThemeBuilder.COL_TEXT_DIM)
+		cellv.add_child(nm)
+		_balls_row.add_child(cellv)
+
+
+## Classic Poké Ball, drawn as runtime SVG (same pipeline as PokeArt/crests).
+## open = the inspected ball (accent ring); chosen = the confirmed starter.
+static func _ball_tex(px: int, open: bool, chosen: bool) -> Texture2D:
+	var key := "%d|%s|%s" % [px, open, chosen]
+	if _ball_cache.has(key):
+		return _ball_cache[key]
+	var ring := "#7b6cff" if open else "#2a2b33"
+	if chosen:
+		ring = "#57c979"
+	var svg := ('<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">' +
+		'<defs><clipPath id="b"><circle cx="48" cy="50" r="40"/></clipPath></defs>' +
+		'<g clip-path="url(#b)">' +
+		'<rect width="96" height="96" fill="#eef0f5"/>' +
+		'<path d="M8,50 A40,40 0 0 1 88,50 Z" fill="#e8433f"/>' +
+		'<rect x="8" y="46" width="80" height="8" fill="#23242c"/>' +
+		'</g>' +
+		'<circle cx="48" cy="50" r="12" fill="#23242c"/>' +
+		'<circle cx="48" cy="50" r="7.5" fill="#ffffff"/>' +
+		('<circle cx="48" cy="50" r="9.5" fill="none" stroke="%s" stroke-width="2.4"/>' % ("#57c979" if chosen else "#8b91a8")) +
+		('<circle cx="48" cy="50" r="42" fill="none" stroke="%s" stroke-width="4"/>' % ring) +
+		'</svg>')
+	var img := Image.new()
+	var t: Texture2D
+	if img.load_svg_from_string(svg, float(px) / 96.0 * 2.0) == OK and not img.is_empty():
+		t = ImageTexture.create_from_image(img)
+	else:
+		img = Image.create(px, px, false, Image.FORMAT_RGBA8)
+		img.fill(Color("e8433f"))
+		t = ImageTexture.create_from_image(img)
+	_ball_cache[key] = t
+	return t
 
 
 func _select(id: int) -> void:
@@ -128,6 +215,8 @@ func _select(id: int) -> void:
 		"types": (sp.get("types", []) as Array).duplicate()}
 	_status.text = tr("The professor nods. %s it is.") % str(sp["name"])
 	_status.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
+	if _narrow and _balls_row != null:
+		_rebuild_balls(Protege.trio_for_league(_league))
 	_apply_styles()
 	starter_selected.emit(_selected)
 
