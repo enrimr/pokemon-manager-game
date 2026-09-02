@@ -150,8 +150,7 @@ func _match_report(msg: Dictionary) -> Dictionary:
 	var us: int = f["score_home"] if we_home else f["score_away"]
 	var them: int = f["score_away"] if we_home else f["score_home"]
 	var won := us > them
-	var comp_line: String = (I18n.t("%s · Matchday %d") % [I18n.t(GameState.world["meta"]["league_name"]), int(f["round"])]) \
-		if f["comp"] == "league" else ("%s · %s" % [I18n.t("Indigo Cup"), I18n.cup_round(int(f["round"]))])
+	var comp_line := I18n.comp_label(f)   # cup vs playoff aware (user report)
 
 	var bb := ""
 	bb += _prose_result(f, we_home, us, them, opp) + "\n\n"
@@ -226,7 +225,7 @@ func _prose_result(f: Dictionary, we_home: bool, us: int, them: int, opp: Dictio
 		extra = I18n.t(" Losing to a side we were expected to beat raises awkward questions.")
 	return I18n.t("[color=#%s]%s %s against [b]%s[/b] %s — %s.%s[/color]") % \
 		[C_WHITE, I18n.t("Victory") if us > them else I18n.t("Defeat"), venue, opp["name"],
-		I18n.t("in the %s") % (I18n.t("league") if f["comp"] == "league" else I18n.cup_round_prose(int(f["round"]))), phrase, extra]
+		I18n.t("in the %s") % I18n.comp_prose(f), phrase, extra]
 
 
 ## Deterministic reconstruction of the instant sim (same seeds as GameState).
@@ -382,11 +381,10 @@ func _prematch(msg: Dictionary) -> Dictionary:
 		return _plain(msg)
 	var we_home: bool = GameState.is_player_club(f["home"])
 	var opp: Dictionary = GameState.club(f["away"] if we_home else f["home"])
-	var comp_line: String = (I18n.t("%s · Matchday %d") % [I18n.t(GameState.world["meta"]["league_name"]), int(f["round"])]) \
-		if f["comp"] == "league" else ("%s · %s" % [I18n.t("Indigo Cup"), I18n.cup_round(int(f["round"]))])
+	var comp_line := I18n.comp_label(f)   # cup vs playoff aware (user report)
 	var bb := I18n.t("[color=#%s]We %s [b]%s[/b] %s on %s. %s are managed by %s, are [b]%s[/b], and carry a reputation of %d/20.[/color]\n\n") % \
 		[C_WHITE, I18n.t("host") if we_home else I18n.t("travel to"), opp["name"],
-		I18n.t("in the %s") % (I18n.t("league") if f["comp"] == "league" else I18n.cup_round_prose(int(f["round"]))),
+		I18n.t("in the %s") % I18n.comp_prose(f),
 		I18n.pretty_date(f["date"]), opp["short"], opp["manager"],
 		_pos_text(opp["id"]), int(opp["reputation"])]
 

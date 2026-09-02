@@ -1261,8 +1261,7 @@ func _render_mind(msg: Dictionary) -> Dictionary:
 		return {"bbcode": "[color=#%s]%s[/color]" % [C_WHITE, str(msg.get("body", ""))], "actions": [], "banner": {}}
 	var pc: Dictionary = GameState.player_club()
 	var we_home: bool = GameState.is_player_club(f["home"])
-	var comp_line: String = ("%s · %s" % [I18n.t(GameState.world["meta"]["league_name"]), I18n.t("Matchday %d") % int(f["round"])]) \
-		if str(f["comp"]) == "league" else ("%s · %s" % [I18n.t("Indigo Cup"), I18n.cup_round(int(f["round"]))])
+	var comp_line := I18n.comp_label(f)   # cup vs playoff aware (user report)
 
 	# facts as they stood at publication — snapshotted, never recomputed
 	var facts: Dictionary = msg.get("facts", {})
@@ -1343,8 +1342,7 @@ func _render_press(msg: Dictionary) -> Dictionary:
 	var us := int(f["score_home"] if we_home else f["score_away"])
 	var them := int(f["score_away"] if we_home else f["score_home"])
 	var won := us > them
-	var comp_line: String = ("%s · %s" % [I18n.t(GameState.world["meta"]["league_name"]), I18n.t("Matchday %d") % int(f["round"])]) \
-		if str(f["comp"]) == "league" else ("%s · %s" % [I18n.t("Indigo Cup"), I18n.cup_round(int(f["round"]))])
+	var comp_line := I18n.comp_label(f)   # cup vs playoff aware (user report)
 
 	var bb := I18n.t("[color=#%s][i]An opinion piece in %s.[/i][/color]\n\n") % [C_DIM, PAPER]
 	var prose := str(msg.get("prose", ""))

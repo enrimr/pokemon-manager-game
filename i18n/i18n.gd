@@ -154,6 +154,19 @@ static func playoff_round_prose(round_no: int) -> String:
 	return round_prose(Season.playoff_round_name(round_no))
 
 
+## Mid-sentence competition prose for any fixture: "the league" /
+## "los cuartos de final" (cup) / "la final" (playoff). Playoff fixtures used
+## to fall into the CUP naming and mislabel rounds (user report: the
+## Championship Series Final rendered as "Copa Añil · Cuartos de final").
+static func comp_prose(f: Dictionary) -> String:
+	match str(f.get("comp", "")):
+		"cup":
+			return cup_round_prose(int(f.get("round", 1)))
+		"playoff":
+			return playoff_round_prose(int(f.get("round", 1)))
+	return t("league")
+
+
 ## Localized Season.comp_label (league / cup / playoff fixture label).
 static func comp_label(f: Dictionary) -> String:
 	match str(f.get("comp", "")):

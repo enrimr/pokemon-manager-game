@@ -569,7 +569,7 @@ func _gen_prematch(have: Dictionary) -> void:
 		return
 	var we_home: bool = GameState.is_player_club(f["home"])
 	var opp: Dictionary = GameState.club(f["away"] if we_home else f["home"])
-	var comp_label: String = I18n.t("league") if f["comp"] == "league" else I18n.cup_round(int(f["round"])) + I18n.t(" cup tie")
+	var comp_label: String = I18n.t("league") if f["comp"] == "league" else I18n.comp_label(f)
 	_add(have, "prematch:%s" % f["id"], GameState.current_date,
 		I18n.t("Next match: %s %s (%s)") % [I18n.t("vs") if we_home else I18n.t("at"), opp["name"], comp_label],
 		I18n.t("Pre-match briefing prepared ahead of the %s meeting with %s on %s.") %
