@@ -5663,3 +5663,7 @@ super,superefectivo
 weak,poco eficaz
 REP,REP
 STARS,ESTRELLAS
+LEVEL UPS,SUBIDAS DE NIVEL
+▲ %s climbs to Lv %d,▲ %s sube a Nv %d
+%s climbs to Lv %d,%s sube a Nv %d
+XP,PX

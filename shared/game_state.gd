@@ -614,6 +614,7 @@ func _play_fixture(f: Dictionary) -> void:
 	# Persist the play-time match report (single source of truth for the
 	# Competition screen's reports and season stats — never re-derived later).
 	f["detail"] = result["detail"]
+	apply_match_progression(f)
 	_table_dirty = true
 	fixture_played.emit(f)
 	table_updated.emit()
@@ -625,6 +626,49 @@ func _play_fixture(f: Dictionary) -> void:
 		add_inbox_message(current_date, I18n.t("Match report: %d-%d vs %s") % [us, them, opp],
 			I18n.t("We won the %s tie against %s, %d-%d in battles." if us > them
 				else "We lost the %s tie against %s, %d-%d in battles.") % [I18n.t(str(f["comp"])), opp, us, them])
+
+
+## Match XP (progression piece): every battler who APPEARED in a played
+## fixture earns XP — for BOTH clubs, so the whole world levels together.
+## Levels feed the battle engine's real stats AND the evolution thresholds,
+## so the existing EvolutionService approval mails fire as battlers grow.
+## Player-club level-ups are stored on the fixture ("level_ups") for the
+## match report mail and the mobile full-time screen.
+const XP_LEVEL_CAP := 100
+
+func xp_needed(level: int) -> int:
+	return 20 + level   # slower at the top; ~3 ties per level mid-career
+
+
+func apply_match_progression(f: Dictionary) -> void:
+	if f.has("level_ups"):
+		return   # already applied (live matches finalize once, but be safe)
+	var players: Dictionary = (f.get("detail", {}) as Dictionary).get("players", {})
+	if players.is_empty():
+		return
+	var ups: Array = []
+	for cid in [str(f["home"]), str(f["away"])]:
+		var c := club(cid)
+		if c.is_empty():
+			continue
+		for inst in c.get("squad", []):
+			var uid := str(inst.get("uid", ""))
+			if uid == "" or not players.has(uid):
+				continue
+			var p: Dictionary = players[uid]
+			var rating := float(p.get("rating_sum", 0.0)) / maxf(float(p.get("battles", 1)), 1.0)
+			var gain := 8 + int(p.get("battles", 1)) * 2 + int(p.get("kos", 0)) * 4 \
+				+ clampi(int(round((rating - 6.0) * 3.0)), -3, 6)
+			inst["xp"] = int(inst.get("xp", 0)) + maxi(gain, 3)
+			var before := int(inst["level"])
+			while int(inst["level"]) < XP_LEVEL_CAP and int(inst["xp"]) >= xp_needed(int(inst["level"])):
+				inst["xp"] = int(inst["xp"]) - xp_needed(int(inst["level"]))
+				inst["level"] = int(inst["level"]) + 1
+			if int(inst["level"]) > before and is_player_club(cid):
+				ups.append({"uid": uid, "name": str(p.get("name", inst.get("species", "?"))),
+					"from": before, "to": int(inst["level"])})
+	if not ups.is_empty():
+		f["level_ups"] = ups
 
 
 func _maybe_generate_next_cup_round() -> void:

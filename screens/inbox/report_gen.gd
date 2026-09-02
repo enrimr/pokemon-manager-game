@@ -175,6 +175,13 @@ func _match_report(msg: Dictionary) -> Dictionary:
 			if wline != "":
 				bb += "\n" + wline
 			bb += "\n"
+		# match XP: our battlers who climbed a level in this tie
+		var ups: Array = f.get("level_ups", [])
+		if not ups.is_empty():
+			bb += I18n.t("\n[color=#%s][b]LEVEL UPS[/b][/color]\n") % C_DIM
+			for u in ups:
+				bb += I18n.t("[color=#%s]▲ %s climbs to Lv %d[/color]\n") % \
+					[C_GOOD, str(u.get("name", "?")), int(u.get("to", 0))]
 		bb += I18n.t("\n[color=#%s][b]KEY MOMENTS[/b][/color]\n") % C_DIM
 		for line in _key_moments(sim, player_side):
 			bb += line + "\n"

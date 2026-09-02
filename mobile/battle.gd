@@ -553,6 +553,16 @@ func _build_post() -> void:
 		mv.add_child(MUI.title(str(motm.get("name", "?")), 15))
 		mv.add_child(MUI.dim(tr("Rating %s") % I18n.decimal(float(motm.get("rating", 6.0)), 1), 11))
 
+	var ups: Array = runner.fixture.get("level_ups", [])
+	if not ups.is_empty():
+		var uc := MUI.card()
+		v.add_child(uc[0])
+		var uv: VBoxContainer = uc[1]
+		uv.add_child(MUI.dim(tr("LEVEL UPS").to_upper(), 10))
+		for u in ups:
+			uv.add_child(MUI.label("▲ " + tr("%s climbs to Lv %d") % [str(u.get("name", "?")),
+				int(u.get("to", 0))], 13, ThemeBuilder.COL_GOOD))
+
 	var rows: Array = runner.rating_rows(runner.player_side)
 	if not rows.is_empty():
 		var tc := MUI.card()

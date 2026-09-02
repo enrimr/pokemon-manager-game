@@ -146,11 +146,13 @@ func _build_detail() -> void:
 	sv.add_child(grid)
 	for pair in [[tr("Morale"), int(inst.get("morale", 70))],
 			[tr("Condition"), int(inst.get("condition", 100))],
-			[tr("Fitness"), int(inst.get("fitness", 100))]]:
+			[tr("Fitness"), int(inst.get("fitness", 100))],
+			[tr("XP"), "%d/%d" % [int(inst.get("xp", 0)), GameState.xp_needed(int(inst["level"]))]]]:
 		var cellv := VBoxContainer.new()
 		cellv.add_theme_constant_override("separation", 0)
 		cellv.add_child(MUI.dim(str(pair[0]), 10))
-		cellv.add_child(MUI.label(str(pair[1]), 15, SquadUI.pct_color(int(pair[1]))))
+		var val_col: Color = SquadUI.pct_color(int(pair[1])) if pair[1] is int else ThemeBuilder.COL_TEXT
+		cellv.add_child(MUI.label(str(pair[1]), 15, val_col))
 		grid.add_child(cellv)
 
 	# base stats card

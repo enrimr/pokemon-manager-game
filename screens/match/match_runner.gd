@@ -755,6 +755,7 @@ func _finalize_result() -> void:
 	fixture["score_away"] = wins[1]
 	fixture["detail"] = {"score_home": wins[0], "score_away": wins[1],
 		"battles": battles.duplicate(true), "players": _detail_players}
+	GameState.apply_match_progression(fixture)   # match XP -> level-ups
 	for side in 2:
 		GameState.consume_club_items(str(club_for_side(side)["id"]), used_items[side])
 	GameState._table_dirty = true
