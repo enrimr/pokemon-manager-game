@@ -114,6 +114,7 @@ func _build_pre() -> void:
 		row.add_theme_constant_override("separation", 8)
 		lv.add_child(row)
 		row.add_child(MUI.dim(str(i + 1), 11))
+		row.add_child(PokeArt.icon(int(inst.get("species_id", 0)), 30))
 		var nm := MUI.label("%s  ·  %s" % [_inst_name(inst), tr("Lv%d") % int(inst["level"])], 13,
 			Color.WHITE if i == 0 else ThemeBuilder.COL_TEXT)
 		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -224,6 +225,8 @@ func _battler_card(b: Dictionary, foe: bool) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	v.add_child(row)
+	row.add_child(PokeArt.icon(PokeArt.id_of(str(b.get("species", b.get("name", "")))), 44,
+		{"flip": not foe}))
 	var nm := MUI.label(str(b.get("name", "?")), 13, Color.WHITE)
 	nm.add_theme_font_override("font", MUI.bold())
 	row.add_child(nm)

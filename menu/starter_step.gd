@@ -185,10 +185,13 @@ func _build_card(id: int) -> Control:
 	box.add_theme_constant_override("separation", 8)
 	panel.add_child(box)
 
-	# monogram: type-coloured disc + initial (no copyrighted art, ever)
+	# sprite art when bundled (PokeArt), else the type-coloured monogram disc
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 12)
+	if PokeArt.has_art(id):
+		head.add_child(PokeArt.icon(id, 56))
 	var mono := PanelContainer.new()
+	mono.visible = not PokeArt.has_art(id)
 	mono.custom_minimum_size = Vector2(56, 56)
 	mono.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var msb := StyleBoxFlat.new()

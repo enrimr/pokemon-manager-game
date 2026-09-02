@@ -57,7 +57,7 @@ func _row(inst: Dictionary) -> Control:
 		_selected = inst
 		refresh())
 	var h: HBoxContainer = r[1]
-	h.add_child(SquadUI.monogram(_name(inst), types, 34, 14))
+	h.add_child(PokeArt.icon(int(inst.get("species_id", 0)), 38))
 	var mid := VBoxContainer.new()
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mid.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -117,7 +117,7 @@ func _build_detail() -> void:
 	var irow := HBoxContainer.new()
 	irow.add_theme_constant_override("separation", 10)
 	iv.add_child(irow)
-	irow.add_child(SquadUI.monogram(_name(inst), types, 52, 22))
+	irow.add_child(PokeArt.icon(int(inst.get("species_id", 0)), 64))
 	var icol := VBoxContainer.new()
 	icol.alignment = BoxContainer.ALIGNMENT_CENTER
 	icol.add_theme_constant_override("separation", 2)

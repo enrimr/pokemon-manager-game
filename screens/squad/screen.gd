@@ -1040,7 +1040,7 @@ func _update_footer() -> void:
 		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		_footer_stats.add_child(l)
 		return
-	var mono := UI.monogram(rec["name"], rec["types"], 44, 18)
+	var mono := UI.monogram(rec["name"], rec["types"], 44, 18, int((rec.get("inst", {}) as Dictionary).get("species_id", 0)))
 	mono.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_footer_stats.add_child(mono)
 	var idbox := VBoxContainer.new()

@@ -137,7 +137,10 @@ static func type_badge(t: String, font_size: int = 11) -> Control:
 
 
 ## Monogram square: primary type color background, 2-letter initials.
-static func monogram(display_name: String, types: Array, size: int = 64, font_size: int = 26) -> Control:
+static func monogram(display_name: String, types: Array, size: int = 64, font_size: int = 26,
+		species_id: int = 0) -> Control:
+	if species_id > 0 and PokeArt.has_art(species_id):
+		return PokeArt.icon(species_id, size)
 	var p := PanelContainer.new()
 	p.custom_minimum_size = Vector2(size, size)
 	var c: Color = DataStore.type_color(types[0]) if types.size() > 0 else Color("555b77")

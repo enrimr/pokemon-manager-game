@@ -182,7 +182,7 @@ func _header(inst: Dictionary, sp: Dictionary) -> Control:
 	hb.add_theme_constant_override("separation", 9)
 	panel.add_child(hb)
 
-	hb.add_child(UI.monogram(UI.display_name(inst), sp["types"], 72, 30))
+	hb.add_child(UI.monogram(UI.display_name(inst), sp["types"], 72, 30, int(inst.get("species_id", 0))))
 
 	var id_box := VBoxContainer.new()
 	id_box.add_theme_constant_override("separation", 3)
