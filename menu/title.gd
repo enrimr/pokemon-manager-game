@@ -20,6 +20,7 @@ const SettingsScreen := preload("res://screens/settings/screen.tscn")
 var _fonts: Dictionary = {}
 var _onboarding: Control = null
 var _settings_overlay: Control = null
+var _narrow := false   # portrait phone layout (mobile piece)
 
 
 func _ready() -> void:
@@ -35,10 +36,24 @@ func _ready() -> void:
 
 
 func _build() -> void:
+	_narrow = get_viewport_rect().size.x < 700.0   # portrait phone
 	var backdrop: Control = Backdrop.new()
 	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(backdrop)
 	_build_menu_only()
+	if not get_window().size_changed.is_connected(_on_resized):
+		get_window().size_changed.connect(_on_resized)
+
+
+## Rotation flips the layout between the wide and the portrait wordmark/menu.
+func _on_resized() -> void:
+	var narrow_now := get_viewport_rect().size.x < 700.0
+	if narrow_now == _narrow:
+		return
+	for c in get_children():
+		if c is Control:
+			c.queue_free()
+	_build()
 
 
 func _wordmark() -> Control:
@@ -52,20 +67,20 @@ func _wordmark() -> Control:
 	eyebrow.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	box.add_child(eyebrow)
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 18)
+	var row: BoxContainer = VBoxContainer.new() if _narrow else HBoxContainer.new()
+	row.add_theme_constant_override("separation", 0 if _narrow else 18)
 	var t1 := Label.new()
 	t1.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED  # brand wordmark
 	t1.text = "TRAINER"
 	t1.add_theme_font_override("font", _fonts["header"])
-	t1.add_theme_font_size_override("font_size", 68)
+	t1.add_theme_font_size_override("font_size", 46 if _narrow else 68)
 	t1.add_theme_color_override("font_color", Color.WHITE)
 	row.add_child(t1)
 	var t2 := Label.new()
 	t2.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED  # brand wordmark
 	t2.text = "MANAGER"
 	t2.add_theme_font_override("font", _fonts["header"])
-	t2.add_theme_font_size_override("font_size", 68)
+	t2.add_theme_font_size_override("font_size", 46 if _narrow else 68)
 	t2.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT)
 	row.add_child(t2)
 	box.add_child(row)
@@ -79,7 +94,7 @@ func _wordmark() -> Control:
 	var tag := Label.new()
 	tag.text = tr("You don't catch 'em all. You manage 'em.")
 	tag.add_theme_font_override("font", _fonts["semibold"])
-	tag.add_theme_font_size_override("font_size", 16)
+	tag.add_theme_font_size_override("font_size", 13 if _narrow else 16)
 	tag.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
 	box.add_child(tag)
 	return box
@@ -101,7 +116,9 @@ func _gap(px: int) -> Control:
 
 func _menu_button(main: String, sub: String, primary: bool, action: Callable) -> Button:
 	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(560, 58 if sub != "" else 46)
+	btn.custom_minimum_size = Vector2(0 if _narrow else 560, 58 if sub != "" else 46)
+	if _narrow:
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	var base_bg: Color = ThemeBuilder.COL_ACCENT_DIM if primary else ThemeBuilder.COL_PANEL
@@ -150,6 +167,8 @@ func _footer() -> Control:
 	var leagues: Array = GameState.leagues()
 	var names: Array = leagues.map(func(lg): return tr(str(lg["name"])))
 	l.text = "TRAINER MANAGER  ·  %s  ·  %s" % [" / ".join(names), tr(GameState.cup_name())]
+	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS   # never force col width
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	l.add_theme_font_size_override("font_size", 11)
 	l.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	row.add_child(l)
@@ -157,6 +176,7 @@ func _footer() -> Control:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
 	var engine := Label.new()
+	engine.visible = not _narrow
 	engine.text = tr("Made with Godot 4.6")
 	engine.add_theme_font_size_override("font_size", 11)
 	engine.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -241,10 +261,10 @@ func _refresh_menu() -> void:
 func _build_menu_only() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 120)
-	margin.add_theme_constant_override("margin_right", 120)
-	margin.add_theme_constant_override("margin_top", 90)
-	margin.add_theme_constant_override("margin_bottom", 48)
+	margin.add_theme_constant_override("margin_left", 20 if _narrow else 120)
+	margin.add_theme_constant_override("margin_right", 20 if _narrow else 120)
+	margin.add_theme_constant_override("margin_top", 46 if _narrow else 90)
+	margin.add_theme_constant_override("margin_bottom", 24 if _narrow else 48)
 	add_child(margin)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 0)
@@ -252,7 +272,7 @@ func _build_menu_only() -> void:
 	col.add_child(_wordmark())
 	col.add_child(_gap(46))
 	var menu := VBoxContainer.new()
-	menu.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	menu.size_flags_horizontal = Control.SIZE_EXPAND_FILL if _narrow else Control.SIZE_SHRINK_BEGIN
 	menu.add_theme_constant_override("separation", 10)
 	col.add_child(menu)
 	var has_save := MenuFlow.has_save()

@@ -572,7 +572,19 @@ func _build_chrome() -> void:
 	_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
 		_content.add_theme_constant_override(side, 8 if Settings.is_mobile() else 14)
-	right.add_child(_content)
+	if Settings.is_mobile():
+		# compact mode: a phone in landscape shows ~590 of the 810 design
+		# units screens are built for — scroll the whole page instead of
+		# silently amputating the bottom action bars (match controls!)
+		var page_scroll := ScrollContainer.new()
+		page_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		page_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		_content.custom_minimum_size.y = 810
+		page_scroll.add_child(_content)
+		right.add_child(page_scroll)
+	else:
+		right.add_child(_content)
 
 
 func _build_topbar() -> Control:
@@ -1877,7 +1889,8 @@ func _toast(msg: String) -> void:
 	_toast_panel.modulate.a = 0.0
 	_toast_panel.reset_size()
 	var vp := get_viewport_rect().size
-	_toast_panel.global_position = Vector2(vp.x - _toast_panel.size.x - 24, vp.y - _toast_panel.size.y - 24)
+	# top-centre, under the topbar — the bottom corners hold action buttons
+	_toast_panel.global_position = Vector2((vp.x - _toast_panel.size.x) / 2.0, 66)
 	if _toast_tween != null and _toast_tween.is_valid():
 		_toast_tween.kill()
 	_toast_tween = create_tween()

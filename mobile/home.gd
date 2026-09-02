@@ -57,10 +57,28 @@ func refresh() -> void:
 		row.add_child(mid)
 		row.add_child(Crest.icon(away, 40, {"no_tooltip": true}))
 		var days := Season.days_between(GameState.current_date, str(nf["date"]))
-		var hint := MUI.dim(tr("today — Continue plays it (instant result; rotate to landscape to manage it live)") if days <= 0
-			else I18n.np(days, "in %d day", "in %d days"), 11)
-		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		cv.add_child(hint)
+		var sh: Node = _shell()
+		var due: Dictionary = sh.call("due_fixture") if sh != null else {}
+		if not due.is_empty():
+			# MATCHDAY — the fixture is held for your call
+			var brow := HBoxContainer.new()
+			brow.add_theme_constant_override("separation", 8)
+			cv.add_child(brow)
+			var inst_btn := MUI.button(tr("Instant result"),
+				Color(ThemeBuilder.COL_GOOD, 0.22), ThemeBuilder.COL_GOOD)
+			inst_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			inst_btn.pressed.connect(func(): sh.call("play_due_instant"))
+			brow.add_child(inst_btn)
+			var live_btn := MUI.button(tr("Manage it live"))
+			live_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			live_btn.pressed.connect(func():
+				sh.call("toast", tr("Rotate to landscape — the Match screen takes over.")))
+			brow.add_child(live_btn)
+		else:
+			var hint := MUI.dim(I18n.np(days, "in %d day", "in %d days") if days > 0
+				else tr("today — press Continue"), 11)
+			hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			cv.add_child(hint)
 
 	# ---- last result card
 	var last := _last_played()

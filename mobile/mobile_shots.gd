@@ -22,6 +22,15 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(dir)
 	if GameState.player_club().is_empty():
 		GameState.new_career()
+
+	# the title screen is the phone's front door — prove the portrait layout
+	var title: Control = load("res://menu/title.tscn").instantiate()
+	add_child(title)
+	await _frames(14)
+	_shot("%s/title.png" % dir)
+	remove_child(title)
+	title.free()
+
 	var shell: Control = load("res://mobile/shell.tscn").instantiate()
 	add_child(shell)
 	await _frames(12)

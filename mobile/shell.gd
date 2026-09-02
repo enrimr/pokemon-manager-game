@@ -22,6 +22,7 @@ var _date_lbl: Label
 var _cash_lbl: Label
 var _advancing := false
 var _swap_pending := false
+var _match_due: Dictionary = {}   # fixture held for the Home match-due card
 
 
 func _ready() -> void:
@@ -29,9 +30,9 @@ func _ready() -> void:
 		theme = ThemeBuilder.build()
 	if AudioManager.instance == null:
 		add_child(load("res://shared/audio/audio_manager.tscn").instantiate())
-	# portrait always resolves player matchdays instantly — the interactive
-	# match screen is a landscape (desktop shell) feature
-	GameState.auto_sim_player_matches = true
+	# hold player matchdays for a decision (Home shows the match-due card:
+	# instant result, or rotate to landscape to manage it live)
+	GameState.auto_sim_player_matches = false
 
 	var bg := ColorRect.new()
 	bg.color = MUI.COL_BG
@@ -102,8 +103,8 @@ func toast(text: String) -> void:
 	t.add_theme_stylebox_override("panel",
 		ThemeBuilder._flat(Color("2a3150"), ThemeBuilder.COL_ACCENT, 8, 14, 10))
 	t.add_child(MUI.title(text, 13))
-	t.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	t.position.y -= 90
+	t.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	t.position.y += 66   # under the status strip, clear of the tab bar
 	add_child(t)
 	get_tree().create_timer(2.2).timeout.connect(func():
 		if is_instance_valid(t):
@@ -226,7 +227,10 @@ func _on_continue() -> void:
 	for i in 30:
 		var inbox_before: int = GameState.inbox.size()
 		for e in GameState.advance_day():
-			if str(e["t"]) == "fixture_played":
+			if str(e["t"]) == "player_match_due":
+				stop = true
+				_match_due = e["fixture"]
+			elif str(e["t"]) == "fixture_played":
 				var f: Dictionary = e["fixture"]
 				if GameState.is_player_club(str(f["home"])) or GameState.is_player_club(str(f["away"])):
 					stop = true
@@ -245,6 +249,8 @@ func _on_continue() -> void:
 	_refresh_badges()
 	if _pages[_current].has_method("refresh"):
 		_pages[_current].refresh()
+	if not _match_due.is_empty():
+		open_tab("home")
 	if not played.is_empty():
 		var we_home: bool = GameState.is_player_club(str(played["home"]))
 		var us := int(played["score_home"] if we_home else played["score_away"])
@@ -272,3 +278,34 @@ func _check_orientation() -> void:
 				get_tree().change_scene_to_file("res://shell/main.tscn")
 			else:
 				_swap_pending = false)
+
+
+## Home match-due card: take the instant result (the same sim every AI
+## fixture gets). Managing it live = rotate to landscape -> Match screen.
+func play_due_instant() -> void:
+	var f := due_fixture()
+	if f.is_empty():
+		return
+	GameState._play_fixture(f)
+	GameState.save_game()
+	_match_due = {}
+	_refresh_strip()
+	_refresh_badges()
+	if _pages[_current].has_method("refresh"):
+		_pages[_current].refresh()
+	var we_home: bool = GameState.is_player_club(str(f["home"]))
+	var us := int(f["score_home"] if we_home else f["score_away"])
+	var them := int(f["score_away"] if we_home else f["score_home"])
+	var opp: Dictionary = GameState.club(str(f["away"] if we_home else f["home"]))
+	AudioManager.play("crowd_cheer" if us > them else "crowd_gasp")
+	toast("%s %d–%d %s" % [tr("Won") if us > them else tr("Lost"),
+		us, them, str(opp.get("name", "?"))])
+
+
+## The player fixture currently held for a decision ({} if none).
+func due_fixture() -> Dictionary:
+	var nf := GameState.next_player_fixture()
+	if not nf.is_empty() and str(nf["date"]) == GameState.current_date \
+			and not nf.get("played", false):
+		return nf
+	return {}
