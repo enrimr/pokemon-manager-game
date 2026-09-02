@@ -24,6 +24,7 @@ var _advancing := false
 var _swap_pending := false
 var _match_due: Dictionary = {}   # fixture held for the Home match-due card
 var _battle_page: Control = null  # mobile battle view (core of the game)
+var _tabbar: Control = null       # hidden during battles (no mis-taps)
 ## MatchDirector contract: it pulls any shell whose `screens` has "match".
 var screens := {"match": true}
 
@@ -53,7 +54,8 @@ func _ready() -> void:
 	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
 		_content.add_theme_constant_override(side, 8)
 	layout.add_child(_content)
-	layout.add_child(_build_tabbar())
+	_tabbar = _build_tabbar()
+	layout.add_child(_tabbar)
 
 	_pages["home"] = load("res://mobile/home.gd").new()
 	_pages["inbox"] = load("res://mobile/inbox.gd").new()
@@ -117,10 +119,14 @@ func open_battle(fixture: Dictionary = {}) -> void:
 	for k in _tab_btns:
 		_tab_btns[k].add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	_battle_page.open_for(fixture if not fixture.is_empty() else due_fixture())
+	if _tabbar != null:
+		_tabbar.visible = false   # matchday focus: no stray taps out of the dugout
 	AudioManager.set_ambience("stadium")
 
 
 func close_battle() -> void:
+	if _tabbar != null:
+		_tabbar.visible = true
 	_match_due = {}
 	AudioManager.set_ambience("")
 	_current = ""
@@ -133,11 +139,19 @@ func toast(text: String) -> void:
 	var t := PanelContainer.new()
 	t.add_theme_stylebox_override("panel",
 		ThemeBuilder._flat(Color("2a3150"), ThemeBuilder.COL_ACCENT, 8, 14, 10))
-	t.add_child(MUI.title(text, 13))
-	t.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	t.position.y += 66   # under the status strip, clear of the tab bar
+	var vp := get_viewport_rect().size
+	var l := MUI.title(text, 13)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # long notes wrap, never clip
+	l.custom_minimum_size.x = minf(320.0, vp.x - 48.0)
+	t.add_child(l)
 	add_child(t)
-	get_tree().create_timer(2.2).timeout.connect(func():
+	# centre AFTER layout resolves the wrapped size
+	t.reset_size.call_deferred()
+	var center := func():
+		if is_instance_valid(t):
+			t.position = Vector2((vp.x - t.size.x) / 2.0, 66.0)
+	center.call_deferred()
+	get_tree().create_timer(2.6).timeout.connect(func():
 		if is_instance_valid(t):
 			t.queue_free())
 

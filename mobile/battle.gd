@@ -83,6 +83,18 @@ func _build_pre() -> void:
 	add_child(pg[0])
 	var v: VBoxContainer = pg[1]
 
+	# leaving prematch keeps the held fixture (Home's match-due card remains)
+	var exit_row := HBoxContainer.new()
+	v.add_child(exit_row)
+	var back := MUI.button("‹ " + tr("Back to the club"), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+	back.custom_minimum_size = Vector2(0, 36)
+	back.pressed.connect(func():
+		var sh: Node = _shell()
+		if sh != null:
+			sh.call("close_battle"))
+	exit_row.add_child(back)
+	exit_row.add_child(MUI.hspacer())
+
 	var opp: Dictionary = runner.opponent_club()
 	var head := MUI.card()
 	v.add_child(head[0])

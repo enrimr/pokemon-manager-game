@@ -1889,7 +1889,11 @@ func _toast(msg: String) -> void:
 	_toast_panel.modulate.a = 0.0
 	_toast_panel.reset_size()
 	var vp := get_viewport_rect().size
-	# top-centre, under the topbar — the bottom corners hold action buttons
+	# top-centre, under the topbar — the bottom corners hold action buttons.
+	# Clamp to the viewport and wrap: long notes were clipping on phones.
+	_toast_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_toast_label.custom_minimum_size.x = minf(420.0, vp.x - 48.0)
+	_toast_panel.reset_size()
 	_toast_panel.global_position = Vector2((vp.x - _toast_panel.size.x) / 2.0, 66)
 	if _toast_tween != null and _toast_tween.is_valid():
 		_toast_tween.kill()
