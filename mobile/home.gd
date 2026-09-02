@@ -71,8 +71,7 @@ func refresh() -> void:
 			brow.add_child(inst_btn)
 			var live_btn := MUI.button(tr("Manage it live"))
 			live_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			live_btn.pressed.connect(func():
-				sh.call("toast", tr("Rotate to landscape — the Match screen takes over.")))
+			live_btn.pressed.connect(func(): sh.call("open_battle", due))
 			brow.add_child(live_btn)
 		else:
 			var hint := MUI.dim(I18n.np(days, "in %d day", "in %d days") if days > 0

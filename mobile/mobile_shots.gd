@@ -28,6 +28,34 @@ func _run() -> void:
 	add_child(title)
 	await _frames(14)
 	_shot("%s/title.png" % dir)
+
+	# onboarding, portrait: all four steps must fit the phone (user report:
+	# the panel used to run off the right edge)
+	title._on_new_game()
+	await _frames(12)
+	var ob: Control = title._onboarding
+	if ob == null:
+		printerr("MOBILE SHOT ERROR: onboarding did not open")
+		_fails += 1
+	else:
+		ob._name_edit.text = "Ash Ketchum"
+		await _frames(4)
+		_shot("%s/onboarding_1.png" % dir)
+		ob._on_next()
+		await _frames(12)
+		ob._club_panel.select_club("club05")
+		await _frames(8)
+		_shot("%s/onboarding_2.png" % dir)
+		ob._on_next()
+		await _frames(12)
+		ob._starter_panel._select(4)
+		await _frames(8)
+		_shot("%s/onboarding_3.png" % dir)
+		ob._on_next()
+		await _frames(10)
+		_shot("%s/onboarding_4.png" % dir)
+		ob.queue_free()
+		await _frames(4)
 	remove_child(title)
 	title.free()
 
@@ -62,6 +90,39 @@ func _run() -> void:
 		squad_page.refresh()
 		await _frames(10)
 		_shot("%s/squad_detail.png" % dir)
+
+	# battle: the core loop, phone-native (prematch -> live -> full time)
+	GameState.auto_sim_player_matches = false
+	var due := {}
+	for i in 30:
+		for e in GameState.advance_day():
+			if str(e["t"]) == "player_match_due":
+				due = e["fixture"]
+		if not due.is_empty():
+			break
+	if due.is_empty():
+		printerr("MOBILE SHOT ERROR: no player fixture became due")
+		_fails += 1
+	else:
+		shell.open_battle(due)
+		await _frames(10)
+		_shot("%s/battle_pre.png" % dir)
+		var bp: Node = shell._battle_page
+		bp.runner.confirm_lineup()
+		bp.refresh()
+		for i in 900:   # play the stream until the engine asks for our order
+			await get_tree().process_frame
+			if bp.runner.awaiting_input():
+				break
+		await _frames(12)   # let the action grid build
+		_shot("%s/battle_live.png" % dir)
+		bp.runner.skip_series()
+		bp.runner.to_post()
+		bp.refresh()
+		await _frames(10)
+		_shot("%s/battle_post.png" % dir)
+		shell.close_battle()
+		await _frames(4)
 
 	# league fixtures mode
 	shell.open_tab("league")

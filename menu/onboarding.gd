@@ -88,7 +88,7 @@ func _ready() -> void:
 	_content = MarginContainer.new()
 	_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	for m in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
-		_content.add_theme_constant_override(m, 20)
+		_content.add_theme_constant_override(m, 10 if Settings.is_mobile() else 20)
 	root.add_child(_content)
 	root.add_child(_build_footer())
 
@@ -102,37 +102,45 @@ func _ready() -> void:
 
 
 func _build_header() -> Control:
+	# portrait phones: never let the header/chips force the panel wider than
+	# the viewport (this was the "cut off at the right" bug on mobile)
+	var narrow := get_viewport_rect().size.x < 700.0
 	var wrap := PanelContainer.new()
-	var sb := ThemeBuilder._flat(ThemeBuilder.COL_PANEL_ALT, ThemeBuilder.COL_BORDER, 0, 22, 14)
+	var sb := ThemeBuilder._flat(ThemeBuilder.COL_PANEL_ALT, ThemeBuilder.COL_BORDER, 0,
+		12 if narrow else 22, 10 if narrow else 14)
 	sb.border_width_left = 0
 	sb.border_width_right = 0
 	sb.border_width_top = 0
 	wrap.add_theme_stylebox_override("panel", sb)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 18)
+	var row: BoxContainer = VBoxContainer.new() if narrow else HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6 if narrow else 18)
 	var col := VBoxContainer.new()
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	col.add_theme_constant_override("separation", 2)
 	var title := Label.new()
 	title.text = tr("START A NEW CAREER")
 	title.add_theme_font_override("font", _font_header)
-	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_font_size_override("font_size", 16 if narrow else 22)
 	title.add_theme_color_override("font_color", Color.WHITE)
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	col.add_child(title)
-	var sub := Label.new()
-	sub.text = tr("Create your manager, choose your club, meet the board's expectations.")
-	sub.add_theme_font_size_override("font_size", 13)
-	sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
-	col.add_child(sub)
+	if not narrow:
+		var sub := Label.new()
+		sub.text = tr("Create your manager, choose your club, meet the board's expectations.")
+		sub.add_theme_font_size_override("font_size", 13)
+		sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		col.add_child(sub)
 	row.add_child(col)
 	# step chips: 1 MANAGER · 2 CLUB · 3 STARTER · 4 CONFIRM
-	var chips := HBoxContainer.new()
-	chips.add_theme_constant_override("separation", 8)
+	var chips := HFlowContainer.new()
+	chips.add_theme_constant_override("h_separation", 6 if narrow else 8)
+	chips.add_theme_constant_override("v_separation", 4)
 	chips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	for i in 4:
 		var chip := PanelContainer.new()
 		var lbl := Label.new()
-		lbl.text = "%d · %s" % [i + 1, [tr("MANAGER"), tr("CLUB"), tr("STARTER"), tr("CONFIRM")][i]]
+		lbl.text = ("%d" % (i + 1)) if narrow else "%d · %s" % [i + 1,
+			[tr("MANAGER"), tr("CLUB"), tr("STARTER"), tr("CONFIRM")][i]]
 		lbl.add_theme_font_override("font", _font_header)
 		lbl.add_theme_font_size_override("font_size", 11)
 		chip.add_child(lbl)
@@ -152,9 +160,10 @@ func _build_footer() -> Control:
 	wrap.add_theme_stylebox_override("panel", sb)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
+	var narrow := get_viewport_rect().size.x < 700.0
 	var cancel := Button.new()
 	cancel.text = tr("Cancel")
-	cancel.custom_minimum_size = Vector2(110, 40)
+	cancel.custom_minimum_size = Vector2(76 if narrow else 110, 40)
 	cancel.pressed.connect(func():
 		cancelled.emit()
 		queue_free())
@@ -164,13 +173,17 @@ func _build_footer() -> Control:
 	row.add_child(spacer)
 	_back_btn = Button.new()
 	_back_btn.text = tr("Back")
-	_back_btn.custom_minimum_size = Vector2(120, 40)
+	_back_btn.custom_minimum_size = Vector2(76 if narrow else 120, 40)
 	_back_btn.pressed.connect(func(): _show_step(_step - 1))
 	row.add_child(_back_btn)
 	_next_btn = Button.new()
-	_next_btn.custom_minimum_size = Vector2(300, 40)
+	_next_btn.custom_minimum_size = Vector2(0 if narrow else 300, 40)
+	if narrow:
+		_next_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_next_btn.clip_text = true
+		_next_btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_next_btn.add_theme_font_override("font", _font_bold)
-	_next_btn.add_theme_font_size_override("font_size", 15)
+	_next_btn.add_theme_font_size_override("font_size", 13 if narrow else 15)
 	_next_btn.pressed.connect(_on_next)
 	row.add_child(_next_btn)
 	wrap.add_child(row)
@@ -293,7 +306,7 @@ func _build_identity() -> Control:
 	var center := CenterContainer.new()
 	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var col := VBoxContainer.new()
-	col.custom_minimum_size.x = 560
+	col.custom_minimum_size.x = minf(560.0, get_viewport_rect().size.x - 72.0)
 	col.add_theme_constant_override("separation", 10)
 	center.add_child(col)
 
@@ -393,7 +406,7 @@ func _build_summary() -> Control:
 	var center := CenterContainer.new()
 	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(680, 0)
+	card.custom_minimum_size = Vector2(minf(680.0, get_viewport_rect().size.x - 60.0), 0)
 	card.add_theme_stylebox_override("panel",
 		ThemeBuilder._flat(ThemeBuilder.COL_PANEL_ALT, ThemeBuilder.COL_BORDER, 8, 26, 22))
 	center.add_child(card)
@@ -513,6 +526,8 @@ func _build_summary() -> Control:
 	facts_stars.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	facts_row.add_child(facts_stars)
 	var facts := Label.new()
+	facts.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	facts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	facts.text = "  ·   %s   ·   %s" % [
 		tr("Bank: P$ %s") % I18n.number(int(_selected.get("balance", 0))),
 		tr("Wages: P$ %s/w") % I18n.number(int(_selected.get("wage_budget", 0)))]

@@ -23,6 +23,9 @@ var _cash_lbl: Label
 var _advancing := false
 var _swap_pending := false
 var _match_due: Dictionary = {}   # fixture held for the Home match-due card
+var _battle_page: Control = null  # mobile battle view (core of the game)
+## MatchDirector contract: it pulls any shell whose `screens` has "match".
+var screens := {"match": true}
 
 
 func _ready() -> void:
@@ -88,14 +91,42 @@ func open_tab(tab: String) -> void:
 	AudioManager.on_screen_changed(tab)
 
 
-## Shim for the inbox action buttons that target desktop screen names.
+## Shim for the inbox action buttons + MatchDirector's matchday pull.
 func navigate_to(screen_name: String, _context: Dictionary = {}) -> bool:
+	if screen_name == "match":
+		open_battle()
+		return true
 	var map := {"inbox": "inbox", "squad": "squad", "competition": "league"}
 	if map.has(screen_name):
 		open_tab(str(map[screen_name]))
 		return true
 	toast(tr("Rotate to landscape for %s") % tr(screen_name.capitalize()))
 	return false
+
+
+## The mobile battle view (mobile/battle.gd) — drives MatchRunner phone-native.
+func open_battle(fixture: Dictionary = {}) -> void:
+	if _battle_page == null:
+		_battle_page = load("res://mobile/battle.gd").new()
+		_battle_page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_battle_page.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	for c in _content.get_children():
+		_content.remove_child(c)
+	_content.add_child(_battle_page)
+	_current = "battle"
+	for k in _tab_btns:
+		_tab_btns[k].add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	_battle_page.open_for(fixture if not fixture.is_empty() else due_fixture())
+	AudioManager.set_ambience("stadium")
+
+
+func close_battle() -> void:
+	_match_due = {}
+	AudioManager.set_ambience("")
+	_current = ""
+	_refresh_strip()
+	_refresh_badges()
+	open_tab("home")
 
 
 func toast(text: String) -> void:

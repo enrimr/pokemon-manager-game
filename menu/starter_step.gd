@@ -18,7 +18,7 @@ var _league := ""
 var _club_name := ""
 var _selected: Dictionary = {}
 var _cards: Array = []          # [{panel, id}]
-var _cards_row: HBoxContainer
+var _cards_row: BoxContainer
 var _prof_title: Label
 var _prof_text: Label
 var _nick_edit: LineEdit
@@ -56,9 +56,11 @@ func _ready() -> void:
 	col.add_theme_constant_override("separation", 10)
 	add_child(col)
 
+	var narrow_t := get_viewport_rect().size.x < 700.0
 	_prof_title = Label.new()
+	_prof_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_prof_title.add_theme_font_override("font", _font_header)
-	_prof_title.add_theme_font_size_override("font_size", 18)
+	_prof_title.add_theme_font_size_override("font_size", 14 if narrow_t else 18)
 	_prof_title.add_theme_color_override("font_color", Color.WHITE)
 	col.add_child(_prof_title)
 
@@ -68,10 +70,19 @@ func _ready() -> void:
 	_prof_text.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	col.add_child(_prof_text)
 
-	_cards_row = HBoxContainer.new()
-	_cards_row.add_theme_constant_override("separation", 14)
+	var narrow := get_viewport_rect().size.x < 700.0   # portrait phones stack
+	_cards_row = VBoxContainer.new() if narrow else HBoxContainer.new()
+	_cards_row.add_theme_constant_override("separation", 10 if narrow else 14)
 	_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(_cards_row)
+	if narrow:
+		var cscroll := ScrollContainer.new()
+		cscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		cscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cscroll.add_child(_cards_row)
+		col.add_child(cscroll)
+	else:
+		col.add_child(_cards_row)
 
 	var foot := HBoxContainer.new()
 	foot.add_theme_constant_override("separation", 12)
@@ -83,10 +94,11 @@ func _ready() -> void:
 	_nick_edit = LineEdit.new()
 	_nick_edit.placeholder_text = tr("A name only you would give it")
 	_nick_edit.max_length = 20
-	_nick_edit.custom_minimum_size = Vector2(280, 38)
+	_nick_edit.custom_minimum_size = Vector2(minf(280.0, get_viewport_rect().size.x * 0.45), 38)
 	foot.add_child(_nick_edit)
 	_status = Label.new()
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS   # never widen the panel
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_status.add_theme_font_override("font", _font_semibold)
 	_status.add_theme_font_size_override("font_size", 13)

@@ -25,6 +25,7 @@ var _selected_id := ""
 var _rows_box: VBoxContainer
 var _detail_box: VBoxContainer
 var _tab_btns: Dictionary = {}
+var _narrow := false   # portrait phone layout (mobile piece)
 var _row_panels: Dictionary = {}
 
 
@@ -162,13 +163,19 @@ func cup_expectation_key(expected: int) -> String:
 # ------------------------------------------------------------------ ui
 
 func _build_ui() -> void:
-	var root := HBoxContainer.new()
+	# portrait phones stack the list over the detail pane (mobile piece)
+	_narrow = get_viewport_rect().size.x < 700.0
+	var root: BoxContainer = VBoxContainer.new() if _narrow else HBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.add_theme_constant_override("separation", 14)
+	root.add_theme_constant_override("separation", 10 if _narrow else 14)
 	add_child(root)
 
 	var left := VBoxContainer.new()
-	left.custom_minimum_size.x = 620
+	if _narrow:
+		left.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		left.size_flags_stretch_ratio = 1.4
+	else:
+		left.custom_minimum_size.x = 620
 	left.add_theme_constant_override("separation", 8)
 	root.add_child(left)
 
@@ -180,7 +187,7 @@ func _build_ui() -> void:
 		b.text = tr(str(lg["name"])).to_upper()
 		b.toggle_mode = true
 		b.focus_mode = Control.FOCUS_NONE
-		b.custom_minimum_size = Vector2(180, 34)
+		b.custom_minimum_size = Vector2(150 if _narrow else 180, 34)
 		b.add_theme_font_override("font", _font_header)
 		b.add_theme_font_size_override("font_size", 13)
 		b.pressed.connect(func(): set_league(lid))
@@ -193,7 +200,9 @@ func _build_ui() -> void:
 		ThemeBuilder._flat(ThemeBuilder.COL_PANEL_ALT, ThemeBuilder.COL_BORDER, 4, 10, 4))
 	var hrow := HBoxContainer.new()
 	hrow.add_theme_constant_override("separation", 10)
-	for spec in [[tr("CLUB"), 280.0], [tr("REPUTATION"), 140.0], [tr("SQUAD STRENGTH"), 0.0]]:
+	for spec in [[tr("CLUB"), 180.0 if _narrow else 280.0],
+			[tr("REP") if _narrow else tr("REPUTATION"), 76.0 if _narrow else 140.0],
+			[tr("STARS") if _narrow else tr("SQUAD STRENGTH"), 0.0]]:
 		var l := Label.new()
 		l.text = str(spec[0])
 		l.add_theme_font_override("font", _font_header)
@@ -216,7 +225,7 @@ func _build_ui() -> void:
 	scroll.add_child(_rows_box)
 	left.add_child(scroll)
 
-	# right: detail pane
+	# right (below, on portrait phones): detail pane
 	var pane := PanelContainer.new()
 	pane.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pane.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -224,7 +233,14 @@ func _build_ui() -> void:
 		ThemeBuilder._flat(ThemeBuilder.COL_PANEL_ALT, ThemeBuilder.COL_BORDER, 6, 16, 14))
 	_detail_box = VBoxContainer.new()
 	_detail_box.add_theme_constant_override("separation", 8)
-	pane.add_child(_detail_box)
+	if _narrow:
+		var dscroll := ScrollContainer.new()
+		dscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		_detail_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		dscroll.add_child(_detail_box)
+		pane.add_child(dscroll)
+	else:
+		pane.add_child(_detail_box)
 	root.add_child(pane)
 	_render_detail({})
 
@@ -262,7 +278,7 @@ func _club_row(s: Dictionary) -> Control:
 	row.add_theme_constant_override("separation", 10)
 
 	var club_cell := HBoxContainer.new()
-	club_cell.custom_minimum_size.x = 280
+	club_cell.custom_minimum_size.x = 180 if _narrow else 280
 	club_cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	club_cell.add_theme_constant_override("separation", 10)
 	club_cell.add_child(_crest(s, 30))
@@ -285,7 +301,7 @@ func _club_row(s: Dictionary) -> Control:
 	row.add_child(club_cell)
 
 	var rep_cell := HBoxContainer.new()
-	rep_cell.custom_minimum_size.x = 140
+	rep_cell.custom_minimum_size.x = 76 if _narrow else 140
 	rep_cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rep_cell.add_theme_constant_override("separation", 8)
 	var rep_n := Label.new()
@@ -295,7 +311,7 @@ func _club_row(s: Dictionary) -> Control:
 	rep_n.add_theme_font_size_override("font_size", 12)
 	rep_n.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT)
 	rep_cell.add_child(rep_n)
-	rep_cell.add_child(_meter(float(s["rep"]) / 20.0, ThemeBuilder.COL_ACCENT, 90))
+	rep_cell.add_child(_meter(float(s["rep"]) / 20.0, ThemeBuilder.COL_ACCENT, 46 if _narrow else 90))
 	row.add_child(rep_cell)
 
 	var str_cell := HBoxContainer.new()
@@ -307,11 +323,12 @@ func _club_row(s: Dictionary) -> Control:
 	stars.texture = GlyphIcons.rating_tex(float(n), 5, 12, ThemeBuilder.COL_WARN)
 	stars.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	str_cell.add_child(stars)
-	var avg := Label.new()
-	avg.text = tr("avg Lv %.0f") % float(s["avg6"])
-	avg.add_theme_font_size_override("font_size", 11)
-	avg.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
-	str_cell.add_child(avg)
+	if not _narrow:   # phones keep stars only — the label overflowed the row
+		var avg := Label.new()
+		avg.text = tr("avg Lv %.0f") % float(s["avg6"])
+		avg.add_theme_font_size_override("font_size", 11)
+		avg.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		str_cell.add_child(avg)
 	row.add_child(str_cell)
 
 	panel.add_child(row)
