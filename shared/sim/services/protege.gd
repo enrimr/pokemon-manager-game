@@ -29,6 +29,45 @@ static var instance: ProtegeService = null
 const TRIOS := {"kanto": [1, 4, 7], "johto": [152, 155, 158]}
 ## species -> the trio member type-advantaged over it (rival's counter-pick)
 const COUNTER := {1: 4, 4: 7, 7: 1, 152: 155, 155: 158, 158: 152}
+## The onboarding's FOURTH ball (mystery pick): any BASIC species (never an
+## evolution target) or — rarely — a legendary. Also the select_starter
+## validation for it. Computed once from evolutions.json + legendaries.json.
+static var _wild_pool_cache: Dictionary = {}   # {"basics": [ids], "legends": [ids]}
+
+static func wild_pools() -> Dictionary:
+	if not _wild_pool_cache.is_empty():
+		return _wild_pool_cache
+	var evolved := {}
+	var f := FileAccess.open("res://shared/data/evolutions.json", FileAccess.READ)
+	if f != null:
+		var data: Variant = JSON.parse_string(f.get_as_text())
+		if typeof(data) == TYPE_DICTIONARY:
+			# evolutions.json: {"<from_id>": [{to, method, ...}, ...], ...}
+			var evs: Dictionary = data.get("evolutions", {})
+			for from_id in evs:
+				for opt in (evs[from_id] as Array):
+					evolved[int((opt as Dictionary).get("to", 0))] = true
+	var legends: Array = []
+	var lf := FileAccess.open("res://shared/data/legendaries.json", FileAccess.READ)
+	if lf != null:
+		var ld: Variant = JSON.parse_string(lf.get_as_text())
+		if typeof(ld) == TYPE_DICTIONARY:
+			for l in ld.get("legendaries", []):
+				legends.append(int(l.get("species_id", 0)))
+	var basics: Array = []
+	for sp in DataStore.pokemon:
+		var id := int(sp.get("id", 0))
+		if id >= 1 and id <= 251 and not evolved.has(id) \
+				and not legends.has(id) and id != 132:   # Ditto: Transform-only
+			basics.append(id)
+	_wild_pool_cache = {"basics": basics, "legends": legends}
+	return _wild_pool_cache
+
+
+static func wild_offerable(species_id: int) -> bool:
+	var pools := wild_pools()
+	return (pools["basics"] as Array).has(species_id) \
+		or (pools["legends"] as Array).has(species_id)
 const PROTEGE_UID := "protege1"
 const RIVAL_UID := "rivalpro1"
 const JOIN_LEVEL := 10
@@ -122,7 +161,7 @@ func select_starter(species_id: int, nickname: String = "") -> String:
 	if bool(state.get("selected", false)):
 		return "a protégé has already been chosen"
 	var league := str(_gs.league_of(_player_club_id()))
-	if not (species_id in trio_for_league(league)):
+	if not (species_id in trio_for_league(league)) and not wild_offerable(species_id):
 		return "that species is not on the professor's table"
 	state = _blank_state()
 	state["selected"] = true

@@ -22,6 +22,8 @@ var _cards_row: BoxContainer
 var _narrow := false            # portrait phones: Poké Ball picker (mobile piece)
 var _inspect_id := 0            # narrow mode: which ball is open
 var _revealed := {}             # ids whose ball has been opened at least once
+var _wild_id := 0               # the FOURTH ball: a random basic (rarely a legendary)
+const WILD_LEGEND_CHANCE := 0.02
 var _balls_row: HBoxContainer = null
 var _choose_btn: Button = null  # pinned confirm — always visible once inspecting
 static var _ball_cache: Dictionary = {}
@@ -52,6 +54,7 @@ func set_context(league_id: String, club_name: String) -> void:
 	_league = league_id
 	_club_name = club_name
 	_selected = {}
+	_roll_wild()
 	_refresh()
 
 
@@ -135,6 +138,20 @@ func _ready() -> void:
 	_refresh()
 
 
+## Roll the mystery ball's occupant: a random basic species — with a whisper
+## of a chance (2%) that something legendary wandered onto the table.
+func _roll_wild() -> void:
+	var pools: Dictionary = Protege.wild_pools()
+	var trio: Array = Protege.trio_for_league(_league)
+	if randf() < WILD_LEGEND_CHANCE and not (pools["legends"] as Array).is_empty():
+		var legends: Array = pools["legends"]
+		_wild_id = int(legends[randi() % legends.size()])
+		return
+	var basics: Array = (pools["basics"] as Array).filter(func(id): return not trio.has(int(id)))
+	_wild_id = int(basics[randi() % basics.size()]) if not basics.is_empty() else 0
+	_revealed.erase(_wild_id)
+
+
 func _refresh() -> void:
 	if _cards_row == null:
 		return
@@ -143,7 +160,11 @@ func _refresh() -> void:
 	for c in _cards_row.get_children():
 		c.queue_free()
 	_cards.clear()
-	var trio: Array = Protege.trio_for_league(_league)
+	var trio: Array = Protege.trio_for_league(_league).duplicate()
+	if _wild_id == 0:
+		_roll_wild()
+	if _wild_id > 0:
+		trio.append(_wild_id)
 	if not trio.has(_inspect_id):
 		_inspect_id = 0
 	_rebuild_balls(trio)
@@ -179,7 +200,7 @@ func _rebuild_balls(trio: Array) -> void:
 		var bpx := 78 if _narrow else 108
 		b.custom_minimum_size = Vector2(bpx, bpx)
 		b.icon = _ball_tex(bpx, id == _inspect_id,
-			id == int(_selected.get("species_id", -1)))
+			id == int(_selected.get("species_id", -1)), id == _wild_id)
 		b.expand_icon = true
 		b.pressed.connect(func():
 			_inspect_id = id
@@ -200,18 +221,22 @@ func _rebuild_balls(trio: Array) -> void:
 
 ## Classic Poké Ball, drawn as runtime SVG (same pipeline as PokeArt/crests).
 ## open = the inspected ball (accent ring); chosen = the confirmed starter.
-static func _ball_tex(px: int, open: bool, chosen: bool) -> Texture2D:
-	var key := "%d|%s|%s" % [px, open, chosen]
+static func _ball_tex(px: int, open: bool, chosen: bool, mystery := false) -> Texture2D:
+	var key := "%d|%s|%s|%s" % [px, open, chosen, mystery]
 	if _ball_cache.has(key):
 		return _ball_cache[key]
 	var ring := "#7b6cff" if open else "#2a2b33"
 	if chosen:
 		ring = "#57c979"
+	var top := "#6a4a9c" if mystery else "#e8433f"   # the odd one out wears purple
+	var dots := ('<circle cx="31" cy="33" r="6" fill="#c46a8a"/>' +
+		'<circle cx="65" cy="33" r="6" fill="#c46a8a"/>') if mystery else ""
 	var svg := ('<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">' +
 		'<defs><clipPath id="b"><circle cx="48" cy="50" r="40"/></clipPath></defs>' +
 		'<g clip-path="url(#b)">' +
 		'<rect width="96" height="96" fill="#eef0f5"/>' +
-		'<path d="M8,50 A40,40 0 0 1 88,50 Z" fill="#e8433f"/>' +
+		('<path d="M8,50 A40,40 0 0 1 88,50 Z" fill="%s"/>' % top) +
+		dots +
 		'<rect x="8" y="46" width="80" height="8" fill="#23242c"/>' +
 		'</g>' +
 		'<circle cx="48" cy="50" r="12" fill="#23242c"/>' +
@@ -269,7 +294,9 @@ func _blurb(id: int) -> String:
 		152: return tr("The sweet-scented one. It calms every room it walks into and sulks magnificently when ignored. Wins hearts first, battles shortly after.")
 		155: return tr("The shy flame. It keeps its fire banked until the moment matters — then its back ignites and the room goes quiet. Timid in the corridor, fearless between the lines.")
 		158: return tr("The biter. It chews everything: ropes, benches, clipboards, reputations. Boundless energy that a patient manager could shape into something genuinely frightening.")
-	return ""
+	if (Protege.wild_pools()["legends"] as Array).has(id):
+		return tr("The professor is as pale as his coat. \"That ball was NOT on my table when I locked up last night. Take it before it changes its mind — and tell absolutely no one where you got it.\"")
+	return tr("The stowaway. Nobody remembers putting this fourth ball on the table, least of all the professor. It was simply... there this morning, and it has been watching you since you walked in.")
 
 
 func _hint(id: int) -> String:
@@ -280,7 +307,9 @@ func _hint(id: int) -> String:
 		152: return tr("Scout's whisper: the squad trains calmer on days it's around.")
 		155: return tr("Scout's whisper: quickest ignition we have ever measured in a juvenile.")
 		158: return tr("Scout's whisper: that jaw will decide cup ties one day.")
-	return ""
+	if (Protege.wild_pools()["legends"] as Array).has(id):
+		return tr("Scout's whisper: our instruments refuse to print what they measured. Sign it. SIGN IT.")
+	return tr("Scout's whisper: no paperwork, no pedigree, no idea. But it picked YOU.")
 
 
 ## FM masked stats: the scouts translate base tendencies into RANGES on a
