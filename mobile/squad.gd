@@ -4,8 +4,11 @@ extends VBoxContainer
 ## menu (MonActions) — deep management stays in landscape.
 
 const SquadUI := preload("res://screens/squad/ui_helpers.gd")
+const TrainingSvc := preload("res://screens/training/training_service.gd")
 
 var _selected: Dictionary = {}
+var _learn_mode := ""            # "" | "pick" (choose new move) | "slot" (choose forgotten)
+var _learn_move := ""            # the chosen move while picking a slot
 
 
 func _init() -> void:
@@ -14,6 +17,8 @@ func _init() -> void:
 
 func go_root() -> void:
 	_selected = {}
+	_learn_mode = ""
+	_learn_move = ""
 	refresh()
 
 
@@ -175,22 +180,98 @@ func _build_detail() -> void:
 			cell.add_child(MUI.label(str(val), 13, SquadUI.attr_color(SquadUI.base_to_20(val))))
 			bgrid.add_child(cell)
 
-	# moves card
+	# moves card (+ the training ground's move-learning pipeline, mobile UI)
+	var tsvc: Node = TrainingSvc.ensure()
+	var lstate: Variant = tsvc.mon_state(str(inst["uid"])).get("move")
 	var mc := MUI.card()
 	v.add_child(mc[0])
 	var mv: VBoxContainer = mc[1]
 	mv.add_child(MUI.dim(tr("MOVES").to_upper(), 10))
-	for mvname in inst.get("moves", []):
-		var md: Dictionary = DataStore.moves.get(str(mvname), {})
+	var known: Array = inst.get("moves", [])
+	for mi in known.size():
+		var mvname := str(known[mi])
+		var md: Dictionary = DataStore.moves.get(mvname, {})
 		var mrow := HBoxContainer.new()
 		mrow.add_theme_constant_override("separation", 8)
 		mv.add_child(mrow)
-		mrow.add_child(MUI.label(I18n.move_name(str(mvname)), 13, Color.WHITE))
+		if _learn_mode == "slot":
+			var forget := MUI.button(tr("Forget"), Color(ThemeBuilder.COL_WARN, 0.2), ThemeBuilder.COL_WARN)
+			forget.custom_minimum_size = Vector2(0, 32)
+			forget.add_theme_font_size_override("font_size", 10)
+			var slot_i := mi
+			forget.pressed.connect(func():
+				tsvc.start_move_learning(str(inst["uid"]), _learn_move, slot_i)
+				_learn_mode = ""
+				_learn_move = ""
+				refresh())
+			mrow.add_child(forget)
+		mrow.add_child(MUI.label(I18n.move_name(mvname), 13, Color.WHITE))
 		mrow.add_child(MUI.hspacer())
 		if not md.is_empty():
 			mrow.add_child(MUI.type_chip(str(md.get("type", "normal"))))
 			var pw := int(md.get("power", 0))
 			mrow.add_child(MUI.dim(tr("PWR %d") % pw if pw > 0 else tr("Status"), 11))
+	if lstate != null and _learn_mode == "":
+		var lrow := HBoxContainer.new()
+		lrow.add_theme_constant_override("separation", 8)
+		mv.add_child(lrow)
+		var ld: Dictionary = lstate
+		var pl := MUI.label(tr("Learning %s — %d%%") % [I18n.move_name(str(ld.get("name", "?"))),
+			int(ld.get("progress", 0.0))], 12, ThemeBuilder.COL_ACCENT.lightened(0.25))
+		pl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		lrow.add_child(pl)
+		var cancel := MUI.button(tr("Cancel"), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+		cancel.custom_minimum_size = Vector2(0, 32)
+		cancel.add_theme_font_size_override("font_size", 10)
+		cancel.pressed.connect(func():
+			tsvc.cancel_move_learning(str(inst["uid"]))
+			refresh())
+		lrow.add_child(cancel)
+	elif _learn_mode == "pick":
+		mv.add_child(MUI.dim(tr("Pick the move to drill (Move Practice sessions speed it up):"), 10))
+		var sp2: Dictionary = DataStore.species(int(inst.get("species_id", 0)))
+		for cand_v in sp2.get("learnset", []):
+			var cand := str(cand_v)
+			if known.has(cand):
+				continue
+			var cd: Dictionary = DataStore.moves.get(cand, {})
+			var crow := HBoxContainer.new()
+			crow.add_theme_constant_override("separation", 8)
+			mv.add_child(crow)
+			var pick := MUI.button(I18n.move_name(cand))
+			pick.custom_minimum_size = Vector2(0, 36)
+			pick.add_theme_font_size_override("font_size", 12)
+			pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			pick.pressed.connect(func():
+				if known.size() >= 4:
+					_learn_move = cand
+					_learn_mode = "slot"
+				else:
+					tsvc.start_move_learning(str(inst["uid"]), cand, 0)
+					_learn_mode = ""
+				refresh())
+			crow.add_child(pick)
+			if not cd.is_empty():
+				crow.add_child(MUI.type_chip(str(cd.get("type", "normal"))))
+				var cpw := int(cd.get("power", 0))
+				crow.add_child(MUI.dim(tr("PWR %d") % cpw if cpw > 0 else tr("Status"), 11))
+		var back2 := MUI.button("‹ " + tr("Back"), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+		back2.custom_minimum_size = Vector2(0, 34)
+		back2.pressed.connect(func():
+			_learn_mode = ""
+			refresh())
+		mv.add_child(back2)
+	elif _learn_mode == "slot":
+		mv.add_child(MUI.dim(tr("Four moves known — tap Forget on the one to replace with %s.") % I18n.move_name(_learn_move), 10))
+	else:
+		var learn := MUI.button(tr("Teach a move…"), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+		learn.custom_minimum_size = Vector2(0, 36)
+		learn.add_theme_font_size_override("font_size", 12)
+		learn.pressed.connect(func():
+			_learn_mode = "pick"
+			refresh())
+		mv.add_child(learn)
 
 	# contract + item card
 	var cc := MUI.card()

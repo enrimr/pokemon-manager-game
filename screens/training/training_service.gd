@@ -1262,6 +1262,18 @@ func _process_day(date: String) -> void:
 					ms["mentor_pts"] = float(ms.get("mentor_pts", 0.0)) + (mv_ - v)
 					v = mv_
 				ms["acc"][stat] = float(ms["acc"][stat]) + v
+				# development also trickles match-style XP, so the VISIBLE level
+				# moves with training too (tester report: stats rose, level
+				# didn't). Bench players grow slower than starters, not zero.
+				ms["xp_frac"] = float(ms.get("xp_frac", 0.0)) + v * 2.0
+				if float(ms["xp_frac"]) >= 1.0:
+					var whole := floori(float(ms["xp_frac"]))
+					ms["xp_frac"] = float(ms["xp_frac"]) - float(whole)
+					inst["xp"] = int(inst.get("xp", 0)) + whole
+					while int(inst["level"]) < GameState.XP_LEVEL_CAP \
+							and int(inst["xp"]) >= GameState.xp_needed(int(inst["level"])):
+						inst["xp"] = int(inst["xp"]) - GameState.xp_needed(int(inst["level"]))
+						inst["level"] = int(inst["level"]) + 1
 				_maybe_convert_iv(inst, ms, stat, not me.is_empty())
 
 		# --- the fixture itself is a physical load (starters carry most of it)

@@ -5744,3 +5744,9 @@ Accept the friendly,Aceptar el amistoso
 Turn them away,Despacharlo
 CHALLENGER AT THE GATES,RETADOR EN LA PUERTA
 Friendly · team of %d · around Lv %d · winner takes %s,Amistoso · equipo de %d · en torno a Nv %d · el ganador se lleva %s
+Learning %s — %d%%,Aprendiendo %s — %d%%
+Pick the move to drill (Move Practice sessions speed it up):,Elige el movimiento a ensayar (las sesiones de Práctica de movimientos lo aceleran):
+Four moves known — tap Forget on the one to replace with %s.,Ya conoce cuatro — toca Olvidar en el que sustituirá %s.
+Forget,Olvidar
+Teach a move…,Enseñar un movimiento…
+Cancel,Cancelar
