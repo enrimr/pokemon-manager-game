@@ -101,7 +101,7 @@ func new_career(seed_value: int = 20260801, club_id: String = "") -> void:
 		fixtures += Season.make_league_fixtures(league_club_ids(lid), season_start,
 			prefixes[mini(i, prefixes.size() - 1)], lid)
 	cup_round = 1
-	fixtures += Season.make_cup_round(all_club_ids(), 1, Season.cup_round_date(season_start, 1), career_seed)
+	fixtures += Season.make_cup_round(tier1_club_ids(), 1, Season.cup_round_date(season_start, 1), career_seed)
 	inbox = []
 	add_inbox_message(current_date, I18n.t("Welcome to %s") % player_club()["name"],
 		I18n.t("The board expects a solid mid-table finish in the %s. Your first fixture is on %s.") %
@@ -366,9 +366,39 @@ func all_club_ids() -> Array:
 	return world["clubs"].map(func(c): return c["id"])
 
 
-## The league structure: [{id, name}, ...] (kanto + johto).
+## The league structure: [{id, name, region, tier}, ...] — two tier-1 regional
+## leagues (kanto, johto) + one tier-2 division per region (promotion piece).
 func leagues() -> Array:
 	return world["meta"].get("leagues", [{"id": "kanto", "name": world["meta"]["league_name"]}])
+
+
+func league_info(league_id: String) -> Dictionary:
+	for lg in leagues():
+		if str(lg["id"]) == league_id:
+			return lg
+	return {}
+
+
+## 1 = top flight (cup + Championship Series), 2 = second division.
+func league_tier(league_id: String) -> int:
+	return int(league_info(league_id).get("tier", 1))
+
+
+## The REGION a league belongs to ("kanto"/"johto") — routes, legendaries and
+## regional scouting key off regions, never off division ids.
+func region_of_league(league_id: String) -> String:
+	return str(league_info(league_id).get("region", league_id))
+
+
+func player_region() -> String:
+	return region_of_league(player_league_id())
+
+
+## Top-flight clubs only: the Indigo Cup draw + Championship Series pool.
+func tier1_club_ids() -> Array:
+	return world["clubs"].filter(func(c):
+		return league_tier(str(c.get("league", "kanto"))) == 1) \
+		.map(func(c): return c["id"])
 
 
 func league_club_ids(league_id: String) -> Array:
@@ -905,7 +935,7 @@ func start_new_season() -> void:
 		fixtures += Season.make_league_fixtures(league_club_ids(lid), season_start,
 			season_id_prefix() + prefixes[mini(i, prefixes.size() - 1)], lid)
 	cup_round = 1
-	fixtures += _season_tag_ids(Season.make_cup_round(all_club_ids(), 1,
+	fixtures += _season_tag_ids(Season.make_cup_round(tier1_club_ids(), 1,
 		Season.cup_round_date(season_start, 1), career_seed + season_no() * 104729))
 
 	# a year passes: everyone ages 12 months (contract expiry dates simply come
@@ -1026,7 +1056,45 @@ func _ensure_league_state() -> void:
 		world["meta"]["cup_name"] = "Indigo Cup"
 	if not world["meta"].has("season_no"):
 		world["meta"]["season_no"] = 1
+	_ensure_second_divisions()
 	world["meta"]["league_name"] = league_name(player_league_id())
+
+
+## Save migration (promotion piece): careers from the two-league era gain the
+## second divisions — league entries get region/tier, and the D2 clubs are
+## injected from the shipped world.json. Their fixtures start at the next
+## rollover (start_new_season generates per league), so a season in progress
+## is never disturbed.
+func _ensure_second_divisions() -> void:
+	var lgs: Array = world["meta"]["leagues"]
+	var have := {}
+	for lg in lgs:
+		have[str(lg["id"])] = true
+		if not lg.has("region"):
+			lg["region"] = str(lg["id"])
+		if not lg.has("tier"):
+			lg["tier"] = 1
+	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
+	if f == null:
+		return
+	var shipped: Dictionary = JSON.parse_string(f.get_as_text())
+	var added := 0
+	for lg in shipped["meta"].get("leagues", []):
+		if not have.has(str(lg["id"])):
+			lgs.append((lg as Dictionary).duplicate(true))
+		else:
+			for cur in lgs:   # backfill new display fields on old entries
+				if str(cur["id"]) == str(lg["id"]) and not cur.has("short"):
+					cur["short"] = str(lg.get("short", ""))
+	for c in shipped.get("clubs", []):
+		if not _clubs_by_id.has(str(c["id"])):
+			world["clubs"].append((c as Dictionary).duplicate(true))
+			added += 1
+	if added > 0:
+		_index_clubs()
+		_table_dirty = true
+		add_inbox_message(current_date, I18n.t("The pyramid grows: second divisions announced"),
+			I18n.t("The federations of Kanto and Johto have founded a second division each — %d new clubs join the pyramid. From the end of this season, the bottom two of each league are relegated and the top two of each Division Two come up. The Indigo Cup and the Championship Series remain top-flight competitions.") % added)
 
 
 # ------------------------------------------------------------------ inbox

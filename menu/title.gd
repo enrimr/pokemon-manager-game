@@ -441,7 +441,7 @@ func _build_menu_only() -> void:
 	if has_save:
 		menu.add_child(_menu_button(tr("Continue"), _continue_sub_text(), true, _on_continue))
 	menu.add_child(_menu_button(tr("New Game"),
-		tr("Create your manager and pick a club — 32 clubs, two leagues"),
+		tr("Create your manager and pick a club — 56 clubs, two leagues + two second divisions"),
 		not has_save, _on_new_game))
 	if has_save:
 		menu.add_child(_menu_button(tr("Load Game"),

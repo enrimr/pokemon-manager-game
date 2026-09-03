@@ -228,7 +228,7 @@ func _weighted_pool() -> Array:
 		var isp: Dictionary = DataStore.species(int(inst["species_id"]))
 		for t in isp.get("types", []):
 			type_count[t] = int(type_count.get(t, 0)) + 1
-	var league := String(_gs.player_club().get("league", "kanto"))
+	var league := String(_gs.region_of_league(str(_gs.player_club().get("league", "kanto"))))
 	var out: Array = []
 	for sp in DataStore.pokemon:
 		var id := int(sp["id"])

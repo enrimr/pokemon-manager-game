@@ -36,9 +36,19 @@ func _run() -> void:
 	await get_tree().process_frame
 	GameState.new_career(4242)
 	var guard := 0
-	while guard < 60 and GameState.fixtures.filter(func(f): return f["played"]).size() < 80:
+	# four divisions play in parallel now: raise the target so BOTH top
+	# flights bank several matchdays before the assertions run
+	while guard < 60 and GameState.fixtures.filter(func(f): return f["played"]).size() < 140:
 		guard += 1
 		GameState.advance_day()
+		# the shell's match screen holds player matchdays for live play — sim
+		# them here like a player pressing "instant result", so no league's
+		# completed-round counter stalls on round 1
+		for f in GameState.fixtures:
+			if not f["played"] and str(f["date"]) <= GameState.current_date \
+					and str(f["comp"]) == "league" \
+					and (GameState.is_player_club(str(f["home"])) or GameState.is_player_club(str(f["away"]))):
+				GameState._play_fixture(f)
 	print("  simmed %d days, %d fixtures played" % [guard,
 		GameState.fixtures.filter(func(f): return f["played"]).size()])
 
@@ -67,7 +77,7 @@ func _run() -> void:
 	# --- cup draw mixes leagues
 	var cup1: Array = GameState.fixtures.filter(func(f):
 		return f["comp"] == "cup" and int(f["round"]) == 1)
-	_check(cup1.size() == 16, "cup first round has 16 ties (32 clubs)")
+	_check(cup1.size() == 16, "cup first round has 16 ties (32 top-flight clubs)")
 	var cross := 0
 	for f in cup1:
 		if GameState.league_of(str(f["home"])) != GameState.league_of(str(f["away"])):
@@ -143,5 +153,5 @@ func _run() -> void:
 	stats_tab.set_league_context("", false)   # merge view via "" scope? (All Regions)
 	stats_tab._set_option(stats_tab._lg_sel, "")
 	var arows: Array = stats_tab._build_team_rows("all")
-	_check(arows.size() == 32, "all-regions merge shows all 32 clubs")
+	_check(arows.size() == GameState.all_club_ids().size(), "all-regions merge shows every club")
 	GameState.delete_save()   # SaveGuard.restore() puts the real save back

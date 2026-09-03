@@ -145,11 +145,12 @@ func load_state(s: Dictionary) -> void:
 
 ## The trio the professor lays out for a club of the given league.
 static func trio_for_league(league_id: String) -> Array:
-	return TRIOS.get(league_id, TRIOS["kanto"])
+	# divisions share their region's professor table (kanto2 -> kanto)
+	return TRIOS.get(league_id.trim_suffix("2"), TRIOS["kanto"])
 
 
 static func professor_for_league(league_id: String) -> String:
-	return "Professor Elm" if league_id == "johto" else "Professor Oak"
+	return "Professor Elm" if league_id.trim_suffix("2") == "johto" else "Professor Oak"
 
 
 ## The onboarding wizard's contract: called ONCE right after new_career()

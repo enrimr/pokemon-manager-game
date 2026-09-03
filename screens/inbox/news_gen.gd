@@ -589,13 +589,15 @@ func _gen_cup_first_round(have: Dictionary) -> void:
 
 # ------------------------------------------------------------- board maths
 
-## Expected league position = club's rank by reputation (1..N).
+## Expected league position = club's reputation rank WITHIN ITS OWN league
+## (promotion piece: a world-wide rank would demand "finish 40th" of a
+## second-division club in a 12-team table).
 func expected_position() -> int:
-	var clubs: Array = GameState.world["clubs"]
 	var mine: Dictionary = GameState.player_club()
+	var lid := str(mine.get("league", "kanto"))
 	var better := 0
-	for c in clubs:
-		if c["id"] == mine["id"]:
+	for c in GameState.world["clubs"]:
+		if c["id"] == mine["id"] or str(c.get("league", "kanto")) != lid:
 			continue
 		if int(c["reputation"]) > int(mine["reputation"]) or \
 			(int(c["reputation"]) == int(mine["reputation"]) and str(c["id"]) < str(mine["id"])):

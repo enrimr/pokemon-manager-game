@@ -181,7 +181,10 @@ func _cast_mon(m: Dictionary) -> void:
 # ------------------------------------------------------------------ queries
 
 func player_region() -> String:
-	return _gs.player_league_id() if _gs != null else "kanto"
+	if _gs == null:
+		return "kanto"
+	# divisions live inside a REGION (kanto2 -> kanto): routes key off regions
+	return str(_gs.region_of_league(_gs.player_league_id()))
 
 
 ## Field days worked on a route (drives the Routes screen knowledge mask).
@@ -682,7 +685,7 @@ func _ai_daily(date: String) -> void:
 			continue
 		if (c["squad"] as Array).size() >= 22:
 			continue
-		var pool := region_routes(str(c.get("league", "kanto")))
+		var pool := region_routes(str(_gs.region_of_league(str(c.get("league", "kanto")))))
 		if pool.is_empty():
 			continue
 		var r: Dictionary = pool[rng.randi_range(0, pool.size() - 1)]

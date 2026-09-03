@@ -313,11 +313,17 @@ func _run() -> void:
 			_check(false, "no draws allowed, got %s" % str(f))
 			break
 
-	print("=== sim_check: two-league structure ===")
-	_check(GameState.leagues().size() == 2, "two leagues (%s)" % str(GameState.leagues()))
+	print("=== sim_check: league pyramid structure ===")
+	_check(GameState.leagues().size() == 4, "four divisions (%s)" % str(GameState.leagues()))
 	_check(GameState.league_club_ids("kanto").size() == 16 and GameState.league_club_ids("johto").size() == 16,
-		"16 clubs per league")
-	_check(GameState.all_club_ids().size() == 32, "32 clubs world-wide")
+		"16 clubs per top flight")
+	_check(GameState.league_club_ids("kanto2").size() == 12 and GameState.league_club_ids("johto2").size() == 12,
+		"12 clubs per second division")
+	_check(GameState.all_club_ids().size() == 56, "56 clubs world-wide")
+	_check(GameState.tier1_club_ids().size() == 32, "32 top-flight clubs feed the cup")
+	_check(GameState.league_tier("kanto") == 1 and GameState.league_tier("kanto2") == 2,
+		"league tiers resolve")
+	_check(GameState.region_of_league("johto2") == "johto", "divisions map to their region")
 	_check(GameState.league_of("club00") == "kanto" and GameState.league_of("club16") == "johto",
 		"league_of maps both regions")
 	var cross_league := 0
@@ -330,7 +336,11 @@ func _run() -> void:
 	_check(kanto_played.size() >= 40 and johto_played.size() >= 40,
 		"both championships sim in parallel (%d kanto / %d johto)" % [kanto_played.size(), johto_played.size()])
 	var cup1 := GameState.fixtures.filter(func(f): return f["comp"] == "cup" and int(f["round"]) == 1)
-	_check(cup1.size() == 16, "Indigo Cup round 1 has 16 ties (32 clubs)")
+	_check(cup1.size() == 16, "Indigo Cup round 1 has 16 ties (32 top-flight clubs)")
+	var d2_in_cup := cup1.filter(func(f):
+		return GameState.league_tier(GameState.league_of(str(f["home"]))) != 1 \
+			or GameState.league_tier(GameState.league_of(str(f["away"]))) != 1)
+	_check(d2_in_cup.is_empty(), "no second-division club in the cup draw")
 	var cup_cross := cup1.filter(func(f): return GameState.league_of(f["home"]) != GameState.league_of(f["away"]))
 	_check(cup_cross.size() > 0, "Indigo Cup draws across leagues (%d cross-league ties in R1)" % cup_cross.size())
 	_check(Season.cup_round_name(5) == "Final" and Season.cup_round_name(3) == "Quarter-Final",
@@ -575,8 +585,8 @@ func _season_boundary_checks() -> void:
 		"calendar rolled to the new preseason (%s)" % GameState.season_start)
 	var s2_league: Array = GameState.fixtures.filter(func(f): return f["comp"] == "league")
 	var s2_cup: Array = GameState.fixtures.filter(func(f): return f["comp"] == "cup")
-	_check(s2_league.size() == 2 * 240 and s2_league.all(func(f): return not f["played"]),
-		"fresh league fixtures for BOTH leagues (%d, none played)" % s2_league.size())
+	_check(s2_league.size() == 2 * 240 + 2 * 132 and s2_league.all(func(f): return not f["played"]),
+		"fresh league fixtures for all four divisions (%d, none played)" % s2_league.size())
 	_check(s2_cup.size() == 16 and str(s2_cup[0]["id"]).begins_with("S2"),
 		"fresh cup draw with season-unique fixture ids (%s...)" % s2_cup[0]["id"])
 	_check(int(GameState.player_club()["squad"][0].get("age_months", 0)) == age0 + 12,

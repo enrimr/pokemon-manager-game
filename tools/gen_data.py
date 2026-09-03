@@ -1297,6 +1297,80 @@ clubs += johto_clubs
 free_agents += johto_free_agents
 prospects += johto_prospects
 
+# ---------------------------------------------------------------- second divisions
+# (promotion piece) One 12-club Division Two per region. Generated with FRESH
+# rngs strictly AFTER everything above, so Divisions One stay byte-identical.
+# Lower reputation (3-10), thinner squads and budgets — the launchpad for the
+# promotion/relegation loop handled by season_flow at every rollover.
+KANTO2_CLUBS = [
+    ("Diglett Cave Drillers", "DGC"), ("Power Plant Dynamos", "PWP"),
+    ("Cycling Road Riders", "CYC"), ("Silence Bridge Anglers", "SIL"),
+    ("Viridian Forest Weavers", "VFW"), ("Pewter Museum Relics", "MUS"),
+    ("Seafoam Grotto Seals", "SFG"), ("Celadon Arcade Aces", "ARC"),
+    ("Vermilion Docks Crew", "VDC"), ("Moonstone Prospectors", "MSP"),
+    ("Route 17 Rollers", "RRR"), ("Pallet Shores Gulls", "PSG"),
+]
+JOHTO2_CLUBS = [
+    ("Dark Cave Lanterns", "DKC"), ("Slowpoke Well Wardens", "SPW"),
+    ("Sprout Tower Monks", "SPT"), ("Burned Tower Embers", "BRN"),
+    ("Lighthouse Keepers", "LHK"), ("Moomoo Farmhands", "MOO"),
+    ("Tohjo Falls Divers", "TJF"), ("Ice Path Skaters", "ICP"),
+    ("Bug-Catching Contenders", "BUG"), ("Daycare Dreamers", "DAY"),
+    ("Mt. Mortar Brawlers", "MOR"), ("Underground Merchants", "UGM"),
+]
+
+d2rng = random.Random(20270201)
+d2_clubs = []
+for lid, region, roster, natives in [
+        ("kanto2", "Kanto", KANTO2_CLUBS, None),
+        ("johto2", "Johto", JOHTO2_CLUBS, johto_species)]:
+    for name, short in roster:
+        rep = d2rng.randint(3, 10)
+        # D2 squads: lower tiers of the regional pool, the odd import
+        if natives is None:
+            pool = by_bst[:60] if rep <= 6 else by_bst[:100]
+            pool = [p for p in pool if p["id"] not in (150, 151, 132)]
+        else:
+            pool = j_low + (j_mid if rep > 6 else j_mid[:20])
+        squad_n = d2rng.randint(8, 12)
+        # module rng is exhausted-order-sensitive: make_instance reads `rng`,
+        # so swap it for the fresh one around these calls
+        _saved_rng = rng
+        globals()["rng"] = d2rng
+        squad = [make_instance(d2rng.choice(pool), 14 + rep, min(45, 22 + rep * 2))
+                 for _ in range(squad_n)]
+        staff = [make_staff(r) for r in d2rng.sample(ROLES, d2rng.randint(2, 3))]
+        mgr = person_name()
+        globals()["rng"] = _saved_rng
+        wage_bill = sum(m["contract"]["salary"] for m in squad)
+        for m in squad:
+            m["native_region"] = region
+        inv = {"potion": d2rng.randint(1, 3), "super_potion": d2rng.randint(0, 2)}
+        d2_clubs.append({
+            "id": f"club{32 + len(d2_clubs):02d}",
+            "name": name,
+            "short": short,
+            "league": lid,
+            "manager": mgr,
+            "reputation": rep,
+            "finances": {
+                "balance": d2rng.randint(60, 300) * 1000 + rep * 20000,
+                "wage_budget": int(wage_bill * d2rng.uniform(1.05, 1.25)),
+            },
+            "squad": squad,
+            "staff": staff,
+            "items": {k: v for k, v in inv.items() if v > 0},
+        })
+
+d2nrng = random.Random(20270205)
+for _inst in [m for c in d2_clubs for m in c["squad"]]:
+    _inst["nature"] = d2nrng.choice(NATURE_NAMES)
+    _inst["ability"] = _all_by_id[_inst["species_id"]]["ability"]
+    if d2nrng.random() < 0.30 and _inst["level"] >= 25:
+        _inst["held_item"] = pick_held(_inst)
+
+clubs += d2_clubs
+
 world = {
     "meta": {
         "league_name": "Kanto League",
@@ -1305,8 +1379,10 @@ world = {
         "currency": "P$",
         "cup_name": "Indigo Cup",
         "leagues": [
-            {"id": "kanto", "name": "Kanto League"},
-            {"id": "johto", "name": "Johto League"},
+            {"id": "kanto", "name": "Kanto League", "short": "KANTO", "region": "kanto", "tier": 1},
+            {"id": "johto", "name": "Johto League", "short": "JOHTO", "region": "johto", "tier": 1},
+            {"id": "kanto2", "name": "Kanto League Two", "short": "KANTO II", "region": "kanto", "tier": 2},
+            {"id": "johto2", "name": "Johto League Two", "short": "JOHTO II", "region": "johto", "tier": 2},
         ],
     },
     "clubs": clubs,
@@ -1355,10 +1431,13 @@ assert sum(1 for v in NATURES.values() if v[0] is None) == 5
 # sanity: every instance carries a valid nature + ability
 for _inst in [m for c in clubs for m in c["squad"]] + free_agents + prospects:
     assert _inst["nature"] in NATURES and _inst["ability"] in ABILITIES
-# sanity: two 16-club leagues, unique ids, every club assigned to a league
-assert len(clubs) == 32 and len(set(c["id"] for c in clubs)) == 32
+# sanity: two 16-club top leagues + two 12-club second divisions, unique ids
+assert len(clubs) == 56 and len(set(c["id"] for c in clubs)) == 56
 assert sum(1 for c in clubs if c["league"] == "kanto") == 16
 assert sum(1 for c in clubs if c["league"] == "johto") == 16
+assert sum(1 for c in clubs if c["league"] == "kanto2") == 12
+assert sum(1 for c in clubs if c["league"] == "johto2") == 12
+assert len(set(c["short"] for c in clubs)) == 56, "duplicate club shorts"
 _uids = [m["uid"] for c in clubs for m in c["squad"]] + \
         [m["uid"] for m in free_agents] + [m["uid"] for m in prospects]
 assert len(_uids) == len(set(_uids)), "duplicate instance uids"

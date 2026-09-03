@@ -8,11 +8,31 @@
   "leagues": [
    {
     "id": "kanto",
-    "name": "Kanto League"
+    "name": "Kanto League",
+    "short": "KANTO",
+    "region": "kanto",
+    "tier": 1
    },
    {
     "id": "johto",
-    "name": "Johto League"
+    "name": "Johto League",
+    "short": "JOHTO",
+    "region": "johto",
+    "tier": 1
+   },
+   {
+    "id": "kanto2",
+    "name": "Kanto League Two",
+    "short": "KANTO II",
+    "region": "kanto",
+    "tier": 2
+   },
+   {
+    "id": "johto2",
+    "name": "Johto League Two",
+    "short": "JOHTO II",
+    "region": "johto",
+    "tier": 2
    }
   ]
  },
@@ -12954,6 +12974,9118 @@
     "awakening": 2,
     "black_belt": 1,
     "silver_powder": 1
+   }
+  },
+  {
+   "id": "club32",
+   "name": "Diglett Cave Drillers",
+   "short": "DGC",
+   "league": "kanto2",
+   "manager": "Ritchie Cerise",
+   "reputation": 10,
+   "finances": {
+    "balance": 398000,
+    "wage_budget": 22346
+   },
+   "squad": [
+    {
+     "uid": "pkm0506",
+     "species_id": 23,
+     "species": "Ekans",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 11,
+      "atk": 11,
+      "def": 6,
+      "spa": 10,
+      "spd": 9,
+      "spe": 5
+     },
+     "moves": [
+      "Harden",
+      "Slash",
+      "Sludge",
+      "Acid"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 96,
+     "morale": 74,
+     "age_months": 21,
+     "contract": {
+      "salary": 1866,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Relaxed",
+     "ability": "shed_skin"
+    },
+    {
+     "uid": "pkm0507",
+     "species_id": 44,
+     "species": "Gloom",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 13,
+      "atk": 1,
+      "def": 3,
+      "spa": 6,
+      "spd": 3,
+      "spe": 9
+     },
+     "moves": [
+      "Sludge",
+      "Solar Beam",
+      "Acid",
+      "Smog"
+     ],
+     "held_item": null,
+     "condition": 94,
+     "fitness": 76,
+     "morale": 52,
+     "age_months": 108,
+     "contract": {
+      "salary": 2209,
+      "expiry": "2029-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lax",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0508",
+     "species_id": 67,
+     "species": "Machoke",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 1,
+      "atk": 11,
+      "def": 12,
+      "spa": 14,
+      "spd": 3,
+      "spe": 12
+     },
+     "moves": [
+      "Double Kick",
+      "Slash",
+      "Submission",
+      "Low Kick"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 94,
+     "morale": 93,
+     "age_months": 108,
+     "contract": {
+      "salary": 2439,
+      "expiry": "2028-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Modest",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0509",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 3,
+      "atk": 15,
+      "def": 10,
+      "spa": 3,
+      "spd": 4,
+      "spe": 4
+     },
+     "moves": [
+      "Waterfall",
+      "Rock Throw",
+      "Bubble Beam",
+      "Rock Slide"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 93,
+     "morale": 63,
+     "age_months": 85,
+     "contract": {
+      "salary": 2086,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0510",
+     "species_id": 148,
+     "species": "Dragonair",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 9,
+      "atk": 15,
+      "def": 13,
+      "spa": 9,
+      "spd": 13,
+      "spe": 15
+     },
+     "moves": [
+      "Dragon Breath",
+      "Focus Energy",
+      "Body Slam",
+      "Dragon Rage"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 84,
+     "morale": 83,
+     "age_months": 83,
+     "contract": {
+      "salary": 1843,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Rash",
+     "ability": "shed_skin"
+    },
+    {
+     "uid": "pkm0511",
+     "species_id": 12,
+     "species": "Butterfree",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 4,
+      "atk": 4,
+      "def": 10,
+      "spa": 12,
+      "spd": 15,
+      "spe": 3
+     },
+     "moves": [
+      "Leer",
+      "Fly",
+      "Gust",
+      "Leech Life"
+     ],
+     "held_item": null,
+     "condition": 81,
+     "fitness": 83,
+     "morale": 83,
+     "age_months": 101,
+     "contract": {
+      "salary": 2364,
+      "expiry": "2029-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Bashful",
+     "ability": "compound_eyes"
+    },
+    {
+     "uid": "pkm0512",
+     "species_id": 21,
+     "species": "Spearow",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 13,
+      "atk": 7,
+      "def": 3,
+      "spa": 12,
+      "spd": 15,
+      "spe": 7
+     },
+     "moves": [
+      "Drill Peck",
+      "Wing Attack",
+      "Fly",
+      "Double Team"
+     ],
+     "held_item": "silk_scarf",
+     "condition": 90,
+     "fitness": 89,
+     "morale": 53,
+     "age_months": 77,
+     "contract": {
+      "salary": 1924,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Bashful",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0513",
+     "species_id": 13,
+     "species": "Weedle",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 3,
+      "atk": 0,
+      "def": 6,
+      "spa": 9,
+      "spd": 5,
+      "spe": 9
+     },
+     "moves": [
+      "Poison Sting",
+      "Twineedle",
+      "String Shot",
+      "Smog"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 87,
+     "morale": 52,
+     "age_months": 57,
+     "contract": {
+      "salary": 1403,
+      "expiry": "2028-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Careful",
+     "ability": "shield_dust"
+    },
+    {
+     "uid": "pkm0514",
+     "species_id": 66,
+     "species": "Machop",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 15,
+      "atk": 1,
+      "def": 6,
+      "spa": 13,
+      "spd": 4,
+      "spe": 15
+     },
+     "moves": [
+      "Seismic Toss",
+      "Double Kick",
+      "Body Slam",
+      "Karate Chop"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 79,
+     "morale": 81,
+     "age_months": 106,
+     "contract": {
+      "salary": 1841,
+      "expiry": "2030-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Bold",
+     "ability": "guts"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Wally Rowan",
+     "role": "scout",
+     "ratings": {
+      "attacking": 9,
+      "defending": 16,
+      "fitness": 10,
+      "judging_ability": 11,
+      "judging_potential": 5,
+      "youth": 12
+     }
+    },
+    {
+     "name": "Tracey Ketchum",
+     "role": "coach",
+     "ratings": {
+      "attacking": 8,
+      "defending": 13,
+      "fitness": 11,
+      "judging_ability": 15,
+      "judging_potential": 7,
+      "youth": 20
+     }
+    }
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club33",
+   "name": "Power Plant Dynamos",
+   "short": "PWP",
+   "league": "kanto2",
+   "manager": "Iris Silph",
+   "reputation": 5,
+   "finances": {
+    "balance": 376000,
+    "wage_budget": 16614
+   },
+   "squad": [
+    {
+     "uid": "pkm0515",
+     "species_id": 66,
+     "species": "Machop",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 2,
+      "atk": 10,
+      "def": 12,
+      "spa": 0,
+      "spd": 15,
+      "spe": 8
+     },
+     "moves": [
+      "Low Kick",
+      "Tail Whip",
+      "Seismic Toss",
+      "Body Slam"
+     ],
+     "held_item": "lum_berry",
+     "condition": 75,
+     "fitness": 83,
+     "morale": 93,
+     "age_months": 94,
+     "contract": {
+      "salary": 1806,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Hardy",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0516",
+     "species_id": 23,
+     "species": "Ekans",
+     "nickname": null,
+     "level": 19,
+     "ivs": {
+      "hp": 3,
+      "atk": 5,
+      "def": 4,
+      "spa": 7,
+      "spd": 14,
+      "spe": 2
+     },
+     "moves": [
+      "Acid",
+      "Harden",
+      "Sludge",
+      "Toxic"
+     ],
+     "held_item": null,
+     "condition": 96,
+     "fitness": 92,
+     "morale": 92,
+     "age_months": 113,
+     "contract": {
+      "salary": 1135,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Rash",
+     "ability": "shed_skin"
+    },
+    {
+     "uid": "pkm0517",
+     "species_id": 92,
+     "species": "Gastly",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 8,
+      "atk": 7,
+      "def": 3,
+      "spa": 4,
+      "spd": 4,
+      "spe": 12
+     },
+     "moves": [
+      "Swords Dance",
+      "Confuse Ray",
+      "Lick",
+      "Smog"
+     ],
+     "held_item": null,
+     "condition": 78,
+     "fitness": 85,
+     "morale": 76,
+     "age_months": 94,
+     "contract": {
+      "salary": 1497,
+      "expiry": "2030-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "levitate"
+    },
+    {
+     "uid": "pkm0518",
+     "species_id": 32,
+     "species": "Nidoran M",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 7,
+      "atk": 10,
+      "def": 0,
+      "spa": 15,
+      "spd": 6,
+      "spe": 2
+     },
+     "moves": [
+      "Headbutt",
+      "Acid",
+      "Focus Energy",
+      "Poison Sting"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 97,
+     "morale": 80,
+     "age_months": 17,
+     "contract": {
+      "salary": 1350,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Sassy",
+     "ability": "poison_point"
+    },
+    {
+     "uid": "pkm0519",
+     "species_id": 60,
+     "species": "Poliwag",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 12,
+      "atk": 7,
+      "def": 4,
+      "spa": 5,
+      "spd": 0,
+      "spe": 13
+     },
+     "moves": [
+      "Reflect",
+      "Waterfall",
+      "Slash",
+      "Hydro Pump"
+     ],
+     "held_item": null,
+     "condition": 96,
+     "fitness": 96,
+     "morale": 82,
+     "age_months": 98,
+     "contract": {
+      "salary": 1686,
+      "expiry": "2029-03-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Brave",
+     "ability": "water_absorb"
+    },
+    {
+     "uid": "pkm0520",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 7,
+      "atk": 15,
+      "def": 6,
+      "spa": 11,
+      "spd": 13,
+      "spe": 8
+     },
+     "moves": [
+      "Water Gun",
+      "Rock Slide",
+      "Bubble Beam",
+      "Waterfall"
+     ],
+     "held_item": "mystic_water",
+     "condition": 94,
+     "fitness": 88,
+     "morale": 63,
+     "age_months": 118,
+     "contract": {
+      "salary": 2047,
+      "expiry": "2027-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Serious",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0521",
+     "species_id": 86,
+     "species": "Seel",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 15,
+      "atk": 0,
+      "def": 6,
+      "spa": 8,
+      "spd": 10,
+      "spe": 6
+     },
+     "moves": [
+      "Headbutt",
+      "Waterfall",
+      "Water Gun",
+      "Bubble Beam"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 78,
+     "morale": 50,
+     "age_months": 91,
+     "contract": {
+      "salary": 1434,
+      "expiry": "2030-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Adamant",
+     "ability": "thick_fat"
+    },
+    {
+     "uid": "pkm0522",
+     "species_id": 133,
+     "species": "Eevee",
+     "nickname": null,
+     "level": 21,
+     "ivs": {
+      "hp": 14,
+      "atk": 4,
+      "def": 9,
+      "spa": 4,
+      "spd": 11,
+      "spe": 1
+     },
+     "moves": [
+      "Hyper Beam",
+      "Swift",
+      "Double-Edge",
+      "Body Slam"
+     ],
+     "held_item": null,
+     "condition": 94,
+     "fitness": 83,
+     "morale": 54,
+     "age_months": 17,
+     "contract": {
+      "salary": 1258,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Rash",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0523",
+     "species_id": 35,
+     "species": "Clefairy",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 0,
+      "atk": 2,
+      "def": 3,
+      "spa": 10,
+      "spd": 15,
+      "spe": 12
+     },
+     "moves": [
+      "Quick Attack",
+      "Hyper Beam",
+      "Body Slam",
+      "Headbutt"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 88,
+     "fitness": 93,
+     "morale": 84,
+     "age_months": 119,
+     "contract": {
+      "salary": 1731,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "cute_charm"
+    },
+    {
+     "uid": "pkm0524",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 6,
+      "atk": 9,
+      "def": 15,
+      "spa": 9,
+      "spd": 8,
+      "spe": 7
+     },
+     "moves": [
+      "Rock Throw",
+      "Bubble Beam",
+      "Slash",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 76,
+     "morale": 73,
+     "age_months": 105,
+     "contract": {
+      "salary": 1591,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Careful",
+     "ability": "swift_swim"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Falkner Ketchum",
+     "role": "scout",
+     "ratings": {
+      "attacking": 18,
+      "defending": 4,
+      "fitness": 17,
+      "judging_ability": 18,
+      "judging_potential": 14,
+      "youth": 7
+     }
+    },
+    {
+     "name": "Bianca Goodshow",
+     "role": "physio",
+     "ratings": {
+      "attacking": 15,
+      "defending": 18,
+      "fitness": 8,
+      "judging_ability": 16,
+      "judging_potential": 13,
+      "youth": 14
+     }
+    },
+    {
+     "name": "Mallow Juniper",
+     "role": "coach",
+     "ratings": {
+      "attacking": 10,
+      "defending": 18,
+      "fitness": 5,
+      "judging_ability": 13,
+      "judging_potential": 9,
+      "youth": 11
+     }
+    }
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club34",
+   "name": "Cycling Road Riders",
+   "short": "CYC",
+   "league": "kanto2",
+   "manager": "Lillie Elm",
+   "reputation": 7,
+   "finances": {
+    "balance": 399000,
+    "wage_budget": 22800
+   },
+   "squad": [
+    {
+     "uid": "pkm0525",
+     "species_id": 81,
+     "species": "Magnemite",
+     "nickname": null,
+     "level": 22,
+     "ivs": {
+      "hp": 11,
+      "atk": 11,
+      "def": 13,
+      "spa": 2,
+      "spd": 6,
+      "spe": 3
+     },
+     "moves": [
+      "Thunder",
+      "Tackle",
+      "Thunder Wave",
+      "Thunder Shock"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 82,
+     "morale": 67,
+     "age_months": 99,
+     "contract": {
+      "salary": 1572,
+      "expiry": "2027-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Mild",
+     "ability": "sturdy"
+    },
+    {
+     "uid": "pkm0526",
+     "species_id": 140,
+     "species": "Kabuto",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 14,
+      "atk": 0,
+      "def": 10,
+      "spa": 4,
+      "spd": 11,
+      "spe": 11
+     },
+     "moves": [
+      "Waterfall",
+      "Rock Slide",
+      "Harden",
+      "Bubble Beam"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 94,
+     "morale": 73,
+     "age_months": 76,
+     "contract": {
+      "salary": 2101,
+      "expiry": "2029-03-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Adamant",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0527",
+     "species_id": 92,
+     "species": "Gastly",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 13,
+      "atk": 15,
+      "def": 13,
+      "spa": 9,
+      "spd": 12,
+      "spe": 14
+     },
+     "moves": [
+      "Lick",
+      "Poison Sting",
+      "Toxic",
+      "Confuse Ray"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 83,
+     "morale": 92,
+     "age_months": 53,
+     "contract": {
+      "salary": 1915,
+      "expiry": "2029-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lax",
+     "ability": "levitate"
+    },
+    {
+     "uid": "pkm0528",
+     "species_id": 83,
+     "species": "Farfetch'd",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 0,
+      "atk": 14,
+      "def": 6,
+      "spa": 13,
+      "spd": 3,
+      "spe": 13
+     },
+     "moves": [
+      "Fly",
+      "Gust",
+      "Screech",
+      "Headbutt"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 96,
+     "morale": 86,
+     "age_months": 72,
+     "contract": {
+      "salary": 1667,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Naive",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0529",
+     "species_id": 41,
+     "species": "Zubat",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 7,
+      "atk": 13,
+      "def": 5,
+      "spa": 11,
+      "spd": 11,
+      "spe": 3
+     },
+     "moves": [
+      "Wing Attack",
+      "Peck",
+      "Fly",
+      "Slash"
+     ],
+     "held_item": null,
+     "condition": 98,
+     "fitness": 79,
+     "morale": 61,
+     "age_months": 49,
+     "contract": {
+      "salary": 2070,
+      "expiry": "2030-03-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Bashful",
+     "ability": "inner_focus"
+    },
+    {
+     "uid": "pkm0530",
+     "species_id": 117,
+     "species": "Seadra",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 14,
+      "atk": 12,
+      "def": 7,
+      "spa": 11,
+      "spd": 8,
+      "spe": 14
+     },
+     "moves": [
+      "Hydro Pump",
+      "Water Gun",
+      "Quick Attack",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 82,
+     "fitness": 95,
+     "morale": 52,
+     "age_months": 93,
+     "contract": {
+      "salary": 2686,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Sassy",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0531",
+     "species_id": 116,
+     "species": "Horsea",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 14,
+      "atk": 2,
+      "def": 15,
+      "spa": 14,
+      "spd": 7,
+      "spe": 4
+     },
+     "moves": [
+      "Hydro Pump",
+      "Surf",
+      "Waterfall",
+      "Harden"
+     ],
+     "held_item": "eviolite",
+     "condition": 79,
+     "fitness": 90,
+     "morale": 74,
+     "age_months": 28,
+     "contract": {
+      "salary": 1725,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lax",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0532",
+     "species_id": 96,
+     "species": "Drowzee",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 12,
+      "atk": 2,
+      "def": 7,
+      "spa": 4,
+      "spd": 7,
+      "spe": 12
+     },
+     "moves": [
+      "Harden",
+      "Psychic",
+      "Recover",
+      "Hypnosis"
+     ],
+     "held_item": null,
+     "condition": 100,
+     "fitness": 90,
+     "morale": 79,
+     "age_months": 80,
+     "contract": {
+      "salary": 2055,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "insomnia"
+    },
+    {
+     "uid": "pkm0533",
+     "species_id": 116,
+     "species": "Horsea",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 12,
+      "atk": 15,
+      "def": 6,
+      "spa": 6,
+      "spd": 14,
+      "spe": 9
+     },
+     "moves": [
+      "Water Gun",
+      "Surf",
+      "Waterfall",
+      "Hydro Pump"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 82,
+     "morale": 64,
+     "age_months": 113,
+     "contract": {
+      "salary": 1904,
+      "expiry": "2029-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Adamant",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0534",
+     "species_id": 116,
+     "species": "Horsea",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 1,
+      "atk": 9,
+      "def": 11,
+      "spa": 14,
+      "spd": 0,
+      "spe": 10
+     },
+     "moves": [
+      "Surf",
+      "Water Gun",
+      "Harden",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 96,
+     "fitness": 79,
+     "morale": 55,
+     "age_months": 55,
+     "contract": {
+      "salary": 1904,
+      "expiry": "2029-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Modest",
+     "ability": "swift_swim"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Bugsy Rowan",
+     "role": "coach",
+     "ratings": {
+      "attacking": 12,
+      "defending": 13,
+      "fitness": 13,
+      "judging_ability": 8,
+      "judging_potential": 4,
+      "youth": 10
+     }
+    },
+    {
+     "name": "Trevor Westwood",
+     "role": "scout",
+     "ratings": {
+      "attacking": 9,
+      "defending": 11,
+      "fitness": 16,
+      "judging_ability": 12,
+      "judging_potential": 12,
+      "youth": 5
+     }
+    },
+    {
+     "name": "Serena Ketchum",
+     "role": "physio",
+     "ratings": {
+      "attacking": 5,
+      "defending": 10,
+      "fitness": 6,
+      "judging_ability": 13,
+      "judging_potential": 18,
+      "youth": 11
+     }
+    }
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club35",
+   "name": "Silence Bridge Anglers",
+   "short": "SIL",
+   "league": "kanto2",
+   "manager": "Alexa Elm",
+   "reputation": 9,
+   "finances": {
+    "balance": 296000,
+    "wage_budget": 23194
+   },
+   "squad": [
+    {
+     "uid": "pkm0535",
+     "species_id": 57,
+     "species": "Primeape",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 1,
+      "atk": 12,
+      "def": 13,
+      "spa": 1,
+      "spd": 6,
+      "spe": 4
+     },
+     "moves": [
+      "Double Kick",
+      "High Jump Kick",
+      "Tackle",
+      "Seismic Toss"
+     ],
+     "held_item": "choice_band",
+     "condition": 79,
+     "fitness": 100,
+     "morale": 82,
+     "age_months": 98,
+     "contract": {
+      "salary": 2134,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0536",
+     "species_id": 70,
+     "species": "Weepinbell",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 14,
+      "atk": 3,
+      "def": 0,
+      "spa": 5,
+      "spd": 5,
+      "spe": 11
+     },
+     "moves": [
+      "Petal Dance",
+      "Harden",
+      "Vine Whip",
+      "Acid"
+     ],
+     "held_item": null,
+     "condition": 80,
+     "fitness": 94,
+     "morale": 60,
+     "age_months": 110,
+     "contract": {
+      "salary": 2355,
+      "expiry": "2028-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0537",
+     "species_id": 129,
+     "species": "Magikarp",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 6,
+      "atk": 1,
+      "def": 1,
+      "spa": 9,
+      "spd": 12,
+      "spe": 6
+     },
+     "moves": [
+      "Slash",
+      "Splash",
+      "Tackle",
+      "Screech"
+     ],
+     "held_item": null,
+     "condition": 90,
+     "fitness": 96,
+     "morale": 65,
+     "age_months": 72,
+     "contract": {
+      "salary": 1552,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quiet",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0538",
+     "species_id": 27,
+     "species": "Sandshrew",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 7,
+      "atk": 1,
+      "def": 13,
+      "spa": 7,
+      "spd": 9,
+      "spe": 11
+     },
+     "moves": [
+      "Earthquake",
+      "Harden",
+      "Sand Attack",
+      "Dig"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 93,
+     "morale": 87,
+     "age_months": 25,
+     "contract": {
+      "salary": 1842,
+      "expiry": "2027-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lax",
+     "ability": "sand_veil"
+    },
+    {
+     "uid": "pkm0539",
+     "species_id": 77,
+     "species": "Ponyta",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 2,
+      "atk": 0,
+      "def": 6,
+      "spa": 1,
+      "spd": 4,
+      "spe": 2
+     },
+     "moves": [
+      "Fire Blast",
+      "Ember",
+      "Tackle",
+      "Fire Punch"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 97,
+     "morale": 67,
+     "age_months": 48,
+     "contract": {
+      "salary": 2922,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "flash_fire"
+    },
+    {
+     "uid": "pkm0540",
+     "species_id": 75,
+     "species": "Graveler",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 6,
+      "atk": 8,
+      "def": 12,
+      "spa": 13,
+      "spd": 8,
+      "spe": 9
+     },
+     "moves": [
+      "Sand Attack",
+      "Body Slam",
+      "Growl",
+      "Bone Club"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 95,
+     "morale": 53,
+     "age_months": 72,
+     "contract": {
+      "salary": 2464,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "sturdy"
+    },
+    {
+     "uid": "pkm0541",
+     "species_id": 98,
+     "species": "Krabby",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 11,
+      "atk": 1,
+      "def": 6,
+      "spa": 2,
+      "spd": 8,
+      "spe": 2
+     },
+     "moves": [
+      "Waterfall",
+      "Water Gun",
+      "Quick Attack",
+      "Leer"
+     ],
+     "held_item": null,
+     "condition": 88,
+     "fitness": 83,
+     "morale": 53,
+     "age_months": 22,
+     "contract": {
+      "salary": 1852,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "hyper_cutter"
+    },
+    {
+     "uid": "pkm0542",
+     "species_id": 57,
+     "species": "Primeape",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 1,
+      "atk": 5,
+      "def": 13,
+      "spa": 4,
+      "spd": 7,
+      "spe": 5
+     },
+     "moves": [
+      "Tackle",
+      "Double Kick",
+      "Seismic Toss",
+      "High Jump Kick"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 100,
+     "morale": 61,
+     "age_months": 52,
+     "contract": {
+      "salary": 2113,
+      "expiry": "2029-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Docile",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0543",
+     "species_id": 116,
+     "species": "Horsea",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 2,
+      "atk": 4,
+      "def": 1,
+      "spa": 2,
+      "spd": 14,
+      "spe": 8
+     },
+     "moves": [
+      "Water Gun",
+      "Hydro Pump",
+      "Surf",
+      "Quick Attack"
+     ],
+     "held_item": "mystic_water",
+     "condition": 72,
+     "fitness": 99,
+     "morale": 82,
+     "age_months": 37,
+     "contract": {
+      "salary": 2215,
+      "expiry": "2030-02-28"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0544",
+     "species_id": 113,
+     "species": "Chansey",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 8,
+      "atk": 12,
+      "def": 14,
+      "spa": 1,
+      "spd": 6,
+      "spe": 2
+     },
+     "moves": [
+      "Light Screen",
+      "Soft-Boiled",
+      "Sing",
+      "Body Slam"
+     ],
+     "held_item": null,
+     "condition": 82,
+     "fitness": 92,
+     "morale": 62,
+     "age_months": 57,
+     "contract": {
+      "salary": 2395,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Naughty",
+     "ability": "natural_cure"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Lana Magnolia",
+     "role": "scout",
+     "ratings": {
+      "attacking": 7,
+      "defending": 18,
+      "fitness": 10,
+      "judging_ability": 9,
+      "judging_potential": 9,
+      "youth": 14
+     }
+    },
+    {
+     "name": "Lorelei Goodshow",
+     "role": "physio",
+     "ratings": {
+      "attacking": 6,
+      "defending": 8,
+      "fitness": 8,
+      "judging_ability": 7,
+      "judging_potential": 11,
+      "youth": 17
+     }
+    }
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club36",
+   "name": "Viridian Forest Weavers",
+   "short": "VFW",
+   "league": "kanto2",
+   "manager": "Kiawe Kukui",
+   "reputation": 10,
+   "finances": {
+    "balance": 459000,
+    "wage_budget": 21182
+   },
+   "squad": [
+    {
+     "uid": "pkm0545",
+     "species_id": 67,
+     "species": "Machoke",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 10,
+      "atk": 5,
+      "def": 6,
+      "spa": 7,
+      "spd": 3,
+      "spe": 1
+     },
+     "moves": [
+      "Leer",
+      "Karate Chop",
+      "Submission",
+      "Double Kick"
+     ],
+     "held_item": null,
+     "condition": 98,
+     "fitness": 100,
+     "morale": 80,
+     "age_months": 74,
+     "contract": {
+      "salary": 1456,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0546",
+     "species_id": 12,
+     "species": "Butterfree",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 5,
+      "atk": 12,
+      "def": 14,
+      "spa": 7,
+      "spd": 15,
+      "spe": 14
+     },
+     "moves": [
+      "Wing Attack",
+      "Leer",
+      "Gust",
+      "String Shot"
+     ],
+     "held_item": null,
+     "condition": 82,
+     "fitness": 83,
+     "morale": 57,
+     "age_months": 99,
+     "contract": {
+      "salary": 2004,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Hasty",
+     "ability": "compound_eyes"
+    },
+    {
+     "uid": "pkm0547",
+     "species_id": 60,
+     "species": "Poliwag",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 14,
+      "atk": 11,
+      "def": 8,
+      "spa": 9,
+      "spd": 4,
+      "spe": 6
+     },
+     "moves": [
+      "Water Gun",
+      "Slash",
+      "Reflect",
+      "Bubble Beam"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 95,
+     "morale": 85,
+     "age_months": 106,
+     "contract": {
+      "salary": 1784,
+      "expiry": "2029-03-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Serious",
+     "ability": "water_absorb"
+    },
+    {
+     "uid": "pkm0548",
+     "species_id": 124,
+     "species": "Jynx",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 9,
+      "atk": 11,
+      "def": 3,
+      "spa": 0,
+      "spd": 10,
+      "spe": 2
+     },
+     "moves": [
+      "Tackle",
+      "Recover",
+      "Psychic",
+      "Confusion"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 91,
+     "morale": 77,
+     "age_months": 28,
+     "contract": {
+      "salary": 1914,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0549",
+     "species_id": 77,
+     "species": "Ponyta",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 5,
+      "atk": 4,
+      "def": 14,
+      "spa": 1,
+      "spd": 8,
+      "spe": 1
+     },
+     "moves": [
+      "Fire Punch",
+      "Double Team",
+      "Ember",
+      "Fire Blast"
+     ],
+     "held_item": null,
+     "condition": 73,
+     "fitness": 89,
+     "morale": 75,
+     "age_months": 30,
+     "contract": {
+      "salary": 2112,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Hardy",
+     "ability": "flash_fire"
+    },
+    {
+     "uid": "pkm0550",
+     "species_id": 50,
+     "species": "Diglett",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 11,
+      "atk": 4,
+      "def": 13,
+      "spa": 14,
+      "spd": 10,
+      "spe": 3
+     },
+     "moves": [
+      "Earthquake",
+      "Dig",
+      "Double Team",
+      "Bone Club"
+     ],
+     "held_item": null,
+     "condition": 94,
+     "fitness": 100,
+     "morale": 67,
+     "age_months": 40,
+     "contract": {
+      "salary": 1552,
+      "expiry": "2028-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Hasty",
+     "ability": "sand_veil"
+    },
+    {
+     "uid": "pkm0551",
+     "species_id": 64,
+     "species": "Kadabra",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 5,
+      "atk": 3,
+      "def": 3,
+      "spa": 3,
+      "spd": 0,
+      "spe": 10
+     },
+     "moves": [
+      "Leer",
+      "Recover",
+      "Confusion",
+      "Tackle"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 99,
+     "morale": 59,
+     "age_months": 79,
+     "contract": {
+      "salary": 2189,
+      "expiry": "2029-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "synchronize"
+    },
+    {
+     "uid": "pkm0552",
+     "species_id": 84,
+     "species": "Doduo",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 7,
+      "atk": 12,
+      "def": 14,
+      "spa": 13,
+      "spd": 5,
+      "spe": 0
+     },
+     "moves": [
+      "Screech",
+      "Body Slam",
+      "Fly",
+      "Double-Edge"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 84,
+     "morale": 75,
+     "age_months": 30,
+     "contract": {
+      "salary": 1631,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "early_bird"
+    },
+    {
+     "uid": "pkm0553",
+     "species_id": 88,
+     "species": "Grimer",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 9,
+      "atk": 6,
+      "def": 14,
+      "spa": 1,
+      "spd": 4,
+      "spe": 2
+     },
+     "moves": [
+      "Toxic",
+      "Sludge",
+      "Smog",
+      "Screech"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 94,
+     "morale": 57,
+     "age_months": 50,
+     "contract": {
+      "salary": 1831,
+      "expiry": "2028-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "poison_point"
+    },
+    {
+     "uid": "pkm0554",
+     "species_id": 92,
+     "species": "Gastly",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 15,
+      "atk": 0,
+      "def": 6,
+      "spa": 4,
+      "spd": 0,
+      "spe": 1
+     },
+     "moves": [
+      "Confuse Ray",
+      "Lick",
+      "Night Shade",
+      "Toxic"
+     ],
+     "held_item": "lum_berry",
+     "condition": 70,
+     "fitness": 84,
+     "morale": 87,
+     "age_months": 100,
+     "contract": {
+      "salary": 2449,
+      "expiry": "2027-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "levitate"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Will Ivy",
+     "role": "coach",
+     "ratings": {
+      "attacking": 13,
+      "defending": 8,
+      "fitness": 16,
+      "judging_ability": 11,
+      "judging_potential": 16,
+      "youth": 6
+     }
+    },
+    {
+     "name": "Erika Snap",
+     "role": "coach",
+     "ratings": {
+      "attacking": 11,
+      "defending": 12,
+      "fitness": 17,
+      "judging_ability": 5,
+      "judging_potential": 12,
+      "youth": 4
+     }
+    },
+    {
+     "name": "Volkner Westwood",
+     "role": "scout",
+     "ratings": {
+      "attacking": 11,
+      "defending": 10,
+      "fitness": 9,
+      "judging_ability": 17,
+      "judging_potential": 14,
+      "youth": 19
+     }
+    }
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club37",
+   "name": "Pewter Museum Relics",
+   "short": "MUS",
+   "league": "kanto2",
+   "manager": "Flannery Goodshow",
+   "reputation": 8,
+   "finances": {
+    "balance": 351000,
+    "wage_budget": 18276
+   },
+   "squad": [
+    {
+     "uid": "pkm0555",
+     "species_id": 105,
+     "species": "Marowak",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 4,
+      "atk": 3,
+      "def": 8,
+      "spa": 4,
+      "spd": 11,
+      "spe": 2
+     },
+     "moves": [
+      "Dig",
+      "Double Team",
+      "Sand Attack",
+      "Slash"
+     ],
+     "held_item": null,
+     "condition": 90,
+     "fitness": 78,
+     "morale": 64,
+     "age_months": 109,
+     "contract": {
+      "salary": 1614,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Careful",
+     "ability": "rock_head"
+    },
+    {
+     "uid": "pkm0556",
+     "species_id": 43,
+     "species": "Oddish",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 1,
+      "atk": 15,
+      "def": 0,
+      "spa": 6,
+      "spd": 1,
+      "spe": 5
+     },
+     "moves": [
+      "Poison Sting",
+      "Growl",
+      "Smog",
+      "Solar Beam"
+     ],
+     "held_item": null,
+     "condition": 87,
+     "fitness": 81,
+     "morale": 66,
+     "age_months": 23,
+     "contract": {
+      "salary": 1583,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0557",
+     "species_id": 53,
+     "species": "Persian",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 15,
+      "atk": 12,
+      "def": 11,
+      "spa": 9,
+      "spd": 7,
+      "spe": 2
+     },
+     "moves": [
+      "Swift",
+      "Growl",
+      "Double-Edge",
+      "Hyper Beam"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 91,
+     "morale": 52,
+     "age_months": 86,
+     "contract": {
+      "salary": 2341,
+      "expiry": "2028-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Naughty",
+     "ability": "limber"
+    },
+    {
+     "uid": "pkm0558",
+     "species_id": 137,
+     "species": "Porygon",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 4,
+      "atk": 1,
+      "def": 13,
+      "spa": 2,
+      "spd": 5,
+      "spe": 12
+     },
+     "moves": [
+      "Headbutt",
+      "Slash",
+      "Quick Attack",
+      "Double-Edge"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 88,
+     "morale": 72,
+     "age_months": 73,
+     "contract": {
+      "salary": 1946,
+      "expiry": "2029-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quiet",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0559",
+     "species_id": 116,
+     "species": "Horsea",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 9,
+      "atk": 1,
+      "def": 8,
+      "spa": 14,
+      "spd": 9,
+      "spe": 6
+     },
+     "moves": [
+      "Water Gun",
+      "Waterfall",
+      "Harden",
+      "Hydro Pump"
+     ],
+     "held_item": "lum_berry",
+     "condition": 86,
+     "fitness": 81,
+     "morale": 90,
+     "age_months": 24,
+     "contract": {
+      "salary": 1537,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0560",
+     "species_id": 85,
+     "species": "Dodrio",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 12,
+      "atk": 8,
+      "def": 14,
+      "spa": 11,
+      "spd": 7,
+      "spe": 3
+     },
+     "moves": [
+      "Body Slam",
+      "Peck",
+      "Slash",
+      "Fly"
+     ],
+     "held_item": null,
+     "condition": 80,
+     "fitness": 98,
+     "morale": 71,
+     "age_months": 35,
+     "contract": {
+      "salary": 2295,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "early_bird"
+    },
+    {
+     "uid": "pkm0561",
+     "species_id": 81,
+     "species": "Magnemite",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 13,
+      "atk": 13,
+      "def": 4,
+      "spa": 9,
+      "spd": 3,
+      "spe": 9
+     },
+     "moves": [
+      "Tackle",
+      "Thunder Wave",
+      "Thunderbolt",
+      "Thunder Shock"
+     ],
+     "held_item": null,
+     "condition": 98,
+     "fitness": 75,
+     "morale": 80,
+     "age_months": 112,
+     "contract": {
+      "salary": 1704,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Timid",
+     "ability": "sturdy"
+    },
+    {
+     "uid": "pkm0562",
+     "species_id": 70,
+     "species": "Weepinbell",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 3,
+      "atk": 11,
+      "def": 2,
+      "spa": 13,
+      "spd": 10,
+      "spe": 11
+     },
+     "moves": [
+      "Vine Whip",
+      "Harden",
+      "Petal Dance",
+      "Sludge"
+     ],
+     "held_item": null,
+     "condition": 84,
+     "fitness": 90,
+     "morale": 62,
+     "age_months": 46,
+     "contract": {
+      "salary": 2626,
+      "expiry": "2028-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "chlorophyll"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Ash Stone",
+     "role": "physio",
+     "ratings": {
+      "attacking": 8,
+      "defending": 13,
+      "fitness": 18,
+      "judging_ability": 11,
+      "judging_potential": 13,
+      "youth": 6
+     }
+    },
+    {
+     "name": "Steven Silph",
+     "role": "coach",
+     "ratings": {
+      "attacking": 16,
+      "defending": 11,
+      "fitness": 14,
+      "judging_ability": 17,
+      "judging_potential": 8,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Barry Laramie",
+     "role": "scout",
+     "ratings": {
+      "attacking": 11,
+      "defending": 7,
+      "fitness": 15,
+      "judging_ability": 9,
+      "judging_potential": 16,
+      "youth": 6
+     }
+    }
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club38",
+   "name": "Seafoam Grotto Seals",
+   "short": "SFG",
+   "league": "kanto2",
+   "manager": "Casey Hale",
+   "reputation": 9,
+   "finances": {
+    "balance": 442000,
+    "wage_budget": 27893
+   },
+   "squad": [
+    {
+     "uid": "pkm0563",
+     "species_id": 133,
+     "species": "Eevee",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 10,
+      "atk": 7,
+      "def": 8,
+      "spa": 5,
+      "spd": 10,
+      "spe": 15
+     },
+     "moves": [
+      "Double-Edge",
+      "Leer",
+      "Hyper Beam",
+      "Body Slam"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 100,
+     "fitness": 97,
+     "morale": 85,
+     "age_months": 41,
+     "contract": {
+      "salary": 1850,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Impish",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0564",
+     "species_id": 60,
+     "species": "Poliwag",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 14,
+      "atk": 10,
+      "def": 4,
+      "spa": 2,
+      "spd": 1,
+      "spe": 12
+     },
+     "moves": [
+      "Water Gun",
+      "Reflect",
+      "Hydro Pump",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 85,
+     "morale": 61,
+     "age_months": 52,
+     "contract": {
+      "salary": 2411,
+      "expiry": "2030-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Gentle",
+     "ability": "water_absorb"
+    },
+    {
+     "uid": "pkm0565",
+     "species_id": 41,
+     "species": "Zubat",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 9,
+      "atk": 8,
+      "def": 9,
+      "spa": 12,
+      "spd": 7,
+      "spe": 11
+     },
+     "moves": [
+      "Poison Sting",
+      "Peck",
+      "Wing Attack",
+      "Sludge"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 88,
+     "fitness": 76,
+     "morale": 84,
+     "age_months": 44,
+     "contract": {
+      "salary": 2361,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Mild",
+     "ability": "inner_focus"
+    },
+    {
+     "uid": "pkm0566",
+     "species_id": 39,
+     "species": "Jigglypuff",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 2,
+      "atk": 15,
+      "def": 9,
+      "spa": 13,
+      "spd": 3,
+      "spe": 5
+     },
+     "moves": [
+      "Swift",
+      "Swords Dance",
+      "Hyper Beam",
+      "Double-Edge"
+     ],
+     "held_item": "quick_claw",
+     "condition": 79,
+     "fitness": 97,
+     "morale": 74,
+     "age_months": 91,
+     "contract": {
+      "salary": 1971,
+      "expiry": "2030-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "cute_charm"
+    },
+    {
+     "uid": "pkm0567",
+     "species_id": 148,
+     "species": "Dragonair",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 7,
+      "atk": 14,
+      "def": 13,
+      "spa": 5,
+      "spd": 12,
+      "spe": 0
+     },
+     "moves": [
+      "Focus Energy",
+      "Dragon Breath",
+      "Dragon Rage",
+      "Outrage"
+     ],
+     "held_item": "lum_berry",
+     "condition": 97,
+     "fitness": 82,
+     "morale": 81,
+     "age_months": 84,
+     "contract": {
+      "salary": 2713,
+      "expiry": "2028-02-28"
+     },
+     "native_region": "Kanto",
+     "nature": "Modest",
+     "ability": "shed_skin"
+    },
+    {
+     "uid": "pkm0568",
+     "species_id": 50,
+     "species": "Diglett",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 12,
+      "atk": 8,
+      "def": 5,
+      "spa": 3,
+      "spd": 2,
+      "spe": 11
+     },
+     "moves": [
+      "Dig",
+      "Slash",
+      "Earthquake",
+      "Double Team"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 75,
+     "morale": 57,
+     "age_months": 17,
+     "contract": {
+      "salary": 1342,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Rash",
+     "ability": "sand_veil"
+    },
+    {
+     "uid": "pkm0569",
+     "species_id": 23,
+     "species": "Ekans",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 9,
+      "atk": 9,
+      "def": 9,
+      "spa": 6,
+      "spd": 14,
+      "spe": 9
+     },
+     "moves": [
+      "Sludge",
+      "Acid",
+      "Poison Sting",
+      "Harden"
+     ],
+     "held_item": "focus_sash",
+     "condition": 84,
+     "fitness": 82,
+     "morale": 91,
+     "age_months": 85,
+     "contract": {
+      "salary": 1499,
+      "expiry": "2027-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Serious",
+     "ability": "shed_skin"
+    },
+    {
+     "uid": "pkm0570",
+     "species_id": 148,
+     "species": "Dragonair",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 4,
+      "atk": 13,
+      "def": 9,
+      "spa": 15,
+      "spd": 3,
+      "spe": 0
+     },
+     "moves": [
+      "Focus Energy",
+      "Outrage",
+      "Dragon Breath",
+      "Body Slam"
+     ],
+     "held_item": null,
+     "condition": 99,
+     "fitness": 81,
+     "morale": 84,
+     "age_months": 105,
+     "contract": {
+      "salary": 2323,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Hasty",
+     "ability": "shed_skin"
+    },
+    {
+     "uid": "pkm0571",
+     "species_id": 84,
+     "species": "Doduo",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 6,
+      "atk": 6,
+      "def": 8,
+      "spa": 6,
+      "spd": 3,
+      "spe": 12
+     },
+     "moves": [
+      "Wing Attack",
+      "Drill Peck",
+      "Body Slam",
+      "Fly"
+     ],
+     "held_item": null,
+     "condition": 80,
+     "fitness": 82,
+     "morale": 62,
+     "age_months": 66,
+     "contract": {
+      "salary": 2052,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Bold",
+     "ability": "early_bird"
+    },
+    {
+     "uid": "pkm0572",
+     "species_id": 50,
+     "species": "Diglett",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 4,
+      "atk": 2,
+      "def": 7,
+      "spa": 10,
+      "spd": 14,
+      "spe": 9
+     },
+     "moves": [
+      "Dig",
+      "Earthquake",
+      "Sand Attack",
+      "Double Team"
+     ],
+     "held_item": "lum_berry",
+     "condition": 97,
+     "fitness": 95,
+     "morale": 91,
+     "age_months": 64,
+     "contract": {
+      "salary": 2242,
+      "expiry": "2027-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Hardy",
+     "ability": "sand_veil"
+    },
+    {
+     "uid": "pkm0573",
+     "species_id": 14,
+     "species": "Kakuna",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 15,
+      "atk": 4,
+      "def": 11,
+      "spa": 5,
+      "spd": 4,
+      "spe": 12
+     },
+     "moves": [
+      "Smog",
+      "Twineedle",
+      "Toxic",
+      "Body Slam"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 85,
+     "morale": 91,
+     "age_months": 57,
+     "contract": {
+      "salary": 1687,
+      "expiry": "2030-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "shield_dust"
+    },
+    {
+     "uid": "pkm0574",
+     "species_id": 13,
+     "species": "Weedle",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 14,
+      "atk": 6,
+      "def": 5,
+      "spa": 3,
+      "spd": 15,
+      "spe": 2
+     },
+     "moves": [
+      "Twineedle",
+      "Smog",
+      "Leer",
+      "String Shot"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 100,
+     "morale": 56,
+     "age_months": 107,
+     "contract": {
+      "salary": 1256,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Naive",
+     "ability": "shield_dust"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Will Ivy",
+     "role": "scout",
+     "ratings": {
+      "attacking": 7,
+      "defending": 5,
+      "fitness": 18,
+      "judging_ability": 12,
+      "judging_potential": 9,
+      "youth": 19
+     }
+    },
+    {
+     "name": "Falkner Elm",
+     "role": "physio",
+     "ratings": {
+      "attacking": 16,
+      "defending": 11,
+      "fitness": 20,
+      "judging_ability": 12,
+      "judging_potential": 20,
+      "youth": 5
+     }
+    }
+   ],
+   "items": {
+    "potion": 3
+   }
+  },
+  {
+   "id": "club39",
+   "name": "Celadon Arcade Aces",
+   "short": "ARC",
+   "league": "kanto2",
+   "manager": "Volkner Hale",
+   "reputation": 5,
+   "finances": {
+    "balance": 336000,
+    "wage_budget": 17039
+   },
+   "squad": [
+    {
+     "uid": "pkm0575",
+     "species_id": 23,
+     "species": "Ekans",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 0,
+      "atk": 11,
+      "def": 9,
+      "spa": 1,
+      "spd": 10,
+      "spe": 11
+     },
+     "moves": [
+      "Toxic",
+      "Poison Sting",
+      "Harden",
+      "Sludge"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 84,
+     "fitness": 87,
+     "morale": 82,
+     "age_months": 30,
+     "contract": {
+      "salary": 1754,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lax",
+     "ability": "shed_skin"
+    },
+    {
+     "uid": "pkm0576",
+     "species_id": 118,
+     "species": "Goldeen",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 0,
+      "atk": 0,
+      "def": 7,
+      "spa": 9,
+      "spd": 13,
+      "spe": 5
+     },
+     "moves": [
+      "Waterfall",
+      "Bubble Beam",
+      "Water Gun",
+      "Growl"
+     ],
+     "held_item": null,
+     "condition": 87,
+     "fitness": 76,
+     "morale": 78,
+     "age_months": 36,
+     "contract": {
+      "salary": 1707,
+      "expiry": "2028-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "water_veil"
+    },
+    {
+     "uid": "pkm0577",
+     "species_id": 27,
+     "species": "Sandshrew",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 4,
+      "atk": 15,
+      "def": 8,
+      "spa": 10,
+      "spd": 15,
+      "spe": 1
+     },
+     "moves": [
+      "Dig",
+      "Harden",
+      "Sand Attack",
+      "Bone Club"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 86,
+     "morale": 69,
+     "age_months": 21,
+     "contract": {
+      "salary": 2034,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Careful",
+     "ability": "sand_veil"
+    },
+    {
+     "uid": "pkm0578",
+     "species_id": 48,
+     "species": "Venonat",
+     "nickname": null,
+     "level": 19,
+     "ivs": {
+      "hp": 13,
+      "atk": 4,
+      "def": 6,
+      "spa": 11,
+      "spd": 15,
+      "spe": 4
+     },
+     "moves": [
+      "String Shot",
+      "Double Team",
+      "Leech Life",
+      "Poison Sting"
+     ],
+     "held_item": null,
+     "condition": 90,
+     "fitness": 86,
+     "morale": 90,
+     "age_months": 78,
+     "contract": {
+      "salary": 1561,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Impish",
+     "ability": "shield_dust"
+    },
+    {
+     "uid": "pkm0579",
+     "species_id": 90,
+     "species": "Shellder",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 1,
+      "atk": 3,
+      "def": 8,
+      "spa": 9,
+      "spd": 4,
+      "spe": 0
+     },
+     "moves": [
+      "Waterfall",
+      "Water Gun",
+      "Bubble Beam",
+      "Hydro Pump"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 94,
+     "fitness": 83,
+     "morale": 90,
+     "age_months": 46,
+     "contract": {
+      "salary": 1906,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Gentle",
+     "ability": "sturdy"
+    },
+    {
+     "uid": "pkm0580",
+     "species_id": 25,
+     "species": "Pikachu",
+     "nickname": null,
+     "level": 19,
+     "ivs": {
+      "hp": 3,
+      "atk": 10,
+      "def": 0,
+      "spa": 3,
+      "spd": 6,
+      "spe": 8
+     },
+     "moves": [
+      "Thunder Wave",
+      "Quick Attack",
+      "Thunder",
+      "Agility"
+     ],
+     "held_item": null,
+     "condition": 88,
+     "fitness": 77,
+     "morale": 92,
+     "age_months": 85,
+     "contract": {
+      "salary": 1743,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0581",
+     "species_id": 11,
+     "species": "Metapod",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 15,
+      "atk": 2,
+      "def": 5,
+      "spa": 4,
+      "spd": 10,
+      "spe": 4
+     },
+     "moves": [
+      "Leech Life",
+      "Quick Attack",
+      "Pin Missile",
+      "Double Team"
+     ],
+     "held_item": null,
+     "condition": 100,
+     "fitness": 76,
+     "morale": 83,
+     "age_months": 63,
+     "contract": {
+      "salary": 1131,
+      "expiry": "2028-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Careful",
+     "ability": "shield_dust"
+    },
+    {
+     "uid": "pkm0582",
+     "species_id": 41,
+     "species": "Zubat",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 7,
+      "atk": 3,
+      "def": 8,
+      "spa": 12,
+      "spd": 6,
+      "spe": 15
+     },
+     "moves": [
+      "Wing Attack",
+      "Slash",
+      "Sludge",
+      "Peck"
+     ],
+     "held_item": null,
+     "condition": 81,
+     "fitness": 82,
+     "morale": 74,
+     "age_months": 87,
+     "contract": {
+      "salary": 1664,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Serious",
+     "ability": "inner_focus"
+    },
+    {
+     "uid": "pkm0583",
+     "species_id": 98,
+     "species": "Krabby",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 15,
+      "atk": 5,
+      "def": 13,
+      "spa": 3,
+      "spd": 11,
+      "spe": 13
+     },
+     "moves": [
+      "Surf",
+      "Hydro Pump",
+      "Waterfall",
+      "Leer"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 87,
+     "morale": 71,
+     "age_months": 15,
+     "contract": {
+      "salary": 1951,
+      "expiry": "2029-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Modest",
+     "ability": "hyper_cutter"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Whitney Cerise",
+     "role": "coach",
+     "ratings": {
+      "attacking": 10,
+      "defending": 17,
+      "fitness": 11,
+      "judging_ability": 10,
+      "judging_potential": 13,
+      "youth": 19
+     }
+    },
+    {
+     "name": "Morty Stone",
+     "role": "coach",
+     "ratings": {
+      "attacking": 10,
+      "defending": 16,
+      "fitness": 8,
+      "judging_ability": 16,
+      "judging_potential": 9,
+      "youth": 19
+     }
+    }
+   ],
+   "items": {
+    "potion": 1,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club40",
+   "name": "Vermilion Docks Crew",
+   "short": "VDC",
+   "league": "kanto2",
+   "manager": "Gary Juniper",
+   "reputation": 10,
+   "finances": {
+    "balance": 341000,
+    "wage_budget": 25056
+   },
+   "squad": [
+    {
+     "uid": "pkm0584",
+     "species_id": 77,
+     "species": "Ponyta",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 0,
+      "atk": 3,
+      "def": 10,
+      "spa": 8,
+      "spd": 14,
+      "spe": 14
+     },
+     "moves": [
+      "Fire Spin",
+      "Double Team",
+      "Tackle",
+      "Fire Blast"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 80,
+     "morale": 88,
+     "age_months": 117,
+     "contract": {
+      "salary": 2277,
+      "expiry": "2030-02-28"
+     },
+     "native_region": "Kanto",
+     "nature": "Naughty",
+     "ability": "flash_fire"
+    },
+    {
+     "uid": "pkm0585",
+     "species_id": 77,
+     "species": "Ponyta",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 0,
+      "atk": 3,
+      "def": 0,
+      "spa": 1,
+      "spd": 14,
+      "spe": 13
+     },
+     "moves": [
+      "Ember",
+      "Tackle",
+      "Double Team",
+      "Fire Spin"
+     ],
+     "held_item": null,
+     "condition": 100,
+     "fitness": 84,
+     "morale": 87,
+     "age_months": 47,
+     "contract": {
+      "salary": 2980,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Impish",
+     "ability": "flash_fire"
+    },
+    {
+     "uid": "pkm0586",
+     "species_id": 81,
+     "species": "Magnemite",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 10,
+      "atk": 8,
+      "def": 5,
+      "spa": 15,
+      "spd": 5,
+      "spe": 2
+     },
+     "moves": [
+      "Agility",
+      "Tackle",
+      "Thunderbolt",
+      "Thunder"
+     ],
+     "held_item": "quick_claw",
+     "condition": 99,
+     "fitness": 87,
+     "morale": 62,
+     "age_months": 95,
+     "contract": {
+      "salary": 1988,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Jolly",
+     "ability": "sturdy"
+    },
+    {
+     "uid": "pkm0587",
+     "species_id": 63,
+     "species": "Abra",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 15,
+      "atk": 14,
+      "def": 7,
+      "spa": 2,
+      "spd": 14,
+      "spe": 5
+     },
+     "moves": [
+      "Psybeam",
+      "Agility",
+      "Focus Energy",
+      "Recover"
+     ],
+     "held_item": null,
+     "condition": 75,
+     "fitness": 84,
+     "morale": 65,
+     "age_months": 95,
+     "contract": {
+      "salary": 1733,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "synchronize"
+    },
+    {
+     "uid": "pkm0588",
+     "species_id": 92,
+     "species": "Gastly",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 5,
+      "atk": 13,
+      "def": 9,
+      "spa": 13,
+      "spd": 5,
+      "spe": 7
+     },
+     "moves": [
+      "Confuse Ray",
+      "Poison Sting",
+      "Swords Dance",
+      "Smog"
+     ],
+     "held_item": null,
+     "condition": 85,
+     "fitness": 99,
+     "morale": 85,
+     "age_months": 55,
+     "contract": {
+      "salary": 2508,
+      "expiry": "2027-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Modest",
+     "ability": "levitate"
+    },
+    {
+     "uid": "pkm0589",
+     "species_id": 10,
+     "species": "Caterpie",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 14,
+      "atk": 12,
+      "def": 11,
+      "spa": 10,
+      "spd": 11,
+      "spe": 14
+     },
+     "moves": [
+      "String Shot",
+      "Growl",
+      "Twineedle",
+      "Leech Life"
+     ],
+     "held_item": null,
+     "condition": 85,
+     "fitness": 89,
+     "morale": 89,
+     "age_months": 54,
+     "contract": {
+      "salary": 1388,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Naive",
+     "ability": "shield_dust"
+    },
+    {
+     "uid": "pkm0590",
+     "species_id": 5,
+     "species": "Charmeleon",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 0,
+      "atk": 13,
+      "def": 7,
+      "spa": 14,
+      "spd": 1,
+      "spe": 8
+     },
+     "moves": [
+      "Quick Attack",
+      "Flamethrower",
+      "Double Team",
+      "Fire Spin"
+     ],
+     "held_item": null,
+     "condition": 80,
+     "fitness": 77,
+     "morale": 54,
+     "age_months": 93,
+     "contract": {
+      "salary": 2165,
+      "expiry": "2029-02-28"
+     },
+     "native_region": "Kanto",
+     "nature": "Mild",
+     "ability": "blaze"
+    },
+    {
+     "uid": "pkm0591",
+     "species_id": 79,
+     "species": "Slowpoke",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 2,
+      "atk": 4,
+      "def": 6,
+      "spa": 6,
+      "spd": 4,
+      "spe": 15
+     },
+     "moves": [
+      "Confusion",
+      "Bubble Beam",
+      "Light Screen",
+      "Surf"
+     ],
+     "held_item": null,
+     "condition": 99,
+     "fitness": 80,
+     "morale": 72,
+     "age_months": 23,
+     "contract": {
+      "salary": 1414,
+      "expiry": "2028-01-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Careful",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0592",
+     "species_id": 1,
+     "species": "Bulbasaur",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 3,
+      "atk": 1,
+      "def": 5,
+      "spa": 0,
+      "spd": 7,
+      "spe": 2
+     },
+     "moves": [
+      "Quick Attack",
+      "Poison Sting",
+      "Acid",
+      "Sleep Powder"
+     ],
+     "held_item": null,
+     "condition": 78,
+     "fitness": 86,
+     "morale": 68,
+     "age_months": 77,
+     "contract": {
+      "salary": 2179,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Timid",
+     "ability": "overgrow"
+    },
+    {
+     "uid": "pkm0593",
+     "species_id": 87,
+     "species": "Dewgong",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 9,
+      "atk": 0,
+      "def": 6,
+      "spa": 6,
+      "spd": 2,
+      "spe": 4
+     },
+     "moves": [
+      "Ice Beam",
+      "Ice Punch",
+      "Agility",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 72,
+     "fitness": 92,
+     "morale": 66,
+     "age_months": 79,
+     "contract": {
+      "salary": 2832,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Bold",
+     "ability": "thick_fat"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Rhonda Silph",
+     "role": "coach",
+     "ratings": {
+      "attacking": 15,
+      "defending": 10,
+      "fitness": 8,
+      "judging_ability": 6,
+      "judging_potential": 15,
+      "youth": 9
+     }
+    },
+    {
+     "name": "Cilan Juniper",
+     "role": "scout",
+     "ratings": {
+      "attacking": 11,
+      "defending": 17,
+      "fitness": 5,
+      "judging_ability": 11,
+      "judging_potential": 17,
+      "youth": 8
+     }
+    },
+    {
+     "name": "Koga Sycamore",
+     "role": "physio",
+     "ratings": {
+      "attacking": 12,
+      "defending": 20,
+      "fitness": 7,
+      "judging_ability": 15,
+      "judging_potential": 4,
+      "youth": 15
+     }
+    }
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club41",
+   "name": "Moonstone Prospectors",
+   "short": "MSP",
+   "league": "kanto2",
+   "manager": "Ritchie Waterflower",
+   "reputation": 7,
+   "finances": {
+    "balance": 302000,
+    "wage_budget": 25861
+   },
+   "squad": [
+    {
+     "uid": "pkm0594",
+     "species_id": 27,
+     "species": "Sandshrew",
+     "nickname": null,
+     "level": 21,
+     "ivs": {
+      "hp": 6,
+      "atk": 12,
+      "def": 1,
+      "spa": 1,
+      "spd": 12,
+      "spe": 2
+     },
+     "moves": [
+      "Quick Attack",
+      "Sand Attack",
+      "Earthquake",
+      "Bone Club"
+     ],
+     "held_item": null,
+     "condition": 81,
+     "fitness": 97,
+     "morale": 62,
+     "age_months": 13,
+     "contract": {
+      "salary": 1211,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lax",
+     "ability": "sand_veil"
+    },
+    {
+     "uid": "pkm0595",
+     "species_id": 137,
+     "species": "Porygon",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 11,
+      "atk": 4,
+      "def": 12,
+      "spa": 2,
+      "spd": 13,
+      "spe": 1
+     },
+     "moves": [
+      "Double-Edge",
+      "Headbutt",
+      "Quick Attack",
+      "Slash"
+     ],
+     "held_item": null,
+     "condition": 88,
+     "fitness": 92,
+     "morale": 62,
+     "age_months": 116,
+     "contract": {
+      "salary": 2602,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lax",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0596",
+     "species_id": 56,
+     "species": "Mankey",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 3,
+      "atk": 6,
+      "def": 15,
+      "spa": 3,
+      "spd": 8,
+      "spe": 0
+     },
+     "moves": [
+      "Screech",
+      "High Jump Kick",
+      "Submission",
+      "Tackle"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 92,
+     "fitness": 83,
+     "morale": 89,
+     "age_months": 19,
+     "contract": {
+      "salary": 2098,
+      "expiry": "2030-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Brave",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0597",
+     "species_id": 114,
+     "species": "Tangela",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 14,
+      "atk": 6,
+      "def": 0,
+      "spa": 6,
+      "spd": 2,
+      "spe": 6
+     },
+     "moves": [
+      "Sleep Powder",
+      "Harden",
+      "Solar Beam",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 94,
+     "morale": 82,
+     "age_months": 33,
+     "contract": {
+      "salary": 1762,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Docile",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0598",
+     "species_id": 70,
+     "species": "Weepinbell",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 9,
+      "atk": 2,
+      "def": 2,
+      "spa": 13,
+      "spd": 0,
+      "spe": 9
+     },
+     "moves": [
+      "Acid",
+      "Poison Sting",
+      "Vine Whip",
+      "Harden"
+     ],
+     "held_item": null,
+     "condition": 77,
+     "fitness": 93,
+     "morale": 86,
+     "age_months": 25,
+     "contract": {
+      "salary": 2189,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Impish",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0599",
+     "species_id": 113,
+     "species": "Chansey",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 13,
+      "atk": 4,
+      "def": 7,
+      "spa": 0,
+      "spd": 5,
+      "spe": 7
+     },
+     "moves": [
+      "Seismic Toss",
+      "Sing",
+      "Body Slam",
+      "Light Screen"
+     ],
+     "held_item": null,
+     "condition": 79,
+     "fitness": 91,
+     "morale": 84,
+     "age_months": 22,
+     "contract": {
+      "salary": 2365,
+      "expiry": "2028-01-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Timid",
+     "ability": "natural_cure"
+    },
+    {
+     "uid": "pkm0600",
+     "species_id": 122,
+     "species": "Mr. Mime",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 13,
+      "atk": 1,
+      "def": 14,
+      "spa": 2,
+      "spd": 14,
+      "spe": 8
+     },
+     "moves": [
+      "Recover",
+      "Swift",
+      "Psychic",
+      "Tail Whip"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 73,
+     "fitness": 91,
+     "morale": 80,
+     "age_months": 20,
+     "contract": {
+      "salary": 2185,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "inner_focus"
+    },
+    {
+     "uid": "pkm0601",
+     "species_id": 105,
+     "species": "Marowak",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 13,
+      "atk": 11,
+      "def": 12,
+      "spa": 7,
+      "spd": 2,
+      "spe": 11
+     },
+     "moves": [
+      "Bone Club",
+      "Double Team",
+      "Dig",
+      "Earthquake"
+     ],
+     "held_item": null,
+     "condition": 82,
+     "fitness": 79,
+     "morale": 64,
+     "age_months": 32,
+     "contract": {
+      "salary": 1924,
+      "expiry": "2029-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "rock_head"
+    },
+    {
+     "uid": "pkm0602",
+     "species_id": 61,
+     "species": "Poliwhirl",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 7,
+      "atk": 12,
+      "def": 11,
+      "spa": 7,
+      "spd": 13,
+      "spe": 5
+     },
+     "moves": [
+      "Bubble Beam",
+      "Surf",
+      "Tackle",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 90,
+     "fitness": 92,
+     "morale": 82,
+     "age_months": 96,
+     "contract": {
+      "salary": 2189,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Modest",
+     "ability": "water_absorb"
+    },
+    {
+     "uid": "pkm0603",
+     "species_id": 117,
+     "species": "Seadra",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 7,
+      "atk": 14,
+      "def": 5,
+      "spa": 12,
+      "spd": 7,
+      "spe": 2
+     },
+     "moves": [
+      "Quick Attack",
+      "Water Gun",
+      "Bubble Beam",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 88,
+     "fitness": 79,
+     "morale": 78,
+     "age_months": 52,
+     "contract": {
+      "salary": 1861,
+      "expiry": "2029-01-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "swift_swim"
+    },
+    {
+     "uid": "pkm0604",
+     "species_id": 105,
+     "species": "Marowak",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 0,
+      "atk": 2,
+      "def": 6,
+      "spa": 8,
+      "spd": 13,
+      "spe": 1
+     },
+     "moves": [
+      "Earthquake",
+      "Double Team",
+      "Slash",
+      "Bone Club"
+     ],
+     "held_item": null,
+     "condition": 76,
+     "fitness": 94,
+     "morale": 62,
+     "age_months": 93,
+     "contract": {
+      "salary": 1555,
+      "expiry": "2029-09-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Naughty",
+     "ability": "rock_head"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Ash Juniper",
+     "role": "coach",
+     "ratings": {
+      "attacking": 17,
+      "defending": 9,
+      "fitness": 12,
+      "judging_ability": 9,
+      "judging_potential": 13,
+      "youth": 18
+     }
+    },
+    {
+     "name": "Daisy Fuji",
+     "role": "coach",
+     "ratings": {
+      "attacking": 13,
+      "defending": 15,
+      "fitness": 20,
+      "judging_ability": 13,
+      "judging_potential": 19,
+      "youth": 7
+     }
+    }
+   ],
+   "items": {
+    "potion": 1,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club42",
+   "name": "Route 17 Rollers",
+   "short": "RRR",
+   "league": "kanto2",
+   "manager": "Lillie Fuji",
+   "reputation": 9,
+   "finances": {
+    "balance": 264000,
+    "wage_budget": 22461
+   },
+   "squad": [
+    {
+     "uid": "pkm0605",
+     "species_id": 77,
+     "species": "Ponyta",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 6,
+      "atk": 8,
+      "def": 1,
+      "spa": 15,
+      "spd": 14,
+      "spe": 5
+     },
+     "moves": [
+      "Fire Blast",
+      "Fire Punch",
+      "Double Team",
+      "Fire Spin"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 84,
+     "morale": 86,
+     "age_months": 49,
+     "contract": {
+      "salary": 2527,
+      "expiry": "2028-03-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Serious",
+     "ability": "flash_fire"
+    },
+    {
+     "uid": "pkm0606",
+     "species_id": 96,
+     "species": "Drowzee",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 7,
+      "atk": 12,
+      "def": 11,
+      "spa": 15,
+      "spd": 12,
+      "spe": 8
+     },
+     "moves": [
+      "Quick Attack",
+      "Confusion",
+      "Recover",
+      "Psychic"
+     ],
+     "held_item": null,
+     "condition": 72,
+     "fitness": 84,
+     "morale": 62,
+     "age_months": 100,
+     "contract": {
+      "salary": 2015,
+      "expiry": "2029-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Timid",
+     "ability": "insomnia"
+    },
+    {
+     "uid": "pkm0607",
+     "species_id": 124,
+     "species": "Jynx",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 8,
+      "atk": 7,
+      "def": 3,
+      "spa": 0,
+      "spd": 2,
+      "spe": 3
+     },
+     "moves": [
+      "Confusion",
+      "Psychic",
+      "Growl",
+      "Recover"
+     ],
+     "held_item": null,
+     "condition": 98,
+     "fitness": 77,
+     "morale": 51,
+     "age_months": 25,
+     "contract": {
+      "salary": 2053,
+      "expiry": "2029-01-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Relaxed",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0608",
+     "species_id": 58,
+     "species": "Growlithe",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 4,
+      "atk": 7,
+      "def": 3,
+      "spa": 6,
+      "spd": 6,
+      "spe": 14
+     },
+     "moves": [
+      "Ember",
+      "Headbutt",
+      "Flame Wheel",
+      "Reflect"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 100,
+     "morale": 95,
+     "age_months": 39,
+     "contract": {
+      "salary": 1856,
+      "expiry": "2030-02-28"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0609",
+     "species_id": 16,
+     "species": "Pidgey",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 3,
+      "atk": 13,
+      "def": 5,
+      "spa": 11,
+      "spd": 1,
+      "spe": 11
+     },
+     "moves": [
+      "Harden",
+      "Hyper Beam",
+      "Headbutt",
+      "Gust"
+     ],
+     "held_item": "focus_sash",
+     "condition": 75,
+     "fitness": 95,
+     "morale": 61,
+     "age_months": 30,
+     "contract": {
+      "salary": 1552,
+      "expiry": "2030-03-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Hardy",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0610",
+     "species_id": 124,
+     "species": "Jynx",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 3,
+      "atk": 0,
+      "def": 0,
+      "spa": 13,
+      "spd": 2,
+      "spe": 0
+     },
+     "moves": [
+      "Icy Wind",
+      "Growl",
+      "Ice Punch",
+      "Psychic"
+     ],
+     "held_item": null,
+     "condition": 85,
+     "fitness": 84,
+     "morale": 51,
+     "age_months": 17,
+     "contract": {
+      "salary": 2096,
+      "expiry": "2030-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0611",
+     "species_id": 106,
+     "species": "Hitmonlee",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 15,
+      "atk": 13,
+      "def": 15,
+      "spa": 11,
+      "spd": 4,
+      "spe": 12
+     },
+     "moves": [
+      "Submission",
+      "Agility",
+      "Slash",
+      "Double Kick"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 82,
+     "morale": 90,
+     "age_months": 20,
+     "contract": {
+      "salary": 2206,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Sassy",
+     "ability": "limber"
+    },
+    {
+     "uid": "pkm0612",
+     "species_id": 47,
+     "species": "Parasect",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 7,
+      "atk": 10,
+      "def": 8,
+      "spa": 6,
+      "spd": 1,
+      "spe": 4
+     },
+     "moves": [
+      "Twineedle",
+      "Sleep Powder",
+      "String Shot",
+      "Petal Dance"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 79,
+     "morale": 65,
+     "age_months": 31,
+     "contract": {
+      "salary": 2189,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Naive",
+     "ability": "effect_spore"
+    },
+    {
+     "uid": "pkm0613",
+     "species_id": 19,
+     "species": "Rattata",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 14,
+      "atk": 1,
+      "def": 10,
+      "spa": 2,
+      "spd": 7,
+      "spe": 0
+     },
+     "moves": [
+      "Quick Attack",
+      "Light Screen",
+      "Slash",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 99,
+     "morale": 95,
+     "age_months": 28,
+     "contract": {
+      "salary": 1709,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Adamant",
+     "ability": "guts"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Falkner Waterflower",
+     "role": "coach",
+     "ratings": {
+      "attacking": 4,
+      "defending": 20,
+      "fitness": 17,
+      "judging_ability": 11,
+      "judging_potential": 16,
+      "youth": 14
+     }
+    },
+    {
+     "name": "Silver Juniper",
+     "role": "scout",
+     "ratings": {
+      "attacking": 17,
+      "defending": 12,
+      "fitness": 6,
+      "judging_ability": 11,
+      "judging_potential": 6,
+      "youth": 11
+     }
+    },
+    {
+     "name": "Volkner Snap",
+     "role": "physio",
+     "ratings": {
+      "attacking": 9,
+      "defending": 20,
+      "fitness": 19,
+      "judging_ability": 18,
+      "judging_potential": 20,
+      "youth": 11
+     }
+    }
+   ],
+   "items": {
+    "potion": 1,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club43",
+   "name": "Pallet Shores Gulls",
+   "short": "PSG",
+   "league": "kanto2",
+   "manager": "Phoebe Ketchum",
+   "reputation": 8,
+   "finances": {
+    "balance": 319000,
+    "wage_budget": 22250
+   },
+   "squad": [
+    {
+     "uid": "pkm0614",
+     "species_id": 20,
+     "species": "Raticate",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 6,
+      "atk": 8,
+      "def": 7,
+      "spa": 9,
+      "spd": 15,
+      "spe": 12
+     },
+     "moves": [
+      "Tail Whip",
+      "Hyper Beam",
+      "Headbutt",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 84,
+     "morale": 89,
+     "age_months": 25,
+     "contract": {
+      "salary": 1683,
+      "expiry": "2029-03-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Careful",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0615",
+     "species_id": 100,
+     "species": "Voltorb",
+     "nickname": null,
+     "level": 22,
+     "ivs": {
+      "hp": 2,
+      "atk": 9,
+      "def": 13,
+      "spa": 10,
+      "spd": 3,
+      "spe": 15
+     },
+     "moves": [
+      "Thunderbolt",
+      "Thunder Punch",
+      "Thunder Shock",
+      "Leer"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 88,
+     "morale": 58,
+     "age_months": 69,
+     "contract": {
+      "salary": 1430,
+      "expiry": "2029-12-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Jolly",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0616",
+     "species_id": 22,
+     "species": "Fearow",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 11,
+      "atk": 9,
+      "def": 7,
+      "spa": 5,
+      "spd": 2,
+      "spe": 6
+     },
+     "moves": [
+      "Slash",
+      "Fly",
+      "Growl",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 100,
+     "fitness": 80,
+     "morale": 59,
+     "age_months": 104,
+     "contract": {
+      "salary": 2401,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Adamant",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0617",
+     "species_id": 79,
+     "species": "Slowpoke",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 1,
+      "atk": 6,
+      "def": 8,
+      "spa": 5,
+      "spd": 10,
+      "spe": 14
+     },
+     "moves": [
+      "Hypnosis",
+      "Bubble Beam",
+      "Surf",
+      "Light Screen"
+     ],
+     "held_item": null,
+     "condition": 90,
+     "fitness": 90,
+     "morale": 59,
+     "age_months": 44,
+     "contract": {
+      "salary": 1700,
+      "expiry": "2028-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Lonely",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0618",
+     "species_id": 85,
+     "species": "Dodrio",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 12,
+      "atk": 13,
+      "def": 7,
+      "spa": 15,
+      "spd": 7,
+      "spe": 14
+     },
+     "moves": [
+      "Body Slam",
+      "Peck",
+      "Gust",
+      "Fly"
+     ],
+     "held_item": null,
+     "condition": 83,
+     "fitness": 94,
+     "morale": 81,
+     "age_months": 96,
+     "contract": {
+      "salary": 2557,
+      "expiry": "2028-07-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Jolly",
+     "ability": "early_bird"
+    },
+    {
+     "uid": "pkm0619",
+     "species_id": 124,
+     "species": "Jynx",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 7,
+      "atk": 11,
+      "def": 14,
+      "spa": 7,
+      "spd": 14,
+      "spe": 8
+     },
+     "moves": [
+      "Confusion",
+      "Growl",
+      "Recover",
+      "Ice Punch"
+     ],
+     "held_item": null,
+     "condition": 98,
+     "fitness": 83,
+     "morale": 53,
+     "age_months": 56,
+     "contract": {
+      "salary": 1920,
+      "expiry": "2028-05-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Calm",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0620",
+     "species_id": 63,
+     "species": "Abra",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 9,
+      "atk": 13,
+      "def": 8,
+      "spa": 7,
+      "spd": 15,
+      "spe": 1
+     },
+     "moves": [
+      "Psybeam",
+      "Agility",
+      "Focus Energy",
+      "Recover"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 81,
+     "morale": 80,
+     "age_months": 34,
+     "contract": {
+      "salary": 2251,
+      "expiry": "2027-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Quirky",
+     "ability": "synchronize"
+    },
+    {
+     "uid": "pkm0621",
+     "species_id": 66,
+     "species": "Machop",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 0,
+      "atk": 8,
+      "def": 7,
+      "spa": 12,
+      "spd": 14,
+      "spe": 4
+     },
+     "moves": [
+      "Tail Whip",
+      "Body Slam",
+      "Seismic Toss",
+      "Karate Chop"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 85,
+     "fitness": 82,
+     "morale": 57,
+     "age_months": 41,
+     "contract": {
+      "salary": 1961,
+      "expiry": "2029-11-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Jolly",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0622",
+     "species_id": 117,
+     "species": "Seadra",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 4,
+      "atk": 6,
+      "def": 15,
+      "spa": 4,
+      "spd": 8,
+      "spe": 14
+     },
+     "moves": [
+      "Hydro Pump",
+      "Quick Attack",
+      "Water Gun",
+      "Bubble Beam"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 86,
+     "morale": 68,
+     "age_months": 44,
+     "contract": {
+      "salary": 2374,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Kanto",
+     "nature": "Docile",
+     "ability": "swift_swim"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Ritchie Goodshow",
+     "role": "coach",
+     "ratings": {
+      "attacking": 6,
+      "defending": 9,
+      "fitness": 19,
+      "judging_ability": 12,
+      "judging_potential": 20,
+      "youth": 9
+     }
+    },
+    {
+     "name": "Wallace Cerise",
+     "role": "scout",
+     "ratings": {
+      "attacking": 4,
+      "defending": 12,
+      "fitness": 17,
+      "judging_ability": 15,
+      "judging_potential": 15,
+      "youth": 16
+     }
+    }
+   ],
+   "items": {
+    "potion": 1,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club44",
+   "name": "Dark Cave Lanterns",
+   "short": "DKC",
+   "league": "johto2",
+   "manager": "Dawn Sycamore",
+   "reputation": 5,
+   "finances": {
+    "balance": 174000,
+    "wage_budget": 15154
+   },
+   "squad": [
+    {
+     "uid": "pkm0623",
+     "species_id": 173,
+     "species": "Cleffa",
+     "nickname": null,
+     "level": 21,
+     "ivs": {
+      "hp": 15,
+      "atk": 12,
+      "def": 4,
+      "spa": 15,
+      "spd": 1,
+      "spe": 15
+     },
+     "moves": [
+      "Swift",
+      "Tackle",
+      "Double Team",
+      "Return"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 84,
+     "morale": 93,
+     "age_months": 101,
+     "contract": {
+      "salary": 1354,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Timid",
+     "ability": "cute_charm"
+    },
+    {
+     "uid": "pkm0624",
+     "species_id": 161,
+     "species": "Sentret",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 9,
+      "atk": 5,
+      "def": 6,
+      "spa": 0,
+      "spd": 8,
+      "spe": 15
+     },
+     "moves": [
+      "Swift",
+      "Body Slam",
+      "Reflect",
+      "Headbutt"
+     ],
+     "held_item": "lum_berry",
+     "condition": 89,
+     "fitness": 88,
+     "morale": 51,
+     "age_months": 40,
+     "contract": {
+      "salary": 1307,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Johto",
+     "nature": "Impish",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0625",
+     "species_id": 204,
+     "species": "Pineco",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 7,
+      "atk": 5,
+      "def": 8,
+      "spa": 5,
+      "spd": 10,
+      "spe": 11
+     },
+     "moves": [
+      "String Shot",
+      "Pin Missile",
+      "Headbutt",
+      "Twineedle"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 78,
+     "morale": 60,
+     "age_months": 51,
+     "contract": {
+      "salary": 1871,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hasty",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0626",
+     "species_id": 228,
+     "species": "Houndour",
+     "nickname": null,
+     "level": 21,
+     "ivs": {
+      "hp": 13,
+      "atk": 11,
+      "def": 3,
+      "spa": 6,
+      "spd": 8,
+      "spe": 9
+     },
+     "moves": [
+      "Fire Punch",
+      "Thief",
+      "Pursuit",
+      "Ember"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 84,
+     "morale": 84,
+     "age_months": 87,
+     "contract": {
+      "salary": 1446,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Relaxed",
+     "ability": "flash_fire"
+    },
+    {
+     "uid": "pkm0627",
+     "species_id": 168,
+     "species": "Ariados",
+     "nickname": null,
+     "level": 19,
+     "ivs": {
+      "hp": 8,
+      "atk": 5,
+      "def": 7,
+      "spa": 1,
+      "spd": 1,
+      "spe": 5
+     },
+     "moves": [
+      "Megahorn",
+      "Sludge",
+      "Tackle",
+      "Smog"
+     ],
+     "held_item": null,
+     "condition": 82,
+     "fitness": 87,
+     "morale": 73,
+     "age_months": 106,
+     "contract": {
+      "salary": 1316,
+      "expiry": "2030-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Modest",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0628",
+     "species_id": 183,
+     "species": "Marill",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 11,
+      "atk": 2,
+      "def": 8,
+      "spa": 6,
+      "spd": 9,
+      "spe": 11
+     },
+     "moves": [
+      "Hydro Pump",
+      "Swords Dance",
+      "Slash",
+      "Surf"
+     ],
+     "held_item": "mystic_water",
+     "condition": 98,
+     "fitness": 85,
+     "morale": 88,
+     "age_months": 83,
+     "contract": {
+      "salary": 1428,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "huge_power"
+    },
+    {
+     "uid": "pkm0629",
+     "species_id": 179,
+     "species": "Mareep",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 10,
+      "atk": 8,
+      "def": 7,
+      "spa": 12,
+      "spd": 12,
+      "spe": 5
+     },
+     "moves": [
+      "Tackle",
+      "Thunderbolt",
+      "Swords Dance",
+      "Thunder Wave"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 100,
+     "morale": 84,
+     "age_months": 54,
+     "contract": {
+      "salary": 1536,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Impish",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0630",
+     "species_id": 170,
+     "species": "Chinchou",
+     "nickname": null,
+     "level": 21,
+     "ivs": {
+      "hp": 11,
+      "atk": 3,
+      "def": 3,
+      "spa": 1,
+      "spd": 0,
+      "spe": 9
+     },
+     "moves": [
+      "Thunder Shock",
+      "Waterfall",
+      "Leer",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 81,
+     "fitness": 86,
+     "morale": 62,
+     "age_months": 39,
+     "contract": {
+      "salary": 1372,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Modest",
+     "ability": "volt_absorb"
+    },
+    {
+     "uid": "pkm0631",
+     "species_id": 204,
+     "species": "Pineco",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 6,
+      "atk": 7,
+      "def": 1,
+      "spa": 4,
+      "spd": 15,
+      "spe": 8
+     },
+     "moves": [
+      "Double Team",
+      "Leech Life",
+      "String Shot",
+      "Headbutt"
+     ],
+     "held_item": null,
+     "condition": 84,
+     "fitness": 95,
+     "morale": 59,
+     "age_months": 107,
+     "contract": {
+      "salary": 1443,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Johto",
+     "nature": "Docile",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0632",
+     "species_id": 155,
+     "species": "Cyndaquil",
+     "nickname": null,
+     "level": 20,
+     "ivs": {
+      "hp": 2,
+      "atk": 4,
+      "def": 8,
+      "spa": 5,
+      "spd": 2,
+      "spe": 3
+     },
+     "moves": [
+      "Fire Punch",
+      "Quick Attack",
+      "Flame Wheel",
+      "Flamethrower"
+     ],
+     "held_item": null,
+     "condition": 78,
+     "fitness": 81,
+     "morale": 51,
+     "age_months": 103,
+     "contract": {
+      "salary": 1310,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "blaze"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Zoey Berlitz",
+     "role": "coach",
+     "ratings": {
+      "attacking": 12,
+      "defending": 10,
+      "fitness": 11,
+      "judging_ability": 8,
+      "judging_potential": 11,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Misty Snap",
+     "role": "scout",
+     "ratings": {
+      "attacking": 17,
+      "defending": 18,
+      "fitness": 12,
+      "judging_ability": 13,
+      "judging_potential": 10,
+      "youth": 6
+     }
+    }
+   ],
+   "items": {
+    "potion": 1,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club45",
+   "name": "Slowpoke Well Wardens",
+   "short": "SPW",
+   "league": "johto2",
+   "manager": "Gary Stone",
+   "reputation": 9,
+   "finances": {
+    "balance": 272000,
+    "wage_budget": 15043
+   },
+   "squad": [
+    {
+     "uid": "pkm0633",
+     "species_id": 189,
+     "species": "Jumpluff",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 14,
+      "atk": 5,
+      "def": 7,
+      "spa": 13,
+      "spd": 5,
+      "spe": 11
+     },
+     "moves": [
+      "Solar Beam",
+      "Synthesis",
+      "Razor Leaf",
+      "Agility"
+     ],
+     "held_item": null,
+     "condition": 76,
+     "fitness": 80,
+     "morale": 94,
+     "age_months": 52,
+     "contract": {
+      "salary": 1728,
+      "expiry": "2029-05-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quirky",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0634",
+     "species_id": 158,
+     "species": "Totodile",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 7,
+      "atk": 13,
+      "def": 0,
+      "spa": 12,
+      "spd": 11,
+      "spe": 14
+     },
+     "moves": [
+      "Bubble Beam",
+      "Tackle",
+      "Reflect",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 75,
+     "morale": 71,
+     "age_months": 17,
+     "contract": {
+      "salary": 1807,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Johto",
+     "nature": "Impish",
+     "ability": "torrent"
+    },
+    {
+     "uid": "pkm0635",
+     "species_id": 173,
+     "species": "Cleffa",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 5,
+      "atk": 14,
+      "def": 11,
+      "spa": 12,
+      "spd": 12,
+      "spe": 8
+     },
+     "moves": [
+      "Swift",
+      "Return",
+      "Tackle",
+      "Double Team"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 91,
+     "morale": 74,
+     "age_months": 70,
+     "contract": {
+      "salary": 1545,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Gentle",
+     "ability": "cute_charm"
+    },
+    {
+     "uid": "pkm0636",
+     "species_id": 174,
+     "species": "Igglybuff",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 1,
+      "atk": 2,
+      "def": 14,
+      "spa": 10,
+      "spd": 7,
+      "spe": 7
+     },
+     "moves": [
+      "Quick Attack",
+      "Double-Edge",
+      "Headbutt",
+      "Tackle"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 94,
+     "morale": 62,
+     "age_months": 14,
+     "contract": {
+      "salary": 1520,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quirky",
+     "ability": "cute_charm"
+    },
+    {
+     "uid": "pkm0637",
+     "species_id": 210,
+     "species": "Granbull",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 10,
+      "atk": 5,
+      "def": 0,
+      "spa": 3,
+      "spd": 0,
+      "spe": 10
+     },
+     "moves": [
+      "Headbutt",
+      "Harden",
+      "Body Slam",
+      "Slash"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 88,
+     "morale": 85,
+     "age_months": 97,
+     "contract": {
+      "salary": 1525,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Jolly",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0638",
+     "species_id": 238,
+     "species": "Smoochum",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 7,
+      "atk": 4,
+      "def": 7,
+      "spa": 5,
+      "spd": 10,
+      "spe": 11
+     },
+     "moves": [
+      "Icy Wind",
+      "Agility",
+      "Powder Snow",
+      "Future Sight"
+     ],
+     "held_item": null,
+     "condition": 83,
+     "fitness": 91,
+     "morale": 95,
+     "age_months": 39,
+     "contract": {
+      "salary": 1604,
+      "expiry": "2030-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Calm",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0639",
+     "species_id": 163,
+     "species": "Hoothoot",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 1,
+      "atk": 4,
+      "def": 3,
+      "spa": 14,
+      "spd": 15,
+      "spe": 1
+     },
+     "moves": [
+      "Wing Attack",
+      "Return",
+      "Gust",
+      "Body Slam"
+     ],
+     "held_item": "sharp_beak",
+     "condition": 77,
+     "fitness": 99,
+     "morale": 52,
+     "age_months": 58,
+     "contract": {
+      "salary": 1887,
+      "expiry": "2029-05-30"
+     },
+     "native_region": "Johto",
+     "nature": "Lax",
+     "ability": "insomnia"
+    },
+    {
+     "uid": "pkm0640",
+     "species_id": 221,
+     "species": "Piloswine",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 1,
+      "atk": 8,
+      "def": 6,
+      "spa": 6,
+      "spd": 14,
+      "spe": 12
+     },
+     "moves": [
+      "Sand Attack",
+      "Focus Energy",
+      "Magnitude",
+      "Ice Beam"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 93,
+     "morale": 77,
+     "age_months": 89,
+     "contract": {
+      "salary": 1971,
+      "expiry": "2028-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Rash",
+     "ability": "thick_fat"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Casey Birch",
+     "role": "coach",
+     "ratings": {
+      "attacking": 19,
+      "defending": 9,
+      "fitness": 14,
+      "judging_ability": 18,
+      "judging_potential": 9,
+      "youth": 17
+     }
+    },
+    {
+     "name": "Lillie Maple",
+     "role": "coach",
+     "ratings": {
+      "attacking": 14,
+      "defending": 4,
+      "fitness": 17,
+      "judging_ability": 4,
+      "judging_potential": 6,
+      "youth": 12
+     }
+    }
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club46",
+   "name": "Sprout Tower Monks",
+   "short": "SPT",
+   "league": "johto2",
+   "manager": "Ash Westwood",
+   "reputation": 8,
+   "finances": {
+    "balance": 322000,
+    "wage_budget": 23397
+   },
+   "squad": [
+    {
+     "uid": "pkm0641",
+     "species_id": 158,
+     "species": "Totodile",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 2,
+      "atk": 8,
+      "def": 9,
+      "spa": 13,
+      "spd": 2,
+      "spe": 12
+     },
+     "moves": [
+      "Waterfall",
+      "Reflect",
+      "Tackle",
+      "Water Gun"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 78,
+     "morale": 94,
+     "age_months": 100,
+     "contract": {
+      "salary": 1857,
+      "expiry": "2030-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Relaxed",
+     "ability": "torrent"
+    },
+    {
+     "uid": "pkm0642",
+     "species_id": 155,
+     "species": "Cyndaquil",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 13,
+      "atk": 7,
+      "def": 2,
+      "spa": 12,
+      "spd": 9,
+      "spe": 9
+     },
+     "moves": [
+      "Fire Punch",
+      "Flame Wheel",
+      "Leer",
+      "Ember"
+     ],
+     "held_item": "lum_berry",
+     "condition": 97,
+     "fitness": 86,
+     "morale": 76,
+     "age_months": 73,
+     "contract": {
+      "salary": 1428,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Modest",
+     "ability": "blaze"
+    },
+    {
+     "uid": "pkm0643",
+     "species_id": 187,
+     "species": "Hoppip",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 3,
+      "atk": 11,
+      "def": 11,
+      "spa": 13,
+      "spd": 8,
+      "spe": 5
+     },
+     "moves": [
+      "Razor Leaf",
+      "Gust",
+      "Vine Whip",
+      "Wing Attack"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 85,
+     "morale": 73,
+     "age_months": 74,
+     "contract": {
+      "salary": 1604,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Adamant",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0644",
+     "species_id": 236,
+     "species": "Tyrogue",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 2,
+      "atk": 6,
+      "def": 11,
+      "spa": 12,
+      "spd": 1,
+      "spe": 14
+     },
+     "moves": [
+      "Low Kick",
+      "High Jump Kick",
+      "Swords Dance",
+      "Tackle"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 89,
+     "morale": 51,
+     "age_months": 19,
+     "contract": {
+      "salary": 2200,
+      "expiry": "2029-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Sassy",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0645",
+     "species_id": 180,
+     "species": "Flaaffy",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 5,
+      "atk": 13,
+      "def": 6,
+      "spa": 10,
+      "spd": 1,
+      "spe": 11
+     },
+     "moves": [
+      "Thunder",
+      "Thunder Shock",
+      "Quick Attack",
+      "Thunder Punch"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 96,
+     "morale": 73,
+     "age_months": 38,
+     "contract": {
+      "salary": 2111,
+      "expiry": "2029-05-30"
+     },
+     "native_region": "Johto",
+     "nature": "Careful",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0646",
+     "species_id": 203,
+     "species": "Girafarig",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 2,
+      "atk": 12,
+      "def": 11,
+      "spa": 6,
+      "spd": 3,
+      "spe": 2
+     },
+     "moves": [
+      "Agility",
+      "Recover",
+      "Psybeam",
+      "Swift"
+     ],
+     "held_item": "lum_berry",
+     "condition": 94,
+     "fitness": 88,
+     "morale": 95,
+     "age_months": 44,
+     "contract": {
+      "salary": 2077,
+      "expiry": "2030-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Serious",
+     "ability": "inner_focus"
+    },
+    {
+     "uid": "pkm0647",
+     "species_id": 210,
+     "species": "Granbull",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 10,
+      "atk": 1,
+      "def": 13,
+      "spa": 3,
+      "spd": 1,
+      "spe": 7
+     },
+     "moves": [
+      "Slash",
+      "Harden",
+      "Headbutt",
+      "Tackle"
+     ],
+     "held_item": null,
+     "condition": 78,
+     "fitness": 75,
+     "morale": 81,
+     "age_months": 91,
+     "contract": {
+      "salary": 1726,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quirky",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0648",
+     "species_id": 231,
+     "species": "Phanpy",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 14,
+      "atk": 4,
+      "def": 7,
+      "spa": 13,
+      "spd": 4,
+      "spe": 15
+     },
+     "moves": [
+      "Agility",
+      "Quick Attack",
+      "Earthquake",
+      "Magnitude"
+     ],
+     "held_item": null,
+     "condition": 85,
+     "fitness": 86,
+     "morale": 84,
+     "age_months": 73,
+     "contract": {
+      "salary": 1923,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quirky",
+     "ability": "rock_head"
+    },
+    {
+     "uid": "pkm0649",
+     "species_id": 168,
+     "species": "Ariados",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 12,
+      "atk": 10,
+      "def": 9,
+      "spa": 14,
+      "spd": 14,
+      "spe": 10
+     },
+     "moves": [
+      "Light Screen",
+      "Megahorn",
+      "Pin Missile",
+      "Acid"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 98,
+     "morale": 90,
+     "age_months": 111,
+     "contract": {
+      "salary": 2446,
+      "expiry": "2030-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hardy",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0650",
+     "species_id": 231,
+     "species": "Phanpy",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 7,
+      "atk": 15,
+      "def": 3,
+      "spa": 13,
+      "spd": 3,
+      "spe": 0
+     },
+     "moves": [
+      "Sand Attack",
+      "Earthquake",
+      "Magnitude",
+      "Bone Club"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 84,
+     "morale": 80,
+     "age_months": 24,
+     "contract": {
+      "salary": 1666,
+      "expiry": "2030-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Lonely",
+     "ability": "rock_head"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Morty Cerise",
+     "role": "coach",
+     "ratings": {
+      "attacking": 9,
+      "defending": 13,
+      "fitness": 19,
+      "judging_ability": 13,
+      "judging_potential": 11,
+      "youth": 4
+     }
+    },
+    {
+     "name": "Mallow Magnolia",
+     "role": "scout",
+     "ratings": {
+      "attacking": 18,
+      "defending": 19,
+      "fitness": 4,
+      "judging_ability": 11,
+      "judging_potential": 7,
+      "youth": 7
+     }
+    },
+    {
+     "name": "Bruno Goodshow",
+     "role": "physio",
+     "ratings": {
+      "attacking": 14,
+      "defending": 17,
+      "fitness": 10,
+      "judging_ability": 17,
+      "judging_potential": 16,
+      "youth": 11
+     }
+    }
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club47",
+   "name": "Burned Tower Embers",
+   "short": "BRN",
+   "league": "johto2",
+   "manager": "Cilan Cerise",
+   "reputation": 6,
+   "finances": {
+    "balance": 307000,
+    "wage_budget": 24900
+   },
+   "squad": [
+    {
+     "uid": "pkm0651",
+     "species_id": 183,
+     "species": "Marill",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 0,
+      "atk": 11,
+      "def": 1,
+      "spa": 6,
+      "spd": 6,
+      "spe": 10
+     },
+     "moves": [
+      "Bubble Beam",
+      "Swords Dance",
+      "Surf",
+      "Slash"
+     ],
+     "held_item": null,
+     "condition": 90,
+     "fitness": 76,
+     "morale": 55,
+     "age_months": 51,
+     "contract": {
+      "salary": 1852,
+      "expiry": "2029-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Brave",
+     "ability": "huge_power"
+    },
+    {
+     "uid": "pkm0652",
+     "species_id": 190,
+     "species": "Aipom",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 2,
+      "atk": 13,
+      "def": 13,
+      "spa": 10,
+      "spd": 14,
+      "spe": 12
+     },
+     "moves": [
+      "Headbutt",
+      "Agility",
+      "Return",
+      "Tackle"
+     ],
+     "held_item": "lum_berry",
+     "condition": 83,
+     "fitness": 77,
+     "morale": 93,
+     "age_months": 66,
+     "contract": {
+      "salary": 1622,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Impish",
+     "ability": "limber"
+    },
+    {
+     "uid": "pkm0653",
+     "species_id": 188,
+     "species": "Skiploom",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 12,
+      "atk": 12,
+      "def": 7,
+      "spa": 0,
+      "spd": 1,
+      "spe": 7
+     },
+     "moves": [
+      "Mega Drain",
+      "Gust",
+      "Focus Energy",
+      "Fly"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 88,
+     "morale": 63,
+     "age_months": 37,
+     "contract": {
+      "salary": 1966,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hardy",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0654",
+     "species_id": 183,
+     "species": "Marill",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 15,
+      "atk": 10,
+      "def": 14,
+      "spa": 8,
+      "spd": 12,
+      "spe": 6
+     },
+     "moves": [
+      "Slash",
+      "Bubble Beam",
+      "Swords Dance",
+      "Whirlpool"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 95,
+     "fitness": 87,
+     "morale": 83,
+     "age_months": 103,
+     "contract": {
+      "salary": 2159,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "huge_power"
+    },
+    {
+     "uid": "pkm0655",
+     "species_id": 161,
+     "species": "Sentret",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 11,
+      "atk": 3,
+      "def": 10,
+      "spa": 12,
+      "spd": 7,
+      "spe": 11
+     },
+     "moves": [
+      "Reflect",
+      "Headbutt",
+      "Body Slam",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 76,
+     "fitness": 82,
+     "morale": 58,
+     "age_months": 39,
+     "contract": {
+      "salary": 1655,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0656",
+     "species_id": 167,
+     "species": "Spinarak",
+     "nickname": null,
+     "level": 22,
+     "ivs": {
+      "hp": 7,
+      "atk": 12,
+      "def": 10,
+      "spa": 2,
+      "spd": 12,
+      "spe": 11
+     },
+     "moves": [
+      "Sludge Bomb",
+      "Sludge",
+      "Swords Dance",
+      "String Shot"
+     ],
+     "held_item": null,
+     "condition": 76,
+     "fitness": 88,
+     "morale": 88,
+     "age_months": 99,
+     "contract": {
+      "salary": 1247,
+      "expiry": "2028-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hardy",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0657",
+     "species_id": 168,
+     "species": "Ariados",
+     "nickname": null,
+     "level": 22,
+     "ivs": {
+      "hp": 7,
+      "atk": 14,
+      "def": 8,
+      "spa": 1,
+      "spd": 10,
+      "spe": 11
+     },
+     "moves": [
+      "Light Screen",
+      "Twineedle",
+      "Megahorn",
+      "Tackle"
+     ],
+     "held_item": null,
+     "condition": 85,
+     "fitness": 80,
+     "morale": 71,
+     "age_months": 67,
+     "contract": {
+      "salary": 1351,
+      "expiry": "2029-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0658",
+     "species_id": 239,
+     "species": "Elekid",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 15,
+      "atk": 8,
+      "def": 4,
+      "spa": 14,
+      "spd": 13,
+      "spe": 12
+     },
+     "moves": [
+      "Thunder",
+      "Thunderbolt",
+      "Thunder Shock",
+      "Leer"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 88,
+     "morale": 74,
+     "age_months": 51,
+     "contract": {
+      "salary": 2001,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naive",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0659",
+     "species_id": 216,
+     "species": "Teddiursa",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 9,
+      "atk": 6,
+      "def": 13,
+      "spa": 3,
+      "spd": 2,
+      "spe": 1
+     },
+     "moves": [
+      "Headbutt",
+      "Tackle",
+      "Body Slam",
+      "Agility"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 84,
+     "morale": 87,
+     "age_months": 97,
+     "contract": {
+      "salary": 1737,
+      "expiry": "2029-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bold",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0660",
+     "species_id": 168,
+     "species": "Ariados",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 13,
+      "atk": 0,
+      "def": 0,
+      "spa": 12,
+      "spd": 14,
+      "spe": 1
+     },
+     "moves": [
+      "Smog",
+      "Sludge",
+      "Tackle",
+      "Pin Missile"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 98,
+     "morale": 79,
+     "age_months": 116,
+     "contract": {
+      "salary": 2010,
+      "expiry": "2028-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Sassy",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0661",
+     "species_id": 231,
+     "species": "Phanpy",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 0,
+      "atk": 6,
+      "def": 8,
+      "spa": 11,
+      "spd": 3,
+      "spe": 15
+     },
+     "moves": [
+      "Agility",
+      "Magnitude",
+      "Earthquake",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 94,
+     "fitness": 85,
+     "morale": 77,
+     "age_months": 83,
+     "contract": {
+      "salary": 2005,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "rock_head"
+    },
+    {
+     "uid": "pkm0662",
+     "species_id": 177,
+     "species": "Natu",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 4,
+      "atk": 10,
+      "def": 5,
+      "spa": 8,
+      "spd": 3,
+      "spe": 12
+     },
+     "moves": [
+      "Fly",
+      "Drill Peck",
+      "Quick Attack",
+      "Harden"
+     ],
+     "held_item": "focus_sash",
+     "condition": 90,
+     "fitness": 94,
+     "morale": 63,
+     "age_months": 58,
+     "contract": {
+      "salary": 2466,
+      "expiry": "2028-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Adamant",
+     "ability": "synchronize"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Lillie Laramie",
+     "role": "physio",
+     "ratings": {
+      "attacking": 4,
+      "defending": 19,
+      "fitness": 11,
+      "judging_ability": 12,
+      "judging_potential": 4,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Falkner Berlitz",
+     "role": "scout",
+     "ratings": {
+      "attacking": 6,
+      "defending": 11,
+      "fitness": 13,
+      "judging_ability": 14,
+      "judging_potential": 17,
+      "youth": 14
+     }
+    }
+   ],
+   "items": {
+    "potion": 3,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club48",
+   "name": "Lighthouse Keepers",
+   "short": "LHK",
+   "league": "johto2",
+   "manager": "Lana Juniper",
+   "reputation": 8,
+   "finances": {
+    "balance": 389000,
+    "wage_budget": 26340
+   },
+   "squad": [
+    {
+     "uid": "pkm0663",
+     "species_id": 193,
+     "species": "Yanma",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 13,
+      "atk": 3,
+      "def": 8,
+      "spa": 4,
+      "spd": 4,
+      "spe": 2
+     },
+     "moves": [
+      "Gust",
+      "Swords Dance",
+      "Megahorn",
+      "Fly"
+     ],
+     "held_item": null,
+     "condition": 73,
+     "fitness": 90,
+     "morale": 92,
+     "age_months": 92,
+     "contract": {
+      "salary": 1558,
+      "expiry": "2030-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Relaxed",
+     "ability": "speed_boost"
+    },
+    {
+     "uid": "pkm0664",
+     "species_id": 239,
+     "species": "Elekid",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 4,
+      "atk": 4,
+      "def": 1,
+      "spa": 1,
+      "spd": 7,
+      "spe": 4
+     },
+     "moves": [
+      "Leer",
+      "Thunder Shock",
+      "Quick Attack",
+      "Spark"
+     ],
+     "held_item": null,
+     "condition": 99,
+     "fitness": 89,
+     "morale": 91,
+     "age_months": 35,
+     "contract": {
+      "salary": 1329,
+      "expiry": "2030-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Impish",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0665",
+     "species_id": 203,
+     "species": "Girafarig",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 9,
+      "atk": 4,
+      "def": 4,
+      "spa": 11,
+      "spd": 1,
+      "spe": 7
+     },
+     "moves": [
+      "Body Slam",
+      "Swords Dance",
+      "Recover",
+      "Agility"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 89,
+     "morale": 92,
+     "age_months": 43,
+     "contract": {
+      "salary": 2186,
+      "expiry": "2029-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Brave",
+     "ability": "inner_focus"
+    },
+    {
+     "uid": "pkm0666",
+     "species_id": 192,
+     "species": "Sunflora",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 12,
+      "atk": 10,
+      "def": 1,
+      "spa": 4,
+      "spd": 6,
+      "spe": 9
+     },
+     "moves": [
+      "Focus Energy",
+      "Petal Dance",
+      "Solar Beam",
+      "Vine Whip"
+     ],
+     "held_item": "choice_specs",
+     "condition": 96,
+     "fitness": 80,
+     "morale": 53,
+     "age_months": 90,
+     "contract": {
+      "salary": 2204,
+      "expiry": "2029-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Serious",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0667",
+     "species_id": 236,
+     "species": "Tyrogue",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 7,
+      "atk": 11,
+      "def": 10,
+      "spa": 0,
+      "spd": 15,
+      "spe": 3
+     },
+     "moves": [
+      "Submission",
+      "Seismic Toss",
+      "Low Kick",
+      "High Jump Kick"
+     ],
+     "held_item": null,
+     "condition": 99,
+     "fitness": 100,
+     "morale": 71,
+     "age_months": 117,
+     "contract": {
+      "salary": 1847,
+      "expiry": "2027-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Mild",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0668",
+     "species_id": 209,
+     "species": "Snubbull",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 11,
+      "atk": 1,
+      "def": 13,
+      "spa": 10,
+      "spd": 8,
+      "spe": 8
+     },
+     "moves": [
+      "Swift",
+      "Focus Energy",
+      "Quick Attack",
+      "Headbutt"
+     ],
+     "held_item": "silk_scarf",
+     "condition": 77,
+     "fitness": 83,
+     "morale": 93,
+     "age_months": 112,
+     "contract": {
+      "salary": 1491,
+      "expiry": "2029-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Modest",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0669",
+     "species_id": 185,
+     "species": "Sudowoodo",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 15,
+      "atk": 9,
+      "def": 10,
+      "spa": 7,
+      "spd": 13,
+      "spe": 0
+     },
+     "moves": [
+      "Harden",
+      "Ancient Power",
+      "Rollout",
+      "Rock Slide"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 77,
+     "fitness": 79,
+     "morale": 65,
+     "age_months": 14,
+     "contract": {
+      "salary": 2098,
+      "expiry": "2030-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "rock_head"
+    },
+    {
+     "uid": "pkm0670",
+     "species_id": 189,
+     "species": "Jumpluff",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 1,
+      "atk": 13,
+      "def": 0,
+      "spa": 11,
+      "spd": 13,
+      "spe": 5
+     },
+     "moves": [
+      "Drill Peck",
+      "Agility",
+      "Synthesis",
+      "Gust"
+     ],
+     "held_item": null,
+     "condition": 80,
+     "fitness": 84,
+     "morale": 53,
+     "age_months": 82,
+     "contract": {
+      "salary": 1902,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Docile",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0671",
+     "species_id": 239,
+     "species": "Elekid",
+     "nickname": null,
+     "level": 30,
+     "ivs": {
+      "hp": 3,
+      "atk": 0,
+      "def": 6,
+      "spa": 11,
+      "spd": 5,
+      "spe": 3
+     },
+     "moves": [
+      "Thunder Shock",
+      "Thunderbolt",
+      "Thunder",
+      "Spark"
+     ],
+     "held_item": null,
+     "condition": 100,
+     "fitness": 83,
+     "morale": 54,
+     "age_months": 87,
+     "contract": {
+      "salary": 2248,
+      "expiry": "2029-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0672",
+     "species_id": 222,
+     "species": "Corsola",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 12,
+      "atk": 5,
+      "def": 3,
+      "spa": 1,
+      "spd": 14,
+      "spe": 11
+     },
+     "moves": [
+      "Waterfall",
+      "Tackle",
+      "Ancient Power",
+      "Whirlpool"
+     ],
+     "held_item": null,
+     "condition": 84,
+     "fitness": 82,
+     "morale": 80,
+     "age_months": 33,
+     "contract": {
+      "salary": 1909,
+      "expiry": "2028-08-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quiet",
+     "ability": "natural_cure"
+    },
+    {
+     "uid": "pkm0673",
+     "species_id": 155,
+     "species": "Cyndaquil",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 8,
+      "atk": 10,
+      "def": 13,
+      "spa": 8,
+      "spd": 11,
+      "spe": 1
+     },
+     "moves": [
+      "Flamethrower",
+      "Fire Punch",
+      "Flame Wheel",
+      "Ember"
+     ],
+     "held_item": "focus_sash",
+     "condition": 78,
+     "fitness": 77,
+     "morale": 51,
+     "age_months": 81,
+     "contract": {
+      "salary": 1617,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Careful",
+     "ability": "blaze"
+    },
+    {
+     "uid": "pkm0674",
+     "species_id": 191,
+     "species": "Sunkern",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 10,
+      "atk": 11,
+      "def": 1,
+      "spa": 10,
+      "spd": 0,
+      "spe": 14
+     },
+     "moves": [
+      "Agility",
+      "Sleep Powder",
+      "Quick Attack",
+      "Petal Dance"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 88,
+     "morale": 71,
+     "age_months": 72,
+     "contract": {
+      "salary": 1687,
+      "expiry": "2028-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "chlorophyll"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Ritchie Snap",
+     "role": "coach",
+     "ratings": {
+      "attacking": 17,
+      "defending": 17,
+      "fitness": 7,
+      "judging_ability": 6,
+      "judging_potential": 12,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Silver Westwood",
+     "role": "scout",
+     "ratings": {
+      "attacking": 10,
+      "defending": 5,
+      "fitness": 14,
+      "judging_ability": 14,
+      "judging_potential": 19,
+      "youth": 19
+     }
+    }
+   ],
+   "items": {
+    "potion": 3
+   }
+  },
+  {
+   "id": "club49",
+   "name": "Moomoo Farmhands",
+   "short": "MOO",
+   "league": "johto2",
+   "manager": "Casey Snap",
+   "reputation": 3,
+   "finances": {
+    "balance": 197000,
+    "wage_budget": 18761
+   },
+   "squad": [
+    {
+     "uid": "pkm0675",
+     "species_id": 172,
+     "species": "Pichu",
+     "nickname": null,
+     "level": 18,
+     "ivs": {
+      "hp": 8,
+      "atk": 5,
+      "def": 11,
+      "spa": 4,
+      "spd": 14,
+      "spe": 8
+     },
+     "moves": [
+      "Thunder Wave",
+      "Thunder Shock",
+      "Thunder",
+      "Leer"
+     ],
+     "held_item": null,
+     "condition": 79,
+     "fitness": 82,
+     "morale": 54,
+     "age_months": 16,
+     "contract": {
+      "salary": 1277,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0676",
+     "species_id": 239,
+     "species": "Elekid",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 9,
+      "atk": 6,
+      "def": 4,
+      "spa": 8,
+      "spd": 1,
+      "spe": 5
+     },
+     "moves": [
+      "Spark",
+      "Thunderbolt",
+      "Quick Attack",
+      "Thunder Shock"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 83,
+     "morale": 62,
+     "age_months": 118,
+     "contract": {
+      "salary": 1857,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quirky",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0677",
+     "species_id": 236,
+     "species": "Tyrogue",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 0,
+      "atk": 4,
+      "def": 10,
+      "spa": 8,
+      "spd": 9,
+      "spe": 4
+     },
+     "moves": [
+      "Submission",
+      "High Jump Kick",
+      "Seismic Toss",
+      "Low Kick"
+     ],
+     "held_item": null,
+     "condition": 86,
+     "fitness": 91,
+     "morale": 95,
+     "age_months": 40,
+     "contract": {
+      "salary": 1861,
+      "expiry": "2029-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Careful",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0678",
+     "species_id": 165,
+     "species": "Ledyba",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 10,
+      "atk": 11,
+      "def": 2,
+      "spa": 8,
+      "spd": 0,
+      "spe": 4
+     },
+     "moves": [
+      "Twineedle",
+      "Peck",
+      "Drill Peck",
+      "Quick Attack"
+     ],
+     "held_item": "sharp_beak",
+     "condition": 91,
+     "fitness": 89,
+     "morale": 58,
+     "age_months": 65,
+     "contract": {
+      "salary": 1560,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "early_bird"
+    },
+    {
+     "uid": "pkm0679",
+     "species_id": 177,
+     "species": "Natu",
+     "nickname": null,
+     "level": 21,
+     "ivs": {
+      "hp": 15,
+      "atk": 13,
+      "def": 13,
+      "spa": 3,
+      "spd": 2,
+      "spe": 5
+     },
+     "moves": [
+      "Drill Peck",
+      "Harden",
+      "Fly",
+      "Psychic"
+     ],
+     "held_item": null,
+     "condition": 96,
+     "fitness": 79,
+     "morale": 61,
+     "age_months": 102,
+     "contract": {
+      "salary": 1338,
+      "expiry": "2030-05-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naive",
+     "ability": "synchronize"
+    },
+    {
+     "uid": "pkm0680",
+     "species_id": 177,
+     "species": "Natu",
+     "nickname": null,
+     "level": 21,
+     "ivs": {
+      "hp": 11,
+      "atk": 7,
+      "def": 5,
+      "spa": 13,
+      "spd": 6,
+      "spe": 4
+     },
+     "moves": [
+      "Psychic",
+      "Harden",
+      "Drill Peck",
+      "Peck"
+     ],
+     "held_item": null,
+     "condition": 78,
+     "fitness": 81,
+     "morale": 79,
+     "age_months": 82,
+     "contract": {
+      "salary": 1300,
+      "expiry": "2029-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Mild",
+     "ability": "synchronize"
+    },
+    {
+     "uid": "pkm0681",
+     "species_id": 155,
+     "species": "Cyndaquil",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 1,
+      "atk": 6,
+      "def": 8,
+      "spa": 1,
+      "spd": 2,
+      "spe": 15
+     },
+     "moves": [
+      "Leer",
+      "Ember",
+      "Flame Wheel",
+      "Flamethrower"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 97,
+     "morale": 52,
+     "age_months": 15,
+     "contract": {
+      "salary": 1817,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Lonely",
+     "ability": "blaze"
+    },
+    {
+     "uid": "pkm0682",
+     "species_id": 218,
+     "species": "Slugma",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 0,
+      "atk": 3,
+      "def": 5,
+      "spa": 11,
+      "spd": 4,
+      "spe": 13
+     },
+     "moves": [
+      "Ember",
+      "Fire Blast",
+      "Swift",
+      "Fire Punch"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 79,
+     "morale": 86,
+     "age_months": 20,
+     "contract": {
+      "salary": 1400,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naive",
+     "ability": "flame_body"
+    },
+    {
+     "uid": "pkm0683",
+     "species_id": 225,
+     "species": "Delibird",
+     "nickname": null,
+     "level": 17,
+     "ivs": {
+      "hp": 5,
+      "atk": 10,
+      "def": 6,
+      "spa": 8,
+      "spd": 5,
+      "spe": 3
+     },
+     "moves": [
+      "Fly",
+      "Icy Wind",
+      "Quick Attack",
+      "Present"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 83,
+     "morale": 85,
+     "age_months": 21,
+     "contract": {
+      "salary": 1209,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hasty",
+     "ability": "vital_spirit"
+    },
+    {
+     "uid": "pkm0684",
+     "species_id": 225,
+     "species": "Delibird",
+     "nickname": null,
+     "level": 17,
+     "ivs": {
+      "hp": 7,
+      "atk": 4,
+      "def": 9,
+      "spa": 11,
+      "spd": 12,
+      "spe": 15
+     },
+     "moves": [
+      "Present",
+      "Fly",
+      "Icy Wind",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 94,
+     "fitness": 88,
+     "morale": 68,
+     "age_months": 79,
+     "contract": {
+      "salary": 1644,
+      "expiry": "2030-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Jolly",
+     "ability": "vital_spirit"
+    },
+    {
+     "uid": "pkm0685",
+     "species_id": 158,
+     "species": "Totodile",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 9,
+      "atk": 10,
+      "def": 9,
+      "spa": 13,
+      "spd": 11,
+      "spe": 2
+     },
+     "moves": [
+      "Waterfall",
+      "Surf",
+      "Bubble Beam",
+      "Reflect"
+     ],
+     "held_item": null,
+     "condition": 85,
+     "fitness": 87,
+     "morale": 75,
+     "age_months": 51,
+     "contract": {
+      "salary": 1460,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Jolly",
+     "ability": "torrent"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Gabby Hale",
+     "role": "coach",
+     "ratings": {
+      "attacking": 17,
+      "defending": 8,
+      "fitness": 5,
+      "judging_ability": 5,
+      "judging_potential": 17,
+      "youth": 12
+     }
+    },
+    {
+     "name": "Ritchie Silph",
+     "role": "scout",
+     "ratings": {
+      "attacking": 17,
+      "defending": 20,
+      "fitness": 13,
+      "judging_ability": 20,
+      "judging_potential": 11,
+      "youth": 7
+     }
+    }
+   ],
+   "items": {
+    "potion": 3
+   }
+  },
+  {
+   "id": "club50",
+   "name": "Tohjo Falls Divers",
+   "short": "TJF",
+   "league": "johto2",
+   "manager": "Tracey Cerise",
+   "reputation": 9,
+   "finances": {
+    "balance": 446000,
+    "wage_budget": 31735
+   },
+   "squad": [
+    {
+     "uid": "pkm0686",
+     "species_id": 228,
+     "species": "Houndour",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 4,
+      "atk": 3,
+      "def": 13,
+      "spa": 11,
+      "spd": 6,
+      "spe": 13
+     },
+     "moves": [
+      "Ember",
+      "Flame Wheel",
+      "Tail Whip",
+      "Fire Punch"
+     ],
+     "held_item": null,
+     "condition": 73,
+     "fitness": 88,
+     "morale": 75,
+     "age_months": 72,
+     "contract": {
+      "salary": 2680,
+      "expiry": "2030-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Gentle",
+     "ability": "flash_fire"
+    },
+    {
+     "uid": "pkm0687",
+     "species_id": 210,
+     "species": "Granbull",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 6,
+      "atk": 12,
+      "def": 4,
+      "spa": 9,
+      "spd": 13,
+      "spe": 9
+     },
+     "moves": [
+      "Body Slam",
+      "Tackle",
+      "Headbutt",
+      "Slash"
+     ],
+     "held_item": "quick_claw",
+     "condition": 91,
+     "fitness": 97,
+     "morale": 62,
+     "age_months": 37,
+     "contract": {
+      "salary": 2343,
+      "expiry": "2030-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Sassy",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0688",
+     "species_id": 153,
+     "species": "Bayleef",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 2,
+      "atk": 10,
+      "def": 11,
+      "spa": 11,
+      "spd": 2,
+      "spe": 7
+     },
+     "moves": [
+      "Petal Dance",
+      "Vine Whip",
+      "Sleep Powder",
+      "Swift"
+     ],
+     "held_item": "miracle_seed",
+     "condition": 80,
+     "fitness": 98,
+     "morale": 50,
+     "age_months": 63,
+     "contract": {
+      "salary": 2205,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Rash",
+     "ability": "overgrow"
+    },
+    {
+     "uid": "pkm0689",
+     "species_id": 161,
+     "species": "Sentret",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 9,
+      "atk": 1,
+      "def": 1,
+      "spa": 10,
+      "spd": 14,
+      "spe": 8
+     },
+     "moves": [
+      "Body Slam",
+      "Reflect",
+      "Headbutt",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 96,
+     "fitness": 79,
+     "morale": 67,
+     "age_months": 17,
+     "contract": {
+      "salary": 2292,
+      "expiry": "2029-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Modest",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0690",
+     "species_id": 171,
+     "species": "Lanturn",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 14,
+      "atk": 6,
+      "def": 8,
+      "spa": 6,
+      "spd": 12,
+      "spe": 1
+     },
+     "moves": [
+      "Waterfall",
+      "Bubble Beam",
+      "Spark",
+      "Swords Dance"
+     ],
+     "held_item": null,
+     "condition": 71,
+     "fitness": 92,
+     "morale": 62,
+     "age_months": 93,
+     "contract": {
+      "salary": 2852,
+      "expiry": "2028-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Gentle",
+     "ability": "volt_absorb"
+    },
+    {
+     "uid": "pkm0691",
+     "species_id": 173,
+     "species": "Cleffa",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 4,
+      "atk": 6,
+      "def": 6,
+      "spa": 15,
+      "spd": 3,
+      "spe": 14
+     },
+     "moves": [
+      "Swift",
+      "Double-Edge",
+      "Return",
+      "Tackle"
+     ],
+     "held_item": "quick_claw",
+     "condition": 80,
+     "fitness": 79,
+     "morale": 63,
+     "age_months": 87,
+     "contract": {
+      "salary": 1353,
+      "expiry": "2028-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Sassy",
+     "ability": "cute_charm"
+    },
+    {
+     "uid": "pkm0692",
+     "species_id": 193,
+     "species": "Yanma",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 9,
+      "atk": 0,
+      "def": 3,
+      "spa": 7,
+      "spd": 5,
+      "spe": 14
+     },
+     "moves": [
+      "Gust",
+      "Megahorn",
+      "Swords Dance",
+      "Pin Missile"
+     ],
+     "held_item": null,
+     "condition": 99,
+     "fitness": 98,
+     "morale": 73,
+     "age_months": 24,
+     "contract": {
+      "salary": 2420,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Relaxed",
+     "ability": "speed_boost"
+    },
+    {
+     "uid": "pkm0693",
+     "species_id": 207,
+     "species": "Gligar",
+     "nickname": null,
+     "level": 23,
+     "ivs": {
+      "hp": 1,
+      "atk": 4,
+      "def": 3,
+      "spa": 13,
+      "spd": 10,
+      "spe": 5
+     },
+     "moves": [
+      "Focus Energy",
+      "Fly",
+      "Drill Peck",
+      "Body Slam"
+     ],
+     "held_item": null,
+     "condition": 72,
+     "fitness": 100,
+     "morale": 52,
+     "age_months": 16,
+     "contract": {
+      "salary": 2205,
+      "expiry": "2028-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Docile",
+     "ability": "hyper_cutter"
+    },
+    {
+     "uid": "pkm0694",
+     "species_id": 194,
+     "species": "Wooper",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 0,
+      "atk": 13,
+      "def": 1,
+      "spa": 11,
+      "spd": 15,
+      "spe": 8
+     },
+     "moves": [
+      "Whirlpool",
+      "Double Team",
+      "Headbutt",
+      "Hydro Pump"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 75,
+     "morale": 70,
+     "age_months": 18,
+     "contract": {
+      "salary": 2148,
+      "expiry": "2028-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quiet",
+     "ability": "water_absorb"
+    },
+    {
+     "uid": "pkm0695",
+     "species_id": 175,
+     "species": "Togepi",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 4,
+      "atk": 0,
+      "def": 0,
+      "spa": 4,
+      "spd": 3,
+      "spe": 9
+     },
+     "moves": [
+      "Harden",
+      "Headbutt",
+      "Slash",
+      "Return"
+     ],
+     "held_item": null,
+     "condition": 88,
+     "fitness": 94,
+     "morale": 76,
+     "age_months": 19,
+     "contract": {
+      "salary": 1573,
+      "expiry": "2029-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Timid",
+     "ability": "serene_grace"
+    },
+    {
+     "uid": "pkm0696",
+     "species_id": 216,
+     "species": "Teddiursa",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 5,
+      "atk": 12,
+      "def": 2,
+      "spa": 14,
+      "spd": 5,
+      "spe": 3
+     },
+     "moves": [
+      "Agility",
+      "Tackle",
+      "Body Slam",
+      "Headbutt"
+     ],
+     "held_item": "silk_scarf",
+     "condition": 96,
+     "fitness": 77,
+     "morale": 50,
+     "age_months": 115,
+     "contract": {
+      "salary": 2185,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Brave",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0697",
+     "species_id": 179,
+     "species": "Mareep",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 12,
+      "atk": 4,
+      "def": 11,
+      "spa": 7,
+      "spd": 14,
+      "spe": 2
+     },
+     "moves": [
+      "Tackle",
+      "Thunder Punch",
+      "Thunder",
+      "Thunder Wave"
+     ],
+     "held_item": "quick_claw",
+     "condition": 87,
+     "fitness": 86,
+     "morale": 85,
+     "age_months": 54,
+     "contract": {
+      "salary": 2339,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Careful",
+     "ability": "static"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Kiawe Maple",
+     "role": "coach",
+     "ratings": {
+      "attacking": 11,
+      "defending": 10,
+      "fitness": 4,
+      "judging_ability": 20,
+      "judging_potential": 10,
+      "youth": 20
+     }
+    },
+    {
+     "name": "Alexa Snap",
+     "role": "coach",
+     "ratings": {
+      "attacking": 18,
+      "defending": 16,
+      "fitness": 19,
+      "judging_ability": 17,
+      "judging_potential": 5,
+      "youth": 9
+     }
+    }
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club51",
+   "name": "Ice Path Skaters",
+   "short": "ICP",
+   "league": "johto2",
+   "manager": "Jasmine Laramie",
+   "reputation": 9,
+   "finances": {
+    "balance": 466000,
+    "wage_budget": 19642
+   },
+   "squad": [
+    {
+     "uid": "pkm0698",
+     "species_id": 188,
+     "species": "Skiploom",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 12,
+      "atk": 6,
+      "def": 9,
+      "spa": 13,
+      "spd": 14,
+      "spe": 7
+     },
+     "moves": [
+      "Focus Energy",
+      "Synthesis",
+      "Fly",
+      "Giga Drain"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 80,
+     "morale": 75,
+     "age_months": 59,
+     "contract": {
+      "salary": 2765,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0699",
+     "species_id": 158,
+     "species": "Totodile",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 4,
+      "atk": 12,
+      "def": 9,
+      "spa": 6,
+      "spd": 13,
+      "spe": 4
+     },
+     "moves": [
+      "Bubble Beam",
+      "Surf",
+      "Waterfall",
+      "Water Gun"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 95,
+     "fitness": 93,
+     "morale": 57,
+     "age_months": 38,
+     "contract": {
+      "salary": 1529,
+      "expiry": "2028-12-30"
+     },
+     "native_region": "Johto",
+     "nature": "Serious",
+     "ability": "torrent"
+    },
+    {
+     "uid": "pkm0700",
+     "species_id": 180,
+     "species": "Flaaffy",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 5,
+      "atk": 7,
+      "def": 6,
+      "spa": 12,
+      "spd": 13,
+      "spe": 3
+     },
+     "moves": [
+      "Quick Attack",
+      "Thunder",
+      "Thunder Wave",
+      "Thunder Shock"
+     ],
+     "held_item": null,
+     "condition": 98,
+     "fitness": 82,
+     "morale": 77,
+     "age_months": 97,
+     "contract": {
+      "salary": 2268,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Gentle",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0701",
+     "species_id": 231,
+     "species": "Phanpy",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 8,
+      "atk": 5,
+      "def": 3,
+      "spa": 1,
+      "spd": 7,
+      "spe": 12
+     },
+     "moves": [
+      "Agility",
+      "Magnitude",
+      "Quick Attack",
+      "Earthquake"
+     ],
+     "held_item": null,
+     "condition": 87,
+     "fitness": 92,
+     "morale": 76,
+     "age_months": 44,
+     "contract": {
+      "salary": 1680,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Adamant",
+     "ability": "rock_head"
+    },
+    {
+     "uid": "pkm0702",
+     "species_id": 171,
+     "species": "Lanturn",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 5,
+      "atk": 7,
+      "def": 3,
+      "spa": 13,
+      "spd": 11,
+      "spe": 13
+     },
+     "moves": [
+      "Hydro Pump",
+      "Waterfall",
+      "Spark",
+      "Thunder Shock"
+     ],
+     "held_item": null,
+     "condition": 81,
+     "fitness": 81,
+     "morale": 59,
+     "age_months": 44,
+     "contract": {
+      "salary": 2244,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Relaxed",
+     "ability": "volt_absorb"
+    },
+    {
+     "uid": "pkm0703",
+     "species_id": 210,
+     "species": "Granbull",
+     "nickname": null,
+     "level": 25,
+     "ivs": {
+      "hp": 10,
+      "atk": 1,
+      "def": 11,
+      "spa": 15,
+      "spd": 7,
+      "spe": 5
+     },
+     "moves": [
+      "Tackle",
+      "Slash",
+      "Harden",
+      "Body Slam"
+     ],
+     "held_item": "leftovers",
+     "condition": 81,
+     "fitness": 83,
+     "morale": 60,
+     "age_months": 91,
+     "contract": {
+      "salary": 1766,
+      "expiry": "2028-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Gentle",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0704",
+     "species_id": 238,
+     "species": "Smoochum",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 7,
+      "atk": 8,
+      "def": 15,
+      "spa": 6,
+      "spd": 13,
+      "spe": 13
+     },
+     "moves": [
+      "Powder Snow",
+      "Growl",
+      "Quick Attack",
+      "Future Sight"
+     ],
+     "held_item": "never_melt_ice",
+     "condition": 73,
+     "fitness": 78,
+     "morale": 73,
+     "age_months": 15,
+     "contract": {
+      "salary": 2031,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Johto",
+     "nature": "Jolly",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0705",
+     "species_id": 221,
+     "species": "Piloswine",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 7,
+      "atk": 9,
+      "def": 4,
+      "spa": 11,
+      "spd": 14,
+      "spe": 1
+     },
+     "moves": [
+      "Sand Attack",
+      "Body Slam",
+      "Magnitude",
+      "Dig"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 98,
+     "morale": 76,
+     "age_months": 43,
+     "contract": {
+      "salary": 1993,
+      "expiry": "2029-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Relaxed",
+     "ability": "thick_fat"
+    },
+    {
+     "uid": "pkm0706",
+     "species_id": 221,
+     "species": "Piloswine",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 11,
+      "atk": 10,
+      "def": 8,
+      "spa": 11,
+      "spd": 12,
+      "spe": 0
+     },
+     "moves": [
+      "Dig",
+      "Sand Attack",
+      "Blizzard",
+      "Icy Wind"
+     ],
+     "held_item": null,
+     "condition": 73,
+     "fitness": 78,
+     "morale": 92,
+     "age_months": 15,
+     "contract": {
+      "salary": 2006,
+      "expiry": "2029-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Modest",
+     "ability": "thick_fat"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Mary Sycamore",
+     "role": "coach",
+     "ratings": {
+      "attacking": 6,
+      "defending": 11,
+      "fitness": 18,
+      "judging_ability": 9,
+      "judging_potential": 10,
+      "youth": 10
+     }
+    },
+    {
+     "name": "Barry Waterflower",
+     "role": "scout",
+     "ratings": {
+      "attacking": 15,
+      "defending": 19,
+      "fitness": 12,
+      "judging_ability": 15,
+      "judging_potential": 16,
+      "youth": 15
+     }
+    }
+   ],
+   "items": {
+    "potion": 2,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club52",
+   "name": "Bug-Catching Contenders",
+   "short": "BUG",
+   "league": "johto2",
+   "manager": "Mallow Hale",
+   "reputation": 10,
+   "finances": {
+    "balance": 333000,
+    "wage_budget": 23089
+   },
+   "squad": [
+    {
+     "uid": "pkm0707",
+     "species_id": 191,
+     "species": "Sunkern",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 13,
+      "atk": 15,
+      "def": 8,
+      "spa": 8,
+      "spd": 15,
+      "spe": 4
+     },
+     "moves": [
+      "Sleep Powder",
+      "Agility",
+      "Solar Beam",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 82,
+     "fitness": 92,
+     "morale": 66,
+     "age_months": 80,
+     "contract": {
+      "salary": 1156,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naive",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0708",
+     "species_id": 170,
+     "species": "Chinchou",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 5,
+      "atk": 4,
+      "def": 2,
+      "spa": 7,
+      "spd": 4,
+      "spe": 13
+     },
+     "moves": [
+      "Bubble Beam",
+      "Surf",
+      "Spark",
+      "Thunder Shock"
+     ],
+     "held_item": "mystic_water",
+     "condition": 70,
+     "fitness": 91,
+     "morale": 90,
+     "age_months": 86,
+     "contract": {
+      "salary": 2445,
+      "expiry": "2028-05-30"
+     },
+     "native_region": "Johto",
+     "nature": "Serious",
+     "ability": "volt_absorb"
+    },
+    {
+     "uid": "pkm0709",
+     "species_id": 239,
+     "species": "Elekid",
+     "nickname": null,
+     "level": 42,
+     "ivs": {
+      "hp": 5,
+      "atk": 15,
+      "def": 15,
+      "spa": 10,
+      "spd": 4,
+      "spe": 2
+     },
+     "moves": [
+      "Thunderbolt",
+      "Quick Attack",
+      "Thunder",
+      "Leer"
+     ],
+     "held_item": null,
+     "condition": 70,
+     "fitness": 77,
+     "morale": 86,
+     "age_months": 90,
+     "contract": {
+      "salary": 2855,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Rash",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0710",
+     "species_id": 193,
+     "species": "Yanma",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 1,
+      "atk": 7,
+      "def": 15,
+      "spa": 13,
+      "spd": 7,
+      "spe": 5
+     },
+     "moves": [
+      "Fly",
+      "Pin Missile",
+      "Megahorn",
+      "Gust"
+     ],
+     "held_item": null,
+     "condition": 76,
+     "fitness": 84,
+     "morale": 69,
+     "age_months": 12,
+     "contract": {
+      "salary": 2124,
+      "expiry": "2029-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Serious",
+     "ability": "speed_boost"
+    },
+    {
+     "uid": "pkm0711",
+     "species_id": 176,
+     "species": "Togetic",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 14,
+      "atk": 2,
+      "def": 2,
+      "spa": 9,
+      "spd": 11,
+      "spe": 6
+     },
+     "moves": [
+      "Return",
+      "Body Slam",
+      "Gust",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 81,
+     "morale": 63,
+     "age_months": 74,
+     "contract": {
+      "salary": 2912,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quirky",
+     "ability": "serene_grace"
+    },
+    {
+     "uid": "pkm0712",
+     "species_id": 211,
+     "species": "Qwilfish",
+     "nickname": null,
+     "level": 33,
+     "ivs": {
+      "hp": 14,
+      "atk": 5,
+      "def": 9,
+      "spa": 10,
+      "spd": 13,
+      "spe": 0
+     },
+     "moves": [
+      "Bubble Beam",
+      "Screech",
+      "Sludge",
+      "Toxic"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 84,
+     "morale": 73,
+     "age_months": 56,
+     "contract": {
+      "salary": 1983,
+      "expiry": "2028-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Calm",
+     "ability": "poison_point"
+    },
+    {
+     "uid": "pkm0713",
+     "species_id": 198,
+     "species": "Murkrow",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 2,
+      "atk": 8,
+      "def": 11,
+      "spa": 1,
+      "spd": 3,
+      "spe": 15
+     },
+     "moves": [
+      "Thief",
+      "Quick Attack",
+      "Fly",
+      "Drill Peck"
+     ],
+     "held_item": "lum_berry",
+     "condition": 95,
+     "fitness": 89,
+     "morale": 74,
+     "age_months": 77,
+     "contract": {
+      "salary": 1785,
+      "expiry": "2030-05-30"
+     },
+     "native_region": "Johto",
+     "nature": "Adamant",
+     "ability": "keen_eye"
+    },
+    {
+     "uid": "pkm0714",
+     "species_id": 225,
+     "species": "Delibird",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 5,
+      "atk": 9,
+      "def": 11,
+      "spa": 2,
+      "spd": 8,
+      "spe": 8
+     },
+     "moves": [
+      "Fly",
+      "Icy Wind",
+      "Quick Attack",
+      "Present"
+     ],
+     "held_item": null,
+     "condition": 86,
+     "fitness": 93,
+     "morale": 86,
+     "age_months": 45,
+     "contract": {
+      "salary": 1628,
+      "expiry": "2028-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hasty",
+     "ability": "vital_spirit"
+    },
+    {
+     "uid": "pkm0715",
+     "species_id": 238,
+     "species": "Smoochum",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 14,
+      "atk": 7,
+      "def": 11,
+      "spa": 7,
+      "spd": 14,
+      "spe": 14
+     },
+     "moves": [
+      "Icy Wind",
+      "Growl",
+      "Psychic",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 79,
+     "fitness": 85,
+     "morale": 61,
+     "age_months": 52,
+     "contract": {
+      "salary": 1780,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Sassy",
+     "ability": "own_tempo"
+    },
+    {
+     "uid": "pkm0716",
+     "species_id": 152,
+     "species": "Chikorita",
+     "nickname": null,
+     "level": 27,
+     "ivs": {
+      "hp": 5,
+      "atk": 15,
+      "def": 11,
+      "spa": 0,
+      "spd": 4,
+      "spe": 15
+     },
+     "moves": [
+      "Focus Energy",
+      "Solar Beam",
+      "Synthesis",
+      "Vine Whip"
+     ],
+     "held_item": "quick_claw",
+     "condition": 94,
+     "fitness": 83,
+     "morale": 77,
+     "age_months": 85,
+     "contract": {
+      "salary": 2009,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Lax",
+     "ability": "overgrow"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Cynthia Rowan",
+     "role": "scout",
+     "ratings": {
+      "attacking": 20,
+      "defending": 14,
+      "fitness": 6,
+      "judging_ability": 6,
+      "judging_potential": 17,
+      "youth": 13
+     }
+    },
+    {
+     "name": "Todd Maple",
+     "role": "coach",
+     "ratings": {
+      "attacking": 4,
+      "defending": 6,
+      "fitness": 19,
+      "judging_ability": 16,
+      "judging_potential": 17,
+      "youth": 5
+     }
+    },
+    {
+     "name": "Will Harrison",
+     "role": "physio",
+     "ratings": {
+      "attacking": 6,
+      "defending": 12,
+      "fitness": 12,
+      "judging_ability": 15,
+      "judging_potential": 19,
+      "youth": 18
+     }
+    }
+   ],
+   "items": {
+    "potion": 1,
+    "super_potion": 2
+   }
+  },
+  {
+   "id": "club53",
+   "name": "Daycare Dreamers",
+   "short": "DAY",
+   "league": "johto2",
+   "manager": "Pryce Ivy",
+   "reputation": 10,
+   "finances": {
+    "balance": 427000,
+    "wage_budget": 28229
+   },
+   "squad": [
+    {
+     "uid": "pkm0717",
+     "species_id": 168,
+     "species": "Ariados",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 5,
+      "atk": 5,
+      "def": 5,
+      "spa": 14,
+      "spd": 3,
+      "spe": 10
+     },
+     "moves": [
+      "Pin Missile",
+      "Megahorn",
+      "Light Screen",
+      "Smog"
+     ],
+     "held_item": null,
+     "condition": 88,
+     "fitness": 87,
+     "morale": 51,
+     "age_months": 31,
+     "contract": {
+      "salary": 1671,
+      "expiry": "2028-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Sassy",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0718",
+     "species_id": 183,
+     "species": "Marill",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 5,
+      "atk": 14,
+      "def": 15,
+      "spa": 14,
+      "spd": 7,
+      "spe": 10
+     },
+     "moves": [
+      "Bubble Beam",
+      "Surf",
+      "Hydro Pump",
+      "Slash"
+     ],
+     "held_item": null,
+     "condition": 77,
+     "fitness": 98,
+     "morale": 55,
+     "age_months": 75,
+     "contract": {
+      "salary": 1623,
+      "expiry": "2027-08-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "huge_power"
+    },
+    {
+     "uid": "pkm0719",
+     "species_id": 204,
+     "species": "Pineco",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 10,
+      "atk": 5,
+      "def": 10,
+      "spa": 11,
+      "spd": 1,
+      "spe": 11
+     },
+     "moves": [
+      "String Shot",
+      "Twineedle",
+      "Headbutt",
+      "Leech Life"
+     ],
+     "held_item": "eviolite",
+     "condition": 77,
+     "fitness": 90,
+     "morale": 83,
+     "age_months": 63,
+     "contract": {
+      "salary": 1829,
+      "expiry": "2030-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hardy",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0720",
+     "species_id": 168,
+     "species": "Ariados",
+     "nickname": null,
+     "level": 40,
+     "ivs": {
+      "hp": 15,
+      "atk": 9,
+      "def": 0,
+      "spa": 4,
+      "spd": 12,
+      "spe": 14
+     },
+     "moves": [
+      "Twineedle",
+      "Smog",
+      "Pin Missile",
+      "Tackle"
+     ],
+     "held_item": "choice_band",
+     "condition": 72,
+     "fitness": 81,
+     "morale": 91,
+     "age_months": 43,
+     "contract": {
+      "salary": 2560,
+      "expiry": "2028-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Adamant",
+     "ability": "swarm"
+    },
+    {
+     "uid": "pkm0721",
+     "species_id": 221,
+     "species": "Piloswine",
+     "nickname": null,
+     "level": 26,
+     "ivs": {
+      "hp": 14,
+      "atk": 9,
+      "def": 8,
+      "spa": 3,
+      "spd": 1,
+      "spe": 4
+     },
+     "moves": [
+      "Icy Wind",
+      "Dig",
+      "Focus Energy",
+      "Ice Beam"
+     ],
+     "held_item": null,
+     "condition": 81,
+     "fitness": 81,
+     "morale": 88,
+     "age_months": 72,
+     "contract": {
+      "salary": 2093,
+      "expiry": "2030-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bold",
+     "ability": "thick_fat"
+    },
+    {
+     "uid": "pkm0722",
+     "species_id": 177,
+     "species": "Natu",
+     "nickname": null,
+     "level": 31,
+     "ivs": {
+      "hp": 13,
+      "atk": 1,
+      "def": 15,
+      "spa": 1,
+      "spd": 9,
+      "spe": 15
+     },
+     "moves": [
+      "Harden",
+      "Drill Peck",
+      "Psychic",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 86,
+     "morale": 52,
+     "age_months": 38,
+     "contract": {
+      "salary": 2092,
+      "expiry": "2027-09-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "synchronize"
+    },
+    {
+     "uid": "pkm0723",
+     "species_id": 185,
+     "species": "Sudowoodo",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 4,
+      "atk": 0,
+      "def": 6,
+      "spa": 7,
+      "spd": 10,
+      "spe": 11
+     },
+     "moves": [
+      "Slash",
+      "Harden",
+      "Ancient Power",
+      "Rock Throw"
+     ],
+     "held_item": "choice_band",
+     "condition": 90,
+     "fitness": 82,
+     "morale": 53,
+     "age_months": 73,
+     "contract": {
+      "salary": 2764,
+      "expiry": "2029-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Lax",
+     "ability": "rock_head"
+    },
+    {
+     "uid": "pkm0724",
+     "species_id": 153,
+     "species": "Bayleef",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 3,
+      "atk": 14,
+      "def": 14,
+      "spa": 9,
+      "spd": 11,
+      "spe": 3
+     },
+     "moves": [
+      "Petal Dance",
+      "Harden",
+      "Sleep Powder",
+      "Stun Spore"
+     ],
+     "held_item": "eviolite",
+     "condition": 99,
+     "fitness": 93,
+     "morale": 61,
+     "age_months": 36,
+     "contract": {
+      "salary": 2171,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Mild",
+     "ability": "overgrow"
+    },
+    {
+     "uid": "pkm0725",
+     "species_id": 206,
+     "species": "Dunsparce",
+     "nickname": null,
+     "level": 35,
+     "ivs": {
+      "hp": 2,
+      "atk": 5,
+      "def": 0,
+      "spa": 8,
+      "spd": 2,
+      "spe": 7
+     },
+     "moves": [
+      "Tackle",
+      "Light Screen",
+      "Double-Edge",
+      "Headbutt"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 74,
+     "fitness": 89,
+     "morale": 69,
+     "age_months": 87,
+     "contract": {
+      "salary": 2690,
+      "expiry": "2027-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "serene_grace"
+    },
+    {
+     "uid": "pkm0726",
+     "species_id": 153,
+     "species": "Bayleef",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 1,
+      "atk": 3,
+      "def": 7,
+      "spa": 0,
+      "spd": 5,
+      "spe": 1
+     },
+     "moves": [
+      "Harden",
+      "Sleep Powder",
+      "Stun Spore",
+      "Petal Dance"
+     ],
+     "held_item": "lum_berry",
+     "condition": 88,
+     "fitness": 79,
+     "morale": 60,
+     "age_months": 34,
+     "contract": {
+      "salary": 2504,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "overgrow"
+    },
+    {
+     "uid": "pkm0727",
+     "species_id": 192,
+     "species": "Sunflora",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 5,
+      "atk": 3,
+      "def": 2,
+      "spa": 2,
+      "spd": 3,
+      "spe": 11
+     },
+     "moves": [
+      "Swift",
+      "Vine Whip",
+      "Solar Beam",
+      "Focus Energy"
+     ],
+     "held_item": "miracle_seed",
+     "condition": 90,
+     "fitness": 88,
+     "morale": 71,
+     "age_months": 46,
+     "contract": {
+      "salary": 2488,
+      "expiry": "2029-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "chlorophyll"
+    },
+    {
+     "uid": "pkm0728",
+     "species_id": 193,
+     "species": "Yanma",
+     "nickname": null,
+     "level": 34,
+     "ivs": {
+      "hp": 14,
+      "atk": 8,
+      "def": 9,
+      "spa": 4,
+      "spd": 15,
+      "spe": 9
+     },
+     "moves": [
+      "Wing Attack",
+      "Swords Dance",
+      "Fly",
+      "Swift"
+     ],
+     "held_item": "lum_berry",
+     "condition": 94,
+     "fitness": 90,
+     "morale": 84,
+     "age_months": 38,
+     "contract": {
+      "salary": 1997,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naive",
+     "ability": "speed_boost"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Alexa Juniper",
+     "role": "physio",
+     "ratings": {
+      "attacking": 6,
+      "defending": 5,
+      "fitness": 15,
+      "judging_ability": 7,
+      "judging_potential": 13,
+      "youth": 10
+     }
+    },
+    {
+     "name": "Volkner Snap",
+     "role": "scout",
+     "ratings": {
+      "attacking": 20,
+      "defending": 12,
+      "fitness": 14,
+      "judging_ability": 16,
+      "judging_potential": 12,
+      "youth": 20
+     }
+    }
+   ],
+   "items": {
+    "potion": 3
+   }
+  },
+  {
+   "id": "club54",
+   "name": "Mt. Mortar Brawlers",
+   "short": "MOR",
+   "league": "johto2",
+   "manager": "Clair Stone",
+   "reputation": 9,
+   "finances": {
+    "balance": 422000,
+    "wage_budget": 18348
+   },
+   "squad": [
+    {
+     "uid": "pkm0729",
+     "species_id": 166,
+     "species": "Ledian",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 4,
+      "atk": 13,
+      "def": 2,
+      "spa": 2,
+      "spd": 4,
+      "spe": 15
+     },
+     "moves": [
+      "Twineedle",
+      "Fly",
+      "Leech Life",
+      "Megahorn"
+     ],
+     "held_item": null,
+     "condition": 95,
+     "fitness": 81,
+     "morale": 70,
+     "age_months": 49,
+     "contract": {
+      "salary": 2224,
+      "expiry": "2030-03-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naive",
+     "ability": "early_bird"
+    },
+    {
+     "uid": "pkm0730",
+     "species_id": 171,
+     "species": "Lanturn",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 15,
+      "atk": 11,
+      "def": 14,
+      "spa": 2,
+      "spd": 10,
+      "spe": 14
+     },
+     "moves": [
+      "Spark",
+      "Waterfall",
+      "Hydro Pump",
+      "Swift"
+     ],
+     "held_item": null,
+     "condition": 92,
+     "fitness": 76,
+     "morale": 57,
+     "age_months": 21,
+     "contract": {
+      "salary": 2575,
+      "expiry": "2027-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Mild",
+     "ability": "volt_absorb"
+    },
+    {
+     "uid": "pkm0731",
+     "species_id": 170,
+     "species": "Chinchou",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 7,
+      "atk": 13,
+      "def": 6,
+      "spa": 2,
+      "spd": 0,
+      "spe": 11
+     },
+     "moves": [
+      "Swift",
+      "Thunder Shock",
+      "Bubble Beam",
+      "Waterfall"
+     ],
+     "held_item": null,
+     "condition": 96,
+     "fitness": 82,
+     "morale": 73,
+     "age_months": 117,
+     "contract": {
+      "salary": 1908,
+      "expiry": "2028-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Adamant",
+     "ability": "volt_absorb"
+    },
+    {
+     "uid": "pkm0732",
+     "species_id": 207,
+     "species": "Gligar",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 13,
+      "atk": 8,
+      "def": 13,
+      "spa": 0,
+      "spd": 13,
+      "spe": 14
+     },
+     "moves": [
+      "Focus Energy",
+      "Drill Peck",
+      "Dig",
+      "Bone Club"
+     ],
+     "held_item": null,
+     "condition": 97,
+     "fitness": 86,
+     "morale": 80,
+     "age_months": 107,
+     "contract": {
+      "salary": 1477,
+      "expiry": "2028-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "hyper_cutter"
+    },
+    {
+     "uid": "pkm0733",
+     "species_id": 235,
+     "species": "Smeargle",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 11,
+      "atk": 1,
+      "def": 15,
+      "spa": 3,
+      "spd": 4,
+      "spe": 11
+     },
+     "moves": [
+      "Swift",
+      "Double Team",
+      "Tackle",
+      "Sketch"
+     ],
+     "held_item": null,
+     "condition": 78,
+     "fitness": 98,
+     "morale": 62,
+     "age_months": 18,
+     "contract": {
+      "salary": 2418,
+      "expiry": "2030-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Rash",
+     "ability": "guts"
+    },
+    {
+     "uid": "pkm0734",
+     "species_id": 237,
+     "species": "Hitmontop",
+     "nickname": null,
+     "level": 28,
+     "ivs": {
+      "hp": 13,
+      "atk": 0,
+      "def": 13,
+      "spa": 12,
+      "spd": 14,
+      "spe": 6
+     },
+     "moves": [
+      "Screech",
+      "Submission",
+      "Seismic Toss",
+      "Cross Chop"
+     ],
+     "held_item": "assault_vest",
+     "condition": 93,
+     "fitness": 91,
+     "morale": 76,
+     "age_months": 115,
+     "contract": {
+      "salary": 1872,
+      "expiry": "2029-08-30"
+     },
+     "native_region": "Johto",
+     "nature": "Quirky",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0735",
+     "species_id": 225,
+     "species": "Delibird",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 1,
+      "atk": 2,
+      "def": 14,
+      "spa": 1,
+      "spd": 12,
+      "spe": 10
+     },
+     "moves": [
+      "Quick Attack",
+      "Icy Wind",
+      "Fly",
+      "Present"
+     ],
+     "held_item": "sitrus_berry",
+     "condition": 75,
+     "fitness": 95,
+     "morale": 80,
+     "age_months": 49,
+     "contract": {
+      "salary": 2625,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Naughty",
+     "ability": "vital_spirit"
+    },
+    {
+     "uid": "pkm0736",
+     "species_id": 167,
+     "species": "Spinarak",
+     "nickname": null,
+     "level": 32,
+     "ivs": {
+      "hp": 7,
+      "atk": 8,
+      "def": 6,
+      "spa": 8,
+      "spd": 0,
+      "spe": 3
+     },
+     "moves": [
+      "String Shot",
+      "Sludge",
+      "Sludge Bomb",
+      "Toxic"
+     ],
+     "held_item": null,
+     "condition": 93,
+     "fitness": 91,
+     "morale": 74,
+     "age_months": 87,
+     "contract": {
+      "salary": 1754,
+      "expiry": "2030-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Calm",
+     "ability": "swarm"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Lana Kukui",
+     "role": "physio",
+     "ratings": {
+      "attacking": 4,
+      "defending": 9,
+      "fitness": 10,
+      "judging_ability": 6,
+      "judging_potential": 11,
+      "youth": 9
+     }
+    },
+    {
+     "name": "Cilan Hale",
+     "role": "coach",
+     "ratings": {
+      "attacking": 5,
+      "defending": 5,
+      "fitness": 15,
+      "judging_ability": 15,
+      "judging_potential": 9,
+      "youth": 7
+     }
+    }
+   ],
+   "items": {
+    "potion": 1,
+    "super_potion": 1
+   }
+  },
+  {
+   "id": "club55",
+   "name": "Underground Merchants",
+   "short": "UGM",
+   "league": "johto2",
+   "manager": "Zoey Sycamore",
+   "reputation": 10,
+   "finances": {
+    "balance": 293000,
+    "wage_budget": 22493
+   },
+   "squad": [
+    {
+     "uid": "pkm0737",
+     "species_id": 172,
+     "species": "Pichu",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 6,
+      "atk": 14,
+      "def": 3,
+      "spa": 10,
+      "spd": 7,
+      "spe": 14
+     },
+     "moves": [
+      "Slash",
+      "Leer",
+      "Thunder",
+      "Thunder Shock"
+     ],
+     "held_item": "focus_sash",
+     "condition": 80,
+     "fitness": 81,
+     "morale": 69,
+     "age_months": 91,
+     "contract": {
+      "salary": 1264,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Johto",
+     "nature": "Impish",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0738",
+     "species_id": 177,
+     "species": "Natu",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 8,
+      "atk": 9,
+      "def": 13,
+      "spa": 11,
+      "spd": 9,
+      "spe": 9
+     },
+     "moves": [
+      "Drill Peck",
+      "Hypnosis",
+      "Quick Attack",
+      "Psychic"
+     ],
+     "held_item": "twisted_spoon",
+     "condition": 79,
+     "fitness": 97,
+     "morale": 63,
+     "age_months": 22,
+     "contract": {
+      "salary": 2359,
+      "expiry": "2029-06-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hardy",
+     "ability": "synchronize"
+    },
+    {
+     "uid": "pkm0739",
+     "species_id": 158,
+     "species": "Totodile",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 13,
+      "atk": 8,
+      "def": 10,
+      "spa": 1,
+      "spd": 9,
+      "spe": 9
+     },
+     "moves": [
+      "Surf",
+      "Water Gun",
+      "Waterfall",
+      "Tackle"
+     ],
+     "held_item": null,
+     "condition": 89,
+     "fitness": 76,
+     "morale": 86,
+     "age_months": 49,
+     "contract": {
+      "salary": 1963,
+      "expiry": "2029-01-30"
+     },
+     "native_region": "Johto",
+     "nature": "Hardy",
+     "ability": "torrent"
+    },
+    {
+     "uid": "pkm0740",
+     "species_id": 210,
+     "species": "Granbull",
+     "nickname": null,
+     "level": 39,
+     "ivs": {
+      "hp": 5,
+      "atk": 14,
+      "def": 3,
+      "spa": 4,
+      "spd": 7,
+      "spe": 11
+     },
+     "moves": [
+      "Slash",
+      "Tackle",
+      "Harden",
+      "Body Slam"
+     ],
+     "held_item": null,
+     "condition": 73,
+     "fitness": 84,
+     "morale": 73,
+     "age_months": 105,
+     "contract": {
+      "salary": 2736,
+      "expiry": "2029-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Modest",
+     "ability": "intimidate"
+    },
+    {
+     "uid": "pkm0741",
+     "species_id": 158,
+     "species": "Totodile",
+     "nickname": null,
+     "level": 36,
+     "ivs": {
+      "hp": 5,
+      "atk": 5,
+      "def": 3,
+      "spa": 2,
+      "spd": 8,
+      "spe": 14
+     },
+     "moves": [
+      "Reflect",
+      "Tackle",
+      "Waterfall",
+      "Bubble Beam"
+     ],
+     "held_item": null,
+     "condition": 98,
+     "fitness": 91,
+     "morale": 69,
+     "age_months": 104,
+     "contract": {
+      "salary": 2212,
+      "expiry": "2027-12-30"
+     },
+     "native_region": "Johto",
+     "nature": "Lax",
+     "ability": "torrent"
+    },
+    {
+     "uid": "pkm0742",
+     "species_id": 180,
+     "species": "Flaaffy",
+     "nickname": null,
+     "level": 41,
+     "ivs": {
+      "hp": 11,
+      "atk": 9,
+      "def": 10,
+      "spa": 4,
+      "spd": 0,
+      "spe": 8
+     },
+     "moves": [
+      "Screech",
+      "Thunder Punch",
+      "Thunder Wave",
+      "Quick Attack"
+     ],
+     "held_item": null,
+     "condition": 91,
+     "fitness": 95,
+     "morale": 56,
+     "age_months": 84,
+     "contract": {
+      "salary": 2171,
+      "expiry": "2027-11-30"
+     },
+     "native_region": "Johto",
+     "nature": "Timid",
+     "ability": "static"
+    },
+    {
+     "uid": "pkm0743",
+     "species_id": 174,
+     "species": "Igglybuff",
+     "nickname": null,
+     "level": 29,
+     "ivs": {
+      "hp": 5,
+      "atk": 14,
+      "def": 13,
+      "spa": 13,
+      "spd": 6,
+      "spe": 13
+     },
+     "moves": [
+      "Headbutt",
+      "Tackle",
+      "Quick Attack",
+      "Double-Edge"
+     ],
+     "held_item": null,
+     "condition": 78,
+     "fitness": 76,
+     "morale": 89,
+     "age_months": 42,
+     "contract": {
+      "salary": 1809,
+      "expiry": "2030-02-28"
+     },
+     "native_region": "Johto",
+     "nature": "Docile",
+     "ability": "cute_charm"
+    },
+    {
+     "uid": "pkm0744",
+     "species_id": 166,
+     "species": "Ledian",
+     "nickname": null,
+     "level": 38,
+     "ivs": {
+      "hp": 15,
+      "atk": 9,
+      "def": 9,
+      "spa": 7,
+      "spd": 12,
+      "spe": 8
+     },
+     "moves": [
+      "Peck",
+      "Leech Life",
+      "Quick Attack",
+      "Wing Attack"
+     ],
+     "held_item": null,
+     "condition": 96,
+     "fitness": 89,
+     "morale": 94,
+     "age_months": 94,
+     "contract": {
+      "salary": 2306,
+      "expiry": "2028-04-30"
+     },
+     "native_region": "Johto",
+     "nature": "Impish",
+     "ability": "early_bird"
+    },
+    {
+     "uid": "pkm0745",
+     "species_id": 155,
+     "species": "Cyndaquil",
+     "nickname": null,
+     "level": 37,
+     "ivs": {
+      "hp": 2,
+      "atk": 7,
+      "def": 14,
+      "spa": 11,
+      "spd": 15,
+      "spe": 9
+     },
+     "moves": [
+      "Quick Attack",
+      "Fire Punch",
+      "Flamethrower",
+      "Leer"
+     ],
+     "held_item": "focus_sash",
+     "condition": 80,
+     "fitness": 83,
+     "morale": 71,
+     "age_months": 76,
+     "contract": {
+      "salary": 2514,
+      "expiry": "2028-07-30"
+     },
+     "native_region": "Johto",
+     "nature": "Relaxed",
+     "ability": "blaze"
+    },
+    {
+     "uid": "pkm0746",
+     "species_id": 179,
+     "species": "Mareep",
+     "nickname": null,
+     "level": 24,
+     "ivs": {
+      "hp": 11,
+      "atk": 6,
+      "def": 6,
+      "spa": 3,
+      "spd": 14,
+      "spe": 4
+     },
+     "moves": [
+      "Thunder",
+      "Thunder Wave",
+      "Swords Dance",
+      "Tackle"
+     ],
+     "held_item": null,
+     "condition": 74,
+     "fitness": 83,
+     "morale": 74,
+     "age_months": 100,
+     "contract": {
+      "salary": 1710,
+      "expiry": "2027-10-30"
+     },
+     "native_region": "Johto",
+     "nature": "Bashful",
+     "ability": "static"
+    }
+   ],
+   "staff": [
+    {
+     "name": "Lorelei Stone",
+     "role": "scout",
+     "ratings": {
+      "attacking": 12,
+      "defending": 13,
+      "fitness": 16,
+      "judging_ability": 15,
+      "judging_potential": 10,
+      "youth": 6
+     }
+    },
+    {
+     "name": "Bianca Maple",
+     "role": "physio",
+     "ratings": {
+      "attacking": 16,
+      "defending": 4,
+      "fitness": 7,
+      "judging_ability": 4,
+      "judging_potential": 6,
+      "youth": 17
+     }
+    },
+    {
+     "name": "Sabrina Magnolia",
+     "role": "coach",
+     "ratings": {
+      "attacking": 9,
+      "defending": 6,
+      "fitness": 16,
+      "judging_ability": 16,
+      "judging_potential": 19,
+      "youth": 9
+     }
+    }
+   ],
+   "items": {
+    "potion": 2
    }
   }
  ],

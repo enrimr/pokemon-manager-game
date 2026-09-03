@@ -184,7 +184,7 @@ func _build_header() -> Control:
 	title.add_theme_color_override("font_color", Color.WHITE)
 	col.add_child(title)
 	var sub := Label.new()
-	sub.text = "Choose the club you'll manage — 32 clubs across two leagues, all meeting in the Indigo Cup."
+	sub.text = tr("Choose the club you'll manage — 56 clubs across four divisions; the top flights meet in the Indigo Cup.")
 	sub.add_theme_font_size_override("font_size", 13)
 	sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	col.add_child(sub)

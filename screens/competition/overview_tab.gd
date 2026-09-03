@@ -54,7 +54,7 @@ func _season_card() -> PanelContainer:
 	var played_fx: int = league_fx.filter(func(f): return f["played"]).size()
 
 	body.add_child(UI.label(tr(str(GameState.league_name())), 15, Color.WHITE))
-	body.add_child(UI.dim(tr("Season %s · %d leagues of 16 · double round-robin · %s") % [
+	body.add_child(UI.dim(tr("Season %s · %d leagues · double round-robin · %s") % [
 		GameState.season_start.split("-")[0], GameState.leagues().size(), tr(GameState.cup_name())], 12))
 	body.add_child(UI.vspace(2))
 	var pb := ProgressBar.new()
@@ -200,7 +200,7 @@ func _cup_card() -> PanelContainer:
 		nties = nties / 2
 		total_rounds += 1
 	var current := cup.filter(func(f): return int(f["round"]) == max_round)
-	body.add_child(UI.kv_row("Clubs in the draw", tr("%d · both leagues") % (first_count * 2)))
+	body.add_child(UI.kv_row("Clubs in the draw", tr("%d · the top flights") % (first_count * 2)))
 	body.add_child(UI.kv_row("Current round", tr("%s (%d of %d)") % [
 		I18n.cup_round(max_round), max_round, total_rounds]))
 	body.add_child(UI.kv_row("Round date", I18n.pretty_date(current[0]["date"])))

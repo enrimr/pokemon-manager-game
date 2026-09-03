@@ -201,6 +201,8 @@ func _settle_month(boundary: String, positions: Dictionary) -> void:
 		var sponsor := rep * 1150
 		var pos := int(positions.get(str(c["id"]), 8))
 		var broadcast := 6000 + (16 - pos) * 550
+		if GameState.league_tier(str(c.get("league", "kanto"))) == 2:
+			broadcast = int(broadcast * 0.45)   # D2 TV money is a different world
 		_move(c, sponsor + broadcast - payroll - upkeep)
 		if GameState.is_player_club(str(c["id"])):
 			_record(closing, I18n.t("Payroll — squad wages, %s (%d battlers)") %

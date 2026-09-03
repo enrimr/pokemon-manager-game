@@ -303,7 +303,7 @@ func travel_days_to(leg_id: String) -> int:
 	var leg := legendary(leg_id)
 	var region := "kanto"
 	if _gs != null:
-		region = str(_gs.player_league_id())
+		region = str(_gs.region_of_league(_gs.player_league_id()))
 	return int(leg.get("travel", {}).get(region, 3))
 
 

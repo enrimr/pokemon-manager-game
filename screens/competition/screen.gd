@@ -416,10 +416,11 @@ func _refresh_header() -> void:
 		return
 	var season_t := tr("Season %d") % GameState.season_no()
 	_hdr_title.text = tr(GameState.league_name(_comp_ctx)).to_upper()
-	var other := ""
+	var others: Array = []
 	for lg in GameState.leagues():
 		if str(lg["id"]) != _comp_ctx:
-			other = tr(str(lg["name"]))
+			others.append(tr(str(lg["name"])))
+	var other := ", ".join(others)
 	_hdr_sub.text = tr("with the %s and the %s · %s") % [other, tr(GameState.cup_name()), season_t] \
 		if other != "" else tr("with the %s · %s") % [tr(GameState.cup_name()), season_t]
 
@@ -559,7 +560,7 @@ func _build_tab_bar() -> Control:
 	bar.add_child(cap)
 	var entries: Array = []
 	for lg in GameState.leagues():
-		entries.append([str(lg["id"]), tr(str(lg["name"]))])
+		entries.append([str(lg["id"]), str(lg.get("short", tr(str(lg["name"]))))])
 	entries.append(["cup", tr(GameState.cup_name())])
 	for entry in entries:
 		var b := Button.new()

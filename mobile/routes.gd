@@ -145,7 +145,7 @@ func _build_planner() -> void:
 	var iv: VBoxContainer = idc[1]
 	iv.add_child(MUI.title(tr(str(r["name"])), 16))
 	var band: Array = r.get("levels", [5, 20])
-	iv.add_child(MUI.dim("%s · %s · Lv %d–%d · %s" % [tr(str(r["region"])),
+	iv.add_child(MUI.dim("%s · %s · Lv %d–%d · %s" % [str(r["region"]).capitalize(),
 		_terrain_text(r), int(band[0]), int(band[1]),
 		I18n.np(int(r.get("travel", 1)), "%d travel day", "%d travel days") % int(r.get("travel", 1))], 11))
 	var blurb := MUI.dim(tr(str(r.get("blurb", ""))), 11)

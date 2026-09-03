@@ -49,6 +49,7 @@ static var instance: SeasonFlowService = null
 
 const TOP_N := 4                     ## table positions that enter the Series
 const DANGER_FROM := 14              ## Danger Zone: positions 14..16
+const RELEGATED_N := 2               ## clubs swapped between a league and its Division Two
 const ROLLOVER_DELAY_DAYS := 7       ## Final -> new-season preseason
 const POS_MIN_BATTLES := 8           ## Pokémon of the Season eligibility
 const BREAKOUT_MAX_AGE := 60         ## Best Developer: under 5 years old
@@ -63,6 +64,7 @@ const INBOX_KEEP_MAX := 120          ## read routine mail kept after the rollove
 
 var phase := "regular"               # regular | playoff | offseason
 var rollover_date := ""              # set when the phase turns "offseason"
+var pending_moves: Array = []        # staged promotion/relegation, applied at rollover
 var ultimatum := {}                  # {"season": int, "target": int, "club_id": String}
 var last_awards := {}                # latest ceremony (convenience copy)
 var _evo_loaded := false             # evolutions.json parsed (age-cap maps)
@@ -76,7 +78,8 @@ func service_id() -> String:
 
 func save_state() -> Dictionary:
 	return {"phase": phase, "rollover_date": rollover_date,
-		"ultimatum": ultimatum, "last_awards": last_awards}
+		"ultimatum": ultimatum, "last_awards": last_awards,
+		"pending_moves": pending_moves}
 
 
 func load_state(state: Dictionary) -> void:
@@ -88,6 +91,7 @@ func load_state(state: Dictionary) -> void:
 			"target": int(ultimatum.get("target", ULTIMATUM_TARGET)),
 			"club_id": str(ultimatum.get("club_id", ""))}
 	last_awards = state.get("last_awards", {}) if typeof(state.get("last_awards")) == TYPE_DICTIONARY else {}
+	pending_moves = state.get("pending_moves", []) if state.get("pending_moves") is Array else []
 
 
 func on_career_started(gs) -> void:
@@ -128,6 +132,7 @@ func on_day(gs, date: String) -> void:
 				phase = "regular"
 				var closed_season: int = gs.season_no()
 				var filed := _tidy_inbox(gs)          # mark routine mail read + trim
+				_apply_pending_moves(gs)              # promotion/relegation lands here
 				gs.start_new_season()
 				_send_season_digest(gs, closed_season, filed)
 				_clamp_pool_ages(gs)                  # pools aged +12 — re-clamp
@@ -159,7 +164,8 @@ static func seed_pairs(a: Array, b: Array) -> Array:
 # ------------------------------------------------------------------ playoff
 
 func _start_playoff(gs) -> void:
-	var lgs: Array = gs.leagues()
+	# the Championship Series is a TOP-FLIGHT competition (promotion piece)
+	var lgs: Array = gs.leagues().filter(func(lg): return int(lg.get("tier", 1)) == 1)
 	var a := league_top(gs, str(lgs[0]["id"]))
 	var b := league_top(gs, str(lgs[1]["id"])) if lgs.size() > 1 else []
 	var pairs := seed_pairs(a, b)
@@ -244,6 +250,7 @@ func _end_of_season(gs, final_f: Dictionary) -> void:
 	var entry := _make_history_entry(gs, champion, runner_up, awards)
 	gs.add_history_entry(entry)
 	_record_stint(gs, entry)
+	_stage_promotion_relegation(gs)
 	if sack_reason == "":
 		sack_reason = _catastrophe_check(gs, entry)
 	_send_awards_mail(gs, entry)
@@ -429,6 +436,94 @@ func _catastrophe_check(gs, entry: Dictionary) -> String:
 
 
 ## Danger Zone (14-16) is real: reputation and money suffer at every club that
+# ---------------------------------------------------------- promotion/relegation
+## (promotion piece) Each region pairs a league with its Division Two: the
+## bottom RELEGATED_N of the top flight swap places with the top RELEGATED_N
+## below. Staged at the ceremony (tables are final and announcements land with
+## the awards), APPLIED at the rollover tick so the closing season's tables
+## stay intact for the whole off-season.
+func _stage_promotion_relegation(gs) -> void:
+	pending_moves = []
+	var pid: String = str(gs.world["meta"]["player_club_id"])
+	for lg2 in gs.leagues():
+		if int(lg2.get("tier", 1)) != 2:
+			continue
+		var lid2 := str(lg2["id"])
+		var lid1 := ""
+		for lg1 in gs.leagues():
+			if int(lg1.get("tier", 1)) == 1 \
+					and str(lg1.get("region", "")) == str(lg2.get("region", "")):
+				lid1 = str(lg1["id"])
+				break
+		if lid1 == "":
+			continue
+		var down := _table_slice(gs, lid1, -RELEGATED_N)
+		var up := _table_slice(gs, lid2, RELEGATED_N)
+		var d2_played: bool = gs.fixtures.any(func(f):
+			return str(f["comp"]) == "league" and str(f.get("league", "")) == lid2 and bool(f["played"]))
+		if up.is_empty() or not d2_played:
+			# a division injected mid-season has no results yet: its two most
+			# reputable clubs earn the first promotion on standing
+			var ids: Array = gs.league_club_ids(lid2)
+			ids.sort_custom(func(x, y):
+				return int(gs.club(str(x)).get("reputation", 1)) > int(gs.club(str(y)).get("reputation", 1)))
+			up = ids.slice(0, RELEGATED_N)
+		if down.size() < RELEGATED_N or up.size() < RELEGATED_N:
+			continue
+		for cid in down:
+			pending_moves.append({"club_id": str(cid), "from": lid1, "to": lid2, "why": "relegated"})
+		for cid in up:
+			pending_moves.append({"club_id": str(cid), "from": lid2, "to": lid1, "why": "promoted"})
+			_bump_reputation(gs, str(cid), 1)
+		var down_names := ", ".join(down.map(func(c): return str(gs.club(str(c)).get("name", c))))
+		var up_names := ", ".join(up.map(func(c): return str(gs.club(str(c)).get("name", c))))
+		gs.add_inbox_message(gs.current_date,
+			I18n.t("%s: promotion and relegation confirmed") % I18n.t(gs.league_name(lid1)),
+			I18n.t("The trapdoor opens. Going down to the %s: %s. Coming up with the crowds behind them: %s. The moves take effect when the new season's fixtures are drawn.") % [
+				I18n.t(gs.league_name(lid2)), down_names, up_names])
+		for cid in down:
+			if str(cid) == pid:
+				gs.add_inbox_message(gs.current_date, I18n.t("RELEGATED — the board is wounded"),
+					I18n.t("%s will play in the %s next season. The board talks of an immediate return; the budget will not talk at all. Win the division — it is the only sentence anyone here wants to hear.") % [
+						str(gs.player_club().get("name", "")), I18n.t(gs.league_name(lid2))])
+				gs.inbox[0]["urgent"] = true
+		for cid in up:
+			if str(cid) == pid:
+				gs.add_inbox_message(gs.current_date, I18n.t("PROMOTED! The whole town is singing"),
+					I18n.t("%s rise to the %s! The board banks the prize money, the fixture list gets heavier, and everyone at the training ground walks a little taller.") % [
+						str(gs.player_club().get("name", "")), I18n.t(gs.league_name(lid1))])
+				gs.inbox[0]["urgent"] = true
+
+
+## Final-table club ids: first n (promotion) or last n (relegation, n < 0).
+func _table_slice(gs, league_id: String, n: int) -> Array:
+	var t: Array = gs.league_table(league_id)
+	if t.is_empty():
+		return []
+	var rows: Array = t.slice(0, n) if n > 0 else t.slice(t.size() + n)
+	return rows.map(func(r): return str(r["club_id"]))
+
+
+func _apply_pending_moves(gs) -> void:
+	if pending_moves.is_empty():
+		return
+	var pid: String = str(gs.world["meta"]["player_club_id"])
+	for mv in pending_moves:
+		var c: Dictionary = gs.club(str(mv["club_id"]))
+		if c.is_empty() or str(c.get("league", "")) != str(mv["from"]):
+			continue   # club already moved / world drifted: never double-apply
+		c["league"] = str(mv["to"])
+		var fin: Dictionary = c["finances"]
+		if str(mv["why"]) == "promoted":
+			fin["balance"] = int(fin["balance"]) + 150000   # league prize money
+		elif str(mv["club_id"]) == pid:
+			# the player's relegation bites where it hurts: the war chest
+			fin["transfer_budget"] = maxi(0, int(int(fin.get("transfer_budget", 0)) * 0.7))
+	pending_moves = []
+	gs._table_dirty = true
+	gs.world["meta"]["league_name"] = gs.league_name(gs.player_league_id())
+
+
 ## finishes there; the player also gets a board ultimatum for next season and
 ## their star Pokémon demands an exit.
 func _apply_danger_zone(gs) -> void:

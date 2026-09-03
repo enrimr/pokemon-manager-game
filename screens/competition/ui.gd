@@ -183,6 +183,8 @@ static func league_color(league_id: String) -> Color:
 	match league_id:
 		"kanto": return Color("e05a4e")
 		"johto": return Color("d4a83f")
+		"kanto2": return Color("9c4038")   # deeper cartridge hues for the D2s
+		"johto2": return Color("947632")
 	return TB.COL_ACCENT
 
 
@@ -190,6 +192,8 @@ static func league_tag(league_id: String) -> String:
 	match league_id:
 		"kanto": return "KAN"
 		"johto": return "JOH"
+		"kanto2": return "KA2"
+		"johto2": return "JO2"
 	return league_id.substr(0, 3).to_upper()
 
 

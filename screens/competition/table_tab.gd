@@ -8,8 +8,9 @@ const TB := preload("res://shared/theme/theme_builder.gd")
 const Charts := preload("res://screens/competition/charts.gd")
 
 const ZONE_TITLE_END := 1     # pos 1: league champions (CS top seed)
-const ZONE_PROMO_END := 4     # pos 1..4 qualify for the Championship Series
-const ZONE_RELEG_FROM := 14   # pos 14..16: Danger Zone (board consequences)
+const ZONE_PROMO_END := 4     # tier 1: pos 1..4 qualify for the Championship Series
+const ZONE_RELEG_FROM := 14   # tier 1: pos 14..16 Danger Zone; 15-16 relegated
+const D2_PROMO_END := 2       # tier 2: pos 1..2 promoted
 
 const TITLES := ["Pos", "", "Club", "Pld", "Won", "Lost", "BF", "BA", "+/-", "Pts", "Form"]
 const WIDTHS := [44, 34, 0, 52, 52, 52, 56, 56, 56, 60, 128]
@@ -27,6 +28,7 @@ var league_id := ""
 var _tree: Tree
 var _graph   # Charts.PositionChart (untyped: inner-class Control)
 var _footer: Label
+var _legend_box: HBoxContainer = null
 var _hint: Label
 var _split_buttons: Dictionary = {}
 var _mode := "overall"
@@ -94,29 +96,25 @@ func _ready() -> void:
 	_graph = Charts.PositionChart.new()
 	_graph.zone_title_end = ZONE_TITLE_END
 	_graph.zone_promo_end = ZONE_PROMO_END
-	_graph.zone_releg_from = ZONE_RELEG_FROM
+	_graph.zone_releg_from = ZONE_RELEG_FROM   # retuned per league in refresh()
 	_graph.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_graph.visible = false
 	add_child(_graph)
 
-	# Every zone here feeds a real mechanism: 1-4 enter the cross-league
-	# Championship Series playoff after matchday 30 (see the tab of that name);
-	# 14-16 trigger board consequences at the end-of-season ceremony.
+	# Every zone here feeds a real mechanism (rebuilt per league in refresh():
+	# top-flight zones differ from a Division Two's promotion places).
 	var legend := HBoxContainer.new()
 	legend.add_theme_constant_override("separation", 18)
-	legend.add_child(_legend_entry(Color(0.83, 0.68, 0.21), tr("League Champions (1st)"),
-		tr("1st place wins the league title and tops the Championship Series seeding")))
-	legend.add_child(_legend_entry(Color(0.34, 0.79, 0.47), tr("Championship Series (1-4)"),
-		tr("Positions 1-4 of BOTH leagues enter the cross-league Championship Series\nplayoff after matchday 30 — its Final crowns the Indigo Champion")))
-	legend.add_child(_legend_entry(Color(0.88, 0.38, 0.38), tr("Danger Zone (14-16)"),
-		tr("Finish 14th-16th and the board reacts at season's end:\nreputation -1, transfer budget cut 25%, sponsors pull back —\nand your star Pokémon may demand a move")))
-	legend.add_child(_legend_entry(TB.COL_ACCENT, tr("Your club"), ""))
+	_legend_box = HBoxContainer.new()
+	_legend_box.add_theme_constant_override("separation", 18)
+	legend.add_child(_legend_box)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	legend.add_child(spacer)
 	_footer = UI.dim("", 12)
 	legend.add_child(_footer)
 	add_child(legend)
+	_refresh_legend()
 
 	# Screenshot-harness hook only: pre-select a table split (inert in play).
 	var dev_mode := OS.get_environment("COMP_DEV_TABLE_MODE")
@@ -128,10 +126,48 @@ func _ready() -> void:
 ## Competition-switcher hook (screen.gd): render this league's standings.
 func set_league_context(lg: String, _cup: bool) -> void:
 	league_id = lg
+	if _graph != null:
+		_graph.zone_promo_end = _promo_end()
+		_graph.zone_releg_from = _releg_from()
+	_refresh_legend()
 
 
 func _lg() -> String:
 	return league_id if league_id != "" else GameState.player_league_id()
+
+
+func _tier() -> int:
+	return GameState.league_tier(_lg())
+
+
+## Zone boundaries for the league on show (promotion piece): top flights keep
+## the CS places + Danger Zone with real relegation; Division Twos highlight
+## the two promotion places and have no trapdoor below.
+func _promo_end() -> int:
+	return ZONE_PROMO_END if _tier() == 1 else D2_PROMO_END
+
+
+func _releg_from() -> int:
+	return ZONE_RELEG_FROM if _tier() == 1 else 999
+
+
+func _refresh_legend() -> void:
+	if _legend_box == null:
+		return
+	for c in _legend_box.get_children():
+		c.queue_free()
+	_legend_box.add_child(_legend_entry(Color(0.83, 0.68, 0.21), tr("League Champions (1st)"),
+		tr("1st place wins the league title and tops the Championship Series seeding") if _tier() == 1
+		else tr("1st place wins the division — and goes up as champions")))
+	if _tier() == 1:
+		_legend_box.add_child(_legend_entry(Color(0.34, 0.79, 0.47), tr("Championship Series (1-4)"),
+			tr("Positions 1-4 of BOTH leagues enter the cross-league Championship Series\nplayoff after matchday 30 — its Final crowns the Indigo Champion")))
+		_legend_box.add_child(_legend_entry(Color(0.88, 0.38, 0.38), tr("Danger Zone (14-16)"),
+			tr("Finish 14th-16th and the board reacts at season's end —\nand the bottom TWO are relegated to their region's Division Two")))
+	else:
+		_legend_box.add_child(_legend_entry(Color(0.34, 0.79, 0.47), tr("Promotion (1-2)"),
+			tr("The top two go up to the region's top flight at season's end")))
+	_legend_box.add_child(_legend_entry(TB.COL_ACCENT, tr("Your club"), ""))
 
 
 func _set_mode(mode: String) -> void:
@@ -240,9 +276,9 @@ func refresh() -> void:
 		var zone := Color(0, 0, 0, 0)
 		if pos <= ZONE_TITLE_END:
 			zone = UI.COL_TITLE_ZONE
-		elif pos <= ZONE_PROMO_END:
+		elif pos <= _promo_end():
 			zone = UI.COL_PROMO_ZONE
-		elif pos >= ZONE_RELEG_FROM:
+		elif pos >= _releg_from():
 			zone = UI.COL_RELEG_ZONE
 		var is_player := GameState.is_player_club(cid)
 		for c in _tree.columns:

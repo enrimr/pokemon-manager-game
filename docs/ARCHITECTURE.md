@@ -233,14 +233,31 @@ method signatures and the event/fixture dict schemas above are frozen contracts.
 No copyrighted sprites or artwork anywhere. Visual identity = type-colored badges/monograms
 (`DataStore.type_color`) + FM-style data density.
 
-## Two-league world (Kanto + Johto) — leagues piece
+## League pyramid (Kanto + Johto, each with a Division Two) — leagues + promotion pieces
 
-The world is now **32 clubs in two 16-club leagues**, each with its own double
-round-robin championship; the **Indigo Cup** is a 32-club cross-league knockout
-(5 rounds: First Round, Second Round, Quarter-Final, Semi-Final, Final).
+The world is **56 clubs in four divisions**: two 16-club top flights (kanto,
+johto) and one 12-club second division per region (kanto2, johto2), each with
+its own double round-robin championship. The **Indigo Cup** is a 32-club
+TOP-FLIGHT-ONLY cross-league knockout (5 rounds), and the Championship Series
+playoff takes the top four of each top flight only.
+
+**Promotion/relegation** (`season_flow.gd`): at the end-of-season ceremony the
+bottom `RELEGATED_N` (2) of each top flight and the top 2 of its region's
+Division Two are STAGED (`pending_moves`, persisted) with inbox announcements;
+the swap is APPLIED at the rollover tick just before `start_new_season()`
+generates fixtures, so the closing season's tables stay intact all off-season.
+Promoted clubs: +1 reputation, +P$150k prize; a relegated player club loses 30%
+of its transfer budget on top of the Danger Zone hit. A migrated old save whose
+D2 has no results yet promotes its two most reputable D2 clubs. Old two-league
+saves are migrated on load by `GameState._ensure_second_divisions()` (injects
+the D2 leagues + clubs from the shipped world.json; D2 fixtures start at the
+next rollover). Regions vs leagues: routes/legendaries/protégé key off
+`GameState.region_of_league()` / `player_region()` — never off division ids.
+Verify: `godot --headless --path . res://tools/promo_check.tscn` → PROMO CHECK OK.
 
 **world.json additions** (everything above stays shape-compatible):
-- `meta.leagues`: `[{"id":"kanto","name":"Kanto League"},{"id":"johto","name":"Johto League"}]`
+- `meta.leagues`: `[{"id","name","short","region","tier"}, ...]` — tier 1 = top
+  flight (cup + Series), tier 2 = Division Two; `short` ("KANTO II") feeds tabs
 - `meta.cup_name`: `"Indigo Cup"`
 - `meta.league_name` now always names the **player's** league (GameState keeps
   it in sync on career start/club choice) — every screen that renders it as its

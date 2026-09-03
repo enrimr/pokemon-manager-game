@@ -11,6 +11,8 @@ extends Control
 signal club_selected(summary: Dictionary)
 signal club_confirmed
 
+const CompUI := preload("res://screens/competition/ui.gd")
+
 var _font_bold: Font
 var _font_semibold: Font
 var _font_header: Font
@@ -67,12 +69,12 @@ func _load_world() -> void:
 	by_strength.sort_custom(func(a, b): return float(a["avg6"]) < float(b["avg6"]))
 	for i in by_strength.size():
 		by_strength[i]["stars"] = 1 + int(floor(float(i) / maxf(1.0, float(by_strength.size())) * 5.0))
-	# expected league position across the whole world = rank by reputation
+	# expected league position = rank by reputation WITHIN the club's league
 	# (mirrors the Board & Finances screen's expected_position maths)
 	for s in _all:
 		var better := 0
 		for o in _all:
-			if o["id"] == s["id"]:
+			if o["id"] == s["id"] or str(o["league"]) != str(s["league"]):
 				continue
 			if int(o["rep"]) > int(s["rep"]) or \
 					(int(o["rep"]) == int(s["rep"]) and str(o["id"]) < str(s["id"])):
@@ -179,15 +181,20 @@ func _build_ui() -> void:
 	left.add_theme_constant_override("separation", 8)
 	root.add_child(left)
 
-	var tabs := HBoxContainer.new()
-	tabs.add_theme_constant_override("separation", 8)
+	# four divisions now: phones get a wrapping row of compact tags
+	var tabs: Container = HFlowContainer.new() if _narrow else HBoxContainer.new()
+	tabs.add_theme_constant_override("h_separation" if _narrow else "separation", 8)
+	if _narrow:
+		tabs.add_theme_constant_override("v_separation", 6)
 	for lg in _leagues:
 		var lid: String = str(lg["id"])
 		var b := Button.new()
-		b.text = tr(str(lg["name"])).to_upper()
+		b.text = str(lg.get("short", CompUI.league_tag(lid))) if _narrow \
+			else str(lg.get("short", str(lg["name"]))).to_upper()
+		b.tooltip_text = tr(str(lg["name"]))
 		b.toggle_mode = true
 		b.focus_mode = Control.FOCUS_NONE
-		b.custom_minimum_size = Vector2(150 if _narrow else 180, 34)
+		b.custom_minimum_size = Vector2(86 if _narrow else 180, 34)
 		b.add_theme_font_override("font", _font_header)
 		b.add_theme_font_size_override("font_size", 13)
 		b.pressed.connect(func(): set_league(lid))
@@ -412,8 +419,8 @@ func _render_detail(s: Dictionary) -> void:
 	exp.add_theme_color_override("font_color", Color("f2f4fb"))
 	_detail_box.add_child(exp)
 	var exp_sub := Label.new()
-	exp_sub.text = tr("Expected league position: around %s of the world's %d clubs by reputation") \
-		% [I18n.ordinal(int(s["expected"])), _all.size()]
+	exp_sub.text = tr("Expected league position: around %s of the %d clubs in this division, by reputation") \
+		% [I18n.ordinal(int(s["expected"])), (_clubs.get(str(s["league"]), []) as Array).size()]
 	exp_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	exp_sub.add_theme_font_size_override("font_size", 11)
 	exp_sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)

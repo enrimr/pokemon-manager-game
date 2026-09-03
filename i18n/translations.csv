@@ -5815,3 +5815,49 @@ Delete this career?,¿Borrar esta carrera?
 Delete forever,Borrar para siempre
 %s — %s (%s) will be deleted. This cannot be undone.,%s — %s (%s) se borrará. No se puede deshacer.
 Your current career stays saved — return to it any time from Load Game.,Tu carrera actual queda guardada: vuelve a ella cuando quieras desde Cargar partida.
+A peculiar orange stone radiating heat. Evolves certain Pokémon.,Una peculiar piedra naranja que irradia calor. Hace evolucionar a ciertos Pokémon.
+A clear blue stone with a watery sheen. Evolves certain Pokémon.,Una piedra azul clara con brillo acuoso. Hace evolucionar a ciertos Pokémon.
+A yellow stone crackling faintly. Evolves certain Pokémon.,Una piedra amarilla que chisporrotea levemente. Hace evolucionar a ciertos Pokémon.
+A green stone with a leaf pattern. Evolves certain Pokémon.,Una piedra verde con dibujo de hoja. Hace evolucionar a ciertos Pokémon.
+A jet-black stone that fell from the sky. Evolves certain Pokémon.,Una piedra negra azabache caída del cielo. Hace evolucionar a ciertos Pokémon.
+A ruddy stone as warm as the sun. Evolves certain Pokémon.,Una piedra rojiza cálida como el sol. Hace evolucionar a ciertos Pokémon.
+"A tough, shimmering scale. Triggers the evolution of certain Pokémon.",Una escama dura y reluciente. Desencadena la evolución de ciertos Pokémon.
+A steel-clad coating. Triggers the evolution of certain Pokémon.,Un recubrimiento de acero. Desencadena la evolución de ciertos Pokémon.
+A transparent device stuffed with data. Evolves Porygon.,Un dispositivo transparente repleto de datos. Hace evolucionar a Porygon.
+Wetland,Humedal
+Park,Parque
+"
+[color=#%s][b]LEVEL UPS[/b][/color]
+","
+[color=#%s][b]SUBIDAS DE NIVEL[/b][/color]
+"
+"[color=#%s]▲ %s climbs to Lv %d[/color]
+","[color=#%s]▲ %s sube a Nv %d[/color]
+"
+The manager,El mánager
+No coach by that name.,No hay ningún entrenador con ese nombre.
+ agree , acepta 
+ for , por 
+withdraw interest in,retira su interés por
+Season ,Balance de la temporada 
+Kanto League Two,Segunda Liga de Kanto
+Johto League Two,Segunda Liga de Johto
+%s: promotion and relegation confirmed,%s: ascensos y descensos confirmados
+The trapdoor opens. Going down to the %s: %s. Coming up with the crowds behind them: %s. The moves take effect when the new season's fixtures are drawn.,Se abre la trampilla. Bajan a la %s: %s. Suben con su afición en volandas: %s. Los movimientos se aplican cuando se sortee el calendario de la nueva temporada.
+RELEGATED — the board is wounded,DESCENDIDOS — la directiva está herida
+%s will play in the %s next season. The board talks of an immediate return; the budget will not talk at all. Win the division — it is the only sentence anyone here wants to hear.,El %s jugará en la %s la próxima temporada. La directiva habla de un regreso inmediato; el presupuesto no hablará en absoluto. Gana la división: es la única frase que aquí quiere oír todo el mundo.
+PROMOTED! The whole town is singing,¡ASCENDIDOS! Todo el pueblo está cantando
+"%s rise to the %s! The board banks the prize money, the fixture list gets heavier, and everyone at the training ground walks a little taller.","¡El %s sube a la %s! La directiva ingresa el premio, el calendario se pone serio y en la ciudad deportiva todo el mundo camina un poco más erguido."
+The pyramid grows: second divisions announced,La pirámide crece: anunciadas las segundas divisiones
+"The federations of Kanto and Johto have founded a second division each — %d new clubs join the pyramid. From the end of this season, the bottom two of each league are relegated and the top two of each Division Two come up. The Indigo Cup and the Championship Series remain top-flight competitions.","Las federaciones de Kanto y Johto han fundado una segunda división cada una: %d clubes nuevos se unen a la pirámide. Desde el final de esta temporada, los dos últimos de cada liga descienden y los dos primeros de cada Segunda ascienden. La Copa Añil y la Serie del Campeonato siguen siendo competiciones de la máxima categoría."
+1st place wins the division — and goes up as champions,El 1.º gana la división... y sube como campeón
+"Finish 14th-16th and the board reacts at season's end —
+and the bottom TWO are relegated to their region's Division Two","Acaba 14.º-16.º y la directiva reacciona a final de temporada;
+además, los DOS últimos descienden a la Segunda de su región"
+Promotion (1-2),Ascenso (1-2)
+The top two go up to the region's top flight at season's end,Los dos primeros suben a la máxima categoría de su región a final de temporada
+Season %s · %d leagues · double round-robin · %s,Temporada %s · %d ligas · doble vuelta · %s
+%d · the top flights,%d · las máximas categorías
+"Create your manager and pick a club — 56 clubs, two leagues + two second divisions","Crea tu entrenador y elige club: 56 clubes, dos ligas y dos segundas divisiones"
+Choose the club you'll manage — 56 clubs across four divisions; the top flights meet in the Indigo Cup.,Elige el club que dirigirás: 56 clubes en cuatro divisiones; las máximas categorías se ven en la Copa Añil.
+"Expected league position: around %s of the %d clubs in this division, by reputation","Posición esperada en liga: en torno al %s de los %d clubes de esta división, por reputación"
