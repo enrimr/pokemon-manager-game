@@ -66,7 +66,7 @@ func _build_header(box: VBoxContainer) -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
 	var reset := Button.new()
-	reset.text = "Reset to Defaults"
+	reset.text = "Reset" if get_viewport_rect().size.x < 700.0 else "Reset to Defaults"
 	reset.pressed.connect(_on_reset)
 	row.add_child(reset)
 	box.add_child(row)
@@ -98,8 +98,10 @@ func _section(box: VBoxContainer, id: String, heading: String) -> VBoxContainer:
 
 
 func _row(parent: VBoxContainer, label_text: String, desc: String, control: Control) -> void:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 16)
+	# portrait phones: label over control (side-by-side clips at ~430 units)
+	var narrow := get_viewport_rect().size.x < 700.0
+	var row: BoxContainer = VBoxContainer.new() if narrow else HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4 if narrow else 16)
 	var left := VBoxContainer.new()
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	left.size_flags_stretch_ratio = 1.4
@@ -181,7 +183,7 @@ func _build_audio(v: VBoxContainer) -> void:
 		slider.step = 0.05
 		slider.value = AudioManager.volume(bus) if am_live else float(Settings.get_setting(key))
 		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		slider.custom_minimum_size = Vector2(220, 0)
+		slider.custom_minimum_size = Vector2(150 if get_viewport_rect().size.x < 700.0 else 220, 0)
 		var pct := Label.new()
 		pct.custom_minimum_size = Vector2(44, 0)
 		pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT

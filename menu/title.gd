@@ -228,7 +228,8 @@ func _on_settings() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(center)
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(1180, 760)
+	var vp := get_viewport_rect().size   # phones: never wider than the screen
+	panel.custom_minimum_size = Vector2(minf(1180.0, vp.x - 12.0), minf(760.0, vp.y - 12.0))
 	panel.add_theme_stylebox_override("panel",
 		ThemeBuilder._flat(ThemeBuilder.COL_PANEL, ThemeBuilder.COL_ACCENT_DIM, 8, 16, 12))
 	center.add_child(panel)

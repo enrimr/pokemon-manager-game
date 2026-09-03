@@ -29,6 +29,15 @@ func _run() -> void:
 	await _frames(14)
 	_shot("%s/title.png" % dir)
 
+	# settings overlay, portrait (user report: it ran off the phone screen)
+	title._on_settings()
+	await _frames(12)
+	_shot("%s/settings.png" % dir)
+	if title._settings_overlay != null and is_instance_valid(title._settings_overlay):
+		title._settings_overlay.queue_free()
+		title._settings_overlay = null
+	await _frames(4)
+
 	# onboarding, portrait: all four steps must fit the phone (user report:
 	# the panel used to run off the right edge)
 	title._on_new_game()
