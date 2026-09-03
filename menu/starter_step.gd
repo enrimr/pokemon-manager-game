@@ -76,39 +76,40 @@ func _ready() -> void:
 	_prof_text.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	col.add_child(_prof_text)
 
-	_narrow = get_viewport_rect().size.x < 700.0   # portrait phones: ball picker
-	_cards_row = VBoxContainer.new() if _narrow else HBoxContainer.new()
-	_cards_row.add_theme_constant_override("separation", 10 if _narrow else 14)
+	# the lab counter (every screen, user request): three Poké Balls — open
+	# one to meet what's inside; phones and desktop only differ in sizing
+	_narrow = get_viewport_rect().size.x < 700.0
+	_cards_row = VBoxContainer.new()
+	_cards_row.add_theme_constant_override("separation", 10)
 	_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	if _narrow:
-		# the lab counter: three Poké Balls — tap one to meet what's inside
-		_balls_row = HBoxContainer.new()
-		_balls_row.alignment = BoxContainer.ALIGNMENT_CENTER
-		_balls_row.add_theme_constant_override("separation", 22)
-		col.add_child(_balls_row)
-		var cscroll := ScrollContainer.new()
-		cscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		cscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		cscroll.add_child(_cards_row)
-		col.add_child(cscroll)
-		# the ONE action, always on screen (user request): confirm the pick
-		_choose_btn = Button.new()
-		_choose_btn.visible = false
-		_choose_btn.custom_minimum_size.y = 46
-		_choose_btn.add_theme_font_override("font", _font_bold)
-		_choose_btn.add_theme_font_size_override("font_size", 15)
-		_choose_btn.add_theme_color_override("font_color", Color("f2f4fb"))
-		_choose_btn.add_theme_stylebox_override("normal",
-			ThemeBuilder._flat(Color(ThemeBuilder.COL_GOOD, 0.22), ThemeBuilder.COL_GOOD, 6, 12, 8))
-		_choose_btn.add_theme_stylebox_override("hover",
-			ThemeBuilder._flat(ThemeBuilder.COL_GOOD, ThemeBuilder.COL_GOOD, 6, 12, 8))
-		_choose_btn.pressed.connect(func():
-			if _inspect_id > 0:
-				_select(_inspect_id))
-		col.add_child(_choose_btn)
-	else:
-		col.add_child(_cards_row)
+	_balls_row = HBoxContainer.new()
+	_balls_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_balls_row.add_theme_constant_override("separation", 22 if _narrow else 52)
+	col.add_child(_balls_row)
+	var cscroll := ScrollContainer.new()
+	cscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cscroll.add_child(_cards_row)
+	col.add_child(cscroll)
+	# the ONE action, always on screen: confirm the pick
+	_choose_btn = Button.new()
+	_choose_btn.visible = false
+	_choose_btn.custom_minimum_size.y = 46
+	if not _narrow:
+		_choose_btn.custom_minimum_size.x = 420
+		_choose_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_choose_btn.add_theme_font_override("font", _font_bold)
+	_choose_btn.add_theme_font_size_override("font_size", 15)
+	_choose_btn.add_theme_color_override("font_color", Color("f2f4fb"))
+	_choose_btn.add_theme_stylebox_override("normal",
+		ThemeBuilder._flat(Color(ThemeBuilder.COL_GOOD, 0.22), ThemeBuilder.COL_GOOD, 6, 12, 8))
+	_choose_btn.add_theme_stylebox_override("hover",
+		ThemeBuilder._flat(ThemeBuilder.COL_GOOD, ThemeBuilder.COL_GOOD, 6, 12, 8))
+	_choose_btn.pressed.connect(func():
+		if _inspect_id > 0:
+			_select(_inspect_id))
+	col.add_child(_choose_btn)
 
 	var foot := HBoxContainer.new()
 	foot.add_theme_constant_override("separation", 12)
@@ -143,24 +144,24 @@ func _refresh() -> void:
 		c.queue_free()
 	_cards.clear()
 	var trio: Array = Protege.trio_for_league(_league)
-	if _narrow:
-		if not trio.has(_inspect_id):
-			_inspect_id = 0
-		_rebuild_balls(trio)
-		_update_choose_btn()
-		if _inspect_id > 0:
-			_cards_row.add_child(_build_card(_inspect_id, false))
-		else:
-			var hint := Label.new()
-			hint.text = tr("Tap a Poké Ball to meet what's inside.")
-			hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			hint.add_theme_font_size_override("font_size", 13)
-			hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
-			_cards_row.add_child(hint)
+	if not trio.has(_inspect_id):
+		_inspect_id = 0
+	_rebuild_balls(trio)
+	_update_choose_btn()
+	if _inspect_id > 0:
+		var card := _build_card(_inspect_id, false)
+		if not _narrow:
+			card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			card.custom_minimum_size.x = 640
+		_cards_row.add_child(card)
 	else:
-		for id in trio:
-			_cards_row.add_child(_build_card(int(id)))
+		var hint := Label.new()
+		hint.text = tr("Tap a Poké Ball to meet what's inside.")
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hint.add_theme_font_size_override("font_size", 13)
+		hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		_cards_row.add_child(hint)
 	_apply_styles()
 
 
@@ -175,8 +176,9 @@ func _rebuild_balls(trio: Array) -> void:
 		var b := Button.new()
 		b.flat = true
 		b.focus_mode = Control.FOCUS_NONE
-		b.custom_minimum_size = Vector2(78, 78)
-		b.icon = _ball_tex(78, id == _inspect_id,
+		var bpx := 78 if _narrow else 108
+		b.custom_minimum_size = Vector2(bpx, bpx)
+		b.icon = _ball_tex(bpx, id == _inspect_id,
 			id == int(_selected.get("species_id", -1)))
 		b.expand_icon = true
 		b.pressed.connect(func():
@@ -235,14 +237,13 @@ func _select(id: int) -> void:
 		"types": (sp.get("types", []) as Array).duplicate()}
 	_status.text = tr("The professor nods. %s it is.") % str(sp["name"])
 	_status.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
-	if _narrow and _balls_row != null:
-		_revealed[id] = true
-		if _inspect_id != id:
-			_inspect_id = id
-			_refresh()
-			return
-		_rebuild_balls(Protege.trio_for_league(_league))
-		_update_choose_btn()
+	_revealed[id] = true
+	if _inspect_id != id:
+		_inspect_id = id
+		_refresh()
+		return
+	_rebuild_balls(Protege.trio_for_league(_league))
+	_update_choose_btn()
 	_apply_styles()
 	starter_selected.emit(_selected)
 

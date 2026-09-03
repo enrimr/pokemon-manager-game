@@ -517,21 +517,28 @@ func _refresh_card(side: int, animate: bool) -> void:
 		c.queue_free()
 	for i in team.size():
 		var m: Dictionary = team[i]
-		var pip := Panel.new()
-		pip.custom_minimum_size = Vector2(30, 12)
+		# Red/Blue-style team counter (user request): a Poké Ball per member —
+		# lit while standing, grey when fainted; white ring marks the actives.
+		var holder := PanelContainer.new()
 		var held := str(m.get("item", ""))
-		pip.tooltip_text = tr("%s  Lv%d  %d/%d HP%s%s") % [m["name"], int(m["level"]), int(m["hp"]),
+		holder.tooltip_text = tr("%s  Lv%d  %d/%d HP%s%s") % [m["name"], int(m["level"]), int(m["hp"]),
 			int(m["max_hp"]), ("  " + I18n.t(str(m["status"])).to_upper()) if str(m["status"]) != "" else "",
 			(tr("\nHolds: ") + I18n.item_name(held)) if held != "" else ""]
 		var sb := StyleBoxFlat.new()
-		var mf := float(m["hp"]) / maxf(float(m["max_hp"]), 1.0)
-		sb.bg_color = Color("242a3d") if m["fainted"] else UI.hp_color(mf) * Color(1, 1, 1, 0.55 + 0.45 * mf)
+		sb.bg_color = Color(0, 0, 0, 0)
+		sb.set_corner_radius_all(9)
+		sb.content_margin_left = 1
+		sb.content_margin_right = 1
+		sb.content_margin_top = 1
+		sb.content_margin_bottom = 1
 		if actives.has(i):
 			sb.border_color = Color.WHITE
 			sb.set_border_width_all(1)
-		sb.set_corner_radius_all(2)
-		pip.add_theme_stylebox_override("panel", sb)
-		bench.add_child(pip)
+		holder.add_theme_stylebox_override("panel", sb)
+		var ball := MUI.ball_icon(15, not bool(m["fainted"]))
+		ball.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		holder.add_child(ball)
+		bench.add_child(holder)
 
 
 func _refresh_block(refs: Dictionary, b: Dictionary, animate: bool) -> void:
