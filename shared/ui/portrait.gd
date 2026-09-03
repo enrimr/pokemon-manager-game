@@ -70,11 +70,24 @@ static func tex(seed: String, px: int = 32, opts: Dictionary = {}) -> Texture2D:
 	return t
 
 
+## Default people style (user choice 2026-09-04): procedural PIXEL-ART busts
+## (PixelPortrait), unifying generated people with the official trainer
+## sprites. Flip to false to return to the anime SVG portraits — every
+## call site routes through here.
+const PIXEL_STYLE := true
+
+
 static func avatar(seed: String, px: int = 32, opts: Dictionary = {}) -> TextureRect:
 	# canon characters (gym leaders, Ash, the professors…) wear their official
-	# face; everyone generated keeps the procedural anime portrait
+	# face; everyone generated gets a procedural portrait
 	if TrainerArt.has_art(seed):
 		return TrainerArt.avatar(seed, px, opts)
+	if PIXEL_STYLE:
+		var s := seed
+		var v := int(opts.get("variant", 0))
+		if v != 0:
+			s = "%s|v%d" % [seed, v]   # onboarding "reroll look" variants
+		return PixelPortrait.avatar(s, px, opts)
 	var r := TextureRect.new()
 	r.texture = tex(seed, px, opts)
 	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
