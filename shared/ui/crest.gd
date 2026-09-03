@@ -100,6 +100,8 @@ static func tex(club: Dictionary, px: int = 32) -> Texture2D:
 static func icon(club: Dictionary, px: int = 32, opts: Dictionary = {}) -> Control:
 	var holder := Control.new()
 	holder.custom_minimum_size = Vector2(px, px)
+	# crests are square: never let a tall HBox row stretch the badge
+	holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var r := TextureRect.new()
 	r.texture = tex(club, px)

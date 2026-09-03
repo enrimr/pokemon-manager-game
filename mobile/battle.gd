@@ -184,7 +184,7 @@ func _build_live() -> void:
 	_ticker.bbcode_enabled = true
 	_ticker.scroll_following = true
 	_ticker.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_ticker.custom_minimum_size.y = 90
+	_ticker.custom_minimum_size.y = 56 if (runner != null and runner.doubles_now()) else 90
 	_ticker.add_theme_font_size_override("normal_font_size", 11)
 	_ticker.add_theme_constant_override("line_separation", 3)
 	add_child(_ticker)
@@ -236,14 +236,15 @@ var _zone_state := {}   # side -> {names, cards: [refs], bench: Label}
 
 
 func _battler_card(b: Dictionary, foe: bool) -> Dictionary:
+	var compact: bool = runner != null and runner.doubles_now()
 	var card := PanelContainer.new()
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 2)
+	v.add_theme_constant_override("separation", 1 if compact else 2)
 	card.add_child(v)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	v.add_child(row)
-	var art := PokeArt.icon(PokeArt.id_of(str(b.get("species", b.get("name", "")))), 44,
+	var art := PokeArt.icon(PokeArt.id_of(str(b.get("species", b.get("name", "")))), 30 if compact else 44,
 		{"flip": not foe})
 	row.add_child(art)
 	var nm := MUI.label(str(b.get("name", "?")), 13, Color.WHITE)
@@ -270,7 +271,7 @@ func _battler_card(b: Dictionary, foe: bool) -> Dictionary:
 	fill.anchor_right = 1.0
 	bar.add_child(fill)
 	v.add_child(bar)
-	var hp := MUI.dim("", 10)
+	var hp := MUI.dim("", 9 if compact else 10)
 	hp.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	v.add_child(hp)
 	var refs := {"root": card, "art": art, "nm": nm, "status": status,
@@ -571,6 +572,14 @@ func _choose_move(a: Dictionary) -> void:
 
 func _build_target_list() -> void:
 	_action_area.add_child(MUI.dim(tr("Target for %s") % I18n.move_name(str(_pending_move["move"])), 10))
+	var sc2 := ScrollContainer.new()
+	sc2.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc2.custom_minimum_size.y = minf(150.0, (_pending_move.get("targets", []) as Array).size() * 50.0)
+	var box2 := VBoxContainer.new()
+	box2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box2.add_theme_constant_override("separation", 5)
+	sc2.add_child(box2)
+	_action_area.add_child(sc2)
 	for t in _pending_move.get("targets", []):
 		var pv: Dictionary = t.get("preview", {})
 		var label := str(t.get("name", "?"))
@@ -580,11 +589,25 @@ func _build_target_list() -> void:
 		b.pressed.connect(func():
 			_submit({"type": "move", "index": int(_pending_move["index"]),
 				"target": {"side": int(t["side"]), "slot": int(t["slot"])}}))
-		_action_area.add_child(b)
+		box2.add_child(b)
 	_action_area.add_child(_back_button())
 
 
 func _build_pick_list(actions: Array, kind: String) -> void:
+	# long benches (doubles!) used to run off the bottom (user report):
+	# the list lives in its own scroll now
+	var n := 0
+	for a0 in actions:
+		if str(a0["type"]) == kind:
+			n += 1
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.custom_minimum_size.y = minf(196.0, n * 50.0)
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("separation", 5)
+	sc.add_child(box)
+	_action_area.add_child(sc)
 	for a in actions:
 		if str(a["type"]) != kind:
 			continue
@@ -598,7 +621,7 @@ func _build_pick_list(actions: Array, kind: String) -> void:
 				str(a.get("target_name", "?")), int(a.get("target_hp", 0)), int(a.get("target_max", 1))])
 			b.pressed.connect(func(): _submit({"type": "use_item", "item": str(a["item"]),
 				"target": int(a["target"])}))
-		_action_area.add_child(b)
+		box.add_child(b)
 	_action_area.add_child(_back_button())
 
 
