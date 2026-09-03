@@ -17,6 +17,8 @@ if echo "$BOOT_LOG" | grep -q "SCRIPT ERROR"; then
     exit 1
 fi
 
+echo "v$(date +%Y.%m.%d) · $(git rev-parse --short HEAD)" > version.txt
+
 mkdir -p dist/macos dist/windows dist/linux dist/web
 FAIL=0
 for PRESET in "macOS" "Windows Desktop" "Linux/X11" "Web"; do

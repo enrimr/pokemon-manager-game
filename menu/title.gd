@@ -45,6 +45,14 @@ func _build() -> void:
 		get_window().size_changed.connect(_on_resized)
 
 
+## Build stamp written by scripts/export_web.sh / export_all.sh at export
+## time ("dev" when running from the editor) — lets testers verify at a
+## glance that they are on the latest deploy (user request).
+func _build_version() -> String:
+	var f := FileAccess.open("res://version.txt", FileAccess.READ)
+	return f.get_as_text().strip_edges() if f != null else "dev"
+
+
 ## Rotation flips the layout between the wide and the portrait wordmark/menu.
 func _on_resized() -> void:
 	var narrow_now := get_viewport_rect().size.x < 700.0
@@ -164,9 +172,13 @@ func _footer() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	var l := Label.new()
-	var leagues: Array = GameState.leagues()
-	var names: Array = leagues.map(func(lg): return tr(str(lg["name"])))
-	l.text = "TRAINER MANAGER  ·  %s  ·  %s" % [" / ".join(names), tr(GameState.cup_name())]
+	if _narrow:
+		# phones: the giant wordmark is right above — no brand echo needed
+		l.text = ""
+	else:
+		var leagues: Array = GameState.leagues()
+		var names: Array = leagues.map(func(lg): return tr(str(lg["name"])))
+		l.text = "TRAINER MANAGER  ·  %s  ·  %s" % [" / ".join(names), tr(GameState.cup_name())]
 	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS   # never force col width
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	l.add_theme_font_size_override("font_size", 11)
@@ -176,8 +188,7 @@ func _footer() -> Control:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
 	var engine := Label.new()
-	engine.visible = not _narrow
-	engine.text = tr("Made with Godot 4.6")
+	engine.text = "%s · %s" % [tr("Made with Godot 4.6"), _build_version()]
 	engine.add_theme_font_size_override("font_size", 11)
 	engine.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	row.add_child(engine)
