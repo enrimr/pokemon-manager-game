@@ -9,6 +9,7 @@ const ROW_H := 52.0          # minimum touch row height
 
 static var _bold: Font = null
 static var _bolder: Font = null
+static var _ball_tex_cache: Dictionary = {}
 
 
 static func bold() -> Font:
@@ -127,3 +128,45 @@ static func page() -> Array:
 	v.add_theme_constant_override("separation", 8)
 	sc.add_child(v)
 	return [sc, v]
+
+
+## Tiny Poké Ball for team counters (Red/Blue style): lit = standing,
+## dimmed grey = fainted. Runtime SVG, cached per (px, lit).
+static func ball_tex(px: int, lit: bool) -> Texture2D:
+	var key := "%d|%s" % [px, lit]
+	if _ball_tex_cache.has(key):
+		return _ball_tex_cache[key]
+	var top := "#e8433f" if lit else "#3a3d4d"
+	var bottom := "#eef0f5" if lit else "#262a38"
+	var line := "#23242c" if lit else "#171a24"
+	var svg := ('<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">' +
+		'<defs><clipPath id="b"><circle cx="48" cy="48" r="42"/></clipPath></defs>' +
+		'<g clip-path="url(#b)">' +
+		('<rect width="96" height="96" fill="%s"/>' % bottom) +
+		('<path d="M6,48 A42,42 0 0 1 90,48 Z" fill="%s"/>' % top) +
+		('<rect x="6" y="43" width="84" height="10" fill="%s"/>' % line) +
+		'</g>' +
+		('<circle cx="48" cy="48" r="11" fill="%s"/>' % line) +
+		('<circle cx="48" cy="48" r="6" fill="%s"/>' % ("#ffffff" if lit else "#3a3d4d")) +
+		('<circle cx="48" cy="48" r="44" fill="none" stroke="%s" stroke-width="5"/>' % line) +
+		'</svg>')
+	var img := Image.new()
+	var t: Texture2D
+	if img.load_svg_from_string(svg, float(px) / 96.0 * 2.0) == OK and not img.is_empty():
+		t = ImageTexture.create_from_image(img)
+	else:
+		img = Image.create(px, px, false, Image.FORMAT_RGBA8)
+		img.fill(Color(top))
+		t = ImageTexture.create_from_image(img)
+	_ball_tex_cache[key] = t
+	return t
+
+
+static func ball_icon(px: int, lit: bool) -> TextureRect:
+	var r := TextureRect.new()
+	r.texture = ball_tex(px, lit)
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	r.custom_minimum_size = Vector2(px, px)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r

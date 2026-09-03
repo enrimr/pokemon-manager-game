@@ -4,6 +4,7 @@ extends VBoxContainer
 ## history, playoffs) lives in landscape.
 
 var _mode := "table"   # "table" | "fixtures"
+var _club: Dictionary = {}   # drill-down: a club's profile (scout & sign here)
 
 
 func _init() -> void:
@@ -11,12 +12,16 @@ func _init() -> void:
 
 
 func go_root() -> void:
+	_club = {}
 	refresh()
 
 
 func refresh() -> void:
 	for c in get_children():
 		c.queue_free()
+	if not _club.is_empty():
+		_build_club()
+		return
 
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 6)
@@ -65,11 +70,20 @@ func _build_table(v: VBoxContainer) -> void:
 		var row: Dictionary = table[i]
 		var club: Dictionary = GameState.club(str(row["club_id"]))
 		var mine := GameState.is_player_club(str(row["club_id"]))
-		var p := PanelContainer.new()
-		p.add_theme_stylebox_override("panel", ThemeBuilder._flat(
+		var p := Button.new()
+		p.focus_mode = Control.FOCUS_NONE
+		p.add_theme_stylebox_override("normal", ThemeBuilder._flat(
 			ThemeBuilder.COL_ACCENT_DIM.darkened(0.35) if mine else ThemeBuilder.COL_PANEL,
 			ThemeBuilder.COL_ACCENT if mine else ThemeBuilder.COL_BORDER, 4, 8, 4))
+		p.add_theme_stylebox_override("hover", ThemeBuilder._flat(Color("232941"),
+			ThemeBuilder.COL_BORDER, 4, 8, 4))
+		p.add_theme_stylebox_override("pressed", ThemeBuilder._flat(ThemeBuilder.COL_ACCENT_DIM,
+			ThemeBuilder.COL_ACCENT, 4, 8, 4))
+		p.pressed.connect(func():
+			_club = club
+			refresh())
 		var h := HBoxContainer.new()
+		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		h.add_theme_constant_override("separation", 8)
 		p.add_child(h)
 		h.add_child(_cell(str(i + 1), 22, ThemeBuilder.COL_TEXT))
@@ -148,3 +162,69 @@ func _build_fixtures(v: VBoxContainer) -> void:
 			pv.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			h.add_child(pv)
 		v.add_child(p)
+
+
+# ---------------------------------------------------------------- club profile
+## Tap a table row -> the club's profile: identity, manager, and the squad
+## with the global Pokémon action menu (scout / offer / shortlist from here).
+func _build_club() -> void:
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 8)
+	add_child(head)
+	var back := MUI.button("‹ " + tr("Table"), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+	back.custom_minimum_size = Vector2(0, 38)
+	back.pressed.connect(go_root)
+	head.add_child(back)
+	head.add_child(MUI.hspacer())
+
+	var pg := MUI.page()
+	pg[0].size_flags_vertical = Control.SIZE_EXPAND_FILL
+	add_child(pg[0])
+	var v: VBoxContainer = pg[1]
+
+	var idc := MUI.card()
+	v.add_child(idc[0])
+	var iv: VBoxContainer = idc[1]
+	var irow := HBoxContainer.new()
+	irow.add_theme_constant_override("separation", 10)
+	iv.add_child(irow)
+	irow.add_child(Crest.icon(_club, 44, {"no_tooltip": true}))
+	var icol := VBoxContainer.new()
+	icol.alignment = BoxContainer.ALIGNMENT_CENTER
+	icol.add_theme_constant_override("separation", 1)
+	icol.add_child(MUI.title(str(_club.get("name", "?")), 16))
+	icol.add_child(MUI.dim("%s · %s %d/20" % [
+		tr(GameState.league_name(str(_club.get("league", "kanto")))),
+		tr("Reputation"), int(_club.get("reputation", 10))], 11))
+	irow.add_child(icol)
+	var mrow := HBoxContainer.new()
+	mrow.add_theme_constant_override("separation", 8)
+	iv.add_child(mrow)
+	mrow.add_child(Portrait.avatar(str(_club.get("manager", "?")), 26,
+		{"collar": Portrait.club_collar(_club)}))
+	var ml := MUI.dim("%s · %s%s" % [str(_club.get("manager", "?")),
+		str(GameState.world["meta"].get("currency", "P$")),
+		I18n.number(int((_club.get("finances", {}) as Dictionary).get("balance", 0)))], 11)
+	ml.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	mrow.add_child(ml)
+
+	var sc := MUI.card()
+	v.add_child(sc[0])
+	var sv: VBoxContainer = sc[1]
+	sv.add_child(MUI.dim(tr("SQUAD").to_upper() + " · " + tr("tap Actions to scout or bid"), 10))
+	var squad: Array = _club.get("squad", []).duplicate()
+	squad.sort_custom(func(a, b): return int(a["level"]) > int(b["level"]))
+	for inst in squad:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		sv.add_child(row)
+		row.add_child(PokeArt.icon(int(inst.get("species_id", 0)), 32))
+		var mid := VBoxContainer.new()
+		mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		mid.alignment = BoxContainer.ALIGNMENT_CENTER
+		mid.add_theme_constant_override("separation", 0)
+		mid.add_child(MUI.label(str(inst.get("species", "?")), 12, Color.WHITE))
+		mid.add_child(MUI.dim(tr("Lv%d") % int(inst["level"]), 9))
+		row.add_child(mid)
+		if MonActions.can_act(str(inst.get("uid", ""))):
+			row.add_child(MonActions.action_pill(str(inst["uid"]), tr("Actions")))

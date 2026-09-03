@@ -124,6 +124,16 @@ func _run() -> void:
 		shell.close_battle()
 		await _frames(4)
 
+	# club profile drill-down (scout & bid from the phone)
+	shell.open_tab("league")
+	await _frames(4)
+	var lp: Node = shell._pages["league"]
+	lp._club = GameState.club(str(GameState.club_ids()[0]))
+	lp.refresh()
+	await _frames(10)
+	_shot("%s/league_club.png" % dir)
+	lp._club = {}
+
 	# league fixtures mode
 	shell.open_tab("league")
 	await _frames(4)

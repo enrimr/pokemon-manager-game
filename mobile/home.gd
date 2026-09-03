@@ -139,6 +139,48 @@ func refresh() -> void:
 	see.pressed.connect(func(): _shell().open_tab("league"))
 	sv.add_child(see)
 
+	# ---- the protégé (starter ceremony companion) — your career-long story
+	var pro = ProtegeService.instance
+	if pro != null and pro.has_protege():
+		var entry: Dictionary = pro.academy_entry()
+		var in_academy := not entry.is_empty()
+		var inst: Dictionary = entry
+		if not in_academy:
+			for m in GameState.player_club().get("squad", []):
+				if str(m.get("uid", "")) == str(pro.PROTEGE_UID):
+					inst = m
+					break
+		if not inst.is_empty():
+			var pcard := MUI.card()
+			v.add_child(pcard[0])
+			var pv: VBoxContainer = pcard[1]
+			pv.add_child(MUI.dim(tr("YOUR PROTÉGÉ").to_upper(), 10))
+			var prow := HBoxContainer.new()
+			prow.add_theme_constant_override("separation", 10)
+			pv.add_child(prow)
+			prow.add_child(PokeArt.icon(int(inst.get("species_id", 0)), 44))
+			var pcol := VBoxContainer.new()
+			pcol.alignment = BoxContainer.ALIGNMENT_CENTER
+			pcol.add_theme_constant_override("separation", 1)
+			pcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			pcol.add_child(MUI.title(str(pro.display_name()), 14))
+			pcol.add_child(MUI.dim("%s · %s" % [tr("Lv%d") % int(inst.get("level", 1)),
+				tr("in the ACADEMY") if in_academy else tr("in the first team")], 11))
+			prow.add_child(pcol)
+			if in_academy:
+				var aca = AcademyService.active
+				if aca != null:
+					var promote := MUI.button(tr("Promote"), Color(ThemeBuilder.COL_GOOD, 0.22), ThemeBuilder.COL_GOOD)
+					promote.custom_minimum_size = Vector2(0, 40)
+					promote.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+					promote.pressed.connect(func():
+						var err := str(aca.promote(str(inst.get("uid", ""))))
+						var sh3: Node = _shell()
+						if sh3 != null:
+							sh3.call("toast", err if err != "" else tr("%s joins the first team!") % pro.display_name())
+						refresh())
+					prow.add_child(promote)
+
 	# ---- landscape features note
 	var note := MUI.dim(tr("Tactics, Training, Transfers, Routes, Items and live matches: rotate to landscape."), 11)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

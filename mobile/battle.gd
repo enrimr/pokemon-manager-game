@@ -253,14 +253,21 @@ func _battler_card(b: Dictionary, foe: bool) -> Dictionary:
 	row.add_child(MUI.hspacer())
 	var status := MUI.label("", 9, ThemeBuilder.COL_WARN)
 	row.add_child(status)
-	var bar_bg := PanelContainer.new()
-	bar_bg.custom_minimum_size.y = 9
-	bar_bg.add_theme_stylebox_override("panel", ThemeBuilder._flat(Color("14161f"), ThemeBuilder.COL_BORDER, 4, 0, 0))
+	# plain Control: containers override child anchors, which silently kept
+	# the fill at full width (user report: 60/168 HP showed a full orange bar)
+	var bar := Control.new()
+	bar.custom_minimum_size.y = 9
+	var bar_bg := ColorRect.new()
+	bar_bg.color = Color("14161f")
+	bar_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bar.add_child(bar_bg)
 	var fill := ColorRect.new()
-	fill.custom_minimum_size = Vector2(0, 9)
-	fill.set_anchors_preset(Control.PRESET_LEFT_WIDE)
-	bar_bg.add_child(fill)
-	v.add_child(bar_bg)
+	fill.anchor_left = 0.0
+	fill.anchor_top = 0.0
+	fill.anchor_bottom = 1.0
+	fill.anchor_right = 1.0
+	bar.add_child(fill)
+	v.add_child(bar)
 	var hp := MUI.dim("", 10)
 	hp.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	v.add_child(hp)
@@ -355,9 +362,10 @@ func _sync_zone(zone: VBoxContainer, side: int) -> void:
 				var refs := _battler_card(team[idx], side != runner.player_side)
 				zone.add_child(refs["root"])
 				cards.append(refs)
-		var bench := MUI.dim("", 9)
+		var bench := HBoxContainer.new()   # Red/Blue team counter: six balls
+		bench.add_theme_constant_override("separation", 3)
 		zone.add_child(bench)
-		st = {"names": names, "cards": cards, "bench": bench}
+		st = {"names": names, "cards": cards, "bench": bench, "alive": -1}
 		_zone_state[side] = st
 	else:
 		var cards2: Array = st["cards"]
@@ -366,13 +374,19 @@ func _sync_zone(zone: VBoxContainer, side: int) -> void:
 			if idx2 >= 0 and idx2 < team.size():
 				_update_card(cards2[i], team[idx2])
 	if team.is_empty():
-		(st["bench"] as Label).text = ""
 		return
 	var alive := 0
-	for b in team:
-		if not b.get("fainted", false):
+	for bt in team:
+		if not bt.get("fainted", false):
 			alive += 1
-	(st["bench"] as Label).text = tr("%d of %d standing") % [alive, team.size()]
+	if alive != int(st.get("alive", -1)):
+		st["alive"] = alive
+		var bench: HBoxContainer = st["bench"]
+		for c in bench.get_children():
+			bench.remove_child(c)
+			c.free()
+		for i in team.size():
+			bench.add_child(MUI.ball_icon(13, i < alive))
 
 
 func _process(delta: float) -> void:

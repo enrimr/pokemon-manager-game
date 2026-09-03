@@ -32,6 +32,33 @@ func refresh() -> void:
 		tr(GameState.world["meta"].get("league_name", "League"))], 11))
 	mrow.add_child(mcol)
 
+	# ---- weekly training (express): one tap stamps a preset on THIS week
+	var tc := MUI.card()
+	v.add_child(tc[0])
+	var tv: VBoxContainer = tc[1]
+	tv.add_child(MUI.dim(tr("THIS WEEK'S TRAINING").to_upper(), 10))
+	var tsvc: Node = load("res://screens/training/training_service.gd").ensure()
+	var tgrid := GridContainer.new()
+	tgrid.columns = 2
+	tgrid.add_theme_constant_override("h_separation", 6)
+	tgrid.add_theme_constant_override("v_separation", 6)
+	tv.add_child(tgrid)
+	for preset_v in tsvc.PRESETS:
+		var preset := str(preset_v)
+		var pb := MUI.button(tr(str(tsvc.PRESET_LABELS[preset])), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+		pb.custom_minimum_size.y = 40
+		pb.add_theme_font_size_override("font_size", 12)
+		pb.pressed.connect(func():
+			tsvc.apply_preset_to_week(preset, GameState.current_date)
+			var sh: Node = _shell()
+			if sh != null:
+				sh.call("toast", tr("%s week set — training runs it from today.") % tr(str(tsvc.PRESET_LABELS[preset]))))
+		tgrid.add_child(pb)
+	tv.add_child(MUI.dim(tr("The full calendar, coaches and mentoring live in landscape."), 10))
+
+	# ---- the boardroom: confidence + real requests (shares the inbox's board)
+	_build_board_card(v)
+
 	# ---- quick settings
 	var sc := MUI.card()
 	v.add_child(sc[0])
@@ -110,3 +137,68 @@ func _shell() -> Node:
 	while n != null and not n.has_method("toast"):
 		n = n.get_parent()
 	return n
+
+
+## Boardroom card: live confidence (with the three faces) + the request
+## system — the same BoardRoom the inbox drives, so state/pending are shared.
+func _build_board_card(v: VBoxContainer) -> void:
+	var sh: Node = _shell()
+	if sh == null or not ("_pages" in sh):
+		return
+	var inbox_page: Node = sh.get("_pages").get("inbox")
+	if inbox_page == null:
+		return
+	var board: RefCounted = inbox_page.get("board")
+	var news: RefCounted = inbox_page.get("news")
+	if board == null or news == null:
+		return
+	var bc := MUI.card()
+	v.add_child(bc[0])
+	var bv: VBoxContainer = bc[1]
+	bv.add_child(MUI.dim(tr("BOARD & FINANCES").to_upper(), 10))
+	var pc: Dictionary = GameState.player_club()
+	var frow := HBoxContainer.new()
+	frow.add_theme_constant_override("separation", 10)
+	bv.add_child(frow)
+	for member in Portrait.board_members(pc):
+		frow.add_child(Portrait.avatar(str(member["name"]), 28,
+			{"collar": Portrait.club_collar(pc), "age": int(member["age"]),
+			"tooltip": "%s — %s" % [str(member["name"]), tr(str(member["role"]))]}))
+	var conf: Dictionary = news.call("board_confidence")
+	var score := int(conf.get("score", 60))
+	var word := MUI.label("%s · %d%%" % [tr(str(conf.get("word", "steady"))).to_upper(), score], 13,
+		ThemeBuilder.COL_GOOD if score >= 65 else (ThemeBuilder.COL_WARN if score >= 45 else ThemeBuilder.COL_BAD))
+	word.add_theme_font_override("font", MUI.bold())
+	word.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	frow.add_child(MUI.hspacer())
+	frow.add_child(word)
+
+	var pending: Dictionary = board.call("pending_request")
+	if not pending.is_empty():
+		var pl := MUI.label(tr("Request pending: %s — the board is deliberating.") %
+			tr(str(pending.get("title", "?"))), 12, ThemeBuilder.COL_WARN)
+		pl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		bv.add_child(pl)
+		return
+	for def_v in board.call("request_defs"):
+		var d: Dictionary = def_v
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		bv.add_child(row)
+		var t := MUI.label(tr(str(d.get("title", "?"))), 12)
+		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(t)
+		for opt_v in d.get("options", []):
+			var opt: Dictionary = opt_v
+			var ob := MUI.button(str(opt.get("label", "?")), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+			ob.custom_minimum_size.y = 38
+			ob.add_theme_font_size_override("font_size", 11)
+			ob.pressed.connect(func():
+				var err := str(board.call("submit", str(d["kind"]), int(opt["amount"])))
+				var sh2: Node = _shell()
+				if sh2 != null:
+					sh2.call("toast", err if err != "" else tr("Request sent — the board will answer by mail."))
+				refresh())
+			row.add_child(ob)
