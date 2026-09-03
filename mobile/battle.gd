@@ -222,58 +222,101 @@ func _build_live() -> void:
 		_refresh_actions())
 	ctl.add_child(dele)
 
+	_zone_state = {}
 	_live_battle_built = int(runner.battle_no)
 	_sync()
 
 
-## One battler card (name, level, HP bar, status). Rebuilt cheaply on sync.
-func _battler_card(b: Dictionary, foe: bool) -> Control:
+## Persistent battler cards: built once per switch-in, then UPDATED — the
+## HP bar drains with a tween and the number counts down (user request),
+## instead of snapping to the new total.
+var _zone_state := {}   # side -> {names, cards: [refs], bench: Label}
+
+
+func _battler_card(b: Dictionary, foe: bool) -> Dictionary:
 	var card := PanelContainer.new()
-	card.add_theme_stylebox_override("panel", ThemeBuilder._flat(
-		ThemeBuilder.COL_PANEL.darkened(0.25) if bool(b.get("fainted", false)) else ThemeBuilder.COL_PANEL,
-		ThemeBuilder.COL_BORDER if bool(b.get("fainted", false))
-		else (ThemeBuilder.COL_BAD if foe else ThemeBuilder.COL_ACCENT), 6, 10, 6))
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 2)
 	card.add_child(v)
-	var fainted: bool = bool(b.get("fainted", false))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	v.add_child(row)
 	var art := PokeArt.icon(PokeArt.id_of(str(b.get("species", b.get("name", "")))), 44,
 		{"flip": not foe})
-	if fainted:   # knocked out = drained of colour, not just a label
-		art.modulate = Color(0.42, 0.42, 0.5, 0.85)
 	row.add_child(art)
-	var nm := MUI.label(str(b.get("name", "?")), 13,
-		ThemeBuilder.COL_TEXT_DIM if fainted else Color.WHITE)
+	var nm := MUI.label(str(b.get("name", "?")), 13, Color.WHITE)
 	nm.add_theme_font_override("font", MUI.bold())
 	row.add_child(nm)
 	row.add_child(MUI.dim(tr("Lv%d") % int(b.get("level", 1)), 10))
 	for t in b.get("types", []):
 		row.add_child(MUI.type_chip(str(t)))
 	row.add_child(MUI.hspacer())
-	var st := str(b.get("status", ""))
-	if fainted:
-		st = "fainted"
-	if st != "":
-		row.add_child(MUI.label(I18n.t(st).to_upper(), 9, ThemeBuilder.COL_WARN))
+	var status := MUI.label("", 9, ThemeBuilder.COL_WARN)
+	row.add_child(status)
 	var bar_bg := PanelContainer.new()
 	bar_bg.custom_minimum_size.y = 9
 	bar_bg.add_theme_stylebox_override("panel", ThemeBuilder._flat(Color("14161f"), ThemeBuilder.COL_BORDER, 4, 0, 0))
-	var frac := clampf(float(b.get("hp", 0)) / maxf(float(b.get("max_hp", 1)), 1.0), 0.0, 1.0)
 	var fill := ColorRect.new()
-	fill.color = ThemeBuilder.COL_GOOD if frac > 0.5 else (ThemeBuilder.COL_WARN if frac > 0.22 else ThemeBuilder.COL_BAD)
 	fill.custom_minimum_size = Vector2(0, 9)
-	fill.size_flags_horizontal = Control.SIZE_FILL
 	fill.set_anchors_preset(Control.PRESET_LEFT_WIDE)
-	fill.anchor_right = frac
 	bar_bg.add_child(fill)
 	v.add_child(bar_bg)
-	var hp := MUI.dim("%d / %d" % [int(b.get("hp", 0)), int(b.get("max_hp", 1))], 10)
+	var hp := MUI.dim("", 10)
 	hp.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	v.add_child(hp)
-	return card
+	var refs := {"root": card, "art": art, "nm": nm, "status": status,
+		"fill": fill, "hp": hp, "foe": foe,
+		"frac": -1.0, "hp_shown": int(b.get("hp", 0)), "tw": null}
+	_update_card(refs, b, false)
+	return refs
+
+
+static func _hp_color(frac: float) -> Color:
+	return ThemeBuilder.COL_GOOD if frac > 0.5 \
+		else (ThemeBuilder.COL_WARN if frac > 0.22 else ThemeBuilder.COL_BAD)
+
+
+func _update_card(refs: Dictionary, b: Dictionary, animate: bool = true) -> void:
+	var fainted: bool = bool(b.get("fainted", false))
+	var foe: bool = bool(refs["foe"])
+	(refs["root"] as PanelContainer).add_theme_stylebox_override("panel", ThemeBuilder._flat(
+		ThemeBuilder.COL_PANEL.darkened(0.25) if fainted else ThemeBuilder.COL_PANEL,
+		ThemeBuilder.COL_BORDER if fainted
+		else (ThemeBuilder.COL_BAD if foe else ThemeBuilder.COL_ACCENT), 6, 10, 6))
+	(refs["art"] as Control).modulate = Color(0.42, 0.42, 0.5, 0.85) if fainted else Color.WHITE
+	(refs["nm"] as Label).add_theme_color_override("font_color",
+		ThemeBuilder.COL_TEXT_DIM if fainted else Color.WHITE)
+	var st := str(b.get("status", ""))
+	if fainted:
+		st = "fainted"
+	var status: Label = refs["status"]
+	status.visible = st != ""
+	status.text = I18n.t(st).to_upper() if st != "" else ""
+	var max_hp := maxf(float(b.get("max_hp", 1)), 1.0)
+	var frac := clampf(float(b.get("hp", 0)) / max_hp, 0.0, 1.0)
+	var fill: ColorRect = refs["fill"]
+	var hp_lbl: Label = refs["hp"]
+	if not animate or refs["frac"] < 0.0:
+		if refs["tw"] != null and (refs["tw"] as Tween).is_valid():
+			(refs["tw"] as Tween).kill()
+		fill.anchor_right = frac
+		fill.color = _hp_color(frac)
+		hp_lbl.text = "%d / %d" % [int(b.get("hp", 0)), int(max_hp)]
+	elif not is_equal_approx(frac, float(refs["frac"])):
+		if refs["tw"] != null and (refs["tw"] as Tween).is_valid():
+			(refs["tw"] as Tween).kill()
+		fill.color = _hp_color(frac)
+		var from_hp := float(refs.get("hp_shown", int(max_hp)))
+		var to_hp := float(b.get("hp", 0))
+		var tw := fill.create_tween()
+		tw.tween_property(fill, "anchor_right", frac, 0.38) \
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_method(func(v: float):
+			hp_lbl.text = "%d / %d" % [int(round(v)), int(max_hp)],
+			from_hp, to_hp, 0.38)
+		refs["tw"] = tw
+	refs["frac"] = frac
+	refs["hp_shown"] = int(b.get("hp", 0))
 
 
 func _sync() -> void:
@@ -284,30 +327,52 @@ func _sync() -> void:
 	var shorts: Array = runner.shorts()
 	_wins_lbl.text = "%s %d – %d %s" % [str(shorts[runner.player_side]), int(runner.wins[runner.player_side]),
 		int(runner.wins[1 - runner.player_side]), str(shorts[1 - runner.player_side])]
-	for zone_side in [[_foe_zone, 1 - runner.player_side], [_our_zone, runner.player_side]]:
-		var zone: VBoxContainer = zone_side[0]
-		var side: int = zone_side[1]
-		for c in zone.get_children():
-			zone.remove_child(c)
-			c.free()
-		var team: Array = runner.vm["teams"][side]
-		if team.is_empty():
-			continue
-		for slot in runner.vm["actives"][side]:
-			var idx := int(slot)
-			if idx >= 0 and idx < team.size():
-				zone.add_child(_battler_card(team[idx], side != runner.player_side))
-		# bench dots
-		var alive := 0
-		for b in team:
-			if not b.get("fainted", false):
-				alive += 1
-		zone.add_child(MUI.dim(tr("%d of %d standing") % [alive, team.size()], 9))
+	_sync_zone(_foe_zone, 1 - runner.player_side)
+	_sync_zone(_our_zone, runner.player_side)
 	var tail := ""
 	var from := maxi(0, runner.ticker.size() - 7)
 	for i in range(from, runner.ticker.size()):
 		tail += str(runner.ticker[i]["text"]) + "\n"
 	_ticker.text = tail
+
+
+func _sync_zone(zone: VBoxContainer, side: int) -> void:
+	var team: Array = runner.vm["teams"][side]
+	var actives: Array = runner.vm["actives"][side]
+	var names: Array = []
+	for slot in actives:
+		var idx := int(slot)
+		names.append(str(team[idx]["name"]) if idx >= 0 and idx < team.size() else "")
+	var st: Dictionary = _zone_state.get(side, {})
+	if st.is_empty() or (st.get("names", []) as Array) != names:
+		for c in zone.get_children():
+			zone.remove_child(c)
+			c.free()
+		var cards: Array = []
+		for slot in actives:
+			var idx := int(slot)
+			if idx >= 0 and idx < team.size():
+				var refs := _battler_card(team[idx], side != runner.player_side)
+				zone.add_child(refs["root"])
+				cards.append(refs)
+		var bench := MUI.dim("", 9)
+		zone.add_child(bench)
+		st = {"names": names, "cards": cards, "bench": bench}
+		_zone_state[side] = st
+	else:
+		var cards2: Array = st["cards"]
+		for i in cards2.size():
+			var idx2 := int(actives[i]) if i < actives.size() else -1
+			if idx2 >= 0 and idx2 < team.size():
+				_update_card(cards2[i], team[idx2])
+	if team.is_empty():
+		(st["bench"] as Label).text = ""
+		return
+	var alive := 0
+	for b in team:
+		if not b.get("fainted", false):
+			alive += 1
+	(st["bench"] as Label).text = tr("%d of %d standing") % [alive, team.size()]
 
 
 func _process(delta: float) -> void:

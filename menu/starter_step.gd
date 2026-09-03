@@ -21,7 +21,9 @@ var _cards: Array = []          # [{panel, id}]
 var _cards_row: BoxContainer
 var _narrow := false            # portrait phones: Poké Ball picker (mobile piece)
 var _inspect_id := 0            # narrow mode: which ball is open
+var _revealed := {}             # ids whose ball has been opened at least once
 var _balls_row: HBoxContainer = null
+var _choose_btn: Button = null  # pinned confirm — always visible once inspecting
 static var _ball_cache: Dictionary = {}
 var _prof_title: Label
 var _prof_text: Label
@@ -90,6 +92,21 @@ func _ready() -> void:
 		_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cscroll.add_child(_cards_row)
 		col.add_child(cscroll)
+		# the ONE action, always on screen (user request): confirm the pick
+		_choose_btn = Button.new()
+		_choose_btn.visible = false
+		_choose_btn.custom_minimum_size.y = 46
+		_choose_btn.add_theme_font_override("font", _font_bold)
+		_choose_btn.add_theme_font_size_override("font_size", 15)
+		_choose_btn.add_theme_color_override("font_color", Color("f2f4fb"))
+		_choose_btn.add_theme_stylebox_override("normal",
+			ThemeBuilder._flat(Color(ThemeBuilder.COL_GOOD, 0.22), ThemeBuilder.COL_GOOD, 6, 12, 8))
+		_choose_btn.add_theme_stylebox_override("hover",
+			ThemeBuilder._flat(ThemeBuilder.COL_GOOD, ThemeBuilder.COL_GOOD, 6, 12, 8))
+		_choose_btn.pressed.connect(func():
+			if _inspect_id > 0:
+				_select(_inspect_id))
+		col.add_child(_choose_btn)
 	else:
 		col.add_child(_cards_row)
 
@@ -130,8 +147,9 @@ func _refresh() -> void:
 		if not trio.has(_inspect_id):
 			_inspect_id = 0
 		_rebuild_balls(trio)
+		_update_choose_btn()
 		if _inspect_id > 0:
-			_cards_row.add_child(_build_card(_inspect_id))
+			_cards_row.add_child(_build_card(_inspect_id, false))
 		else:
 			var hint := Label.new()
 			hint.text = tr("Tap a Poké Ball to meet what's inside.")
@@ -163,11 +181,13 @@ func _rebuild_balls(trio: Array) -> void:
 		b.expand_icon = true
 		b.pressed.connect(func():
 			_inspect_id = id
+			_revealed[id] = true
 			_refresh())
 		cellv.add_child(b)
 		var nm := Label.new()
 		var sp: Dictionary = DataStore.species(id)
-		nm.text = str(sp.get("name", "?"))
+		# what's inside stays a mystery until you open that ball (user request)
+		nm.text = str(sp.get("name", "?")) if _revealed.has(id) else "???"
 		nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		nm.add_theme_font_size_override("font_size", 11)
 		nm.add_theme_color_override("font_color",
@@ -216,7 +236,13 @@ func _select(id: int) -> void:
 	_status.text = tr("The professor nods. %s it is.") % str(sp["name"])
 	_status.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 	if _narrow and _balls_row != null:
+		_revealed[id] = true
+		if _inspect_id != id:
+			_inspect_id = id
+			_refresh()
+			return
 		_rebuild_balls(Protege.trio_for_league(_league))
+		_update_choose_btn()
 	_apply_styles()
 	starter_selected.emit(_selected)
 
@@ -262,7 +288,7 @@ func _band(v: float) -> Array:
 	return [clampf(v - 0.75, 0.5, 5.0), clampf(v + 0.75, 1.0, 5.0)]
 
 
-func _build_card(id: int) -> Control:
+func _build_card(id: int, with_button := true) -> Control:
 	var sp: Dictionary = DataStore.species(id)
 	var types: Array = sp.get("types", [])
 	var col: Color = DataStore.type_color(str(types[0]) if not types.is_empty() else "normal")
@@ -341,12 +367,13 @@ func _build_card(id: int) -> Control:
 	hint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	box.add_child(hint)
 
-	var btn := Button.new()
-	btn.text = tr("I choose %s") % str(sp["name"])
-	btn.custom_minimum_size.y = 38
-	btn.add_theme_font_override("font", _font_semibold)
-	btn.pressed.connect(func(): _select(id))
-	box.add_child(btn)
+	if with_button:
+		var btn := Button.new()
+		btn.text = tr("I choose %s") % str(sp["name"])
+		btn.custom_minimum_size.y = 38
+		btn.add_theme_font_override("font", _font_semibold)
+		btn.pressed.connect(func(): _select(id))
+		box.add_child(btn)
 
 	panel.gui_input.connect(func(ev: InputEvent):
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
@@ -372,3 +399,15 @@ func _range_row(label: String, band: Array, col: Color) -> Control:
 	stars.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	row.add_child(stars)
 	return row
+
+
+func _update_choose_btn() -> void:
+	if _choose_btn == null:
+		return
+	_choose_btn.visible = _inspect_id > 0
+	if _inspect_id > 0:
+		var sp: Dictionary = DataStore.species(_inspect_id)
+		if int(_selected.get("species_id", -1)) == _inspect_id:
+			_choose_btn.text = "✓ " + tr("The professor nods. %s it is.") % str(sp.get("name", "?"))
+		else:
+			_choose_btn.text = tr("I choose %s") % str(sp.get("name", "?"))

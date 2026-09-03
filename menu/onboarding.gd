@@ -93,6 +93,7 @@ func _ready() -> void:
 	root.add_child(_build_footer())
 
 	_overwrite_dialog = ConfirmationDialog.new()
+	_overwrite_dialog.dialog_autowrap = true   # phones: wrap, never clip
 	_overwrite_dialog.title = tr("Overwrite saved career?")
 	_overwrite_dialog.ok_button_text = tr("Overwrite and start")
 	_overwrite_dialog.confirmed.connect(_do_start)
@@ -277,7 +278,8 @@ func _on_next() -> void:
 				str(s.get("manager", "?")), I18n.pretty_date(str(s.get("date", ""))),
 				tr("Season %d") % int(s.get("season", 1))],
 			tr("Starting a new career will permanently overwrite it.")]
-		_overwrite_dialog.popup_centered()
+		_overwrite_dialog.popup_centered(Vector2i(
+			mini(460, int(get_viewport_rect().size.x) - 20), 0))
 		return
 	_do_start()
 

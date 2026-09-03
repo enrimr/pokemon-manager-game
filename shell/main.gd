@@ -1576,6 +1576,7 @@ func _on_menu_id(id: int) -> void:
 
 func _build_dialogs() -> void:
 	_load_confirm = ConfirmationDialog.new()
+	_load_confirm.dialog_autowrap = true
 	_load_confirm.title = "Load Game"
 	_load_confirm.dialog_text = "Reload the last saved career?\nUnsaved progress will be lost."
 	_load_confirm.ok_button_text = "Load"
