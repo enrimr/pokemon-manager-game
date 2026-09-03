@@ -437,6 +437,9 @@ func _build_summary() -> Control:
 	who.add_theme_font_size_override("font_size", 17)
 	who.add_theme_color_override("font_color", Color.WHITE)
 	who.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	# long manager names forced the card wider than the phone (user report)
+	who.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	who.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	who_row.add_child(who)
 	col.add_child(who_row)
 
@@ -498,6 +501,7 @@ func _build_summary() -> Control:
 		var sname := Label.new()
 		sname.text = (tr("%s “%s” — your protégé") % [str(_starter.get("name", "")), snick]) \
 			if snick != "" else (tr("%s — your protégé") % str(_starter.get("name", "")))
+		sname.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		sname.add_theme_font_override("font", _font_bold)
 		sname.add_theme_font_size_override("font_size", 15)
 		sname.add_theme_color_override("font_color", Color.WHITE)

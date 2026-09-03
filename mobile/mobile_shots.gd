@@ -47,7 +47,7 @@ func _run() -> void:
 		printerr("MOBILE SHOT ERROR: onboarding did not open")
 		_fails += 1
 	else:
-		ob._name_edit.text = "Ash Ketchum"
+		ob._name_edit.text = "Maximiliano Fernández de Oak"   # long-name stress (summary wrap)
 		await _frames(4)
 		_shot("%s/onboarding_1.png" % dir)
 		ob._on_next()

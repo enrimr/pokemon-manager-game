@@ -270,9 +270,8 @@ func _select(id: int) -> void:
 	_revealed[id] = true
 	if _inspect_id != id:
 		_inspect_id = id
-		_refresh()
-		return
-	_rebuild_balls(Protege.trio_for_league(_league))
+		_refresh()   # no early return: the selection signal below MUST fire
+	_rebuild_balls()
 	_update_choose_btn()
 	_apply_styles()
 	starter_selected.emit(_selected)
