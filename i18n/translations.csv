@@ -5756,3 +5756,53 @@ No club is calling. Some careers end in silence.,Ningún club llama. Algunas car
 Word travels fast — offers on the table:,Las noticias vuelan — ofertas sobre la mesa:
 Take over,Tomar las riendas
 Start a new career,Empezar una nueva carrera
+Items & Store,Objetos y tienda
+Routes & Expeditions,Rutas y expediciones
+Budget %s%s,Presupuesto %s%s
+THE BAG,LA MOCHILA
+Empty. The store below restocks it.,Vacía. La tienda de abajo la rellena.
+Equip…,Equipar…
+Use…,Usar…
+battle bag,bolsa de combate
+EVOLUTION STONES & TRIGGERS,PIEDRAS EVOLUTIVAS Y DETONANTES
+HELD ITEMS,OBJETOS EQUIPABLES
+BATTLE CONSUMABLES,CONSUMIBLES DE COMBATE
+%s added to the bag.,%s a la mochila.
+Equip %s on…,Equipar %s a…
+Use %s on…,Usar %s con…
+Service unavailable.,Servicio no disponible.
+Done!,¡Hecho!
+holds %s,lleva %s
+holds nothing,no lleva nada
+Unequip,Quitar
+Expedition service unavailable.,Servicio de expediciones no disponible.
+PARTIES IN THE FIELD,PARTIDAS EN EL CAMPO
+%s · day %d · %d captures · %d attempts left,%s · día %d · %d capturas · %d intentos restantes
+Party recalled — reports on the way home.,Partida llamada de vuelta — informes de camino a casa.
+knowledge %d/3,conocimiento %d/3
+IN THE FIELD,EN EL CAMPO
+settles %s,se calma el %s
+%d travel day,%d día de viaje
+%d travel days,%d días de viaje
+PLAN THE EXPEDITION,PLANIFICA LA EXPEDICIÓN
+Capture attempts,Intentos de captura
+ — BUSY, — OCUPADO
+Send the party · %s%s,Enviar la partida · %s%s
+Party dispatched — field reports by mail.,Partida enviada — informes de campo por correo.
+"Captures land in the ACADEMY. Costs come off the transfer budget, up front.","Las capturas llegan a la ACADEMIA. El coste sale del presupuesto de fichajes, por adelantado."
+manager,mánager
+scout,ojeador
+coach,entrenador
+travel_out,viaje de ida
+field,trabajo de campo
+travel_home,viaje de vuelta
+Grassland,Pradera
+Forest,Bosque
+Mountain,Montaña
+Cave,Cueva
+Urban,Urbano
+Coastal,Costa
+Marsh,Marisma
+Tower,Torre
+Snow,Nieve
+Sea,Mar

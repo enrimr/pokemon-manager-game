@@ -32,6 +32,19 @@ func refresh() -> void:
 		tr(GameState.world["meta"].get("league_name", "League"))], 11))
 	mrow.add_child(mcol)
 
+	# ---- club desk shortcuts: the bag & store, and the wild routes
+	var hub := HBoxContainer.new()
+	hub.add_theme_constant_override("separation", 8)
+	v.add_child(hub)
+	var items_btn := MUI.button(tr("Items & Store"))
+	items_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	items_btn.pressed.connect(func(): _shell().call("open_tab", "items"))
+	hub.add_child(items_btn)
+	var routes_btn := MUI.button(tr("Routes & Expeditions"))
+	routes_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes_btn.pressed.connect(func(): _shell().call("open_tab", "routes"))
+	hub.add_child(routes_btn)
+
 	# ---- weekly training (express): one tap stamps a preset on THIS week
 	var tc := MUI.card()
 	v.add_child(tc[0])
