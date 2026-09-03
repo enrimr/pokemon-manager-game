@@ -126,14 +126,23 @@ func _build_fixtures(v: VBoxContainer) -> void:
 		var played: bool = f.get("played", false)
 		var we_home: bool = GameState.is_player_club(str(f["home"]))
 		var opp: Dictionary = GameState.club(str(f["away"] if we_home else f["home"]))
-		var p := PanelContainer.new()
+		var p := Button.new()
+		p.focus_mode = Control.FOCUS_NONE
 		var is_next: bool = not played and not next_seen
 		if is_next:
 			next_seen = true
-		p.add_theme_stylebox_override("panel", ThemeBuilder._flat(
+		p.add_theme_stylebox_override("normal", ThemeBuilder._flat(
 			ThemeBuilder.COL_ACCENT_DIM.darkened(0.35) if is_next else ThemeBuilder.COL_PANEL,
 			ThemeBuilder.COL_ACCENT if is_next else ThemeBuilder.COL_BORDER, 4, 8, 5))
+		p.add_theme_stylebox_override("hover", ThemeBuilder._flat(Color("232941"),
+			ThemeBuilder.COL_BORDER, 4, 8, 5))
+		p.add_theme_stylebox_override("pressed", ThemeBuilder._flat(ThemeBuilder.COL_ACCENT_DIM,
+			ThemeBuilder.COL_ACCENT, 4, 8, 5))
+		p.pressed.connect(func():
+			_club = opp
+			refresh())
 		var h := HBoxContainer.new()
+		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		h.add_theme_constant_override("separation", 8)
 		p.add_child(h)
 		var d := MUI.dim(I18n.short_date(str(f["date"])), 10)
@@ -207,6 +216,109 @@ func _build_club() -> void:
 		I18n.number(int((_club.get("finances", {}) as Dictionary).get("balance", 0)))], 11)
 	ml.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	mrow.add_child(ml)
+
+	# ---- season: position, record, form
+	var lid := str(_club.get("league", "kanto"))
+	var cid := str(_club.get("id", ""))
+	var table: Array = GameState.league_table(lid)
+	var pos := 0
+	var row_rec: Dictionary = {}
+	for i in table.size():
+		if str(table[i]["club_id"]) == cid:
+			pos = i + 1
+			row_rec = table[i]
+			break
+	var seac := MUI.card()
+	v.add_child(seac[0])
+	var seav: VBoxContainer = seac[1]
+	seav.add_child(MUI.dim(tr("SEASON").to_upper(), 10))
+	var srow := HBoxContainer.new()
+	srow.add_theme_constant_override("separation", 14)
+	seav.add_child(srow)
+	var poscol := VBoxContainer.new()
+	poscol.add_theme_constant_override("separation", 0)
+	poscol.add_child(MUI.title(I18n.ordinal(pos) if pos > 0 else "—", 18))
+	poscol.add_child(MUI.dim(tr(GameState.league_name(lid)), 9))
+	srow.add_child(poscol)
+	if not row_rec.is_empty():
+		var reccol := VBoxContainer.new()
+		reccol.add_theme_constant_override("separation", 0)
+		reccol.add_child(MUI.title("%d–%d · %d %s" % [int(row_rec.get("won", 0)),
+			int(row_rec.get("lost", 0)), int(row_rec.get("points", 0)), tr("Pts")], 14))
+		reccol.add_child(MUI.dim(tr("%d played") % int(row_rec.get("played", 0)), 9))
+		srow.add_child(reccol)
+	srow.add_child(MUI.hspacer())
+	var frow := HBoxContainer.new()
+	frow.add_theme_constant_override("separation", 4)
+	frow.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	for r in Season.club_form(cid, GameState.fixtures, 5):
+		var pip := MUI.label(tr(str(r)), 11, Color.WHITE)
+		pip.add_theme_font_override("font", MUI.bold())
+		var pp := PanelContainer.new()
+		var pcol: Color = ThemeBuilder.COL_GOOD if str(r) == "W" else ThemeBuilder.COL_BAD
+		pp.add_theme_stylebox_override("panel", ThemeBuilder._flat(pcol.darkened(0.3), pcol, 4, 6, 2))
+		pp.add_child(pip)
+		frow.add_child(pp)
+	srow.add_child(frow)
+
+	# ---- recent results + next fixture
+	var theirs: Array = GameState.fixtures.filter(func(f):
+		return str(f["home"]) == cid or str(f["away"]) == cid)
+	theirs.sort_custom(func(a, b): return str(a["date"]) < str(b["date"]))
+	var played_fx: Array = theirs.filter(func(f): return f.get("played", false))
+	var upcoming: Array = theirs.filter(func(f): return not f.get("played", false))
+	var rc := MUI.card()
+	v.add_child(rc[0])
+	var rv: VBoxContainer = rc[1]
+	rv.add_child(MUI.dim(tr("RECENT RESULTS").to_upper(), 10))
+	var recent: Array = played_fx.slice(maxi(0, played_fx.size() - 5))
+	recent.reverse()
+	if recent.is_empty():
+		rv.add_child(MUI.dim(tr("no matches yet"), 11))
+	for f in recent:
+		var home_side: bool = str(f["home"]) == cid
+		var opp2: Dictionary = GameState.club(str(f["away"] if home_side else f["home"]))
+		var us2 := int(f["score_home"] if home_side else f["score_away"])
+		var them2 := int(f["score_away"] if home_side else f["score_home"])
+		var line := HBoxContainer.new()
+		line.add_theme_constant_override("separation", 8)
+		rv.add_child(line)
+		line.add_child(MUI.dim(I18n.short_date(str(f["date"])), 10))
+		var res := MUI.label("%d–%d" % [us2, them2], 12,
+			ThemeBuilder.COL_GOOD if us2 > them2 else ThemeBuilder.COL_BAD)
+		res.add_theme_font_override("font", MUI.bold())
+		line.add_child(res)
+		line.add_child(MUI.label("%s %s" % [tr("vs") if home_side else tr("at"),
+			str(opp2.get("short", "?"))], 11))
+		line.add_child(MUI.hspacer())
+		line.add_child(MUI.dim(I18n.comp_label(f), 9))
+	if not upcoming.is_empty():
+		var nf: Dictionary = upcoming[0]
+		var nopp: Dictionary = GameState.club(str(nf["away"] if str(nf["home"]) == cid else nf["home"]))
+		rv.add_child(MUI.dim(tr("Next: %s %s · %s") % [
+			tr("vs") if str(nf["home"]) == cid else tr("at"),
+			str(nopp.get("short", "?")), I18n.pretty_date(str(nf["date"]))], 10))
+
+	# ---- staff with faces
+	var staff: Array = _club.get("staff", [])
+	if not staff.is_empty():
+		var stc := MUI.card()
+		v.add_child(stc[0])
+		var stv: VBoxContainer = stc[1]
+		stv.add_child(MUI.dim(tr("STAFF").to_upper(), 10))
+		for st in staff:
+			var strow := HBoxContainer.new()
+			strow.add_theme_constant_override("separation", 8)
+			stv.add_child(strow)
+			strow.add_child(Portrait.avatar(str(st["name"]), 24,
+				{"collar": Portrait.club_collar(_club)}))
+			var sl := MUI.label(str(st["name"]), 12)
+			sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			strow.add_child(sl)
+			var role_l := MUI.dim(tr(str(st.get("role", "")).capitalize()), 10)
+			role_l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			strow.add_child(role_l)
 
 	var sc := MUI.card()
 	v.add_child(sc[0])
