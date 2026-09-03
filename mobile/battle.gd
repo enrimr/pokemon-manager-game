@@ -68,6 +68,8 @@ func _shell() -> Node:
 
 
 func _leave() -> void:
+	if ChallengeService.instance != null:
+		ChallengeService.instance.settle(runner)   # friendly rewards
 	MatchRunner.clear()
 	runner = null
 	var sh: Node = _shell()

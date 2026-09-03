@@ -718,9 +718,29 @@ func _decision_button(a: Dictionary) -> Button:
 		b.pressed.connect(_on_people_reply.bind(a))
 	elif str(a.get("kind", "")).begins_with("evo_"):
 		b.pressed.connect(_on_evolution_decision.bind(a))
+	elif str(a.get("kind", "")).begins_with("challenge_"):
+		b.pressed.connect(_on_challenge_decision.bind(a))
 	else:
 		b.pressed.connect(_on_offer_decision.bind(a))
 	return b
+
+
+## Street challenge (challenges piece): spin up the exhibition and go pitch-side.
+func _on_challenge_decision(a: Dictionary) -> void:
+	var svc = ChallengeService.instance
+	if svc == null:
+		return
+	if str(a["kind"]) == "challenge_accept":
+		var err := str(svc.accept())
+		if err != "":
+			_action_note = err
+			_action_note_col = ThemeBuilder.COL_BAD
+			_rebuild_all()
+			return
+		_on_action({"screen": "match", "label": "Match"})
+	else:
+		svc.decline()
+	_rebuild_all()
 
 
 ## A reply to a person (rival manager, coach note) — moves real morale values.

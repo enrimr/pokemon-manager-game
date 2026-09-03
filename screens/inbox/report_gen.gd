@@ -32,6 +32,9 @@ func _init(news_gen: RefCounted) -> void:
 ## -> {"bbcode": String, "actions": [{"label","screen"}], "banner": Dictionary}
 func render(msg: Dictionary) -> Dictionary:
 	var uid := str(msg.get("uid", ""))
+	# street challenges (challenges piece): exhibition invitations
+	if uid.begins_with("challenge:") and ChallengeService.instance != null:
+		return ChallengeService.instance.render(msg)
 	# evolution approval flow / staff hints / transformation reports
 	if evolutions != null and (uid.begins_with("evo:") or str(msg.get("kind", "")).begins_with("evo_")):
 		return evolutions.render(msg)

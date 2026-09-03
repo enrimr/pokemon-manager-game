@@ -225,9 +225,31 @@ func _decision_button(a: Dictionary) -> Button:
 		b.pressed.connect(_on_people_reply.bind(a))
 	elif kind.begins_with("evo_"):
 		b.pressed.connect(_on_evolution_decision.bind(a))
+	elif kind.begins_with("challenge_"):
+		b.pressed.connect(_on_challenge_decision.bind(a))
 	else:
 		b.pressed.connect(_on_offer_decision.bind(a))
 	return b
+
+
+func _on_challenge_decision(a: Dictionary) -> void:
+	var svc = ChallengeService.instance
+	if svc == null:
+		return
+	if str(a["kind"]) == "challenge_accept":
+		var err := str(svc.accept())
+		if err != "":
+			_note(err, false)
+			refresh()
+			return
+		var n: Node = get_parent()
+		while n != null and not n.has_method("open_battle"):
+			n = n.get_parent()
+		if n != null:
+			n.call("open_battle")
+	else:
+		svc.decline()
+		refresh()
 
 
 func _on_screen_action(a: Dictionary) -> void:

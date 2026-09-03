@@ -5711,3 +5711,36 @@ RECENT RESULTS,ÚLTIMOS RESULTADOS
 %d played,%d jugados
 Next: %s %s · %s,Próximo: %s %s · %s
 STAFF,CUERPO TÉCNICO
+Bug Catcher,Cazabichos
+Hiker,Montañero
+Fisherman,Pescador
+Swimmer,Nadador
+Medium,Médium
+Black Belt,Karateka
+Bird Keeper,Ornitólogo
+Scientist,Científico
+Rocket Grunt,Recluta Rocket
+Gym Leader,Líder de gimnasio
+Pokémon Trainer,Entrenador Pokémon
+Champion,Campeón
+Professor,Profesor
+Challenge! %s wants a friendly,¡Desafío! %s quiere un amistoso
+%s is waiting at the training ground gates. Winner takes %s — and challengers this bold usually carry something interesting in the bag.,%s espera en las puertas de la ciudad deportiva. El ganador se lleva %s — y los retadores tan lanzados suelen llevar algo interesante en la mochila.
+The challenger moved on,El retador se marchó
+%s waited a week at the gates and left. The squad pretends not to feel judged.,%s esperó una semana en la puerta y se fue. La plantilla finge no sentirse juzgada.
+The challenger is gone.,El retador ya no está.
+Finish the match in progress first.,Termina antes el partido en curso.
+Challenge declined,Desafío rechazado
+You send word that the club has nothing to prove. %s leaves — the ball boys look disappointed.,Mandas recado de que el club no tiene nada que demostrar. %s se marcha — los recogepelotas parecen decepcionados.
+Friendly won! %s pays up,¡Amistoso ganado! %s paga
+The gates open and the challenger keeps their word: %s in prize money%s. Squad morale +2 — nothing bonds a dressing room like beating a stranger.%s,Se abren las puertas y el retador cumple su palabra: %s de premio%s. Moral de la plantilla +2 — nada une a un vestuario como ganar a un desconocido.%s
+and the bag drops: %s,y de la mochila caen: %s
+Friendly lost to %s,Amistoso perdido contra %s
+"No fee, no drops, and a challenger walking away whistling. The squad trains in silence.%s","Sin premio, sin botín, y un retador alejándose silbando. La plantilla entrena en silencio.%s"
+Team of %d · around Lv %d · expires %s,Equipo de %d · en torno a Nv %d · expira el %s
+The whole league would hear about beating this one.,Toda la liga se enteraría si ganas a este.
+This challenge has been dealt with.,Este desafío ya está resuelto.
+Accept the friendly,Aceptar el amistoso
+Turn them away,Despacharlo
+CHALLENGER AT THE GATES,RETADOR EN LA PUERTA
+Friendly · team of %d · around Lv %d · winner takes %s,Amistoso · equipo de %d · en torno a Nv %d · el ganador se lleva %s

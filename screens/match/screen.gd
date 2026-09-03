@@ -60,6 +60,8 @@ func _render() -> void:
 
 
 func _finish() -> void:
+	if ChallengeService.instance != null:
+		ChallengeService.instance.settle(MatchRunner.active)   # friendly rewards
 	MatchRunner.clear()
 	var shell := _find_shell()
 	if shell != null and shell.screens.has("inbox"):

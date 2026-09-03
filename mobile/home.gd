@@ -139,6 +139,40 @@ func refresh() -> void:
 	see.pressed.connect(func(): _shell().open_tab("league"))
 	sv.add_child(see)
 
+	# ---- street challenge waiting at the gates (challenges piece)
+	var chs = ChallengeService.instance
+	if chs != null and not chs.pending().is_empty() and not bool(chs.pending().get("accepted", false)):
+		var ch: Dictionary = chs.pending()
+		var chc := MUI.card()
+		v.add_child(chc[0])
+		var chv: VBoxContainer = chc[1]
+		chv.add_child(MUI.dim(tr("CHALLENGER AT THE GATES").to_upper(), 10))
+		chv.add_child(MUI.title(chs._title(ch), 15))
+		chv.add_child(MUI.dim(tr("Friendly · team of %d · around Lv %d · winner takes %s") % [
+			(ch.get("team", []) as Array).size(), int(ch.get("level", 20)),
+			str(GameState.world["meta"].get("currency", "P$")) + I18n.number(int(ch.get("money", 0)))], 11))
+		var chrow := HBoxContainer.new()
+		chrow.add_theme_constant_override("separation", 8)
+		chv.add_child(chrow)
+		var acc := MUI.button(tr("Accept the friendly"), Color(ThemeBuilder.COL_GOOD, 0.22), ThemeBuilder.COL_GOOD)
+		acc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		acc.pressed.connect(func():
+			var err := str(chs.accept())
+			var sh4: Node = _shell()
+			if sh4 == null:
+				return
+			if err != "":
+				sh4.call("toast", err)
+			else:
+				sh4.call("open_battle"))
+		chrow.add_child(acc)
+		var dec := MUI.button(tr("Turn them away"), Color(ThemeBuilder.COL_PANEL_ALT, 1.0), ThemeBuilder.COL_BORDER)
+		dec.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		dec.pressed.connect(func():
+			chs.decline()
+			refresh())
+		chrow.add_child(dec)
+
 	# ---- the protégé (starter ceremony companion) — your career-long story
 	var pro = ProtegeService.instance
 	if pro != null and pro.has_protege():
