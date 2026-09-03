@@ -485,6 +485,24 @@ func _cat_icon(meta: Dictionary, size_px: int) -> Control:
 	return icon
 
 
+## Next unread message within the CURRENT filter, scanning down the list
+## from the selected one and wrapping ({} if everything is read).
+func _next_unread() -> Dictionary:
+	var msgs := _filtered_messages()
+	if msgs.is_empty():
+		return {}
+	var start := 0
+	for i in msgs.size():
+		if msgs[i] == _selected:
+			start = i + 1
+			break
+	for off in msgs.size():
+		var m: Dictionary = msgs[(start + off) % msgs.size()]
+		if not m.get("read", false) and m != _selected:
+			return m
+	return {}
+
+
 func _on_row_pressed(m: Dictionary) -> void:
 	if m != _selected:
 		_action_note = ""
@@ -591,6 +609,19 @@ func _render_reading_pane() -> void:
 		u.add_theme_font_override("font", _bold)
 		u.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
 		head.add_child(u)
+	# jump straight to the next unread in the current filter (user request)
+	var nxt := Button.new()
+	nxt.text = tr("Read next ›")
+	nxt.custom_minimum_size = Vector2(0, 26)
+	nxt.add_theme_font_size_override("font_size", 12)
+	nxt.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT.lightened(0.25))
+	var nxt_msg := _next_unread()
+	nxt.disabled = nxt_msg.is_empty()
+	nxt.pressed.connect(func():
+		var n := _next_unread()
+		if not n.is_empty():
+			_on_row_pressed(n))
+	head.add_child(nxt)
 	var del := Button.new()
 	del.text = "Delete"
 	del.custom_minimum_size = Vector2(0, 26)

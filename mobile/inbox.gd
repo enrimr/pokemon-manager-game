@@ -150,6 +150,20 @@ func _build_detail() -> void:
 	back.custom_minimum_size = Vector2(0, 38)
 	back.pressed.connect(go_root)
 	head.add_child(back)
+	# straight to the next unread (user request) — thumb never leaves the top
+	var nxt_msg := _next_unread()
+	if not nxt_msg.is_empty():
+		var nxt := MUI.button(tr("Read next ›"))
+		nxt.custom_minimum_size = Vector2(0, 38)
+		nxt.add_theme_font_size_override("font_size", 12)
+		nxt.pressed.connect(func():
+			var n := _next_unread()
+			if not n.is_empty():
+				_selected = n
+				n["read"] = true
+				_action_note = ""
+				refresh())
+		head.add_child(nxt)
 	head.add_child(MUI.hspacer())
 	head.add_child(MUI.dim(I18n.pretty_date(str(m.get("date", ""))), 11))
 
@@ -298,6 +312,20 @@ func _on_offer_decision(a: Dictionary) -> void:
 				_note(cerr, false)
 	GameState.save_game()
 	refresh()
+
+
+## Next unread, scanning down the inbox from the open message and wrapping.
+func _next_unread() -> Dictionary:
+	var start := 0
+	for i in GameState.inbox.size():
+		if GameState.inbox[i] == _selected:
+			start = i + 1
+			break
+	for off in GameState.inbox.size():
+		var msg: Dictionary = GameState.inbox[(start + off) % GameState.inbox.size()]
+		if not msg.get("read", false) and msg != _selected:
+			return msg
+	return {}
 
 
 func _note(text: String, good: bool) -> void:
