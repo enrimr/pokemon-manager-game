@@ -28,19 +28,33 @@ static func has_art(species_id: int) -> bool:
 
 
 static func tex(species_id: int) -> Texture2D:
-	if _cache.has(species_id):
-		return _cache[species_id]
-	if not has_art(species_id):
-		return null
-	var t: Texture2D = load("res://assets/pokemon/%d.png" % species_id)
-	_cache[species_id] = t
+	return tex_view(species_id, "")
+
+
+## Battle sprites (art piece 2): gen-V Black/White front + back pairs bundled
+## at res://assets/pokemon/front|back/<id>.png — the most modern pixel set
+## with back views for all 251. view: "" (classic UI sprite), "front", "back".
+## Falls back to the classic sprite when a view is missing.
+static func tex_view(species_id: int, view: String) -> Texture2D:
+	var key := "%d|%s" % [species_id, view]
+	if _cache.has(key):
+		return _cache[key]
+	var t: Texture2D = null
+	if view != "":
+		var p := "res://assets/pokemon/%s/%d.png" % [view, species_id]
+		if ResourceLoader.exists(p):
+			t = load(p)
+	if t == null and has_art(species_id):
+		t = load("res://assets/pokemon/%d.png" % species_id)
+	_cache[key] = t
 	return t
 
 
 ## Sprite icon sized for UI. opts: {"flip": bool (face right, for our side of
-## a battle), "tooltip": String}. Falls back to a species-initial monogram.
+## a battle), "view": ""|"front"|"back" (battle sprites), "tooltip": String}.
+## Falls back to a species-initial monogram.
 static func icon(species_id: int, px: int = 40, opts: Dictionary = {}) -> Control:
-	var t := tex(species_id)
+	var t := tex_view(species_id, str(opts.get("view", "")))
 	if t == null:
 		return _mono_fallback(species_id, px)
 	var r := TextureRect.new()

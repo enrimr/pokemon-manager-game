@@ -105,7 +105,11 @@ func _build_pre() -> void:
 	var hrow := HBoxContainer.new()
 	hrow.add_theme_constant_override("separation", 10)
 	hv.add_child(hrow)
-	hrow.add_child(Crest.icon(opp, 40, {"no_tooltip": true}))
+	var opp_mgr := str(opp.get("manager", ""))
+	if bool(runner.exhibition) and TrainerArt.has_art(opp_mgr):
+		hrow.add_child(TrainerArt.avatar(opp_mgr, 40))
+	else:
+		hrow.add_child(Crest.icon(opp, 40, {"no_tooltip": true}))
 	var hcol := VBoxContainer.new()
 	hcol.alignment = BoxContainer.ALIGNMENT_CENTER
 	hcol.add_theme_constant_override("separation", 1)
@@ -245,7 +249,7 @@ func _battler_card(b: Dictionary, foe: bool) -> Dictionary:
 	row.add_theme_constant_override("separation", 6)
 	v.add_child(row)
 	var art := PokeArt.icon(PokeArt.id_of(str(b.get("species", b.get("name", "")))), 30 if compact else 44,
-		{"flip": not foe})
+		{"view": "front" if foe else "back"})
 	row.add_child(art)
 	var nm := MUI.label(str(b.get("name", "?")), 13, Color.WHITE)
 	nm.add_theme_font_override("font", MUI.bold())

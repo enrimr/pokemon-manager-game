@@ -71,6 +71,10 @@ static func tex(seed: String, px: int = 32, opts: Dictionary = {}) -> Texture2D:
 
 
 static func avatar(seed: String, px: int = 32, opts: Dictionary = {}) -> TextureRect:
+	# canon characters (gym leaders, Ash, the professors…) wear their official
+	# face; everyone generated keeps the procedural anime portrait
+	if TrainerArt.has_art(seed):
+		return TrainerArt.avatar(seed, px, opts)
 	var r := TextureRect.new()
 	r.texture = tex(seed, px, opts)
 	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE

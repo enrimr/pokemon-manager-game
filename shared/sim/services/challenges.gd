@@ -147,6 +147,7 @@ func _spawn(rng: RandomNumberGenerator, date: String) -> void:
 	var m: Dictionary = _gs.inbox[0]
 	m["uid"] = "challenge:%d" % int(ch["no"])
 	m["cat"] = "match"
+	m["sender"] = _title(ch)   # canon challengers show their official face
 	m["urgent"] = true
 	m["challenge_no"] = int(ch["no"])
 

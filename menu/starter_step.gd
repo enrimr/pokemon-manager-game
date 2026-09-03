@@ -28,6 +28,7 @@ var _balls_row: HBoxContainer = null
 var _choose_btn: Button = null  # pinned confirm — always visible once inspecting
 static var _ball_cache: Dictionary = {}
 var _prof_title: Label
+var _prof_face: TextureRect = null
 var _prof_text: Label
 var _nick_edit: LineEdit
 var _status: Label
@@ -66,12 +67,20 @@ func _ready() -> void:
 	add_child(col)
 
 	var narrow_t := get_viewport_rect().size.x < 700.0
+	var prow := HBoxContainer.new()
+	prow.add_theme_constant_override("separation", 10)
+	col.add_child(prow)
+	_prof_face = TrainerArt.avatar("", 34 if narrow_t else 44)   # face set in _refresh
+	prow.add_child(_prof_face)
 	_prof_title = Label.new()
 	_prof_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	# ellipsis labels have a 0 minimum width: EXPAND or the HBox starves them
+	_prof_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_prof_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_prof_title.add_theme_font_override("font", _font_header)
 	_prof_title.add_theme_font_size_override("font_size", 14 if narrow_t else 18)
 	_prof_title.add_theme_color_override("font_color", Color.WHITE)
-	col.add_child(_prof_title)
+	prow.add_child(_prof_title)
 
 	_prof_text = Label.new()
 	_prof_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -155,7 +164,11 @@ func _roll_wild() -> void:
 func _refresh() -> void:
 	if _cards_row == null:
 		return
-	_prof_title.text = tr("%s IS WAITING IN THE LOBBY") % tr(Protege.professor_for_league(_league)).to_upper()
+	var prof := str(Protege.professor_for_league(_league))
+	_prof_title.text = tr("%s IS WAITING IN THE LOBBY") % tr(prof).to_upper()
+	if _prof_face != null:
+		_prof_face.texture = TrainerArt.face_tex(prof)
+		_prof_face.visible = _prof_face.texture != null
 	_prof_text.text = tr("\"Welcome to %s, boss. Before the board gets its claws into you, an old tradition: every new manager in this league leaves my lab with a companion. Three Poké Balls, three temperaments. I won't show you their numbers — my scouts only deal in impressions. Pick with your heart. It will follow yours for the rest of your career... and mind the one you leave behind; another manager's hands are already hovering.\"") % _club_name
 	for c in _cards_row.get_children():
 		c.queue_free()

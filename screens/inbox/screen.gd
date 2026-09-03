@@ -447,7 +447,8 @@ func _make_row(m: Dictionary) -> Button:
 func _msg_icon(m: Dictionary, meta: Dictionary, size_px: int) -> Control:
 	var cat: String = str(m.get("cat", "board"))
 	var sender: String = str(m.get("sender", ""))
-	if cat in ["media", "staff", "scout", "match"] and Portrait.is_person(sender):
+	if cat in ["media", "staff", "scout", "match"] \
+			and (Portrait.is_person(sender) or TrainerArt.has_art(Portrait.person_key(sender))):
 		var who := Portrait.person_key(sender)
 		var opts := {}
 		var club: Dictionary = Portrait.club_of_manager(who)

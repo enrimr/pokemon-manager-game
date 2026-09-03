@@ -102,7 +102,7 @@ func _row(m: Dictionary) -> Control:
 	var btn: Button = r[0]
 	var h: HBoxContainer = r[1]
 	var sender := str(m.get("sender", ""))
-	if Portrait.is_person(sender):
+	if Portrait.is_person(sender) or TrainerArt.has_art(Portrait.person_key(sender)):
 		h.add_child(Portrait.avatar(Portrait.person_key(sender), 30))
 	else:
 		var chip := PanelContainer.new()
