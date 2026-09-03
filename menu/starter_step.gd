@@ -186,7 +186,12 @@ func _refresh() -> void:
 	_apply_styles()
 
 
-func _rebuild_balls(trio: Array) -> void:
+func _rebuild_balls(_ignored: Array = []) -> void:
+	# ALWAYS the full counter: trio + the mystery ball (confirming a pick used
+	# to rebuild with the bare trio and the master ball vanished — user report)
+	var trio: Array = Protege.trio_for_league(_league).duplicate()
+	if _wild_id > 0 and not trio.has(_wild_id):
+		trio.append(_wild_id)
 	for c in _balls_row.get_children():
 		c.queue_free()
 	for id_v in trio:

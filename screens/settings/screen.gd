@@ -72,6 +72,8 @@ func _build_header(box: VBoxContainer) -> void:
 	box.add_child(row)
 	var note := Label.new()
 	note.text = "Changes apply immediately and are saved to your profile (user://settings.json)."
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # phones: never force width
+	note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	note.add_theme_font_size_override("font_size", 11)
 	note.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	box.add_child(note)
