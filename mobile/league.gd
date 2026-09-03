@@ -143,8 +143,11 @@ func _build_fixtures(v: VBoxContainer) -> void:
 		p.add_theme_stylebox_override("pressed", ThemeBuilder._flat(ThemeBuilder.COL_ACCENT_DIM,
 			ThemeBuilder.COL_ACCENT, 4, 8, 5))
 		p.pressed.connect(func():
-			_club = opp
-			refresh())
+			if played:
+				_open_report(f, opp)   # the crónica, straight from the calendar
+			else:
+				_club = opp
+				refresh())
 		p.custom_minimum_size.y = 40
 		var h := HBoxContainer.new()
 		h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
@@ -350,3 +353,35 @@ func _build_club() -> void:
 		row.add_child(mid)
 		if MonActions.can_act(str(inst.get("uid", ""))):
 			row.add_child(MonActions.action_pill(str(inst["uid"]), tr("Actions")))
+
+
+## Tap a PLAYED fixture -> jump to its match-report mail in the Inbox tab
+## (the rich crónica render); falls back to the opponent's profile.
+func _open_report(f: Dictionary, opp: Dictionary) -> void:
+	var fid := str(f.get("id", ""))
+	var best: Dictionary = {}
+	for m in GameState.inbox:
+		if str(m.get("fid", "")) != fid:
+			continue
+		var uid := str(m.get("uid", ""))
+		if uid.begins_with("mind:"):
+			continue   # pre-match noise, not the report
+		var title := str(m.get("title", ""))
+		if title.begins_with("Match report") or title.begins_with(I18n.t("Match report:")):
+			best = m
+			break
+		if best.is_empty():
+			best = m
+	if best.is_empty():
+		_club = opp
+		refresh()
+		return
+	var sh: Node = get_parent()
+	while sh != null and not sh.has_method("open_tab"):
+		sh = sh.get_parent()
+	if sh == null:
+		return
+	var inbox_page: Node = sh.get("_pages").get("inbox")
+	inbox_page._selected = best
+	best["read"] = true
+	sh.call("open_tab", "inbox")

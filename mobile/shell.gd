@@ -68,6 +68,9 @@ func _ready() -> void:
 
 	GameState.inbox_updated.connect(_refresh_badges)
 	GameState.date_changed.connect(func(_d): _refresh_strip())
+	GameState.game_over.connect(func(_info): _open_game_over())
+	if GameState.is_game_over():   # sacked before a reload/rotation lands here
+		_open_game_over.call_deferred()
 	get_window().size_changed.connect(_check_orientation)
 	open_tab("home")
 	_refresh_strip()
@@ -362,3 +365,78 @@ func due_fixture() -> Dictionary:
 			and not nf.get("played", false):
 		return nf
 	return {}
+
+
+# ---------------------------------------------------------------- game over
+## The board pulled the trigger (mobile piece): full-screen SACKED overlay —
+## same career paths as desktop (take a lesser club's offer, or start fresh).
+var _game_over_layer: Control = null
+
+func _open_game_over() -> void:
+	if _game_over_layer != null and is_instance_valid(_game_over_layer):
+		return
+	if not GameState.is_game_over():
+		return
+	AudioManager.set_ambience("")
+	AudioManager.play("error", -6.0, 0.8)
+	var info := GameState.game_over_info()
+	_game_over_layer = Control.new()
+	_game_over_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_game_over_layer)
+	var bg := ColorRect.new()
+	bg.color = Color("0d0f16")
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_game_over_layer.add_child(bg)
+	var sc := ScrollContainer.new()
+	sc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 16)
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_game_over_layer.add_child(sc)
+	var v := VBoxContainer.new()
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_theme_constant_override("separation", 10)
+	sc.add_child(v)
+
+	var face := Portrait.avatar(Portrait.manager_seed(), 64)
+	face.modulate = Color(0.55, 0.55, 0.6)   # a grey day
+	v.add_child(face)
+	var t := MUI.title(tr("SACKED"), 30)
+	t.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
+	v.add_child(t)
+	var why := MUI.label(tr("%s have terminated your contract: %s.") % [
+		str(info.get("club", tr("The club"))), tr(str(info.get("reason", "results were not good enough")))], 13)
+	why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(why)
+
+	var offers: Array = info.get("offers", [])
+	if offers.is_empty():
+		v.add_child(MUI.dim(tr("No club is calling. Some careers end in silence."), 12))
+	else:
+		v.add_child(MUI.dim(tr("Word travels fast — offers on the table:").to_upper(), 10))
+	for o in offers:
+		var card := MUI.card()
+		v.add_child(card[0])
+		var cv: VBoxContainer = card[1]
+		cv.add_child(MUI.title(str(o.get("name", "?")), 15))
+		cv.add_child(MUI.dim("%s · %s %d/20" % [tr(str(o.get("league", ""))),
+			tr("Reputation"), int(o.get("reputation", 0))], 11))
+		var take := MUI.button(tr("Take over"), Color(ThemeBuilder.COL_GOOD, 0.22), ThemeBuilder.COL_GOOD)
+		take.pressed.connect(func():
+			var err := str(GameState.accept_job_offer(str(o.get("club_id", ""))))
+			if err != "":
+				toast(err)
+				return
+			var mn := str(GameState.world["meta"].get("manager_name", ""))
+			if mn != "":
+				GameState.player_club()["manager"] = mn
+				GameState.save_game()
+			get_tree().reload_current_scene())   # fresh shell at the new club
+		cv.add_child(take)
+
+	var fresh := MUI.button(tr("Start a new career"))
+	fresh.pressed.connect(func():
+		var fonts := MenuFlow.fonts()
+		var ob: Control = load("res://menu/onboarding.gd").new()
+		ob.setup(fonts["bold"], fonts["semibold"], fonts["header"])
+		ob.career_created.connect(func(): get_tree().reload_current_scene())
+		add_child(ob))
+	v.add_child(fresh)
