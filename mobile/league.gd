@@ -223,7 +223,11 @@ func _build_club() -> void:
 		mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		mid.alignment = BoxContainer.ALIGNMENT_CENTER
 		mid.add_theme_constant_override("separation", 0)
-		mid.add_child(MUI.label(str(inst.get("species", "?")), 12, Color.WHITE))
+		var nrow := HBoxContainer.new()
+		nrow.add_theme_constant_override("separation", 6)
+		nrow.add_child(MUI.label(str(inst.get("species", "?")), 12, Color.WHITE))
+		nrow.add_child(MonRoles.chip(int(inst.get("species_id", 0)), 8))
+		mid.add_child(nrow)
 		mid.add_child(MUI.dim(tr("Lv%d") % int(inst["level"]), 9))
 		row.add_child(mid)
 		if MonActions.can_act(str(inst.get("uid", ""))):

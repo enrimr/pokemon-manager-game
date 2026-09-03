@@ -7,17 +7,15 @@ extends Node
 
 const OUT := "artifacts/portraits-check"
 const SHOTS := [
-	["inbox", "board", "inbox_board"],
+	["transfers", "search", "transfers_search"],
 	["training", "coaches", "training_coaches"],
-	["transfers", "scouting", "transfers_scouting"],
-	["competition", "table", "competition_profile"],
 ]
 
 
 func _ready() -> void:
 	var shell: Control = load("res://shell/main.tscn").instantiate()
 	add_child(shell)
-	await _frames(8)
+	await _frames(24)   # let the shell finish its own boot navigation first
 	var dir := ProjectSettings.globalize_path("res://") + OUT
 	DirAccess.make_dir_recursive_absolute(dir)
 	for s in SHOTS:

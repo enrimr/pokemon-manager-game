@@ -1506,6 +1506,46 @@ func _refresh_coaches() -> void:
 			orow.add_child(pl)
 		_coach_cards_box.add_child(orow)
 
+	# ---- coach market (user request): coaches are hireable like scouts now
+	var mkt: RefCounted = MarketSvc.instance()
+	var cands: Array = mkt.coach_market()
+	var mk_hdr := Label.new()
+	mk_hdr.text = tr("COACH MARKET — HIRE THIS MONTH (%d/%d coaches)") % [
+		svc.coaching_staff().size(), MarketSvc.MAX_COACHES]
+	mk_hdr.add_theme_font_size_override("font_size", 11)
+	mk_hdr.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT.lightened(0.2))
+	_coach_cards_box.add_child(mk_hdr)
+	if cands.is_empty():
+		var none := Label.new()
+		none.text = tr("No candidates left this month — new names arrive with the new month.")
+		none.add_theme_font_size_override("font_size", 12)
+		none.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		_coach_cards_box.add_child(none)
+	for cand in cands:
+		var crow := HBoxContainer.new()
+		crow.add_theme_constant_override("separation", 10)
+		_coach_cards_box.add_child(crow)
+		crow.add_child(Portrait.avatar(str(cand["name"]), 26))
+		var cname := Label.new()
+		var r: Dictionary = cand["ratings"]
+		cname.text = "%s   ·   %s" % [str(cand["name"]),
+			tr("Atk %d · Def %d · Fit %d · Youth %d") % [int(r["attacking"]),
+			int(r["defending"]), int(r["fitness"]), int(r["youth"])]]
+		cname.add_theme_font_size_override("font_size", 12)
+		cname.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cname.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		crow.add_child(cname)
+		var hire := Button.new()
+		hire.text = tr("Hire · %s/wk") % mkt.fmt_money(int(cand["wage"]))
+		hire.custom_minimum_size = Vector2(0, 30)
+		hire.add_theme_font_size_override("font_size", 11)
+		hire.pressed.connect(func():
+			var err := str(mkt.hire_coach(str(cand["name"])))
+			if err != "":
+				_toast_up(err)
+			_refresh_coaches())
+		crow.add_child(hire)
+
 	_clear(_assign_box)
 	var mons_per_coach := float(svc.squad().size()) / maxf(1.0, float(svc.coaching_staff().size()))
 	var head := Label.new()
@@ -1527,6 +1567,18 @@ func _refresh_coaches() -> void:
 	_assign_box.add_child(foot)
 
 
+const MarketSvc := preload("res://screens/transfers/market.gd")
+
+
+## Route errors to the shell's toast (top-centre).
+func _toast_up(msg: String) -> void:
+	var n: Node = get_parent()
+	while n != null and not n.has_method("toast"):
+		n = n.get_parent()
+	if n != null:
+		n.call("toast", msg)
+
+
 func _coach_card(coach: Dictionary) -> Control:
 	var wrap := _panel()
 	var v: VBoxContainer = wrap[1]
@@ -1540,6 +1592,20 @@ func _coach_card(coach: Dictionary) -> Control:
 	nm.add_theme_color_override("font_color", Color.WHITE)
 	nm.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	head.add_child(nm)
+	if svc.coaching_staff().size() > 1:
+		var rel := Button.new()
+		rel.text = tr("Release")
+		rel.custom_minimum_size = Vector2(0, 28)
+		rel.add_theme_font_size_override("font_size", 11)
+		rel.add_theme_color_override("font_color", ThemeBuilder.COL_BAD)
+		rel.tooltip_text = tr("Severance: four weeks of wages.")
+		rel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		rel.pressed.connect(func():
+			var err := str(MarketSvc.instance().fire_coach(str(coach["name"])))
+			if err != "":
+				_toast_up(err)
+			_refresh_coaches())
+		head.add_child(rel)
 	var role := Label.new()
 	role.text = "Coach"
 	role.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)

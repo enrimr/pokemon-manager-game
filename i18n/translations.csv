@@ -5684,3 +5684,25 @@ tap Actions to scout or bid,toca Acciones para ojear o pujar
 "The stowaway. Nobody remembers putting this fourth ball on the table, least of all the professor. It was simply... there this morning, and it has been watching you since you walked in.","El polizón. Nadie recuerda haber puesto esta cuarta ball en la mesa, y el profesor menos que nadie. Simplemente... estaba ahí esta mañana, y lleva observándote desde que entraste."
 Scout's whisper: our instruments refuse to print what they measured. Sign it. SIGN IT.,Susurro del ojeador: los instrumentos se niegan a imprimir lo que han medido. Fíchalo. FÍCHALO.
 "Scout's whisper: no paperwork, no pedigree, no idea. But it picked YOU.","Susurro del ojeador: sin papeles, sin pedigrí, sin ni idea. Pero te ha elegido a TI."
+Wall,Muro
+Sweeper,Vanguardia
+Bulky Attacker,Ariete
+Glass Cannon,Cañón de cristal
+Support,Táctico
+All-Rounder,Todoterreno
+Any role,Cualquier rol
+Role,Rol
+"Battle role, read from base tendencies: shop for a wall or a sweeper instead of decoding six stat columns.",Rol de combate según sus tendencias base: ficha un muro o una vanguardia sin descifrar seis columnas de stats.
+That coach is no longer on the market.,Ese entrenador ya no está en el mercado.
+Coaching staff is full (%d coaches). Release one first.,El cuerpo técnico está completo (%d entrenadores). Despide a uno antes.
+Coach hired: %s,Entrenador contratado: %s
+%s joins the coaching staff on %s/wk. Assignments and session quality pick the change up immediately.,%s se une al cuerpo técnico por %s/sem. Las asignaciones y la calidad de las sesiones lo notan de inmediato.
+You cannot release your only coach — hire a replacement first.,No puedes despedir a tu único entrenador — contrata antes un sustituto.
+Coach released: %s,Entrenador despedido: %s
+%s has left the coaching staff (severance: %s).,%s deja el cuerpo técnico (finiquito: %s).
+COACH MARKET — HIRE THIS MONTH (%d/%d coaches),MERCADO DE ENTRENADORES — CONTRATA ESTE MES (%d/%d entrenadores)
+No candidates left this month — new names arrive with the new month.,No quedan candidatos este mes — llegan nombres nuevos con el mes.
+Atk %d · Def %d · Fit %d · Youth %d,Atq %d · Def %d · Fís %d · Cantera %d
+Hire · %s/wk,Contratar · %s/sem
+Release,Despedir
+Severance: four weeks of wages.,Finiquito: cuatro semanas de salario.

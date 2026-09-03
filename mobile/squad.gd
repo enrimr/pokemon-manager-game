@@ -131,6 +131,7 @@ func _build_detail() -> void:
 	chips.add_theme_constant_override("separation", 4)
 	for t in types:
 		chips.add_child(MUI.type_chip(str(t)))
+	chips.add_child(MonRoles.chip(int(inst.get("species_id", 0))))
 	icol.add_child(chips)
 	irow.add_child(icol)
 

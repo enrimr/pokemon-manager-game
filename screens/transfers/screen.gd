@@ -19,6 +19,7 @@ var market: RefCounted
 var _search_text := ""
 var _pool_filter := 0
 var _type_filter := ""
+var _role_filter := ""      # MonRoles id; shop by role, not blind stats
 var _nature_filter := ""    # nature name; matches only targets whose nature scouting revealed
 var _ability_filter := ""   # ability id; matches only targets whose ability scouting confirmed
 var _min_level := 1
@@ -570,6 +571,16 @@ func _build_search_tab() -> void:
 		_refresh_search())
 	bar.add_child(typ)
 
+	var role_opt := OptionButton.new()
+	role_opt.add_item(tr("Any role"))
+	for r in MonRoles.ROLES:
+		role_opt.add_item(MonRoles.role_name(String(r)))
+	role_opt.tooltip_text = tr("Battle role, read from base tendencies: shop for a wall or a sweeper instead of decoding six stat columns.")
+	role_opt.item_selected.connect(func(i: int):
+		_role_filter = "" if i == 0 else String(MonRoles.ROLES[i - 1])
+		_refresh_search())
+	bar.add_child(role_opt)
+
 	var lv_lab := Label.new()
 	lv_lab.text = tr("Min Lv")
 	lv_lab.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
@@ -648,15 +659,15 @@ func _build_search_tab() -> void:
 	_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_tree.hide_root = true
 	_tree.select_mode = Tree.SELECT_ROW
-	_tree.columns = 14
-	var titles := ["Name", "Type", "Club", "Age", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "Value", "Wage", "Knowledge"]
-	var widths := [118, 72, 42, 40, 32, 52, 52, 52, 52, 52, 52, 110, 92, 116]
+	_tree.columns = 15
+	var titles := ["Name", "Type", "Role", "Club", "Age", "Lv", "HP", "Atk", "Def", "SpA", "SpD", "Spe", "Value", "Wage", "Knowledge"]
+	var widths := [118, 72, 88, 42, 40, 32, 52, 52, 52, 52, 52, 52, 110, 92, 116]
 	_tree.set_column_titles_visible(true)
-	for i in 14:
+	for i in 15:
 		_tree.set_column_title(i, titles[i])
 		_tree.set_column_expand(i, i == 0)
 		_tree.set_column_custom_minimum_width(i, widths[i])
-		_tree.set_column_title_alignment(i, HORIZONTAL_ALIGNMENT_LEFT if i < 3 else HORIZONTAL_ALIGNMENT_RIGHT)
+		_tree.set_column_title_alignment(i, HORIZONTAL_ALIGNMENT_LEFT if i < 4 else HORIZONTAL_ALIGNMENT_RIGHT)
 	_tree.column_title_clicked.connect(_on_sort_clicked)
 	_tree.item_selected.connect(_on_row_selected)
 	# Double-click / Enter on a row jumps straight into the deal flow.
@@ -683,7 +694,7 @@ func _on_sort_clicked(col: int, _btn: int) -> void:
 		_sort_desc = not _sort_desc
 	else:
 		_sort_col = col
-		_sort_desc = col >= 3
+		_sort_desc = col >= 4
 	_refresh_search()
 
 
@@ -746,6 +757,8 @@ func _filtered_targets() -> Array:
 			var sp: Dictionary = DataStore.species(int(inst["species_id"]))
 			if not (_type_filter in sp["types"]):
 				continue
+		if _role_filter != "" and MonRoles.role_of(int(inst["species_id"])) != _role_filter:
+			continue
 		if _price_filter > 0:
 			var cost: int = market.ask_price(inst, t["club_id"]) if t["pool"] == "club" else market.value_of(inst)
 			if cost > PRICE_CAPS[_price_filter]:
@@ -766,16 +779,17 @@ func _sort_value(t: Dictionary) -> Variant:
 	match _sort_col:
 		0: return market.display_name(inst)
 		1: return String(DataStore.species(int(inst["species_id"]))["types"][0])
-		2: return _club_short(t)
-		3: return int(inst["age_months"])
-		4: return int(inst["level"])
-		5, 6, 7, 8, 9, 10:
-			var k: String = STAT_KEYS[_sort_col - 5]
+		2: return MonRoles.role_name(MonRoles.role_of(int(inst["species_id"])))
+		3: return _club_short(t)
+		4: return int(inst["age_months"])
+		5: return int(inst["level"])
+		6, 7, 8, 9, 10, 11:
+			var k: String = STAT_KEYS[_sort_col - 6]
 			var b: Array = market.masked_bounds(uid, k, int(market.battle_stats(inst)[k]))
 			return int(b[0]) + int(b[1])
-		11: return market.ask_price(inst, t["club_id"]) if t["pool"] == "club" else market.value_of(inst)
-		12: return int(inst["contract"]["salary"])
-		13: return market.knowledge_of(uid)
+		12: return market.ask_price(inst, t["club_id"]) if t["pool"] == "club" else market.value_of(inst)
+		13: return int(inst["contract"]["salary"])
+		14: return market.knowledge_of(uid)
 	return 0
 
 
@@ -824,53 +838,56 @@ func _refresh_search() -> void:
 		var types_txt := I18n.types_join(sp["types"], " / ")
 		it.set_text(1, types_txt)
 		it.set_custom_color(1, DataStore.type_color(sp["types"][0]))
-		it.set_text(2, _club_short(t))
-		it.set_custom_color(2, ThemeBuilder.COL_TEXT_DIM)
-		it.set_text(3, tr("%dy %dm") % [int(inst["age_months"]) / 12, int(inst["age_months"]) % 12])
-		it.set_text(4, str(int(inst["level"])))
+		var role := MonRoles.role_of(int(inst["species_id"]))
+		it.set_text(2, MonRoles.role_name(role))
+		it.set_custom_color(2, MonRoles.role_color(role).lightened(0.15))
+		it.set_text(3, _club_short(t))
+		it.set_custom_color(3, ThemeBuilder.COL_TEXT_DIM)
+		it.set_text(4, tr("%dy %dm") % [int(inst["age_months"]) / 12, int(inst["age_months"]) % 12])
+		it.set_text(5, str(int(inst["level"])))
 		# battle_stats = nature-adjusted, engine-identical (bands bracket the
 		# number this target would actually fight with, same as the squad screen)
 		var stats: Dictionary = market.battle_stats(inst)
 		var kn_nat_row: String = market.known_nature(inst)
 		for i in 6:
 			var k: String = STAT_KEYS[i]
-			it.set_text(5 + i, market.masked_int(uid, k, int(stats[k])))
+			it.set_text(6 + i, market.masked_int(uid, k, int(stats[k])))
 			if know < 100.0:
-				it.set_custom_color(5 + i, ThemeBuilder.COL_TEXT_DIM)
+				it.set_custom_color(6 + i, ThemeBuilder.COL_TEXT_DIM)
 			elif kn_nat_row != "":
 				var d := _nature_dir(kn_nat_row, k)
 				if d > 0:
-					it.set_custom_color(5 + i, ThemeBuilder.COL_GOOD)
+					it.set_custom_color(6 + i, ThemeBuilder.COL_GOOD)
 				elif d < 0:
-					it.set_custom_color(5 + i, ThemeBuilder.COL_BAD)
+					it.set_custom_color(6 + i, ThemeBuilder.COL_BAD)
 		var val_txt: String
 		if t["pool"] == "club":
 			val_txt = market.masked_money(uid, "val", market.ask_price(inst, t["club_id"]))
 			if market.is_listed(uid):
-				it.set_icon(11, GlyphIcons.tex("tri_down", 10, ThemeBuilder.COL_GOOD))
+				it.set_icon(12, GlyphIcons.tex("tri_down", 10, ThemeBuilder.COL_GOOD))
 		elif t["pool"] == "prospect":
 			val_txt = market.masked_money(uid, "val", market.value_of(inst))
 		else:
 			val_txt = "Free"
-		it.set_text(11, val_txt)
+		it.set_text(12, val_txt)
 		if market.is_listed(uid):
-			it.set_custom_color(11, ThemeBuilder.COL_GOOD)
-			it.set_tooltip_text(11, tr("Transfer-listed — ask price slashed while the listing stands"))
+			it.set_custom_color(12, ThemeBuilder.COL_GOOD)
+			it.set_tooltip_text(12, tr("Transfer-listed — ask price slashed while the listing stands"))
 		else:
-			it.set_custom_color(11, ThemeBuilder.COL_WARN if t["pool"] == "club" else ThemeBuilder.COL_GOOD)
+			it.set_custom_color(12, ThemeBuilder.COL_WARN if t["pool"] == "club" else ThemeBuilder.COL_GOOD)
 		var wage_txt: String
 		if know < 100.0:
 			wage_txt = market.masked_money(uid, "wage", int(inst["contract"]["salary"]))
 		else:
 			wage_txt = market.fmt_money(int(inst["contract"]["salary"]))
-		it.set_text(12, wage_txt)
-		it.set_custom_color(12, ThemeBuilder.COL_TEXT_DIM)
+		it.set_text(13, wage_txt)
+		it.set_custom_color(13, ThemeBuilder.COL_TEXT_DIM)
 		MonActions.tree_dots(it, 0)
 		var st_i: int = int(market.stage_for(know)["idx"])
-		it.set_text(13, "%s %d%%" % [tr(STAGE_SHORT[st_i]), int(know)] if know > 0.0 else "—")
-		it.set_tooltip_text(13, tr("Knowledge stage: %s — unlocks %s") % [
+		it.set_text(14, "%s %d%%" % [tr(STAGE_SHORT[st_i]), int(know)] if know > 0.0 else "—")
+		it.set_tooltip_text(14, tr("Knowledge stage: %s — unlocks %s") % [
 			tr(String(market.stage_for(know)["name"])), tr(String(market.stage_for(know)["unlocks"]))])
-		it.set_custom_color(13, ThemeBuilder.COL_GOOD if know >= 100.0 else (ThemeBuilder.COL_WARN if know > 0 else ThemeBuilder.COL_TEXT_DIM))
+		it.set_custom_color(14, ThemeBuilder.COL_GOOD if know >= 100.0 else (ThemeBuilder.COL_WARN if know > 0 else ThemeBuilder.COL_TEXT_DIM))
 		for c in range(3, 14):
 			it.set_text_alignment(c, HORIZONTAL_ALIGNMENT_RIGHT)
 		if uid == _selected_uid:

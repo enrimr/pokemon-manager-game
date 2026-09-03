@@ -72,6 +72,7 @@ const DOF_DEFAULTS := {"handle_bids": false, "pursue_shortlist": false, "auto_sc
 const LISTING_DISCOUNT := 0.65      # transfer-listed players go for 65% of the normal ask
 const AGENT_GREASE := 0.88          # agent-touted deals: the seller's threshold drops to 88%
 const MAX_HIRED_SCOUTS := 4
+const MAX_COACHES := 4
 
 # Scouting regions: every species belongs to one (by primary type). A scout has
 # a home region — they work faster there, and a region focus builds a knowledge
@@ -3173,6 +3174,98 @@ func hire_scout(scout_name: String) -> String:
 	save_state()
 	market_updated.emit()
 	return ""
+
+
+# ---------------------------------------------------------------- coach market
+## Coaches were unhireable and unfireable (user report) — mirror the scout
+## market: fresh candidates each month, wages against the wage budget,
+## severance on release, and the training service picks changes up live.
+
+var coach_pool_month := ""
+var coach_pool: Array = []
+
+const COACH_SPECIALTIES := ["attacking", "defending", "fitness", "judging_ability", "youth"]
+
+func coach_market() -> Array:
+	var mkey := GameState.current_date.substr(0, 7)
+	if coach_pool_month != mkey:
+		coach_pool_month = mkey
+		coach_pool = []
+		var rng := RandomNumberGenerator.new()
+		rng.seed = (GameState.career_seed ^ mkey.hash()) + 977
+		var used := {}
+		for i in 4:
+			var nm := ""
+			for attempt in 20:
+				nm = "%s %s" % [SCOUT_FIRST[rng.randi() % SCOUT_FIRST.size()], SCOUT_LAST[rng.randi() % SCOUT_LAST.size()]]
+				if not used.has(nm) and staff_by_name_any(nm).is_empty():
+					break
+			used[nm] = true
+			var ratings := {}
+			for k in ["attacking", "defending", "fitness", "judging_ability", "judging_potential", "youth"]:
+				ratings[k] = 6 + int(rng.randi() % 10)
+			var spec := String(COACH_SPECIALTIES[rng.randi() % COACH_SPECIALTIES.size()])
+			ratings[spec] = mini(20, int(ratings[spec]) + 5 + int(rng.randi() % 4))
+			var core := int(ratings["attacking"]) + int(ratings["defending"]) + int(ratings["fitness"])
+			var wage := int(round(float(core * 14 + int(ratings["youth"]) * 6 + 120 + int(rng.randi() % 120)) / 10.0)) * 10
+			coach_pool.append({"name": nm, "ratings": ratings, "wage": wage, "specialty": spec})
+	return coach_pool.filter(func(c): return staff_by_name_any(String(c["name"])).is_empty())
+
+
+func staff_by_name_any(n: String) -> Dictionary:
+	for s in GameState.player_club().get("staff", []):
+		if String(s["name"]) == n:
+			return s
+	return {}
+
+
+func club_coaches() -> Array:
+	return GameState.player_club().get("staff", []).filter(func(s): return String(s["role"]) == "coach")
+
+
+func hire_coach(coach_name: String) -> String:
+	var cand: Dictionary = {}
+	for c in coach_market():
+		if String(c["name"]) == coach_name:
+			cand = c
+			break
+	if cand.is_empty():
+		return I18n.t("That coach is no longer on the market.")
+	if club_coaches().size() >= MAX_COACHES:
+		return I18n.t("Coaching staff is full (%d coaches). Release one first.") % MAX_COACHES
+	if int(cand["wage"]) > wage_room():
+		return I18n.t("Their %s/wk wage breaks our wage budget (room: %s/wk).") % [fmt_money(int(cand["wage"])), fmt_money(wage_room())]
+	GameState.player_club()["staff"].append({
+		"name": coach_name, "role": "coach", "hired": true,
+		"wage": int(cand["wage"]),
+		"ratings": (cand["ratings"] as Dictionary).duplicate(),
+	})
+	GameState.add_inbox_message(GameState.current_date, I18n.t("Coach hired: %s") % coach_name,
+		I18n.t("%s joins the coaching staff on %s/wk. Assignments and session quality pick the change up immediately.") % [
+			coach_name, fmt_money(int(cand["wage"]))])
+	GameState.save_game()
+	save_state()
+	market_updated.emit()
+	return ""
+
+
+func fire_coach(coach_name: String) -> String:
+	var pc: Dictionary = GameState.player_club()
+	if club_coaches().size() <= 1:
+		return I18n.t("You cannot release your only coach — hire a replacement first.")
+	for s in pc["staff"]:
+		if String(s["name"]) == coach_name and String(s["role"]) == "coach":
+			var wage := int(s.get("wage", 700))   # legacy club coaches: notional wage
+			var severance := wage * 4
+			pc["finances"]["balance"] = int(pc["finances"]["balance"]) - severance
+			pc["staff"].erase(s)
+			GameState.add_inbox_message(GameState.current_date, I18n.t("Coach released: %s") % coach_name,
+				I18n.t("%s has left the coaching staff (severance: %s).") % [coach_name, fmt_money(severance)])
+			GameState.save_game()
+			save_state()
+			market_updated.emit()
+			return ""
+	return I18n.t("No coach by that name.")
 
 
 func fire_scout(scout_name: String) -> String:
