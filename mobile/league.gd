@@ -82,7 +82,11 @@ func _build_table(v: VBoxContainer) -> void:
 		p.pressed.connect(func():
 			_club = club
 			refresh())
+		# Buttons do NOT size to their children (unlike PanelContainer):
+		# without this the rows collapse and overlap (reviewer-caught bug)
+		p.custom_minimum_size.y = 34
 		var h := HBoxContainer.new()
+		h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
 		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		h.add_theme_constant_override("separation", 8)
 		p.add_child(h)
@@ -141,7 +145,9 @@ func _build_fixtures(v: VBoxContainer) -> void:
 		p.pressed.connect(func():
 			_club = opp
 			refresh())
+		p.custom_minimum_size.y = 40
 		var h := HBoxContainer.new()
+		h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
 		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		h.add_theme_constant_override("separation", 8)
 		p.add_child(h)
