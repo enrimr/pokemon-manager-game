@@ -28,7 +28,7 @@ Expected final line: `SMOKE OK`.
 
 - `--screens=` comma-separated screen folder names, or `all` for every discovered screen.
 - `--out=` output directory (relative paths resolve against the project root).
-- Boots the real shell + GameState (loads `user://save.json` if present, else a new career),
+- Boots the real shell + GameState (loads the most recent save slot from `user://saves/` if present, else a new career),
   navigates to each screen, waits 12 frames for layout, saves `<out>/<name>.png` at 1600x900.
 - Exits `0` on success and prints `SCREENSHOTS OK`. Exits nonzero and prints
   `SCREENSHOT ERROR: ...` lines if a screen fails to load, renders black, or can't be saved.
@@ -64,7 +64,7 @@ UNCHANGED. To boot the real windowed game without the menu:
 ## Notes
 
 - To test from a fresh career, delete the save first:
-  `rm -f "$HOME/Library/Application Support/Godot/app_userdata/Trainer Manager/save.json"`
+  `rm -rf "$HOME/Library/Application Support/Godot/app_userdata/Trainer Manager/saves"`
 - Regenerating data (foundation owner only): `python3 tools/gen_data.py`, then
   `python3 artifacts/evolutions/gen_evolutions.py` (evolution chains + stones) and
   `python3 artifacts/playtest2/gen_weather.py` (weather reachability: weather-move
@@ -97,7 +97,7 @@ save/load-stable history.
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path /Users/enrique/development/projects/pokemon-manager-game res://screens/competition/season_shot_prep.tscn
 ```
 
-Overwrites `user://save.json` (back it up first!) with a career sitting in the
+Overwrites the active save slot (SaveGuard-protected) with a career sitting in the
 off-season week right after the Championship Series Final + awards ceremony —
 ideal for capturing the playoff bracket / History tab / season-end header via
 the screenshot harness with `COMP_DEV_TAB=playoff|history|table`. Prints
@@ -157,6 +157,6 @@ the in-game "New Career" menu item. Also asserts the start transaction stamps
 `world.meta.manager_name` + the player club's `manager` field and writes the
 save. Prints `MENU SHOTS OK`.
 
-**Back up `user://save.json` first** — the run creates/deletes test saves
+**SaveGuard snapshots the whole `user://saves/` dir** — the run creates/deletes test saves
 (it deletes its own test save at the end, but an existing career save is
 overwritten during the run).

@@ -29,7 +29,15 @@ extends Node
 
 signal actions_changed
 
-const SAVE_PATH := "user://squad_actions.json"
+const LEGACY_PATH := "user://squad_actions.json"   # pre-slots flat file (adopted by the migrated career)
+
+
+## Per-career state file (saves piece): rides next to the career's save slot,
+## so switching careers in Load Game never leaks state between them.
+func _state_path() -> String:
+	if GameState.save_slot == "":
+		return LEGACY_PATH
+	return "%s/%s.squad_actions.json" % [GameState.SAVE_DIR, GameState.save_slot]
 
 const UI := preload("res://screens/squad/ui_helpers.gd")
 const SeasonStats := preload("res://screens/squad/season_stats.gd")
@@ -103,8 +111,12 @@ func _default_state() -> Dictionary:
 
 
 func _load_state() -> void:
-	if FileAccess.file_exists(SAVE_PATH):
-		var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var path := _state_path()
+	if not FileAccess.file_exists(path) and GameState.save_slot == "career_legacy" \
+			and FileAccess.file_exists(LEGACY_PATH):
+		path = LEGACY_PATH   # one-time adoption: re-saved under the slot next write
+	if FileAccess.file_exists(path):
+		var f := FileAccess.open(path, FileAccess.READ)
 		var data: Variant = JSON.parse_string(f.get_as_text())
 		if typeof(data) == TYPE_DICTIONARY and int(data.get("version", 0)) == 1:
 			state = data
@@ -120,12 +132,14 @@ func _load_state() -> void:
 
 
 func save_state() -> void:
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(GameState.SAVE_DIR))
+	var f := FileAccess.open(_state_path(), FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(state))
 
 
 func _on_career_event() -> void:
+	_load_state()   # career switched slots (Load Game): read THAT career's state
 	if state.get("last", "") > GameState.current_date:
 		state = _default_state()
 		save_state()

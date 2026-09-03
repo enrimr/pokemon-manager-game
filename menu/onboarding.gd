@@ -38,7 +38,6 @@ var _face_variant := 0
 var _back_btn: Button
 var _next_btn: Button
 var _step_chips: Array = []
-var _overwrite_dialog: ConfirmationDialog
 
 
 func setup(bold: Font, semibold: Font, header: Font) -> void:
@@ -92,12 +91,6 @@ func _ready() -> void:
 	root.add_child(_content)
 	root.add_child(_build_footer())
 
-	_overwrite_dialog = ConfirmationDialog.new()
-	_overwrite_dialog.dialog_autowrap = true   # phones: wrap, never clip
-	_overwrite_dialog.title = tr("Overwrite saved career?")
-	_overwrite_dialog.ok_button_text = tr("Overwrite and start")
-	_overwrite_dialog.confirmed.connect(_do_start)
-	add_child(_overwrite_dialog)
 
 	_show_step(0)
 
@@ -270,17 +263,7 @@ func _on_next() -> void:
 	if _step < 3:
 		_show_step(_step + 1)
 		return
-	# step 3: start — warn before overwriting an existing save (FM-style)
-	if MenuFlow.has_save():
-		var s := MenuFlow.save_summary()
-		_overwrite_dialog.dialog_text = "%s\n%s" % [
-			tr("A saved career already exists: %s · %s — %s, %s.") % [str(s.get("club", "?")),
-				str(s.get("manager", "?")), I18n.pretty_date(str(s.get("date", ""))),
-				tr("Season %d") % int(s.get("season", 1))],
-			tr("Starting a new career will permanently overwrite it.")]
-		_overwrite_dialog.popup_centered(Vector2i(
-			mini(460, int(get_viewport_rect().size.x) - 20), 0))
-		return
+	# step 3: start — each career saves to its own slot, nothing is overwritten
 	_do_start()
 
 
@@ -548,12 +531,10 @@ func _build_summary() -> Control:
 	if MenuFlow.has_save():
 		col.add_child(_hline())
 		var warn := Label.new()
-		var s := MenuFlow.save_summary()
-		warn.text = tr("Warning: starting this career overwrites your saved one (%s, %s).") \
-			% [str(s.get("club", "?")), I18n.pretty_date(str(s.get("date", "")))]
+		warn.text = tr("Your current career stays saved — return to it any time from Load Game.")
 		warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		warn.add_theme_font_size_override("font_size", 12)
-		warn.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+		warn.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		col.add_child(warn)
 	return center
 

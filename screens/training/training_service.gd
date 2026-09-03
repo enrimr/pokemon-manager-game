@@ -11,7 +11,15 @@ extends Node
 
 signal training_changed
 
-const SAVE_PATH := "user://training.json"
+const LEGACY_PATH := "user://training.json"   # pre-slots flat file (adopted by the migrated career)
+
+
+## Per-career state file (saves piece): rides next to the career's save slot,
+## so switching careers in Load Game never leaks state between them.
+func _state_path() -> String:
+	if GameState.save_slot == "":
+		return LEGACY_PATH
+	return "%s/%s.training.json" % [GameState.SAVE_DIR, GameState.save_slot]
 
 const DAY_KEYS := ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 const DAY_LABELS := {"mon": "Monday", "tue": "Tuesday", "wed": "Wednesday",
@@ -193,6 +201,7 @@ func setup() -> void:
 
 
 func _on_career_event() -> void:
+	_load_state()   # career switched slots (Load Game): read THAT career's model
 	# New career started after a save wipe: our last-processed date is in the
 	# future relative to the fresh calendar -> reset the model.
 	if state.get("last", "") > GameState.current_date:
@@ -276,8 +285,12 @@ func _auto_assign_coaches() -> Dictionary:
 
 
 func _load_state() -> void:
-	if FileAccess.file_exists(SAVE_PATH):
-		var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var path := _state_path()
+	if not FileAccess.file_exists(path) and GameState.save_slot == "career_legacy" \
+			and FileAccess.file_exists(LEGACY_PATH):
+		path = LEGACY_PATH   # one-time adoption: re-saved under the slot next write
+	if FileAccess.file_exists(path):
+		var f := FileAccess.open(path, FileAccess.READ)
 		var data: Variant = JSON.parse_string(f.get_as_text())
 		if typeof(data) == TYPE_DICTIONARY and int(data.get("version", 0)) == 1:
 			state = data
@@ -305,7 +318,8 @@ var no_disk := false
 func save_state() -> void:
 	if no_disk:
 		return
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(GameState.SAVE_DIR))
+	var f := FileAccess.open(_state_path(), FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(state))
 

@@ -43,9 +43,9 @@ scripts/smoke.sh         # smoke test runner
   `fixture_played(fixture)`, `table_updated`, `inbox_updated`, `player_match_due(fixture)`.
   Key API: `player_club()`, `club(id)`, `league_table()`, `player_table_position()`,
   `next_player_fixture()`, `fixtures_on(date)`, `free_agents()`, `prospects()`,
-  `advance_day()`, `advance_to_next_event()`, `save_game()`, `load_game()` (user://save.json),
+  `advance_day()`, `advance_to_next_event()`, `save_game()`, `load_game()` (multi-slot: one career per file in `user://saves/<slot>.json`, summaries in `user://saves/index.json`; `list_saves()`/`load_slot()`/`delete_slot()`),
   `add_inbox_message(date, title, body)`.
-  Boots by loading `user://save.json` if present, else starts a new career.
+  Boots by loading the most recently played save slot if any (a pre-slots `user://save.json` is migrated into `user://saves/career_legacy.json` first), else starts a new career. Per-career sidecar state (training, squad actions, squad history) rides next to its slot as `user://saves/<slot>.<name>.json`.
   `auto_sim_player_matches` (default true): the match piece sets this false and listens to
   `player_match_due` to run interactive matches instead of instant sim.
 
@@ -685,7 +685,7 @@ AudioManager.volume(bus) / set_enabled(on) / enabled()
 - **`title.gd`** — wordmark + animated theme-colored backdrop (`backdrop.gd`,
   pure drawing, no assets), procedural menu music (instances the shell's
   AudioManager scene; the shell builds its own once in-game). Doors:
-  **Continue** (only when `user://save.json` exists; card shows club ·
+  **Continue** (only when a save slot exists; card shows club ·
   manager — date · season, then swaps to `res://shell/main.tscn`),
   **New Game**, **Settings** (hosts the real `screens/settings/screen.tscn`
   in an overlay) and **Quit**. Saved locale applies at boot

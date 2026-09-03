@@ -16,7 +16,11 @@ signal season_rolled(season_no: int)   # a new season's fixtures are live
 signal settings_changed(key: String)   # a game setting was changed (see `settings`)
 signal game_over(info: Dictionary)     # the board sacked the manager (see trigger_game_over)
 
-const SAVE_PATH := "user://save.json"
+const SAVE_PATH := "user://save.json"     # legacy single slot — migrated to SAVE_DIR at boot
+const SAVE_DIR := "user://saves"          # one career per file: <slot_id>.json
+const SAVE_INDEX := "user://saves/index.json"   # slot_id -> summary (list UI reads this, not the 800KB saves)
+
+var save_slot := ""                 # active slot id ("" until a career is saved/loaded)
 
 var world: Dictionary = {}          # deep-copied from world.json, mutated over time
 var current_date: String = ""
@@ -55,8 +59,12 @@ func _ready() -> void:
 ## Load the save if compatible, else start a new career. If an old-format save
 ## was found, it is replaced gracefully: fresh career + a clear inbox note.
 func boot() -> void:
-	if load_game():
+	_migrate_legacy_save()
+	save_slot = _most_recent_slot()
+	if save_slot != "" and load_game():
 		return
+	if save_slot == "":
+		_flag_incompatible_leftovers()   # career files exist but none was loadable
 	var had_old := _incompatible_save
 	new_career()
 	if had_old:
@@ -71,6 +79,7 @@ func boot() -> void:
 ## Start a fresh career. club_id (optional) picks any club from either league
 ## (the shell's new-career club picker); default remains Pallet Pioneers.
 func new_career(seed_value: int = 20260801, club_id: String = "") -> void:
+	save_slot = _new_slot_id()   # every career gets its own slot (saves piece)
 	career_seed = seed_value
 	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
 	world = JSON.parse_string(f.get_as_text())
@@ -117,18 +126,20 @@ func save_game() -> bool:
 		"inbox": inbox,
 		"settings": settings,
 	}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SAVE_DIR))
+	var f := FileAccess.open(save_path(), FileAccess.WRITE)
 	if f == null:
 		push_error("GameState: cannot write save file")
 		return false
 	f.store_string(JSON.stringify(data))
+	_index_touch()
 	return true
 
 
 func load_game() -> bool:
-	if not FileAccess.file_exists(SAVE_PATH):
+	if save_slot == "" or not FileAccess.file_exists(save_path()):
 		return false
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var f := FileAccess.open(save_path(), FileAccess.READ)
 	var data: Variant = JSON.parse_string(f.get_as_text())
 	if data == null or typeof(data) != TYPE_DICTIONARY or int(data.get("version", 0)) != 2:
 		# Pre-leagues (v1) or corrupt save: flag it so boot() can route to a
@@ -163,12 +174,183 @@ func load_game() -> bool:
 	career_started.emit()
 	date_changed.emit(current_date)
 	table_updated.emit()
+	_index_touch()   # "Continue" always points at the last career actually played
 	return true
 
 
 func delete_save() -> void:
-	if FileAccess.file_exists(SAVE_PATH):
+	delete_slot(save_slot)
+
+
+# ------------------------------------------------------------------ save slots
+## Multiple careers, one file per slot (user request). The title screen's
+## Load Game lists them from SAVE_INDEX (tiny), never by parsing the saves.
+
+func save_path() -> String:
+	if save_slot == "":
+		save_slot = _new_slot_id()
+	return "%s/%s.json" % [SAVE_DIR, save_slot]
+
+
+func _new_slot_id() -> String:
+	return "career_%d_%03d" % [int(Time.get_unix_time_from_system()), randi() % 1000]
+
+
+## Newest-first summaries of every saved career:
+## [{id, club, manager, date, season, league, last_played}]
+func list_saves() -> Array:
+	var idx := _read_index()
+	var out: Array = []
+	var d := DirAccess.open(SAVE_DIR)
+	if d == null:
+		return out
+	var dirty := false
+	for fn in d.get_files():
+		# slot saves only: "career_X.json" — NOT sidecars like "career_X.training.json"
+		if not (fn.begins_with("career_") and fn.ends_with(".json")):
+			continue
+		var id := fn.trim_suffix(".json")
+		if id.contains("."):
+			continue
+		if not idx.has(id):
+			# save written by an older build / copied in by hand: index it once
+			var meta := _summarize_slot(id)
+			if meta.is_empty():
+				continue
+			idx[id] = meta
+			dirty = true
+		var e: Dictionary = (idx[id] as Dictionary).duplicate()
+		e["id"] = id
+		out.append(e)
+	if dirty:
+		_write_index(idx)
+	out.sort_custom(func(a, b): return int(a.get("last_played", 0)) > int(b.get("last_played", 0)))
+	return out
+
+
+func load_slot(id: String) -> bool:
+	var prev := save_slot
+	save_slot = id
+	if load_game():
+		return true
+	save_slot = prev
+	return false
+
+
+func delete_slot(id: String) -> void:
+	if id == "":
+		return
+	var d := DirAccess.open(SAVE_DIR)
+	if d != null:
+		for fn in d.get_files():
+			# the slot save AND its sidecars (career_X.training.json, ...)
+			if fn == id + ".json" or fn.begins_with(id + "."):
+				DirAccess.remove_absolute(ProjectSettings.globalize_path(
+					"%s/%s" % [SAVE_DIR, fn]))
+	var idx := _read_index()
+	if idx.erase(id):
+		_write_index(idx)
+	if id == save_slot:
+		save_slot = ""
+
+
+## Pre-slots saves (user://save.json) become the first slot, seamlessly.
+## The legacy file is deleted ONLY after its content verifiably landed in a
+## slot — and never silently dropped when career_legacy already exists.
+func _migrate_legacy_save() -> void:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SAVE_DIR))
+	var target := "%s/career_legacy.json" % SAVE_DIR
+	if FileAccess.file_exists(target):
+		target = "%s/career_legacy%d.json" % [SAVE_DIR, int(Time.get_unix_time_from_system() * 1000.0)]
+	var content := FileAccess.get_file_as_string(SAVE_PATH)
+	var f := FileAccess.open(target, FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_string(content)
+	f = null
+	if FileAccess.get_file_as_string(target) == content:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
+
+
+func _most_recent_slot() -> String:
+	var saves := list_saves()
+	return str(saves[0]["id"]) if not saves.is_empty() else ""
+
+
+## No loadable career, but career files on disk (e.g. a migrated v1 save):
+## flag it so boot() writes the "save from an earlier era" inbox note.
+func _flag_incompatible_leftovers() -> void:
+	var d := DirAccess.open(SAVE_DIR)
+	if d == null:
+		return
+	for fn in d.get_files():
+		if fn.begins_with("career_") and fn.ends_with(".json") \
+				and not fn.trim_suffix(".json").contains("."):
+			_incompatible_save = true
+			return
+
+
+func _read_index() -> Dictionary:
+	if not FileAccess.file_exists(SAVE_INDEX):
+		return {}
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(SAVE_INDEX))
+	return data if typeof(data) == TYPE_DICTIONARY else {}
+
+
+func _write_index(idx: Dictionary) -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SAVE_DIR))
+	var f := FileAccess.open(SAVE_INDEX, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(idx))
+
+
+## Refresh the active slot's index entry from the LIVE state (called on every
+## save and on every load, so last_played orders the Load Game list).
+func _index_touch() -> void:
+	if save_slot == "" or world.is_empty():
+		return
+	var idx := _read_index()
+	var pc := player_club()
+	var mgr := str(world.get("meta", {}).get("manager_name", ""))
+	if mgr == "":
+		mgr = str(pc.get("manager", ""))
+	idx[save_slot] = {
+		"club": str(pc.get("name", "")),
+		"manager": mgr,
+		"date": current_date,
+		"season": season_no(),
+		"league": str(league_name()),
+		# milliseconds: two saves in the same second must still order stably
+		"last_played": int(Time.get_unix_time_from_system() * 1000.0),
+	}
+	_write_index(idx)
+
+
+## Fallback metadata for a slot the index does not know: parse the file once.
+func _summarize_slot(id: String) -> Dictionary:
+	var data: Variant = JSON.parse_string(
+		FileAccess.get_file_as_string("%s/%s.json" % [SAVE_DIR, id]))
+	if typeof(data) != TYPE_DICTIONARY or int(data.get("version", 0)) != 2:
+		return {}
+	var w: Dictionary = data.get("world", {})
+	var pid := str(w.get("meta", {}).get("player_club_id", ""))
+	var club := {}
+	for c in w.get("clubs", []):
+		if str(c.get("id", "")) == pid:
+			club = c
+			break
+	var mgr := str(w.get("meta", {}).get("manager_name", ""))
+	if mgr == "":
+		mgr = str(club.get("manager", ""))
+	return {
+		"club": str(club.get("name", "?")),
+		"manager": mgr,
+		"date": str(data.get("current_date", "")),
+		"season": 1,
+		"last_played": 0,
+	}
 
 
 # ------------------------------------------------------------------ queries

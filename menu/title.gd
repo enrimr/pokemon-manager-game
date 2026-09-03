@@ -20,6 +20,7 @@ const SettingsScreen := preload("res://screens/settings/screen.tscn")
 var _fonts: Dictionary = {}
 var _onboarding: Control = null
 var _settings_overlay: Control = null
+var _load_overlay: Control = null
 var _narrow := false   # portrait phone layout (mobile piece)
 
 
@@ -215,6 +216,155 @@ func _on_new_game() -> void:
 	add_child(_onboarding)
 
 
+## LOAD GAME (saves piece): every career lives in its own slot — list them
+## newest-first, tap to resume, trash to delete (with confirm).
+func _on_load_game() -> void:
+	if _load_overlay != null and is_instance_valid(_load_overlay):
+		return
+	AudioManager.play("confirm")
+	var overlay := Control.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var dim := ColorRect.new()
+	dim.color = Color(0.02, 0.03, 0.06, 0.88)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+	var panel := PanelContainer.new()
+	var vp := get_viewport_rect().size
+	panel.custom_minimum_size = Vector2(minf(640.0, vp.x - 16.0), minf(620.0, vp.y - 16.0))
+	panel.add_theme_stylebox_override("panel",
+		ThemeBuilder._flat(ThemeBuilder.COL_PANEL, ThemeBuilder.COL_ACCENT_DIM, 8, 16, 12))
+	center.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 8)
+	panel.add_child(col)
+	var head := HBoxContainer.new()
+	var title := Label.new()
+	title.text = tr("SAVED CAREERS")
+	title.add_theme_font_override("font", _fonts["header"])
+	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_color_override("font_color", Color.WHITE)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(title)
+	var back := Button.new()
+	back.text = tr("Back")
+	back.custom_minimum_size = Vector2(100, 36)
+	back.pressed.connect(func():
+		overlay.queue_free()
+		_load_overlay = null
+		_refresh_menu())
+	head.add_child(back)
+	col.add_child(head)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.add_theme_constant_override("separation", 6)
+	scroll.add_child(list)
+	add_child(overlay)
+	_load_overlay = overlay
+	_fill_slot_list(list)
+
+
+func _fill_slot_list(list: VBoxContainer) -> void:
+	for c in list.get_children():
+		c.queue_free()
+	var saves: Array = GameState.list_saves()
+	if saves.is_empty():
+		var empty := Label.new()
+		empty.text = tr("No saved careers. Start a new game!")
+		empty.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		list.add_child(empty)
+		return
+	for s_v in saves:
+		var s: Dictionary = s_v
+		var id := str(s["id"])
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		list.add_child(row)
+		var load_btn := Button.new()
+		load_btn.custom_minimum_size.y = 62
+		load_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		load_btn.focus_mode = Control.FOCUS_NONE
+		load_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		var active := id == GameState.save_slot
+		load_btn.add_theme_stylebox_override("normal", ThemeBuilder._flat(
+			ThemeBuilder.COL_ACCENT_DIM if active else ThemeBuilder.COL_PANEL_ALT,
+			ThemeBuilder.COL_ACCENT if active else ThemeBuilder.COL_BORDER, 6, 12, 8))
+		load_btn.add_theme_stylebox_override("hover",
+			ThemeBuilder._flat(Color("2a3150"), ThemeBuilder.COL_ACCENT, 6, 12, 8))
+		var box := VBoxContainer.new()
+		box.set_anchors_preset(Control.PRESET_FULL_RECT)
+		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		box.alignment = BoxContainer.ALIGNMENT_CENTER
+		box.add_theme_constant_override("separation", 1)
+		var m := MarginContainer.new()
+		m.set_anchors_preset(Control.PRESET_FULL_RECT)
+		m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		m.add_theme_constant_override("margin_left", 12)
+		m.add_theme_constant_override("margin_right", 12)
+		m.add_child(box)
+		load_btn.add_child(m)
+		var l1 := Label.new()
+		l1.text = "%s — %s%s" % [str(s.get("club", "?")), str(s.get("manager", "?")),
+			("  ·  " + tr("current")) if active else ""]
+		l1.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		l1.add_theme_font_override("font", _fonts["semibold"])
+		l1.add_theme_font_size_override("font_size", 14)
+		l1.add_theme_color_override("font_color", Color.WHITE)
+		box.add_child(l1)
+		var l2 := Label.new()
+		l2.text = "%s · %s · %s" % [I18n.pretty_date(str(s.get("date", ""))),
+			tr("Season %d") % int(s.get("season", 1)), tr(str(s.get("league", "")))]
+		l2.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		l2.add_theme_font_size_override("font_size", 11)
+		l2.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+		box.add_child(l2)
+		load_btn.pressed.connect(func(): _load_slot(id))
+		row.add_child(load_btn)
+		var del := Button.new()
+		del.text = tr("Delete")
+		del.custom_minimum_size = Vector2(0, 62)
+		del.focus_mode = Control.FOCUS_NONE
+		del.add_theme_font_size_override("font_size", 11)
+		del.add_theme_color_override("font_color", ThemeBuilder.COL_WARN)
+		del.pressed.connect(func(): _confirm_delete(s, list))
+		row.add_child(del)
+
+
+func _load_slot(id: String) -> void:
+	if id != GameState.save_slot and not GameState.load_slot(id):
+		return   # corrupt/incompatible file: leave the list up
+	AudioManager.play("continue")
+	get_tree().change_scene_to_file(MenuFlow.shell_scene())
+
+
+func _confirm_delete(s: Dictionary, list: VBoxContainer) -> void:
+	var id := str(s["id"])
+	var dlg := ConfirmationDialog.new()
+	dlg.dialog_autowrap = true
+	dlg.title = tr("Delete this career?")
+	dlg.ok_button_text = tr("Delete forever")
+	dlg.dialog_text = tr("%s — %s (%s) will be deleted. This cannot be undone.") % [
+		str(s.get("club", "?")), str(s.get("manager", "?")),
+		I18n.pretty_date(str(s.get("date", "")))]
+	dlg.confirmed.connect(func():
+		var was_active := id == GameState.save_slot
+		GameState.delete_slot(id)
+		if was_active:
+			# keep Continue honest: fall back to the freshest remaining career
+			var rest: Array = GameState.list_saves()
+			if not rest.is_empty():
+				GameState.load_slot(str(rest[0]["id"]))
+		_fill_slot_list(list))
+	add_child(dlg)
+	dlg.popup_centered(Vector2i(mini(440, int(get_viewport_rect().size.x) - 20), 0))
+
+
 func _on_settings() -> void:
 	if _settings_overlay != null and is_instance_valid(_settings_overlay):
 		return
@@ -293,6 +443,10 @@ func _build_menu_only() -> void:
 	menu.add_child(_menu_button(tr("New Game"),
 		tr("Create your manager and pick a club — 32 clubs, two leagues"),
 		not has_save, _on_new_game))
+	if has_save:
+		menu.add_child(_menu_button(tr("Load Game"),
+			tr("Every career keeps its own save — resume or delete them here"),
+			false, _on_load_game))
 	menu.add_child(_menu_button(tr("Settings"),
 		tr("Display, audio, gameplay and language"), false, _on_settings))
 	menu.add_child(_menu_button(tr("Quit"), "", false, func(): get_tree().quit()))

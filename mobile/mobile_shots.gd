@@ -29,6 +29,16 @@ func _run() -> void:
 	await _frames(14)
 	_shot("%s/title.png" % dir)
 
+	# Load Game overlay, portrait (saves piece): slot list must fit the phone
+	GameState.save_game()   # ensure at least one listed slot (SaveGuard restores)
+	title._on_load_game()
+	await _frames(10)
+	_shot("%s/title_load.png" % dir)
+	if title._load_overlay != null and is_instance_valid(title._load_overlay):
+		title._load_overlay.queue_free()
+		title._load_overlay = null
+	await _frames(4)
+
 	# settings overlay, portrait (user report: it ran off the phone screen)
 	title._on_settings()
 	await _frames(12)

@@ -1566,7 +1566,7 @@ func _on_menu_id(id: int) -> void:
 			else:
 				_toast(tr("Save failed"))
 		1:
-			if FileAccess.file_exists(GameState.SAVE_PATH):
+			if FileAccess.file_exists(GameState.save_path()):
 				_load_confirm.popup_centered()
 			else:
 				_toast(tr("No save file found"))
@@ -1628,8 +1628,7 @@ func _open_club_picker() -> void:
 		if _club_picker != null and is_instance_valid(_club_picker):
 			_club_picker.queue_free()
 			_club_picker = null
-		GameState.delete_save()
-		GameState.new_career(20260801, club_id)
+		GameState.new_career(20260801, club_id)   # own slot — the old career stays in Load Game
 		GameState.save_game()
 		_reset_history()
 		if not screens.is_empty():

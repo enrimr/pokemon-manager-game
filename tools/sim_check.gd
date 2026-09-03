@@ -412,8 +412,9 @@ func _run() -> void:
 		if _svc_id(svc) == "_tmp_simcheck_service":
 			svc_days_before = int(svc.days)
 	_check(GameState.save_game(), "save_game succeeds")
-	GameState.new_career(1)  # wipe in-memory state
-	_check(GameState.load_game(), "load_game succeeds")
+	var saved_slot := GameState.save_slot
+	GameState.new_career(1)  # wipe in-memory state (its own fresh slot)
+	_check(GameState.load_slot(saved_slot), "load_game succeeds")
 	_check(GameState.current_date == date_before_save, "loaded date matches (%s)" % GameState.current_date)
 	_check(GameState.fixtures.size() == fixtures_count, "loaded fixture count matches (%d)" % fixtures_count)
 	_check(_inv_norm(GameState.player_inventory()) == inv_before_save,
@@ -437,17 +438,23 @@ func _run() -> void:
 	_check(not GameState.next_player_fixture().is_empty(), "johto career has a first fixture")
 
 	print("=== sim_check: pre-leagues saves recover gracefully ===")
+	for s_v in GameState.list_saves():
+		GameState.delete_slot(str(s_v["id"]))   # only the v1 relic must remain
 	var old_save := FileAccess.open(GameState.SAVE_PATH, FileAccess.WRITE)
 	old_save.store_string(JSON.stringify({"version": 1, "career_seed": 5, "world": {}}))
 	old_save.close()
-	_check(not GameState.load_game(), "v1 save rejected without crashing")
+	GameState._migrate_legacy_save()
+	_check(not FileAccess.file_exists(GameState.SAVE_PATH),
+		"legacy save.json migrated into the slots dir")
+	_check(not GameState.load_slot("career_legacy"), "v1 save rejected without crashing")
 	GameState.boot()
 	_check(GameState.current_date == GameState.season_start, "boot routed to a fresh career")
 	_check(GameState.inbox.any(func(m): return str(m["title"]).contains("earlier era")),
 		"inbox explains the incompatible save")
-	var resaved: Variant = JSON.parse_string(FileAccess.open(GameState.SAVE_PATH, FileAccess.READ).get_as_text())
+	var resaved: Variant = JSON.parse_string(FileAccess.get_file_as_string(GameState.save_path()))
 	_check(typeof(resaved) == TYPE_DICTIONARY and int(resaved.get("version", 0)) == 2,
 		"old save replaced by a v2 save")
+	GameState.delete_slot("career_legacy")
 
 	GameState.delete_save()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TMP_SERVICE_PATH))
@@ -582,8 +589,9 @@ func _season_boundary_checks() -> void:
 	# ints to floats, so fingerprint the pre-save history the same way)
 	var hist_json: String = JSON.stringify(JSON.parse_string(JSON.stringify(GameState.season_history())))
 	_check(GameState.save_game(), "save across the boundary succeeds")
-	GameState.new_career(99)   # wipe in-memory state
-	_check(GameState.load_game(), "load across the boundary succeeds")
+	var s2_slot := GameState.save_slot
+	GameState.new_career(99)   # wipe in-memory state (its own fresh slot)
+	_check(GameState.load_slot(s2_slot), "load across the boundary succeeds")
 	_check(GameState.season_no() == 2, "loaded save is still season 2")
 	_check(JSON.stringify(GameState.season_history()) == hist_json,
 		"champions/awards history persists through save/load")

@@ -5807,3 +5807,11 @@ Tower,Torre
 Snow,Nieve
 Sea,Mar
 The browser window controls the size in the web version.,El tamaño lo controla la ventana del navegador en la versión web.
+Every career keeps its own save — resume or delete them here,Cada carrera tiene su propia partida guardada: continúalas o bórralas aquí
+SAVED CAREERS,PARTIDAS GUARDADAS
+No saved careers. Start a new game!,No hay partidas guardadas. ¡Empieza una nueva!
+current,en curso
+Delete this career?,¿Borrar esta carrera?
+Delete forever,Borrar para siempre
+%s — %s (%s) will be deleted. This cannot be undone.,%s — %s (%s) se borrará. No se puede deshacer.
+Your current career stays saved — return to it any time from Load Game.,Tu carrera actual queda guardada: vuelve a ella cuando quieras desde Cargar partida.

@@ -31,6 +31,25 @@ func _run() -> void:
 		var title: Control = await _fresh_title()
 		_shot("%s/title_continue_%s.png" % [dir, loc])
 
+		# 1b) Load Game overlay (saves piece): fake a second career in the
+		# index so the list shows multiple slots + the active marker
+		var alt := "career_demo2"
+		var af := FileAccess.open("%s/%s.json" % [GameState.SAVE_DIR, alt], FileAccess.WRITE)
+		af.store_string(FileAccess.get_file_as_string(GameState.save_path()))
+		af = null
+		var idx: Dictionary = GameState._read_index()
+		idx[alt] = {"club": "Cerulean Mariners", "manager": "Misty",
+			"date": "2027-03-14", "season": 2, "league": "Kanto League", "last_played": 1}
+		GameState._write_index(idx)
+		title._on_load_game()
+		await _frames(8)
+		_shot("%s/title_load_%s.png" % [dir, loc])
+		if title._load_overlay != null and is_instance_valid(title._load_overlay):
+			title._load_overlay.queue_free()
+			title._load_overlay = null
+		GameState.delete_slot(alt)
+		await _frames(4)
+
 		# 2) title with NO save -> New Game is the primary door
 		GameState.delete_save()
 		_free_title(title)
