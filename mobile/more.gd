@@ -23,7 +23,7 @@ func refresh() -> void:
 	mrow.add_theme_constant_override("separation", 10)
 	mv.add_child(mrow)
 	mrow.add_child(Portrait.avatar(Portrait.manager_seed(), 46,
-		{"collar": Portrait.club_collar(GameState.player_club())}))
+		Portrait.manager_opts({"collar": Portrait.club_collar(GameState.player_club())})))
 	var mcol := VBoxContainer.new()
 	mcol.alignment = BoxContainer.ALIGNMENT_CENTER
 	mcol.add_theme_constant_override("separation", 1)

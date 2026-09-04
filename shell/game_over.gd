@@ -75,7 +75,7 @@ func _build_header(box: VBoxContainer) -> void:
 	trow.add_theme_constant_override("separation", 16)
 	box.add_child(trow)
 	# the dismissed manager's own face (portraits piece)
-	trow.add_child(Portrait.avatar(Portrait.manager_seed(), 64))
+	trow.add_child(Portrait.avatar(Portrait.manager_seed(), 64, Portrait.manager_opts()))
 	var title := _lbl("SACKED", 34, TB.COL_BAD)
 	if _font_bold != null:
 		title.add_theme_font_override("font", _font_bold)

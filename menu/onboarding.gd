@@ -35,6 +35,8 @@ var _name_edit: LineEdit
 var _nick_edit: LineEdit
 var _face_holder: Control = null
 var _face_variant := 0
+var _face_custom: Dictionary = {}   # {hair_s?, hair_c?, pose?} — empty = random
+var _custom_box: VBoxContainer = null
 var _back_btn: Button
 var _next_btn: Button
 var _step_chips: Array = []
@@ -273,8 +275,14 @@ func _do_start() -> void:
 	MenuFlow.start_career(str(_selected["id"]), _manager_name(), _nick_edit.text,
 		int(_starter.get("species_id", 0)),
 		_starter_panel.nickname() if _starter_panel != null else "")
+	var save_needed := false
 	if _face_variant != 0:   # chosen look follows the manager everywhere
 		GameState.world["meta"]["manager_face_variant"] = _face_variant
+		save_needed = true
+	if not _face_custom.is_empty():   # onboarding customisation (portraits piece)
+		GameState.world["meta"]["manager_face_opts"] = _face_custom.duplicate()
+		save_needed = true
+	if save_needed:
 		GameState.save_game()
 	AudioManager.play("confirm")
 	career_created.emit()
@@ -340,13 +348,21 @@ func _build_identity() -> Control:
 	pcol.alignment = BoxContainer.ALIGNMENT_CENTER
 	pcol.add_theme_constant_override("separation", 6)
 	prow.add_child(pcol)
+	var btn_row := HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 8)
+	pcol.add_child(btn_row)
 	var reroll := Button.new()
 	reroll.text = tr("New look")
-	reroll.custom_minimum_size = Vector2(140, 34)
+	reroll.custom_minimum_size = Vector2(120, 34)
 	reroll.pressed.connect(func():
 		_face_variant += 1
 		_refresh_face())
-	pcol.add_child(reroll)
+	btn_row.add_child(reroll)
+	var custom_btn := Button.new()
+	custom_btn.text = tr("Customise…")
+	custom_btn.toggle_mode = true
+	custom_btn.custom_minimum_size = Vector2(120, 34)
+	btn_row.add_child(custom_btn)
 	var phint := Label.new()
 	phint.text = tr("The press, the boardroom and rival dugouts will all see this face.")
 	phint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -354,9 +370,77 @@ func _build_identity() -> Control:
 	phint.add_theme_font_size_override("font_size", 11)
 	phint.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	pcol.add_child(phint)
+	# customisation rows (hidden until "Customise…"): each facet cycles
+	# through Auto (the name's own look) + every option
+	_custom_box = VBoxContainer.new()
+	_custom_box.add_theme_constant_override("separation", 4)
+	_custom_box.visible = false
+	col.add_child(_custom_box)
+	_custom_box.add_child(_facet_row(tr("Hairstyle"), "hair_s", 14))
+	_custom_box.add_child(_facet_row(tr("Hair colour"), "hair_c", 10))
+	_custom_box.add_child(_facet_row(tr("Pose"), "pose", 8))
+	custom_btn.toggled.connect(func(on: bool):
+		_custom_box.visible = on
+		if not on:
+			_face_custom.clear()
+			_refresh_face()
+			_refresh_facet_rows())
 	_name_edit.text_changed.connect(func(_t): _refresh_face())
 	_refresh_face()
 	return center
+
+
+## One "‹ Label: value ›" cycler. -1 = Auto (facet from the name's hash).
+func _facet_row(label: String, key: String, count: int) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var l := _field_label(label)
+	l.custom_minimum_size.x = 96
+	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(l)
+	var prev := Button.new()
+	prev.text = "‹"
+	prev.custom_minimum_size = Vector2(34, 30)
+	row.add_child(prev)
+	var val := Label.new()
+	val.name = "val_" + key
+	val.custom_minimum_size.x = 64
+	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	val.add_theme_font_size_override("font_size", 12)
+	val.add_theme_color_override("font_color", ThemeBuilder.COL_ACCENT.lightened(0.2))
+	val.text = tr("Auto")
+	row.add_child(val)
+	var next := Button.new()
+	next.text = "›"
+	next.custom_minimum_size = Vector2(34, 30)
+	row.add_child(next)
+	var cycle := func(dir: int):
+		var cur := int(_face_custom.get(key, -1))
+		cur += dir
+		if cur < -1:
+			cur = count - 1
+		elif cur >= count:
+			cur = -1
+		if cur == -1:
+			_face_custom.erase(key)
+			val.text = tr("Auto")
+		else:
+			_face_custom[key] = cur
+			val.text = str(cur + 1)
+		_refresh_face()
+	prev.pressed.connect(func(): cycle.call(-1))
+	next.pressed.connect(func(): cycle.call(1))
+	return row
+
+
+func _refresh_facet_rows() -> void:
+	if _custom_box == null:
+		return
+	for row in _custom_box.get_children():
+		for c in row.get_children():
+			if c is Label and str(c.name).begins_with("val_"):
+				var key := str(c.name).trim_prefix("val_")
+				c.text = tr("Auto") if not _face_custom.has(key) else str(int(_face_custom[key]) + 1)
 
 
 func _refresh_face() -> void:
@@ -367,7 +451,9 @@ func _refresh_face() -> void:
 	var nm := _manager_name()
 	if nm == "":
 		nm = tr("The Manager")
-	_face_holder.add_child(Portrait.avatar(nm, 84, {"variant": _face_variant}))
+	var opts := _face_custom.duplicate()
+	opts["variant"] = _face_variant
+	_face_holder.add_child(Portrait.avatar(nm, 84, opts))
 
 
 func _field_label(text: String) -> Label:
@@ -411,7 +497,9 @@ func _build_summary() -> Control:
 	var who_row := HBoxContainer.new()
 	who_row.add_theme_constant_override("separation", 12)
 	# 46px matches the club crest and the starter disc below — same icon column
-	who_row.add_child(Portrait.avatar(_manager_name(), 46, {"variant": _face_variant}))
+	var sum_opts := _face_custom.duplicate()
+	sum_opts["variant"] = _face_variant
+	who_row.add_child(Portrait.avatar(_manager_name(), 46, sum_opts))
 	var who := Label.new()
 	var nick := _nick_edit.text.strip_edges()
 	who.text = (tr("%s “%s” — manager") % [_manager_name(), nick]) if nick != "" \

@@ -31,8 +31,8 @@ static func _pick(seed: String, facet: String, n: int) -> int:
 
 
 static func tex(seed: String, px: int = 48, opts: Dictionary = {}) -> ImageTexture:
-	var key := "%s|%d|%s|%s|%s" % [seed, px, str(opts.get("collar", "")),
-		str(opts.get("pose", "")), str(opts.get("hair_s", ""))]
+	var key := "%s|%d|%s|%s|%s|%s" % [seed, px, str(opts.get("collar", "")),
+		str(opts.get("pose", "")), str(opts.get("hair_s", "")), str(opts.get("hair_c", ""))]
 	if _cache.has(key):
 		return _cache[key]
 	var img := _draw(seed, opts)
@@ -130,7 +130,7 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 
 	var skin := Color(SKINS[_pick(seed, "skin", SKINS.size())])
 	var skin_sh := skin.darkened(0.18)
-	var hair_i := _pick(seed, "hair_c", HAIRS.size())
+	var hair_i := int(opts.get("hair_c", _pick(seed, "hair_c", HAIRS.size()))) % HAIRS.size()
 	var hair := Color(HAIRS[hair_i])
 	if int(opts.get("age", 0)) >= 55 and _pick(seed, "grey", 3) > 0:
 		hair = Color(GREY)

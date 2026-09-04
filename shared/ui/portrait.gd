@@ -169,6 +169,18 @@ static func _is_fem(seed: String) -> bool:
 ## The player manager's stable face seed: name + reroll variant chosen during
 ## onboarding (world.meta.manager_face_variant). Pre-menu careers fall back to
 ## the club's generated manager name — still a stable, unique face.
+## The manager's saved portrait customisation (onboarding "Customise"):
+## world.meta.manager_face_opts = {hair_s?, hair_c?, pose?}. Merge it into a
+## call site's own opts when rendering the player manager.
+static func manager_opts(extra: Dictionary = {}) -> Dictionary:
+	var o := extra.duplicate()
+	var mo: Variant = GameState.world.get("meta", {}).get("manager_face_opts", {})
+	if mo is Dictionary:
+		for k in mo:
+			o[k] = int(mo[k])   # JSON round-trips ints as floats
+	return o
+
+
 static func manager_seed() -> String:
 	var meta: Dictionary = GameState.world.get("meta", {})
 	var nm := str(meta.get("manager_name", ""))

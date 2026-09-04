@@ -399,7 +399,7 @@ func _open_game_over() -> void:
 	v.add_theme_constant_override("separation", 10)
 	sc.add_child(v)
 
-	var face := Portrait.avatar(Portrait.manager_seed(), 64)
+	var face := Portrait.avatar(Portrait.manager_seed(), 64, Portrait.manager_opts())
 	face.modulate = Color(0.55, 0.55, 0.6)   # a grey day
 	v.add_child(face)
 	var t := MUI.title(tr("SACKED"), 30)

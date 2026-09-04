@@ -1381,7 +1381,7 @@ func _refresh_identity() -> void:
 	# the manager's own procedural portrait (portraits piece)
 	for c2 in _mgr_face_holder.get_children():
 		c2.queue_free()
-	var mf := Portrait.avatar(Portrait.manager_seed(), 16, {"collar": Portrait.club_collar(pc)})
+	var mf := Portrait.avatar(Portrait.manager_seed(), 16, Portrait.manager_opts({"collar": Portrait.club_collar(pc)}))
 	_mgr_face_holder.add_child(mf)
 	_club_sub2_label.text = "%s · %s" % [_league_pos_text(), tr(GameState.world["meta"]["league_name"])]
 
