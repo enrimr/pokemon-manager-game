@@ -1,24 +1,24 @@
 class_name PixelPortrait
 extends Object
-## EXPERIMENT (art piece): procedural pixel-art people, in the visual family
-## of the bundled official trainer sprites (gen-V palette, hard 1px outline,
-## NEAREST upscaling). Deterministic per name — same facet-hash discipline as
-## Portrait/PortraitSVG — and diverse: 6 skins x 9 hairstyles x 10 hair
-## colours x eyes/brows/mouth/extras x 6 outfits.
+## Procedural pixel-art people (art piece), v2: 48x48 busts in the visual
+## family of the bundled official trainer sprites — gen-V palette, hard 1px
+## unified outline, big Pokémon-style eyes (sclera + coloured iris + catch-
+## light), banded hair shading. Deterministic per name (facet hashes) and
+## diverse: 6 skins x 9 hairstyles x 10 hair colours x 5 iris colours x
+## brows/mouths/blush/beards x outfits with club-collar override + greying.
 ##
-## Busts (head + shoulders) on a 24x24 canvas: that is what every avatar slot
-## in the game actually shows, and the scale pixel art is forgiving at.
-##
-##   PixelPortrait.tex(seed, px, opts)    -> ImageTexture (px ~ multiple of 24)
+##   PixelPortrait.tex(seed, px, opts)    -> ImageTexture
 ##   PixelPortrait.avatar(seed, px, opts) -> TextureRect
-## opts: {"collar": Color (club kit), "age": int (grey hair when veteran)}
+## opts: {"collar": Color (club kit), "age": int, "tooltip": String}
 
-const N := 24                        # canvas size
+const N := 48
 const OUT := Color8(38, 34, 54)      # unified outline (gen-V dark plum)
+const CX := 24                       # head centre column
 
 const SKINS := ["f5d5a7", "eec39a", "d9a066", "b07a4a", "8a5a33", "6b4226"]
 const HAIRS := ["2b2b33", "5a3825", "8a5a2b", "c98a3a", "e8c04a", "c94a35",
 	"7a4a8a", "3a6ac9", "3a8a5a", "c95a8a"]
+const IRISES := ["5a3825", "3a6ac9", "3a8a5a", "b06a2a", "7a4a8a"]
 const GREY := "b9b9c9"
 const OUTFITS := ["c94a35", "3a6ac9", "3a8a5a", "e8c04a", "7a4a8a", "e07a3a",
 	"52c7a8", "8b91a8"]
@@ -35,7 +35,7 @@ static func tex(seed: String, px: int = 48, opts: Dictionary = {}) -> ImageTextu
 	if _cache.has(key):
 		return _cache[key]
 	var img := _draw(seed, opts)
-	var scale := maxi(1, px / N)
+	var scale := maxi(1, int(round(float(px) / float(N))))
 	img.resize(N * scale, N * scale, Image.INTERPOLATE_NEAREST)
 	var t := ImageTexture.create_from_image(img)
 	if _cache.size() > 256:
@@ -46,7 +46,7 @@ static func tex(seed: String, px: int = 48, opts: Dictionary = {}) -> ImageTextu
 
 static func avatar(seed: String, px: int = 32, opts: Dictionary = {}) -> TextureRect:
 	var r := TextureRect.new()
-	r.texture = tex(seed, maxi(px, 24), opts)
+	r.texture = tex(seed, maxi(px, N), opts)
 	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	r.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -60,6 +60,28 @@ static func avatar(seed: String, px: int = 32, opts: Dictionary = {}) -> Texture
 	return r
 
 
+# ------------------------------------------------------------------ helpers
+
+static func _px(img: Image, x: int, y: int, c: Color) -> void:
+	if x >= 0 and x < N and y >= 0 and y < N:
+		img.set_pixel(x, y, c)
+
+
+static func _rect(img: Image, x0: int, y0: int, x1: int, y1: int, c: Color) -> void:
+	for y in range(y0, y1 + 1):
+		for x in range(x0, x1 + 1):
+			_px(img, x, y, c)
+
+
+## Horizontal-scanline ellipse fill.
+static func _ellipse(img: Image, cx: int, cy: int, rx: float, ry: float, c: Color) -> void:
+	for y in range(cy - int(ry), cy + int(ry) + 1):
+		var t := (float(y) - cy) / ry
+		var w := rx * sqrt(maxf(0.0, 1.0 - t * t))
+		for x in range(cx - int(round(w)), cx + int(round(w)) + 1):
+			_px(img, x, y, c)
+
+
 # ------------------------------------------------------------------ drawing
 
 static func _draw(seed: String, opts: Dictionary) -> Image:
@@ -67,138 +89,155 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 	var first := seed.split(" ", false)[0] if seed.strip_edges() != "" else ""
 	var fem := Portrait.FEM_FIRST.has(first)
 	if not fem and not Portrait.MASC_FIRST.has(first):
-		fem = _pick(seed, "fem", 2) == 1   # unknown first names: stable coin flip
+		fem = _pick(seed, "fem", 2) == 1
 
 	var skin := Color(SKINS[_pick(seed, "skin", SKINS.size())])
-	var skin_sh := skin.darkened(0.22)
+	var skin_sh := skin.darkened(0.18)
 	var hair_i := _pick(seed, "hair_c", HAIRS.size())
 	var hair := Color(HAIRS[hair_i])
 	if int(opts.get("age", 0)) >= 55 and _pick(seed, "grey", 3) > 0:
 		hair = Color(GREY)
 	if absf(hair.get_luminance() - skin.get_luminance()) < 0.14:
-		hair = hair.darkened(0.30)   # blond-on-pale etc. must never read bald
-	var hair_hi := hair.lightened(0.22)
+		hair = hair.darkened(0.30)
+	var hair_sh := hair.darkened(0.22)
+	var hair_hi := hair.lightened(0.20)
 	var style := _pick(seed, "hair_s", 9)
+	var iris := Color(IRISES[_pick(seed, "iris", IRISES.size())])
 	var outfit := Color(OUTFITS[_pick(seed, "outfit", OUTFITS.size())])
 	if opts.get("collar") is Color:
 		outfit = opts["collar"]
 	var outfit_sh := outfit.darkened(0.25)
+	var outfit_hi := outfit.lightened(0.18)
 
-	# --- shoulders/bust (rows 17..23): trapezoid widening down
-	for y in range(17, N):
-		var half := 5 + (y - 17)              # 5..11
-		for x in range(12 - half, 12 + half):
-			if x < 0 or x >= N:
-				continue
-			img.set_pixel(x, y, outfit if x < 12 else outfit_sh)
-	# collar detail: V of skin at the neck + trim line
-	for y in range(17, 19):
-		for x in range(10, 14):
-			img.set_pixel(x, y, skin_sh)
+	# --- shoulders/bust (rows 35..47): trapezoid, lit from the left
+	for y in range(35, N):
+		var half := 9 + int((y - 35) * 0.75)
+		for x in range(CX - half, CX + half + 1):
+			_px(img, x, y, outfit if x < CX + 2 else outfit_sh)
+	for y in range(35, 38):   # shoulder top highlight
+		for x in range(CX - 8, CX - 2):
+			_px(img, x, y, outfit_hi)
+	# collar/neckline variants
 	var trim := _pick(seed, "trim", 4)
-	if trim == 1:   # jacket zip / tie line
-		for y in range(19, N):
-			img.set_pixel(12, y, outfit.darkened(0.45))
-	elif trim == 2: # scarf / crew band
-		for x in range(7, 17):
-			img.set_pixel(x, 19, outfit.lightened(0.3))
-	elif trim == 3: # lab/suit lapels: pale V panel
-		var lap := Color("e8e6f0") if _pick(seed, "coat", 2) == 0 else outfit.darkened(0.4)
-		for y in range(19, N):
-			var w := (y - 19) / 2 + 1
-			for x in range(12 - w, 12 + w):
-				img.set_pixel(x, y, lap)
+	if trim == 0:              # V-neck kit: pale tee under
+		for dy in 4:
+			for x in range(CX - 3 + dy, CX + 4 - dy):
+				_px(img, x, 35 + dy, Color("e8e6f0") if dy >= 2 else skin_sh)
+	elif trim == 1:            # zipped jacket: centre line + collar flaps
+		for y in range(36, N):
+			_px(img, CX, y, outfit.darkened(0.45))
+		_rect(img, CX - 6, 35, CX - 2, 37, outfit_hi)
+		_rect(img, CX + 2, 35, CX + 6, 37, outfit_hi)
+	elif trim == 2:            # crew band / scarf
+		for x in range(CX - 8, CX + 9):
+			_px(img, x, 36, outfit.lightened(0.35))
+			_px(img, x, 37, outfit.lightened(0.35))
+	else:                      # lapels: lab coat (pale) or suit (dark)
+		var lap := Color("e8e6f0") if _pick(seed, "coat", 2) == 0 else outfit.darkened(0.42)
+		for y in range(35, N):
+			var w := 1 + (y - 35) / 2
+			for x in range(CX - w, CX + w + 1):
+				_px(img, x, y, lap)
 
-	# --- neck (rows 15..17)
-	for y in range(15, 18):
-		for x in range(10, 14):
-			img.set_pixel(x, y, skin_sh if y == 15 else skin)
+	# --- neck (rows 29..35)
+	_rect(img, CX - 3, 29, CX + 3, 35, skin)
+	for x in range(CX - 3, CX + 4):
+		_px(img, x, 29, skin_sh)
+		_px(img, x, 30, skin_sh)
 
-	# --- head (rows 4..15): 10 wide, jaw variants
+	# --- head: ellipse + jaw variants
 	var jaw := _pick(seed, "jaw", 3)          # 0 round, 1 square, 2 narrow
-	for y in range(4, 16):
-		var x0 := 7
-		var x1 := 17
-		if y <= 5:
-			x0 = 8; x1 = 16
-		if y >= 13:                           # chin taper
-			match jaw:
-				0: x0 = 8; x1 = 16
-				1: x0 = 8; x1 = 16
-				2: x0 = 9; x1 = 15
-		if y == 15:
-			x0 = 10; x1 = 14
-			if jaw == 1:
-				x0 = 9; x1 = 15
-		for x in range(x0, x1):
-			img.set_pixel(x, y, skin)
-	# corner cuts: rounder skull + chin (kills the rectangle read)
-	for pt in [[7, 4], [16, 4], [8, 4], [15, 4], [7, 5], [16, 5],
-			[7, 12], [16, 12], [7, 13], [16, 13],
-			[8, 14], [15, 14], [7, 14], [16, 14], [9, 15], [14, 15]]:
-		if img.get_pixel(pt[0], pt[1]).is_equal_approx(skin):
-			img.set_pixel(pt[0], pt[1], Color(0, 0, 0, 0))
-	# soft cheek/jaw shading + nose + fringe shadow across the forehead
-	img.set_pixel(15, 12, skin_sh)
-	img.set_pixel(14, 14, skin_sh)
-	img.set_pixel(9, 14, skin_sh)
-	img.set_pixel(12, 12, skin_sh)              # nose
-	for x in range(8, 16):
-		if img.get_pixel(x, 9).is_equal_approx(skin):
-			img.set_pixel(x, 9, skin.darkened(0.10))
+	var rx := 10.0 if jaw != 2 else 9.0
+	_ellipse(img, CX, 19, rx, 11.0, skin)
+	if jaw == 1:                              # square: fill the jaw corners
+		_rect(img, CX - 7, 26, CX + 7, 29, skin)
+	else:
+		_rect(img, CX - 6, 26, CX + 6, 28, skin)
+		for x in range(CX - 4, CX + 5):
+			_px(img, x, 29, skin)
+	# ears at eye height
+	_rect(img, CX - 12, 19, CX - 11, 23, skin)
+	_rect(img, CX + 11, 19, CX + 12, 23, skin)
+	_px(img, CX - 11, 21, skin_sh)
+	_px(img, CX + 11, 21, skin_sh)
+	# jaw shading
+	for x in range(CX + 3, CX + 8):
+		_px(img, x, 27, skin_sh)
+	for x in range(CX - 3, CX + 4):
+		_px(img, x, 28 if jaw != 1 else 29, skin.darkened(0.10))
 
-	# --- eyes: bold 2x2 anime blocks + top-left catchlight (the refs read
-	# from their big dark eyes — so must we)
-	var eye := Color8(26, 24, 38)
+	# --- eyes (rows 18..23): big sclera + iris + pupil + catchlight
 	var eye_style := _pick(seed, "eyes", 3)
-	for ex in [9, 13]:
-		for dx in 2:
-			img.set_pixel(ex + dx, 10, eye)
-			img.set_pixel(ex + dx, 11, eye)
-		if eye_style != 1:
-			img.set_pixel(ex, 10, Color.WHITE.lerp(eye, 0.25))
-		if eye_style == 2:                    # narrow: squint 1px tall
-			img.set_pixel(ex, 10, skin)
-			img.set_pixel(ex + 1, 10, skin)
-	# brows (row 9, just under the fringe)
-	if _pick(seed, "brow", 2) == 0:
-		for ex in [9, 13]:
-			img.set_pixel(ex, 9, Color(HAIRS[hair_i]).darkened(0.2))
-			img.set_pixel(ex + 1, 9, Color(HAIRS[hair_i]).darkened(0.2))
-	# mouth (row 13/14)
+	var lash := Color8(30, 28, 40)
+	for side in [-1, 1]:
+		var x0 := CX + (2 if side > 0 else -8)
+		var x1 := x0 + 6
+		if eye_style == 2:                       # narrow/squint
+			_rect(img, x0 + 1, 21, x1 - 1, 22, Color.WHITE)
+			_rect(img, x0 + 2, 21, x1 - 2, 22, iris)
+			for x in range(x0 + 1, x1):
+				_px(img, x, 20, lash)
+		else:
+			_rect(img, x0 + 1, 19, x1 - 1, 23, Color.WHITE)
+			_rect(img, x0 + 2, 19, x1 - 2, 23, iris)
+			_rect(img, x0 + 3, 21, x1 - 3, 22, iris.darkened(0.45))  # pupil
+			_px(img, x0 + 2, 19, Color.WHITE)                        # catchlight
+			for x in range(x0 + 1, x1):
+				_px(img, x, 18, lash)                                # lash line
+	# brows
+	var brow := Color(HAIRS[hair_i]).darkened(0.25)
+	var brow_y := 15 + _pick(seed, "brow_h", 2)
+	for side in [-1, 1]:
+		for dx in range(2, 7):
+			_px(img, CX + side * dx, brow_y, brow)
+		_px(img, CX + side * 6, brow_y + 1, brow)
+
+	# --- nose + mouth
+	_px(img, CX + 1, 25, skin_sh.darkened(0.15))
+	_px(img, CX + 1, 24, skin_sh)
 	var mouth := _pick(seed, "mouth", 3)
 	var lip := skin_sh.darkened(0.45)
-	img.set_pixel(11, 13, lip)
-	img.set_pixel(12, 13, lip)
-	if mouth == 0:                              # smile: corners up
-		img.set_pixel(10, 13, lip)
-	elif mouth == 2:                            # open grin
-		img.set_pixel(11, 14, lip)
-		img.set_pixel(12, 14, lip)
-	# blush for some feminine faces
+	if mouth == 0:                            # smile
+		for x in range(CX - 2, CX + 3):
+			_px(img, x, 27, lip)
+		_px(img, CX - 3, 26, lip)
+		_px(img, CX + 3, 26, lip)
+	elif mouth == 1:                          # neutral
+		for x in range(CX - 2, CX + 3):
+			_px(img, x, 27, lip)
+	else:                                     # open grin
+		for x in range(CX - 2, CX + 3):
+			_px(img, x, 26, lip)
+			_px(img, x, 27, Color("e8908a").darkened(0.2))
+		for x in range(CX - 1, CX + 2):
+			_px(img, x, 28, lip)
+	# blush
 	if fem and _pick(seed, "blush", 3) == 0:
-		img.set_pixel(8, 11, Color("e8908a"))
-		img.set_pixel(15, 11, Color("e8908a"))
-	# facial hair for some masculine faces
+		for side in [-1, 1]:
+			_px(img, CX + side * 7, 24, Color("e8908a"))
+			_px(img, CX + side * 8, 24, Color("e8908a"))
+	# beard/stubble
 	if not fem and _pick(seed, "beard", 4) == 0:
-		for x in range(9, 15):
-			img.set_pixel(x, 14, hair)
-		img.set_pixel(8, 13, hair)
-		img.set_pixel(15, 13, hair)
+		for x in range(CX - 6, CX + 7):
+			_px(img, x, 29, hair_sh)
+			if absi(x - CX) > 2:
+				_px(img, x, 28, hair_sh)
+		_rect(img, CX - 7, 25, CX - 6, 28, hair_sh)
+		_rect(img, CX + 6, 25, CX + 7, 28, hair_sh)
 
-	# --- hair (style painter). 8 = cap hat.
+	# --- hair
 	match style:
-		0: _hair_spiky(img, hair, hair_hi)
-		1: _hair_bowl(img, hair, hair_hi)
-		2: _hair_short(img, hair, hair_hi)
-		3: _hair_long(img, hair, hair_hi)
-		4: _hair_ponytail(img, hair, hair_hi)
-		5: _hair_pigtails(img, hair, hair_hi)
-		6: _hair_curly(img, hair, hair_hi)
-		7: _hair_buzz(img, hair, hair_hi)
-		8: _hat_cap(img, seed, hair)
+		0: _hair_spiky(img, hair, hair_sh, hair_hi)
+		1: _hair_bowl(img, hair, hair_sh, hair_hi)
+		2: _hair_swept(img, hair, hair_sh, hair_hi)
+		3: _hair_long(img, hair, hair_sh, hair_hi)
+		4: _hair_ponytail(img, hair, hair_sh, hair_hi)
+		5: _hair_pigtails(img, hair, hair_sh, hair_hi)
+		6: _hair_curly(img, hair, hair_sh, hair_hi)
+		7: _hair_buzz(img, hair, hair_sh)
+		8: _hat_cap(img, seed, hair, hair_sh)
 
-	# --- unified 1px outline: any coloured pixel that touches emptiness
+	# --- unified 1px outline
 	var base := img.duplicate()
 	for y in N:
 		for x in N:
@@ -215,115 +254,135 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 	return img
 
 
-# Painters own the whole scalp: a solid cap rows 3..8 (down to the brow) so
-# nobody reads as bald, then the style's silhouette on top. Fringe leaves the
-# eye rows (10+) clear.
-static func _cap_base(img: Image, c: Color, hi: Color, fringe_y: int = 8) -> void:
-	for x in range(7, 17):
-		for y in range(3, fringe_y + 1):
-			img.set_pixel(x, y, c)
-	for x in range(9, 15):
-		img.set_pixel(x, 3, hi)
+# ------------------------------------------------------------------ hair
+# Every style owns the scalp: dome over the skull down to the brow line with
+# a highlight arc + a shadow row where hair meets forehead, then silhouette.
+
+static func _dome(img: Image, c: Color, sh: Color, hi: Color, fringe_y: int = 15) -> void:
+	# skull-hugging cap CLIPPED at the fringe line — never over the eyes
+	for y in range(3, fringe_y + 1):
+		var t := (float(y) - 15.0) / 12.0
+		var w := 12.0 * sqrt(maxf(0.0, 1.0 - t * t))
+		for x in range(CX - int(round(w)), CX + int(round(w)) + 1):
+			_px(img, x, y, c)
+	# shadow where the fringe sits on the forehead
+	for x in range(CX - 8, CX + 9):
+		_px(img, x, fringe_y + 1, sh)
+	# highlight arc top-left
+	for x in range(CX - 7, CX):
+		_px(img, x, 7, hi)
+		_px(img, x + 1, 8, hi)
 	# temples framing the face
-	for y in range(fringe_y, 11):
-		img.set_pixel(7, y, c)
-		img.set_pixel(16, y, c)
+	_rect(img, CX - 11, fringe_y, CX - 10, 20, c)
+	_rect(img, CX + 10, fringe_y, CX + 11, 20, c)
 
 
-static func _hair_spiky(img: Image, c: Color, hi: Color) -> void:
-	_cap_base(img, c, hi, 7)
-	for x in [8, 11, 14]:        # three bold spikes
-		img.set_pixel(x, 2, c)
-		img.set_pixel(x + 1, 2, c)
-		img.set_pixel(x, 1, hi if x == 11 else c)
-	img.set_pixel(17, 4, c)      # flick at the temple
-	img.set_pixel(6, 4, c)
-	# jagged fringe: alternate teeth over the forehead
-	for x in range(8, 16):
-		if x % 2 == 0:
-			img.set_pixel(x, 8, c)
+static func _hair_spiky(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	_dome(img, c, sh, hi, 14)
+	# five spikes: triangles rising from the dome
+	for s in [[-9, 4], [-4, 6], [1, 7], [6, 5], [10, 3]]:
+		var sx: int = CX + int(s[0])
+		var sh_n: int = int(s[1])
+		for h in range(sh_n):
+			for w in range(maxi(1, sh_n - h - 1)):
+				_px(img, sx + w, 6 - h, c if h < sh_n - 2 else hi)
+	# jagged fringe teeth
+	for x in range(CX - 9, CX + 10, 3):
+		_px(img, x, 16, c)
+		_px(img, x + 1, 16, c)
 
 
-static func _hair_bowl(img: Image, c: Color, hi: Color) -> void:
-	_cap_base(img, c, hi, 8)
-	for y in range(9, 12):
-		img.set_pixel(7, y, c)
-		img.set_pixel(8, y, c)
-		img.set_pixel(15, y, c)
-		img.set_pixel(16, y, c)
+static func _hair_bowl(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	_dome(img, c, sh, hi, 16)
+	# curtains to the jaw
+	_rect(img, CX - 12, 14, CX - 10, 26, c)
+	_rect(img, CX + 10, 14, CX + 12, 26, sh)
 
 
-static func _hair_short(img: Image, c: Color, hi: Color) -> void:
-	_cap_base(img, c, hi, 7)
-	for x in range(8, 16):
-		if x <= 11:
-			img.set_pixel(x, 8, c)   # side-swept fringe
+static func _hair_swept(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	_dome(img, c, sh, hi, 13)
+	# diagonal fringe sweeping right (clipped above the lash line)
+	for x in range(CX - 10, CX + 8):
+		var drop := mini(int(float(x - (CX - 10)) / 3.2), 3)
+		_px(img, x, 14 + drop, c)
+		if x < CX:
+			_px(img, x, mini(15 + drop, 17), c)
+	_rect(img, CX + 9, 13, CX + 11, 19, c)
 
 
-static func _hair_long(img: Image, c: Color, hi: Color) -> void:
-	_cap_base(img, c, hi, 8)
-	for y in range(9, 21):
-		for x in [5, 6, 17, 18]:
-			img.set_pixel(x, y, c if x <= 6 else c.darkened(0.12))
-	for y in range(9, 13):
-		img.set_pixel(7, y, c)
-		img.set_pixel(16, y, c)
+static func _hair_long(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	_dome(img, c, sh, hi, 15)
+	# flowing curtains to the shoulders
+	for y in range(15, 40):
+		var wob := 0 if y < 30 else (1 if y % 4 < 2 else 0)
+		_rect(img, CX - 14 - wob, y, CX - 11, y, c)
+		_rect(img, CX + 11, y, CX + 14 + wob, y, sh)
+	for y in range(15, 38, 4):   # strand highlights
+		_px(img, CX - 13, y, hi)
+		_px(img, CX + 12, y, c)
 
 
-static func _hair_ponytail(img: Image, c: Color, hi: Color) -> void:
-	_cap_base(img, c, hi, 7)
-	for y in range(3, 16):
-		img.set_pixel(18, y, c)
-		img.set_pixel(19, y, c.darkened(0.12))
-	img.set_pixel(18, 3, hi)
-	img.set_pixel(17, 4, c)
+static func _hair_ponytail(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	_dome(img, c, sh, hi, 13)
+	# pulled-back look: tail arcing down the right
+	for y in range(8, 30):
+		var sway := int(2.5 * sin(float(y - 8) * 0.30))
+		_rect(img, CX + 12 + sway, y, CX + 14 + sway, y, c if y < 20 else sh)
+	_px(img, CX + 13, 9, hi)
+	_px(img, CX + 13, 10, hi)
+	# fringe wisp
+	for x in range(CX - 8, CX - 2):
+		_px(img, x, 14, c)
 
 
-static func _hair_pigtails(img: Image, c: Color, hi: Color) -> void:
-	_cap_base(img, c, hi, 8)
+static func _hair_pigtails(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	_dome(img, c, sh, hi, 15)
+	for side in [-1, 1]:
+		var bx: int = CX + side * 14
+		_ellipse(img, bx, 16, 3.0, 5.0, c if side < 0 else sh)
+		_px(img, bx - 1, 12, hi)
+		# tie pixel where the bunch meets the head
+		_px(img, CX + side * 11, 14, c.darkened(0.4))
+
+
+static func _hair_curly(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	_dome(img, c, sh, hi, 15)
+	# bumpy crown: little circles along the silhouette
+	for b in [[-10, 9], [-6, 6], [-1, 5], [4, 6], [9, 8]]:
+		_ellipse(img, CX + int(b[0]), int(b[1]), 2.6, 2.6, c)
+		_px(img, CX + int(b[0]) - 1, int(b[1]) - 1, hi)
+	_rect(img, CX - 12, 14, CX - 10, 23, c)
+	_rect(img, CX + 10, 14, CX + 12, 23, sh)
+
+
+static func _hair_buzz(img: Image, c: Color, sh: Color) -> void:
+	var cc := c.darkened(0.30)
 	for y in range(5, 14):
-		for x in [4, 5]:
-			img.set_pixel(x, y, c)
-		for x in [18, 19]:
-			img.set_pixel(x, y, c.darkened(0.12))
-	img.set_pixel(4, 5, hi)
+		var t := (float(y) - 13.0) / 9.0
+		var w := 11.0 * sqrt(maxf(0.0, 1.0 - t * t))
+		for x in range(CX - int(round(w)), CX + int(round(w)) + 1):
+			_px(img, x, y, cc)
+	for x in range(CX - 8, CX + 9):
+		_px(img, x, 14, sh.darkened(0.2))
 
 
-static func _hair_curly(img: Image, c: Color, hi: Color) -> void:
-	_cap_base(img, c, hi, 8)
-	for x in range(6, 18):
-		if (x % 3) != 1:
-			img.set_pixel(x, 2, c)
-		if x % 4 == 2:
-			img.set_pixel(x, 1, c)
-	for y in range(8, 12):
-		img.set_pixel(6, y, c)
-		img.set_pixel(17, y, c)
-	img.set_pixel(8, 2, hi)
-	img.set_pixel(13, 2, hi)
-
-
-static func _hair_buzz(img: Image, c: Color, _hi: Color) -> void:
-	var cc := c.darkened(0.35)   # always darker than any skin tone
-	for x in range(7, 17):
-		for y in range(3, 7):
-			img.set_pixel(x, y, cc)
-	for y in range(7, 9):
-		img.set_pixel(7, y, cc)
-		img.set_pixel(16, y, cc)
-
-
-static func _hat_cap(img: Image, seed: String, hair: Color) -> void:
+static func _hat_cap(img: Image, seed: String, hair: Color, hair_sh: Color) -> void:
 	var cap := Color(OUTFITS[_pick(seed, "cap_c", OUTFITS.size())])
-	for x in range(7, 17):
-		for y in range(2, 7):
-			img.set_pixel(x, y, cap)
-	for x in range(13, 20):      # brim to the right
-		img.set_pixel(x, 7, cap.darkened(0.2))
-	for x in range(9, 12):       # front panel
-		img.set_pixel(x, 3, cap.lightened(0.25))
-	for x in range(7, 17):       # fringe under the cap
-		img.set_pixel(x, 7, hair)
-	for y in range(8, 10):       # sideburns
-		img.set_pixel(7, y, hair)
-		img.set_pixel(16, y, hair)
+	for y in range(4, 15):
+		var t := (float(y) - 14.0) / 10.0
+		var w := 12.0 * sqrt(maxf(0.0, 1.0 - t * t))
+		for x in range(CX - int(round(w)), CX + int(round(w)) + 1):
+			_px(img, x, y, cap)
+	# front panel + button
+	_rect(img, CX - 4, 6, CX + 3, 11, cap.lightened(0.22))
+	_px(img, CX, 4, cap.darkened(0.3))
+	# brim sweeping right
+	for x in range(CX + 2, CX + 16):
+		_px(img, x, 15, cap.darkened(0.2))
+		_px(img, x, 16, cap.darkened(0.28))
+	# hair under the cap
+	for x in range(CX - 10, CX + 2):
+		_px(img, x, 15, hair)
+		_px(img, x, 16, hair_sh)
+	_rect(img, CX - 11, 15, CX - 10, 20, hair)
+	_rect(img, CX + 10, 17, CX + 11, 20, hair_sh)
