@@ -538,13 +538,13 @@ static func _arms_crossed(img: Image, outfit: Color, outfit_sh: Color, skin: Col
 	_rect(img, CX - 9, 44, CX - 7, 45, skin.darkened(0.08))
 
 
-## One hand raised beside the head, waving — official-sprite energy.
-## The arm is 3px thick: the outline pass eats both edges of anything
-## thinner, leaving a floating dark stick (found the hard way).
+## One arm raised, fist presenting a Poké Ball — the classic victory pose.
+## Arm parts stay >= 4px thick: the outline pass eats both edges of
+## anything thinner, leaving a floating dark stick (found the hard way).
 static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 		skin: Color, max_half: int) -> void:
 	var side := 1 if _pick(seed, "wavedir", 2) == 0 else -1
-	var ax := CX + side * 18                 # well clear of even the big hairdos
+	var ax := CX + side * 18                 # clear of even the big hairdos
 	var sleeve := outfit.darkened(0.10) if side > 0 else outfit
 	# underarm wedge: connects the shoulder to the raised arm (no floating)
 	for y in range(35, 42):
@@ -553,16 +553,39 @@ static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 		var x_in := CX + side * (half - 3)
 		for x in range(mini(x_in, ax - 1), maxi(x_in, ax + 1) + 1):
 			_px(img, x, y, sleeve)
-	# upper arm: vertical, 4px thick
-	for y in range(16, 36):
+	# upper arm: vertical, 4px thick, slight inward step at the top (bend)
+	for y in range(23, 36):
+		var lean := -side if y < 26 else 0
 		for dx in range(-1, 3):
-			_px(img, ax + dx * side, y, sleeve if dx <= 0 else outfit_sh)
+			_px(img, ax + dx * side + lean, y, sleeve if dx <= 0 else outfit_sh)
 	# cuff
 	for dx in range(-1, 3):
-		_px(img, ax + dx * side, 15, outfit_sh.darkened(0.15))
-	# open hand ABOVE the hairline: palm + three fingers
-	_rect(img, ax - 2, 10, ax + 2, 14, skin)
-	for f in [-2, 0, 2]:
-		_px(img, ax + f, 9, skin)
-		_px(img, ax + f, 8, skin)
-	_px(img, ax + side, 12, skin.darkened(0.12))
+		_px(img, ax + dx * side - side, 22, outfit_sh.darkened(0.15))
+	# closed fist gripping under the ball (no splayed fingers)
+	var fx := ax - side                      # fist sits on the bent wrist
+	_rect(img, fx - 2, 18, fx + 2, 21, skin)
+	_px(img, fx - side * 2, 19, skin.darkened(0.15))   # thumb crease
+	_px(img, fx + side * 2, 20, skin.darkened(0.10))
+	# --- the Poké Ball, resting on the fist (rows 9..17)
+	var ball_r := Color("e03028")
+	var ball_w := Color("f2f2f5")
+	var bx := fx
+	var by := 13
+	for y in range(by - 4, by + 5):
+		var t2 := (float(y) - by) / 4.6
+		var w := 4.6 * sqrt(maxf(0.0, 1.0 - t2 * t2))
+		for x in range(bx - int(round(w)), bx + int(round(w)) + 1):
+			_px(img, x, y, ball_r if y < by else ball_w)
+	# band across the middle + centre button
+	for x in range(bx - 4, bx + 5):
+		_px(img, x, by, OUT)
+	_px(img, bx - 1, by, ball_w)
+	_px(img, bx, by, ball_w)
+	_px(img, bx - 1, by - 1, OUT)
+	_px(img, bx, by - 1, OUT)
+	_px(img, bx - 1, by + 1, OUT)
+	_px(img, bx, by + 1, OUT)
+	# glossy highlight on the red hemisphere
+	_px(img, bx - 2, by - 3, Color("ff9a8a"))
+	_px(img, bx - 1, by - 3, Color("ff9a8a"))
+	_px(img, bx - 2, by - 2, Color("ff9a8a"))
