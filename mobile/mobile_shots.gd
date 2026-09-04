@@ -83,7 +83,7 @@ func _run() -> void:
 	await _frames(12)
 	_shot("%s/home.png" % dir)
 
-	for tab in ["inbox", "squad", "league", "more", "items", "routes"]:
+	for tab in ["inbox", "squad", "league", "more", "items", "routes", "tactics"]:
 		shell.open_tab(tab)
 		await _frames(10)
 		_shot("%s/%s.png" % [dir, tab])
