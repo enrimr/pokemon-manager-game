@@ -36,8 +36,13 @@ static func tex(seed: String, px: int = 48, opts: Dictionary = {}) -> ImageTextu
 	if _cache.has(key):
 		return _cache[key]
 	var img := _draw(seed, opts)
-	var scale := maxi(1, int(round(float(px) / float(N))))
-	img.resize(N * scale, N * scale, Image.INTERPOLATE_NEAREST)
+	if px >= 56:
+		# big slots get the EPX/Scale2x treatment: 48 -> 96 edge-aware pixel
+		# doubling — finer curves, same palette, still honest pixel art
+		img = _scale2x(img)
+	var side_n := img.get_width()
+	var scale := maxi(1, int(round(float(px) / float(side_n))))
+	img.resize(side_n * scale, side_n * scale, Image.INTERPOLATE_NEAREST)
 	var t := ImageTexture.create_from_image(img)
 	if _cache.size() > 256:
 		_cache.clear()
@@ -62,6 +67,37 @@ static func avatar(seed: String, px: int = 32, opts: Dictionary = {}) -> Texture
 
 
 # ------------------------------------------------------------------ helpers
+
+## EPX/Scale2x: each pixel becomes 2x2, corners adopt a neighbour when two
+## orthogonal neighbours agree — curves round off, no new colours appear.
+static func _scale2x(src: Image) -> Image:
+	var n := src.get_width()
+	var dst := Image.create(n * 2, n * 2, false, Image.FORMAT_RGBA8)
+	for y in n:
+		for x in n:
+			var p := src.get_pixel(x, y)
+			var a := src.get_pixel(x, y - 1) if y > 0 else p
+			var c := src.get_pixel(x - 1, y) if x > 0 else p
+			var bb := src.get_pixel(x + 1, y) if x < n - 1 else p
+			var d := src.get_pixel(x, y + 1) if y < n - 1 else p
+			var e0 := p
+			var e1 := p
+			var e2 := p
+			var e3 := p
+			if c.is_equal_approx(a) and not c.is_equal_approx(d) and not a.is_equal_approx(bb):
+				e0 = a
+			if a.is_equal_approx(bb) and not a.is_equal_approx(c) and not bb.is_equal_approx(d):
+				e1 = bb
+			if d.is_equal_approx(c) and not d.is_equal_approx(bb) and not c.is_equal_approx(a):
+				e2 = c
+			if bb.is_equal_approx(d) and not bb.is_equal_approx(a) and not d.is_equal_approx(c):
+				e3 = bb
+			dst.set_pixel(x * 2, y * 2, e0)
+			dst.set_pixel(x * 2 + 1, y * 2, e1)
+			dst.set_pixel(x * 2, y * 2 + 1, e2)
+			dst.set_pixel(x * 2 + 1, y * 2 + 1, e3)
+	return dst
+
 
 static func _px(img: Image, x: int, y: int, c: Color) -> void:
 	if x >= 0 and x < N and y >= 0 and y < N:
