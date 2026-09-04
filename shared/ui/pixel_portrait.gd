@@ -35,8 +35,11 @@ static func tex(seed: String, px: int = 48, opts: Dictionary = {}) -> ImageTextu
 		str(opts.get("pose", "")), str(opts.get("hair_s", "")), str(opts.get("hair_c", ""))]
 	if _cache.has(key):
 		return _cache[key]
-	var img := _draw(seed, opts)
-	if px >= 56:
+	# big slots: skip the corner-AA lerp (EPX already rounds the stairs —
+	# stacking both reads as blur) and do the EPX doubling
+	var big := px >= 56
+	var img := _draw(seed, opts, not big)
+	if big:
 		# big slots get the EPX/Scale2x treatment: 48 -> 96 edge-aware pixel
 		# doubling — finer curves, same palette, still honest pixel art
 		img = _scale2x(img)
@@ -121,7 +124,7 @@ static func _ellipse(img: Image, cx: int, cy: int, rx: float, ry: float, c: Colo
 
 # ------------------------------------------------------------------ drawing
 
-static func _draw(seed: String, opts: Dictionary) -> Image:
+static func _draw(seed: String, opts: Dictionary, aa: bool = true) -> Image:
 	var img := Image.create(N, N, false, Image.FORMAT_RGBA8)
 	var first := seed.split(" ", false)[0] if seed.strip_edges() != "" else ""
 	var fem := Portrait.FEM_FIRST.has(first)
@@ -405,7 +408,8 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 						break
 			if edge:
 				img.set_pixel(x, y, OUT)
-	_soften_corners(img)
+	if aa:
+		_soften_corners(img)
 	return img
 
 
