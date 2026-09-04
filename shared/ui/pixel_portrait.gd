@@ -302,7 +302,10 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 	if pose == 7:
 		_hand_up(img, seed, outfit, outfit_sh, skin, max_half)
 
-	# --- unified 1px outline
+	# --- clean-up passes (pixel-art polish): despeckle 1px nubs off the
+	# silhouette, fill 1px notches, THEN outline, then soften stair corners
+	_despeckle(img)
+	_fill_notches(img)
 	var base := img.duplicate()
 	for y in N:
 		for x in N:
@@ -316,7 +319,63 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 						break
 			if edge:
 				img.set_pixel(x, y, OUT)
+	_soften_corners(img)
 	return img
+
+
+## A filled pixel with <= 1 filled orthogonal neighbour is a stray nub
+## sticking off the silhouette — delete it (two passes catch chains of 2).
+static func _despeckle(img: Image) -> void:
+	for _pass in 2:
+		var base := img.duplicate()
+		for y in N:
+			for x in N:
+				if base.get_pixel(x, y).a == 0.0:
+					continue
+				var n := 0
+				for d in [[1, 0], [-1, 0], [0, 1], [0, -1]]:
+					var nx: int = x + d[0]
+					var ny: int = y + d[1]
+					if nx >= 0 and nx < N and ny >= 0 and ny < N 							and base.get_pixel(nx, ny).a > 0.0:
+						n += 1
+				if n <= 1:
+					img.set_pixel(x, y, Color(0, 0, 0, 0))
+
+
+## An empty pixel walled in by >= 3 filled orthogonal neighbours is a nick
+## in the silhouette — fill it with a neighbour's colour.
+static func _fill_notches(img: Image) -> void:
+	var base := img.duplicate()
+	for y in range(1, N - 1):
+		for x in range(1, N - 1):
+			if base.get_pixel(x, y).a > 0.0:
+				continue
+			var n := 0
+			var fill := Color(0, 0, 0, 0)
+			for d in [[0, -1], [1, 0], [-1, 0], [0, 1]]:
+				var c: Color = base.get_pixel(x + int(d[0]), y + int(d[1]))
+				if c.a > 0.0:
+					n += 1
+					if fill.a == 0.0:
+						fill = c
+			if n >= 3:
+				img.set_pixel(x, y, fill)
+
+
+## Selective anti-aliasing, the hand-polish trick of the official sprites:
+## a fill pixel cornered by TWO orthogonal outline pixels sits on a stair
+## step — pull it partway toward the outline so the jaggy melts.
+static func _soften_corners(img: Image) -> void:
+	var base := img.duplicate()
+	for y in range(1, N - 1):
+		for x in range(1, N - 1):
+			var c: Color = base.get_pixel(x, y)
+			if c.a == 0.0 or c.is_equal_approx(OUT):
+				continue
+			var h: bool = base.get_pixel(x - 1, y).is_equal_approx(OUT) 				or base.get_pixel(x + 1, y).is_equal_approx(OUT)
+			var v: bool = base.get_pixel(x, y - 1).is_equal_approx(OUT) 				or base.get_pixel(x, y + 1).is_equal_approx(OUT)
+			if h and v:
+				img.set_pixel(x, y, c.lerp(OUT, 0.42))
 
 
 # ------------------------------------------------------------------ hair
@@ -344,17 +403,20 @@ static func _dome(img: Image, c: Color, sh: Color, hi: Color, fringe_y: int = 15
 
 static func _hair_spiky(img: Image, c: Color, sh: Color, hi: Color) -> void:
 	_dome(img, c, sh, hi, 14)
-	# five spikes: triangles rising from the dome
-	for s in [[-9, 4], [-4, 6], [1, 7], [6, 5], [10, 3]]:
+	# four soft tufts: chunky 2px-stepped mounds, not needles
+	for s in [[-9, 3], [-3, 4], [3, 4], [8, 3]]:
 		var sx: int = CX + int(s[0])
-		var sh_n: int = int(s[1])
-		for h in range(sh_n):
-			for w in range(maxi(1, sh_n - h - 1)):
-				_px(img, sx + w, 6 - h, c if h < sh_n - 2 else hi)
-	# jagged fringe teeth
-	for x in range(CX - 9, CX + 10, 3):
+		var hgt: int = int(s[1])
+		for h in range(hgt):
+			var w := maxi(2, 4 - h)
+			for k in range(w):
+				_px(img, sx + k, 6 - h, hi if h == hgt - 1 else c)
+	# fringe teeth: paired pixels so the clean-up keeps them
+	for x in range(CX - 8, CX + 9, 4):
 		_px(img, x, 16, c)
 		_px(img, x + 1, 16, c)
+		_px(img, x, 17, sh)
+		_px(img, x + 1, 17, sh)
 
 
 static func _hair_bowl(img: Image, c: Color, sh: Color, hi: Color) -> void:
@@ -508,12 +570,13 @@ static func _hair_braid(img: Image, c: Color, sh: Color, hi: Color) -> void:
 static func _hair_messy(img: Image, c: Color, sh: Color, hi: Color) -> void:
 	# bedhead: dome + strands poking out at odd angles
 	_dome(img, c, sh, hi, 15)
-	for s in [[-12, 9, -1], [-10, 5, -1], [-5, 3, 0], [0, 2, 0], [5, 3, 1], [9, 5, 1], [12, 9, 1]]:
+	for s in [[-12, 9, -1], [-9, 5, -1], [-3, 3, 0], [3, 3, 0], [8, 5, 1], [11, 9, 1]]:
 		var sx: int = CX + int(s[0])
 		var sy: int = int(s[1])
 		var lean: int = int(s[2])
-		for k in 3:
-			_px(img, sx + lean * k, sy - k, c if k < 2 else hi)
+		for k in 2:
+			_px(img, sx + lean * k, sy - k, c)
+			_px(img, sx + lean * k + 1, sy - k, c if k == 0 else hi)
 	# uneven fringe teeth
 	for x in range(CX - 9, CX + 10, 2):
 		_px(img, x, 16, c)
