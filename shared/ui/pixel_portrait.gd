@@ -554,13 +554,14 @@ static func _hat_cap(img: Image, seed: String, hair: Color, hair_sh: Color,
 	for y in range(5, 12):
 		_px(img, CX, y, cap.darkened(0.18))
 	_rect(img, CX - 5 * dir, 7, CX - 1 * dir, 12, cap.lightened(0.20))  # lit front panel
-	# THE BRIM: 2 rows tall, flat, reaching far beyond the head
+	# THE BRIM: 3 rows tall (user note: beefier), flat, well past the head
 	for k in range(-3, 18):
 		_px(img, CX + k * dir, 14, cap.lightened(0.10))
-		_px(img, CX + k * dir, 15, cap.darkened(0.25))
+		_px(img, CX + k * dir, 15, cap)
+		_px(img, CX + k * dir, 16, cap.darkened(0.25))
 	# fringe peeking under the brim (doubles as the brim's cast shadow)
 	for k in range(-8, 6):
-		_px(img, CX + k * dir, 16, hair_sh)
+		_px(img, CX + k * dir, 17, hair_sh)
 	# hair peeking at the back (opposite the brim) + sideburns
 	for y in range(14, 20):
 		_px(img, CX - 11 * dir, y, hair)
@@ -664,10 +665,15 @@ static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 	var side := 1 if _pick(seed, "wavedir", 2) == 0 else -1
 	var ax := CX + side * 17                 # clear of even the big hairdos
 	var sleeve := outfit.darkened(0.10) if side > 0 else outfit
-	# sturdy arm (user note v2: double the slim one), uniform thickness:
-	# straight from the wrist, gentle 1px diagonal steps into the shoulder
-	for y in range(22, 40):
-		var inset := maxi(0, (y - 29)) / 2   # steps inward from row 31 down
+	# sturdy arm, uniform thickness. The elbow is a QUARTER-ARC (user note:
+	# the stepped diagonal read as broken) — the arm rises straight, then its
+	# centreline sweeps continuously into the shoulder along a circle.
+	var arc_r := 9.0
+	for y in range(22, 42):
+		var inset := 0
+		if y > 30:
+			var dy := minf(float(y - 30), arc_r)
+			inset = int(round(arc_r - sqrt(maxf(0.0, arc_r * arc_r - dy * dy))))
 		var cx0 := ax - side * inset
 		for dx in range(-2, 3):              # 5px fill -> 4px visible + outline
 			_px(img, cx0 + dx, y, sleeve if dx * side <= 0 else outfit_sh)
