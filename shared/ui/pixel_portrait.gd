@@ -31,7 +31,7 @@ static func _pick(seed: String, facet: String, n: int) -> int:
 
 
 static func tex(seed: String, px: int = 48, opts: Dictionary = {}) -> ImageTexture:
-	var key := "%s|%d|%s" % [seed, px, str(opts.get("collar", ""))]
+	var key := "%s|%d|%s|%s" % [seed, px, str(opts.get("collar", "")), str(opts.get("pose", ""))]
 	if _cache.has(key):
 		return _cache[key]
 	var img := _draw(seed, opts)
@@ -109,6 +109,18 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 	var outfit_sh := outfit.darkened(0.25)
 	var outfit_hi := outfit.lightened(0.18)
 
+	# --- pose (user request): the head lives on its own layer so it can turn
+	# and lean; arms get their own painters on the body layer.
+	#   0-2 front · 3 turn L · 4 turn R · 5 lean · 6 arms crossed · 7 hand up
+	var pose := int(opts.get("pose", _pick(seed, "pose", 8)))
+	var turn := -1 if pose == 3 else (1 if pose == 4 else 0)
+	var fdx := turn * 2                    # facial features slide into the turn
+	var head_dx := turn                    # whole head follows, gently
+	var head_dy := 0
+	if pose == 5:
+		head_dx = 1 if _pick(seed, "leandir", 2) == 0 else -1
+		head_dy = 1
+
 	# --- shoulders/bust (rows 34..47): ROUNDED slope (ease-out curve), body
 	# build variants, arm seams and a left key light
 	var build := _pick(seed, "build", 3)      # 0 slim, 1 average, 2 broad
@@ -117,7 +129,17 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		var t2 := clampf(float(y - 34) / 7.0, 0.0, 1.0)
 		var ease := 1.0 - (1.0 - t2) * (1.0 - t2)          # fast then settle
 		var half := 5 + int(round(ease * float(max_half - 5)))
-		for x in range(CX - half, CX + half + 1):
+		# lean pose: the shoulder opposite the lean rides one row higher
+		var raise_l := 1 if pose == 5 and head_dx > 0 and y < 40 else 0
+		var raise_r := 1 if pose == 5 and head_dx < 0 and y < 40 else 0
+		var tl := clampf(float(y - 34 + raise_l) / 7.0, 0.0, 1.0)
+		var tr := clampf(float(y - 34 + raise_r) / 7.0, 0.0, 1.0)
+		var half_l := 5 + int(round((1.0 - (1.0 - tl) * (1.0 - tl)) * float(max_half - 5)))
+		var half_r := 5 + int(round((1.0 - (1.0 - tr) * (1.0 - tr)) * float(max_half - 5)))
+		if pose != 5:
+			half_l = half
+			half_r = half
+		for x in range(CX - half_l, CX + half_r + 1):
 			_px(img, x, y, outfit if x < CX + 2 else outfit_sh)
 	# arm seams: a darker vertical line where the sleeves start
 	for y in range(40, N):
@@ -130,10 +152,11 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		var hx := CX - (5 + int(round(e3 * float(max_half - 5)))) + 1
 		_px(img, hx, y, outfit_hi)
 		_px(img, hx + 1, y, outfit_hi)
-	# fabric fold hints on the chest
-	_px(img, CX - 6, 43, outfit_sh)
-	_px(img, CX - 5, 44, outfit_sh)
-	_px(img, CX + 7, 44, outfit_sh.darkened(0.12))
+	# fabric fold hints on the chest (not under crossed arms)
+	if pose != 6:
+		_px(img, CX - 6, 43, outfit_sh)
+		_px(img, CX - 5, 44, outfit_sh)
+		_px(img, CX + 7, 44, outfit_sh.darkened(0.12))
 	# collar/neckline variants
 	var trim := _pick(seed, "trim", 4)
 	if trim == 0:              # V-neck kit: pale tee under
@@ -162,102 +185,121 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		_px(img, x, 29, skin_sh)
 		_px(img, x, 30, skin_sh)
 
-	# --- head: ellipse + jaw variants
+	# --- arms (body layer, before the head so long hair falls over them)
+	if pose == 6:
+		_arms_crossed(img, outfit, outfit_sh, skin)
+
+	# --- head layer: ellipse + jaw variants (features slide by fdx on a turn)
+	var head := Image.create(N, N, false, Image.FORMAT_RGBA8)
 	var jaw := _pick(seed, "jaw", 3)          # 0 round, 1 square, 2 narrow
 	var rx := 10.0 if jaw != 2 else 9.0
-	_ellipse(img, CX, 19, rx, 11.0, skin)
+	_ellipse(head, CX, 19, rx, 11.0, skin)
 	if jaw == 1:                              # square: fill the jaw corners
-		_rect(img, CX - 7, 26, CX + 7, 29, skin)
+		_rect(head, CX - 7, 26, CX + 7, 29, skin)
 	else:
-		_rect(img, CX - 6, 26, CX + 6, 28, skin)
+		_rect(head, CX - 6, 26, CX + 6, 28, skin)
 		for x in range(CX - 4, CX + 5):
-			_px(img, x, 29, skin)
-	# ears at eye height
-	_rect(img, CX - 12, 19, CX - 11, 23, skin)
-	_rect(img, CX + 11, 19, CX + 12, 23, skin)
-	_px(img, CX - 11, 21, skin_sh)
-	_px(img, CX + 11, 21, skin_sh)
-	# jaw shading
-	for x in range(CX + 3, CX + 8):
-		_px(img, x, 27, skin_sh)
+			_px(head, x, 29, skin)
+	# ears at eye height — on a turn only the trailing ear stays visible
+	if turn >= 0:
+		_rect(head, CX - 12, 19, CX - 11, 23, skin)
+		_px(head, CX - 11, 21, skin_sh)
+	if turn <= 0:
+		_rect(head, CX + 11, 19, CX + 12, 23, skin)
+		_px(head, CX + 11, 21, skin_sh)
+	# jaw shading (falls on the side away from the gaze)
+	for x in range(CX + 3 - fdx, CX + 8 - fdx):
+		_px(head, x, 27, skin_sh)
 	for x in range(CX - 3, CX + 4):
-		_px(img, x, 28 if jaw != 1 else 29, skin.darkened(0.10))
+		_px(head, x, 28 if jaw != 1 else 29, skin.darkened(0.10))
+	# turned head: shade the vacated cheek so the face reads rotated
+	if turn != 0:
+		for y in range(19, 27):
+			_px(head, CX - turn * 8, y, skin_sh)
+			_px(head, CX - turn * 9, y, skin_sh)
 
 	# --- eyes (rows 18..23): big sclera + iris + pupil + catchlight
 	var eye_style := _pick(seed, "eyes", 3)
 	var lash := Color8(30, 28, 40)
 	for side in [-1, 1]:
-		var x0 := CX + (2 if side > 0 else -8)
+		var x0 := CX + fdx + (2 if side > 0 else -8)
 		var x1 := x0 + 6
 		if eye_style == 2:                       # narrow/squint
-			_rect(img, x0 + 1, 21, x1 - 1, 22, Color.WHITE)
-			_rect(img, x0 + 2, 21, x1 - 2, 22, iris)
+			_rect(head, x0 + 1, 21, x1 - 1, 22, Color.WHITE)
+			_rect(head, x0 + 2, 21, x1 - 2, 22, iris)
 			for x in range(x0 + 1, x1):
-				_px(img, x, 20, lash)
+				_px(head, x, 20, lash)
 		else:
-			_rect(img, x0 + 1, 19, x1 - 1, 23, Color.WHITE)
-			_rect(img, x0 + 2, 19, x1 - 2, 23, iris)
-			_rect(img, x0 + 3, 21, x1 - 3, 22, iris.darkened(0.45))  # pupil
-			_px(img, x0 + 2, 19, Color.WHITE)                        # catchlight
+			_rect(head, x0 + 1, 19, x1 - 1, 23, Color.WHITE)
+			_rect(head, x0 + 2, 19, x1 - 2, 23, iris)
+			_rect(head, x0 + 3, 21, x1 - 3, 22, iris.darkened(0.45))  # pupil
+			_px(head, x0 + 2, 19, Color.WHITE)                        # catchlight
 			for x in range(x0 + 1, x1):
-				_px(img, x, 18, lash)                                # lash line
+				_px(head, x, 18, lash)                                # lash line
 	# brows
 	var brow := Color(HAIRS[hair_i]).darkened(0.25)
 	var brow_y := 15 + _pick(seed, "brow_h", 2)
 	for side in [-1, 1]:
 		for dx in range(2, 7):
-			_px(img, CX + side * dx, brow_y, brow)
-		_px(img, CX + side * 6, brow_y + 1, brow)
+			_px(head, CX + fdx + side * dx, brow_y, brow)
+		_px(head, CX + fdx + side * 6, brow_y + 1, brow)
 
 	# --- nose + mouth
-	_px(img, CX + 1, 25, skin_sh.darkened(0.15))
-	_px(img, CX + 1, 24, skin_sh)
+	_px(head, CX + fdx + 1, 25, skin_sh.darkened(0.15))
+	_px(head, CX + fdx + 1, 24, skin_sh)
 	var mouth := _pick(seed, "mouth", 3)
 	var lip := skin_sh.darkened(0.45)
 	if mouth == 0:                            # smile
-		for x in range(CX - 2, CX + 3):
-			_px(img, x, 27, lip)
-		_px(img, CX - 3, 26, lip)
-		_px(img, CX + 3, 26, lip)
+		for x in range(CX + fdx - 2, CX + fdx + 3):
+			_px(head, x, 27, lip)
+		_px(head, CX + fdx - 3, 26, lip)
+		_px(head, CX + fdx + 3, 26, lip)
 	elif mouth == 1:                          # neutral
-		for x in range(CX - 2, CX + 3):
-			_px(img, x, 27, lip)
+		for x in range(CX + fdx - 2, CX + fdx + 3):
+			_px(head, x, 27, lip)
 	else:                                     # open grin
-		for x in range(CX - 2, CX + 3):
-			_px(img, x, 26, lip)
-			_px(img, x, 27, Color("e8908a").darkened(0.2))
-		for x in range(CX - 1, CX + 2):
-			_px(img, x, 28, lip)
+		for x in range(CX + fdx - 2, CX + fdx + 3):
+			_px(head, x, 26, lip)
+			_px(head, x, 27, Color("e8908a").darkened(0.2))
+		for x in range(CX + fdx - 1, CX + fdx + 2):
+			_px(head, x, 28, lip)
 	# blush
 	if fem and _pick(seed, "blush", 3) == 0:
 		for side in [-1, 1]:
-			_px(img, CX + side * 7, 24, Color("e8908a"))
-			_px(img, CX + side * 8, 24, Color("e8908a"))
+			_px(head, CX + fdx + side * 7, 24, Color("e8908a"))
+			_px(head, CX + fdx + side * 8, 24, Color("e8908a"))
 	# beard/stubble
 	if not fem and _pick(seed, "beard", 4) == 0:
 		for x in range(CX - 6, CX + 7):
-			_px(img, x, 29, hair_sh)
+			_px(head, x, 29, hair_sh)
 			if absi(x - CX) > 2:
-				_px(img, x, 28, hair_sh)
-		_rect(img, CX - 7, 25, CX - 6, 28, hair_sh)
-		_rect(img, CX + 6, 25, CX + 7, 28, hair_sh)
+				_px(head, x, 28, hair_sh)
+		_rect(head, CX - 7, 25, CX - 6, 28, hair_sh)
+		_rect(head, CX + 6, 25, CX + 7, 28, hair_sh)
 
-	# --- hair
+	# --- hair (drawn on the head layer so it turns/leans with it)
 	match style:
-		0: _hair_spiky(img, hair, hair_sh, hair_hi)
-		1: _hair_bowl(img, hair, hair_sh, hair_hi)
-		2: _hair_swept(img, hair, hair_sh, hair_hi)
-		3: _hair_long(img, hair, hair_sh, hair_hi)
-		4: _hair_ponytail(img, hair, hair_sh, hair_hi)
-		5: _hair_pigtails(img, hair, hair_sh, hair_hi)
-		6: _hair_curly(img, hair, hair_sh, hair_hi)
-		7: _hair_buzz(img, hair, hair_sh)
-		8: _hat_cap(img, seed, hair, hair_sh)
-		9: _hair_afro(img, hair, hair_sh, hair_hi)
-		10: _hair_mohawk(img, hair, hair_sh, hair_hi)
-		11: _hair_bun(img, hair, hair_sh, hair_hi)
-		12: _hair_braid(img, hair, hair_sh, hair_hi)
-		13: _hair_messy(img, hair, hair_sh, hair_hi)
+		0: _hair_spiky(head, hair, hair_sh, hair_hi)
+		1: _hair_bowl(head, hair, hair_sh, hair_hi)
+		2: _hair_swept(head, hair, hair_sh, hair_hi)
+		3: _hair_long(head, hair, hair_sh, hair_hi)
+		4: _hair_ponytail(head, hair, hair_sh, hair_hi)
+		5: _hair_pigtails(head, hair, hair_sh, hair_hi)
+		6: _hair_curly(head, hair, hair_sh, hair_hi)
+		7: _hair_buzz(head, hair, hair_sh)
+		8: _hat_cap(head, seed, hair, hair_sh)
+		9: _hair_afro(head, hair, hair_sh, hair_hi)
+		10: _hair_mohawk(head, hair, hair_sh, hair_hi)
+		11: _hair_bun(head, hair, hair_sh, hair_hi)
+		12: _hair_braid(head, hair, hair_sh, hair_hi)
+		13: _hair_messy(head, hair, hair_sh, hair_hi)
+
+	# --- compose: head over body, shifted by the pose
+	img.blend_rect(head, Rect2i(0, 0, N, N), Vector2i(head_dx, head_dy))
+
+	# --- raised hand (after the head: the hand waves in front)
+	if pose == 7:
+		_hand_up(img, seed, outfit, outfit_sh, skin, max_half)
 
 	# --- unified 1px outline
 	var base := img.duplicate()
@@ -476,3 +518,51 @@ static func _hair_messy(img: Image, c: Color, sh: Color, hi: Color) -> void:
 		_px(img, x, 16, c)
 		if x % 4 == 0:
 			_px(img, x, 17, c)
+
+
+# ------------------------------------------------------------------ arms
+
+## Arms folded across the chest: two sleeve bars meeting at the middle, a
+## tucked hand peeking at each elbow.
+static func _arms_crossed(img: Image, outfit: Color, outfit_sh: Color, skin: Color) -> void:
+	var sleeve := outfit.darkened(0.12)
+	for y in range(41, 46):
+		for x in range(CX - 12, CX + 13):
+			_px(img, x, y, sleeve if y < 44 else outfit_sh.darkened(0.1))
+	# the two forearms cross: a seam sloping each way
+	for k in 10:
+		_px(img, CX - 11 + k, 42 + k / 4, outfit_sh.darkened(0.2))
+		_px(img, CX + 11 - k, 41 + k / 3, sleeve.lightened(0.12))
+	# tucked hands
+	_rect(img, CX + 7, 41, CX + 9, 42, skin)
+	_rect(img, CX - 9, 44, CX - 7, 45, skin.darkened(0.08))
+
+
+## One hand raised beside the head, waving — official-sprite energy.
+## The arm is 3px thick: the outline pass eats both edges of anything
+## thinner, leaving a floating dark stick (found the hard way).
+static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
+		skin: Color, max_half: int) -> void:
+	var side := 1 if _pick(seed, "wavedir", 2) == 0 else -1
+	var ax := CX + side * 18                 # well clear of even the big hairdos
+	var sleeve := outfit.darkened(0.10) if side > 0 else outfit
+	# underarm wedge: connects the shoulder to the raised arm (no floating)
+	for y in range(35, 42):
+		var t := clampf(float(y - 34) / 7.0, 0.0, 1.0)
+		var half := 5 + int(round((1.0 - (1.0 - t) * (1.0 - t)) * float(max_half - 5)))
+		var x_in := CX + side * (half - 3)
+		for x in range(mini(x_in, ax - 1), maxi(x_in, ax + 1) + 1):
+			_px(img, x, y, sleeve)
+	# upper arm: vertical, 4px thick
+	for y in range(16, 36):
+		for dx in range(-1, 3):
+			_px(img, ax + dx * side, y, sleeve if dx <= 0 else outfit_sh)
+	# cuff
+	for dx in range(-1, 3):
+		_px(img, ax + dx * side, 15, outfit_sh.darkened(0.15))
+	# open hand ABOVE the hairline: palm + three fingers
+	_rect(img, ax - 2, 10, ax + 2, 14, skin)
+	for f in [-2, 0, 2]:
+		_px(img, ax + f, 9, skin)
+		_px(img, ax + f, 8, skin)
+	_px(img, ax + side, 12, skin.darkened(0.12))

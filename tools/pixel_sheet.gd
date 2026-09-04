@@ -21,6 +21,12 @@ func _ready() -> void:
 		"Falkner Ivy", "Daisy Kukui", "Ritchie Stone", "Winona Elm", "Tracey Fuji"]
 	for n in names:
 		grid.add_child(PixelPortrait.avatar(n, 72))
+	# pose row: the same two people through all 8 poses
+	for pz in 8:
+		grid.add_child(PixelPortrait.avatar("Ash Maple" if pz % 2 == 0 else "Misty Fuji",
+			72, {"pose": pz}))
+	for k in 2:
+		grid.add_child(Control.new())
 	# officials for style comparison
 	for n in ["Misty", "Brock", "Red", "Professor Oak", "Whitney", "Lance",
 			"Sabrina", "Gary Oak", "Erika", "Lt. Surge"]:
