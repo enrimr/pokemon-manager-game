@@ -18,7 +18,7 @@ const CX := 24                       # head centre column
 const SKINS := ["f5d5a7", "eec39a", "d9a066", "b07a4a", "8a5a33", "6b4226"]
 const HAIRS := ["2b2b33", "5a3825", "8a5a2b", "c98a3a", "e8c04a", "c94a35",
 	"7a4a8a", "3a6ac9", "3a8a5a", "c95a8a"]
-const IRISES := ["5a3825", "3a6ac9", "3a8a5a", "b06a2a", "7a4a8a"]
+const IRISES := ["7a4520", "3f7ae0", "3fae6a", "d98a2a", "8a5ae0"]
 const GREY := "b9b9c9"
 const OUTFITS := ["c94a35", "3a6ac9", "3a8a5a", "e8c04a", "7a4a8a", "e07a3a",
 	"52c7a8", "8b91a8"]
@@ -263,31 +263,43 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 			_px(head, CX - turn * 8, y, skin_sh)
 			_px(head, CX - turn * 9, y, skin_sh)
 
-	# --- eyes (rows 18..23): big sclera + iris + pupil + catchlight
-	var eye_style := _pick(seed, "eyes", 3)
+	# --- eyes: BIG anime eyes (reference-driven) — thick top lash, slim
+	# sclera, a tall iris with a vertical light ramp and a 2x2 catchlight
+	var eye_style := _pick(seed, "eyes", 6)   # 0-3 open · 4 squint · 5 wink(R)
 	var lash := Color8(30, 28, 40)
 	for side in [-1, 1]:
 		var x0 := CX + fdx + (2 if side > 0 else -8)
 		var x1 := x0 + 6
-		if eye_style == 2:                       # narrow/squint
-			_rect(head, x0 + 1, 21, x1 - 1, 22, Color.WHITE)
-			_rect(head, x0 + 2, 21, x1 - 2, 22, iris)
+		if eye_style == 4 or (eye_style == 5 and side > 0):
+			# squint / winking eye: a happy arc
 			for x in range(x0 + 1, x1):
 				_px(head, x, 20, lash)
-		else:
-			_rect(head, x0 + 1, 19, x1 - 1, 23, Color.WHITE)
-			_rect(head, x0 + 2, 19, x1 - 2, 23, iris)
-			_rect(head, x0 + 3, 21, x1 - 3, 22, iris.darkened(0.45))  # pupil
-			_px(head, x0 + 2, 19, Color.WHITE)                        # catchlight
-			for x in range(x0 + 1, x1):
-				_px(head, x, 18, lash)                                # lash line
-	# brows
+			_px(head, x0 + 1, 21, lash)
+			_px(head, x1 - 1, 21, lash)
+			continue
+		for x in range(x0, x1 + 1):              # thick top lash
+			_px(head, x, 17, lash)
+			_px(head, x, 18, lash)
+		_px(head, x0, 19, Color.WHITE)           # slim sclera corners
+		_px(head, x1, 19, Color.WHITE)
+		_px(head, x0, 20, Color.WHITE)
+		_px(head, x1, 20, Color.WHITE)
+		var ix0 := x0 + 1
+		var ix1 := x1 - 1
+		_rect(head, ix0, 19, ix1, 20, iris.lightened(0.20))   # iris: lit top
+		_rect(head, ix0, 21, ix1, 22, iris)
+		_rect(head, ix0 + 1, 22, ix1 - 1, 23, iris.darkened(0.35))  # dark base
+		_rect(head, ix0 + 1, 20, ix1 - 1, 21, iris.darkened(0.15))  # pupil core
+		_rect(head, ix0, 19, ix0 + 1, 20, Color.WHITE)        # 2x2 catchlight
+		_px(head, ix1, 22, Color.WHITE.lerp(iris, 0.5))       # tiny lower spark
+		for x in range(x0 + 1, x1):
+			_px(head, x, 24, skin_sh)                         # lower lid
+	# brows: thin, a touch expressive
 	var brow := Color(HAIRS[hair_i]).darkened(0.25)
-	var brow_y := 15 + _pick(seed, "brow_h", 2)
+	var brow_y := 14 + _pick(seed, "brow_h", 2)
 	for side in [-1, 1]:
 		for dx in range(2, 7):
-			_px(head, CX + fdx + side * dx, brow_y, brow)
-		_px(head, CX + fdx + side * 6, brow_y + 1, brow)
+			_px(head, CX + fdx + side * dx, brow_y + (1 if dx <= 3 else 0), brow)
 
 	# --- nose + mouth
 	_px(head, CX + fdx + 1, 25, skin_sh.darkened(0.15))
@@ -308,7 +320,11 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 			_px(head, x, 27, Color("e8908a").darkened(0.2))
 		for x in range(CX + fdx - 1, CX + fdx + 2):
 			_px(head, x, 28, lip)
-	# blush
+	# rosy cheeks for everyone (reference look); stronger blush on some
+	var cheek := skin.lerp(Color("e8908a"), 0.45)
+	for side in [-1, 1]:
+		_px(head, CX + fdx + side * 7, 25, cheek)
+		_px(head, CX + fdx + side * 8, 25, cheek)
 	if fem and _pick(seed, "blush", 3) == 0:
 		for side in [-1, 1]:
 			_px(head, CX + fdx + side * 7, 24, Color("e8908a"))
@@ -338,6 +354,24 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		11: _hair_bun(head, hair, hair_sh, hair_hi)
 		12: _hair_braid(head, hair, hair_sh, hair_hi)
 		13: _hair_messy(head, hair, hair_sh, hair_hi)
+
+	# --- hair texture (reference look): deterministic strand dither — flat
+	# fills gain sparkle highlights and shadow flecks inside the silhouette
+	for y in N:
+		for x in N:
+			var hc := head.get_pixel(x, y)
+			if hc.a == 0.0:
+				continue
+			if hc.is_equal_approx(hair):
+				var h2 := absi(("%s|%d|%d" % [seed, x, y]).hash()) % 100
+				if h2 < 9:      # strand streaks: 2px vertical runs of shine
+					head.set_pixel(x, y, hair_hi)
+					if y + 1 < N and head.get_pixel(x, y + 1).is_equal_approx(hair):
+						head.set_pixel(x, y + 1, hair_hi)
+				elif h2 < 16:
+					head.set_pixel(x, y, hair_sh)
+					if y + 1 < N and head.get_pixel(x, y + 1).is_equal_approx(hair):
+						head.set_pixel(x, y + 1, hair_sh)
 
 	# --- compose: head over body, shifted by the pose
 	img.blend_rect(head, Rect2i(0, 0, N, N), Vector2i(head_dx, head_dy))
