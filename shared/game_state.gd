@@ -108,6 +108,7 @@ func new_career(seed_value: int = 20260801, club_id: String = "") -> void:
 		[I18n.t(world["meta"]["league_name"]), I18n.pretty_date(next_player_fixture().get("date", season_start))])
 	_table_dirty = true
 	_load_services()
+	Analytics.event("career:new:%s" % str(player_club().get("id", "")))
 	career_started.emit()
 	date_changed.emit(current_date)
 	table_updated.emit()
@@ -835,6 +836,7 @@ func _play_fixture(f: Dictionary) -> void:
 		var us: int = f["score_home"] if we_home else f["score_away"]
 		var them: int = f["score_away"] if we_home else f["score_home"]
 		var opp: String = club(f["away"] if we_home else f["home"])["name"]
+		Analytics.match_played("sim", str(f.get("comp", "")), us, them)
 		add_inbox_message(current_date, I18n.t("Match report: %d-%d vs %s") % [us, them, opp],
 			I18n.t("We won the %s tie against %s, %d-%d in battles." if us > them
 				else "We lost the %s tie against %s, %d-%d in battles.") % [I18n.t(str(f["comp"])), opp, us, them])

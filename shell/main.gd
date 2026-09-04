@@ -266,6 +266,7 @@ func navigate_to(screen_name: String, context: Dictionary = {}) -> bool:
 	var inst := packed.instantiate()
 	_content.add_child(inst)
 	current_screen_name = screen_name
+	Analytics.screen(screen_name)
 	AudioManager.on_screen_changed(screen_name)  # audio piece: music/ambience
 	current_tab_id = ""
 	for n in _nav_buttons:

@@ -21,6 +21,7 @@ config/features=PackedStringArray("4.6")
 DataStore="*res://shared/data/data_store.gd"
 GameState="*res://shared/game_state.gd"
 Settings="*res://screens/settings/settings_service.gd"
+Analytics="*res://shared/analytics.gd"
 
 [display]
 

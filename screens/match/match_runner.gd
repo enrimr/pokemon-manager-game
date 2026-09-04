@@ -763,6 +763,7 @@ func _finalize_result() -> void:
 	GameState.table_updated.emit()
 	var us: int = wins[player_side]
 	var them: int = wins[1 - player_side]
+	Analytics.match_played("live", str(fixture.get("comp", "")), us, them)
 	var opp: String = opponent_club()["name"]
 	var verdict := "won" if us > them else "lost"
 	var motm := man_of_the_match()

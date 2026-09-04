@@ -98,6 +98,7 @@ func open_tab(tab: String) -> void:
 	if _pages[tab].has_method("refresh"):
 		_pages[tab].refresh()
 	AudioManager.on_screen_changed(tab)
+	Analytics.screen("mobile:" + tab)
 
 
 ## Shim for the inbox action buttons + MatchDirector's matchday pull.
