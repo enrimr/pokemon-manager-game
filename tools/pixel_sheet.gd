@@ -16,7 +16,9 @@ func _ready() -> void:
 		"Lance Ivy", "Erika Snap", "Volkner Cerise", "Lillie Westwood", "Silver Kukui",
 		"Karen Laramie", "Flint Goodshow", "Zoey Harrison", "Barry Magnolia", "Casey Berlitz",
 		"Wally Juniper", "Whitney Ketchum", "Todd Waterflower", "Bianca Sycamore", "Bruno Oak",
-		"Mallow Stone", "Trevor Elm", "Alexa Fuji", "Goh Maple", "Phoebe Silph"]
+		"Mallow Stone", "Trevor Elm", "Alexa Fuji", "Goh Maple", "Phoebe Silph",
+		"Jessie Hale", "James Rowan", "Cynthia Snap", "Morty Devon", "Jasmine Birch",
+		"Falkner Ivy", "Daisy Kukui", "Ritchie Stone", "Winona Elm", "Tracey Fuji"]
 	for n in names:
 		grid.add_child(PixelPortrait.avatar(n, 72))
 	# officials for style comparison

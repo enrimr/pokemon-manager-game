@@ -101,7 +101,7 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		hair = hair.darkened(0.30)
 	var hair_sh := hair.darkened(0.22)
 	var hair_hi := hair.lightened(0.20)
-	var style := _pick(seed, "hair_s", 9)
+	var style := _pick(seed, "hair_s", 14)
 	var iris := Color(IRISES[_pick(seed, "iris", IRISES.size())])
 	var outfit := Color(OUTFITS[_pick(seed, "outfit", OUTFITS.size())])
 	if opts.get("collar") is Color:
@@ -109,20 +109,37 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 	var outfit_sh := outfit.darkened(0.25)
 	var outfit_hi := outfit.lightened(0.18)
 
-	# --- shoulders/bust (rows 35..47): trapezoid, lit from the left
-	for y in range(35, N):
-		var half := 9 + int((y - 35) * 0.75)
+	# --- shoulders/bust (rows 34..47): ROUNDED slope (ease-out curve), body
+	# build variants, arm seams and a left key light
+	var build := _pick(seed, "build", 3)      # 0 slim, 1 average, 2 broad
+	var max_half := 14 + build                # final width at the bottom row
+	for y in range(34, N):
+		var t2 := clampf(float(y - 34) / 7.0, 0.0, 1.0)
+		var ease := 1.0 - (1.0 - t2) * (1.0 - t2)          # fast then settle
+		var half := 5 + int(round(ease * float(max_half - 5)))
 		for x in range(CX - half, CX + half + 1):
 			_px(img, x, y, outfit if x < CX + 2 else outfit_sh)
-	for y in range(35, 38):   # shoulder top highlight
-		for x in range(CX - 8, CX - 2):
-			_px(img, x, y, outfit_hi)
+	# arm seams: a darker vertical line where the sleeves start
+	for y in range(40, N):
+		_px(img, CX - max_half + 3, y, outfit_sh.darkened(0.18))
+		_px(img, CX + max_half - 3, y, outfit_sh.darkened(0.25))
+	# key light along the left shoulder curve
+	for y in range(35, 40):
+		var t3 := clampf(float(y - 34) / 7.0, 0.0, 1.0)
+		var e3 := 1.0 - (1.0 - t3) * (1.0 - t3)
+		var hx := CX - (5 + int(round(e3 * float(max_half - 5)))) + 1
+		_px(img, hx, y, outfit_hi)
+		_px(img, hx + 1, y, outfit_hi)
+	# fabric fold hints on the chest
+	_px(img, CX - 6, 43, outfit_sh)
+	_px(img, CX - 5, 44, outfit_sh)
+	_px(img, CX + 7, 44, outfit_sh.darkened(0.12))
 	# collar/neckline variants
 	var trim := _pick(seed, "trim", 4)
 	if trim == 0:              # V-neck kit: pale tee under
-		for dy in 4:
-			for x in range(CX - 3 + dy, CX + 4 - dy):
-				_px(img, x, 35 + dy, Color("e8e6f0") if dy >= 2 else skin_sh)
+		for dy in 5:
+			for x in range(CX - 4 + dy, CX + 5 - dy):
+				_px(img, x, 34 + dy, Color("e8e6f0") if dy >= 2 else skin_sh)
 	elif trim == 1:            # zipped jacket: centre line + collar flaps
 		for y in range(36, N):
 			_px(img, CX, y, outfit.darkened(0.45))
@@ -236,6 +253,11 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		6: _hair_curly(img, hair, hair_sh, hair_hi)
 		7: _hair_buzz(img, hair, hair_sh)
 		8: _hat_cap(img, seed, hair, hair_sh)
+		9: _hair_afro(img, hair, hair_sh, hair_hi)
+		10: _hair_mohawk(img, hair, hair_sh, hair_hi)
+		11: _hair_bun(img, hair, hair_sh, hair_hi)
+		12: _hair_braid(img, hair, hair_sh, hair_hi)
+		13: _hair_messy(img, hair, hair_sh, hair_hi)
 
 	# --- unified 1px outline
 	var base := img.duplicate()
@@ -386,3 +408,71 @@ static func _hat_cap(img: Image, seed: String, hair: Color, hair_sh: Color) -> v
 		_px(img, x, 16, hair_sh)
 	_rect(img, CX - 11, 15, CX - 10, 20, hair)
 	_rect(img, CX + 10, 17, CX + 11, 20, hair_sh)
+
+
+static func _hair_afro(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	# big proud sphere, well past the skull, with a lit crescent
+	_ellipse(img, CX, 10, 14.0, 9.5, c)
+	for y in range(3, 9):
+		var t := (float(y) - 10.0) / 9.5
+		var w := 14.0 * sqrt(maxf(0.0, 1.0 - t * t))
+		_px(img, CX - int(round(w)) + 1, y, hi)
+		_px(img, CX - int(round(w)) + 2, y, hi)
+	# sits down the sides of the face
+	_rect(img, CX - 14, 10, CX - 11, 22, c)
+	_rect(img, CX + 11, 10, CX + 14, 22, sh)
+	for x in range(CX - 9, CX + 10):
+		_px(img, x, 16, sh)
+
+
+static func _hair_mohawk(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	# clean-shaven sides (bare skin) + a tall central crest, punk style
+	for y in range(1, 15):
+		var cw := 2 if y > 5 else 1
+		for x in range(CX - cw, CX + cw + 1):
+			_px(img, x, y, c if y > 3 else hi)
+	for x in range(CX - 3, CX + 4):   # crest root shadow on the scalp
+		_px(img, x, 13, sh)
+	# a hint of stubble above the ears
+	for x in range(CX - 10, CX - 7):
+		_px(img, x, 12, sh.darkened(0.1))
+	for x in range(CX + 8, CX + 11):
+		_px(img, x, 12, sh.darkened(0.1))
+
+
+static func _hair_bun(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	# slick pulled-back hair + top knot
+	_dome(img, c, sh, hi, 13)
+	_ellipse(img, CX, 3, 4.0, 3.0, c)
+	_px(img, CX - 2, 2, hi)
+	_px(img, CX - 1, 2, hi)
+	for x in range(CX - 3, CX + 4):   # tie shadow under the knot
+		_px(img, x, 6, sh)
+
+
+static func _hair_braid(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	# framed dome + a plait falling over the right shoulder
+	_dome(img, c, sh, hi, 15)
+	_rect(img, CX - 12, 14, CX - 10, 24, c)
+	var bx := CX + 11
+	for y in range(14, 38):
+		var wob := 1 if (y / 3) % 2 == 0 else 0
+		_rect(img, bx + wob, y, bx + 2 + wob, y, c if (y / 3) % 2 == 0 else sh)
+	_px(img, bx + 1, 38, sh)          # tuft at the tip
+	_px(img, bx + 1, 15, hi)
+
+
+static func _hair_messy(img: Image, c: Color, sh: Color, hi: Color) -> void:
+	# bedhead: dome + strands poking out at odd angles
+	_dome(img, c, sh, hi, 15)
+	for s in [[-12, 9, -1], [-10, 5, -1], [-5, 3, 0], [0, 2, 0], [5, 3, 1], [9, 5, 1], [12, 9, 1]]:
+		var sx: int = CX + int(s[0])
+		var sy: int = int(s[1])
+		var lean: int = int(s[2])
+		for k in 3:
+			_px(img, sx + lean * k, sy - k, c if k < 2 else hi)
+	# uneven fringe teeth
+	for x in range(CX - 9, CX + 10, 2):
+		_px(img, x, 16, c)
+		if x % 4 == 0:
+			_px(img, x, 17, c)
