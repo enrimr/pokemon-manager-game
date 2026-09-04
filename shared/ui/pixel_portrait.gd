@@ -162,27 +162,34 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 	# build variants, arm seams and a left key light
 	var build := _pick(seed, "build", 3)      # 0 slim, 1 average, 2 broad
 	var max_half := 14 + build                # final width at the bottom row
+	var wave_side := 0                        # which side raises the ball (pose 7)
+	if pose == 7:
+		wave_side = 1 if _pick(seed, "wavedir", 2) == 0 else -1
 	for y in range(34, N):
 		var t2 := clampf(float(y - 34) / 7.0, 0.0, 1.0)
 		var ease := 1.0 - (1.0 - t2) * (1.0 - t2)          # fast then settle
 		var half := 5 + int(round(ease * float(max_half - 5)))
-		# lean pose: the shoulder opposite the lean rides one row higher
-		var raise_l := 1 if pose == 5 and head_dx > 0 and y < 40 else 0
-		var raise_r := 1 if pose == 5 and head_dx < 0 and y < 40 else 0
+		# lean pose: the shoulder opposite the lean rides one row higher;
+		# ball pose: the raising shoulder SHRUGS two rows up
+		var raise_l := 0
+		var raise_r := 0
+		if pose == 5 and y < 40:
+			raise_l = 1 if head_dx > 0 else 0
+			raise_r = 1 if head_dx < 0 else 0
+		elif pose == 7 and y < 42:
+			raise_l = 2 if wave_side == -1 else 0
+			raise_r = 2 if wave_side == 1 else 0
 		var tl := clampf(float(y - 34 + raise_l) / 7.0, 0.0, 1.0)
 		var tr := clampf(float(y - 34 + raise_r) / 7.0, 0.0, 1.0)
 		var half_l := 5 + int(round((1.0 - (1.0 - tl) * (1.0 - tl)) * float(max_half - 5)))
 		var half_r := 5 + int(round((1.0 - (1.0 - tr) * (1.0 - tr)) * float(max_half - 5)))
-		if pose != 5:
+		if pose != 5 and pose != 7:
 			half_l = half
 			half_r = half
 		for x in range(CX - half_l, CX + half_r + 1):
 			_px(img, x, y, outfit if x < CX + 2 else outfit_sh)
 	# arm seams: a darker vertical line where the sleeves start (skipped on
 	# the side that raises the Poké Ball — it read as a third arm)
-	var wave_side := 0
-	if pose == 7:
-		wave_side = 1 if _pick(seed, "wavedir", 2) == 0 else -1
 	for y in range(40, N):
 		if wave_side != -1:
 			_px(img, CX - max_half + 3, y, outfit_sh.darkened(0.18))
