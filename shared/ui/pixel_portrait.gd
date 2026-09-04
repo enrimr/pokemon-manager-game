@@ -668,11 +668,11 @@ static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 	# sturdy arm, uniform thickness. The elbow is a QUARTER-ARC (user note:
 	# the stepped diagonal read as broken) — the arm rises straight, then its
 	# centreline sweeps continuously into the shoulder along a circle.
-	var arc_r := 9.0
-	for y in range(22, 42):
+	var arc_r := 10.0
+	for y in range(22, 46):                  # reaches lower: anchored in the torso
 		var inset := 0
-		if y > 30:
-			var dy := minf(float(y - 30), arc_r)
+		if y > 32:
+			var dy := minf(float(y - 32), arc_r)
 			inset = int(round(arc_r - sqrt(maxf(0.0, arc_r * arc_r - dy * dy))))
 		var cx0 := ax - side * inset
 		for dx in range(-2, 3):              # 5px fill -> 4px visible + outline
