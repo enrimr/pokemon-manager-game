@@ -320,14 +320,49 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		for side in [-1, 1]:
 			_px(head, CX + fdx + side * 7, 24, Color("e8908a"))
 			_px(head, CX + fdx + side * 8, 24, Color("e8908a"))
-	# beard/stubble
-	if not fem and _pick(seed, "beard", 4) == 0:
-		for x in range(CX - 6, CX + 7):
-			_px(head, x, 29, hair_sh)
-			if absi(x - CX) > 2:
-				_px(head, x, 28, hair_sh)
-		_rect(head, CX - 7, 25, CX - 6, 28, hair_sh)
-		_rect(head, CX + 6, 25, CX + 7, 28, hair_sh)
+	# facial hair: full beard / moustache / goatee (masc facet)
+	if not fem:
+		var fh := _pick(seed, "beard", 8)   # 0 beard · 1 moustache · 2 goatee
+		if fh == 0:
+			for x in range(CX - 6, CX + 7):
+				_px(head, x, 29, hair_sh)
+				if absi(x - CX) > 2:
+					_px(head, x, 28, hair_sh)
+			_rect(head, CX - 7, 25, CX - 6, 28, hair_sh)
+			_rect(head, CX + 6, 25, CX + 7, 28, hair_sh)
+		elif fh == 1:
+			for x in range(CX + fdx - 3, CX + fdx + 4):   # moustache over the lip
+				_px(head, x, 26, hair_sh)
+			_px(head, CX + fdx - 3, 27, hair_sh)
+			_px(head, CX + fdx + 3, 27, hair_sh)
+		elif fh == 2:
+			_rect(head, CX - 2, 28, CX + 2, 29, hair_sh)  # goatee on the chin
+	# a glint of an earring inside the ear (silhouette-safe for despeckle)
+	if _pick(seed, "earring", 5) == 0:
+		if turn >= 0:
+			_px(head, CX - 11, 22, Color("e8c04a"))
+		if turn <= 0:
+			_px(head, CX + 11, 22, Color("e8c04a"))
+
+	# --- glasses (facet ~1 in 6): round or rectangular frames + temple arms
+	if _pick(seed, "specs", 6) == 0:
+		var fr := Color8(40, 38, 58) if _pick(seed, "spec_c", 2) == 0 else Color("6b5a2b")
+		var rounded := _pick(seed, "spec_s", 2) == 0
+		for side in [-1, 1]:
+			var gx0 := CX + fdx + (1 if side > 0 else -9)
+			var gx1 := gx0 + 8
+			for x in range(gx0 + 1, gx1):
+				_px(head, x, 17, fr)
+				_px(head, x, 24, fr)
+			for y in range(18, 24):
+				_px(head, gx0 if not rounded or (y > 18 and y < 23) else gx0 + 1, y, fr)
+				_px(head, gx1 if not rounded or (y > 18 and y < 23) else gx1 - 1, y, fr)
+		_px(head, CX + fdx, 20, fr)          # bridge
+		_px(head, CX + fdx - 1, 20, fr)
+		_px(head, CX + fdx + 1, 20, fr)
+		for side2 in [-1, 1]:                # temple arms to the ears
+			_px(head, CX + side2 * 10, 19, fr)
+			_px(head, CX + side2 * 11, 20, fr)
 
 	# --- hair (drawn on the head layer so it turns/leans with it)
 	match style:
