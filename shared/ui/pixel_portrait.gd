@@ -332,7 +332,7 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 		5: _hair_pigtails(head, hair, hair_sh, hair_hi)
 		6: _hair_curly(head, hair, hair_sh, hair_hi)
 		7: _hair_buzz(head, hair, hair_sh)
-		8: _hat_cap(head, seed, hair, hair_sh)
+		8: _hat_cap(head, seed, hair, hair_sh, turn)
 		9: _hair_afro(head, hair, hair_sh, hair_hi)
 		10: _hair_mohawk(head, hair, hair_sh, hair_hi)
 		11: _hair_bun(head, hair, hair_sh, hair_hi)
@@ -537,9 +537,12 @@ static func _hair_buzz(img: Image, c: Color, sh: Color) -> void:
 		_px(img, x, 14, sh.darkened(0.2))
 
 
-static func _hat_cap(img: Image, seed: String, hair: Color, hair_sh: Color) -> void:
+static func _hat_cap(img: Image, seed: String, hair: Color, hair_sh: Color,
+		turn: int = 0) -> void:
 	# a cap must READ as a cap (user note): flatter dome, a crown seam, and a
-	# bold 2-row brim jutting well past the face with a cast shadow under it
+	# bold 2-row brim jutting well past the face — and the brim FOLLOWS THE
+	# GAZE on turned heads (user note #2); front-facing folk vary by seed
+	var dir := turn if turn != 0 else (1 if _pick(seed, "capdir", 2) == 0 else -1)
 	var cap := Color(OUTFITS[_pick(seed, "cap_c", OUTFITS.size())])
 	for y in range(5, 14):
 		var t := (float(y) - 13.0) / 9.0
@@ -550,17 +553,20 @@ static func _hat_cap(img: Image, seed: String, hair: Color, hair_sh: Color) -> v
 	_px(img, CX, 4, cap.darkened(0.35))
 	for y in range(5, 12):
 		_px(img, CX, y, cap.darkened(0.18))
-	_rect(img, CX - 5, 7, CX - 1, 12, cap.lightened(0.20))   # lit front panel
+	_rect(img, CX - 5 * dir, 7, CX - 1 * dir, 12, cap.lightened(0.20))  # lit front panel
 	# THE BRIM: 2 rows tall, flat, reaching far beyond the head
-	for x in range(CX - 3, CX + 18):
-		_px(img, x, 14, cap.lightened(0.10))
-		_px(img, x, 15, cap.darkened(0.25))
+	for k in range(-3, 18):
+		_px(img, CX + k * dir, 14, cap.lightened(0.10))
+		_px(img, CX + k * dir, 15, cap.darkened(0.25))
 	# fringe peeking under the brim (doubles as the brim's cast shadow)
-	for x in range(CX - 8, CX + 6):
-		_px(img, x, 16, hair_sh)
-	# hair peeking at the back/left + sideburns
-	_rect(img, CX - 11, 14, CX - 9, 19, hair)
-	_rect(img, CX + 10, 16, CX + 11, 19, hair_sh)
+	for k in range(-8, 6):
+		_px(img, CX + k * dir, 16, hair_sh)
+	# hair peeking at the back (opposite the brim) + sideburns
+	for y in range(14, 20):
+		_px(img, CX - 11 * dir, y, hair)
+		_px(img, CX - 10 * dir, y, hair)
+	for y in range(16, 20):
+		_px(img, CX + 10 * dir, y, hair_sh)
 
 
 static func _hair_afro(img: Image, c: Color, sh: Color, hi: Color) -> void:
@@ -656,25 +662,20 @@ static func _arms_crossed(img: Image, outfit: Color, outfit_sh: Color, skin: Col
 static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 		skin: Color, max_half: int) -> void:
 	var side := 1 if _pick(seed, "wavedir", 2) == 0 else -1
-	var ax := CX + side * 18                 # clear of even the big hairdos
+	var ax := CX + side * 17                 # clear of even the big hairdos
 	var sleeve := outfit.darkened(0.10) if side > 0 else outfit
-	# underarm wedge: connects the shoulder to the raised arm (no floating)
-	for y in range(35, 42):
-		var t := clampf(float(y - 34) / 7.0, 0.0, 1.0)
-		var half := 5 + int(round((1.0 - (1.0 - t) * (1.0 - t)) * float(max_half - 5)))
-		var x_in := CX + side * (half - 3)
-		for x in range(mini(x_in, ax - 1), maxi(x_in, ax + 1) + 1):
-			_px(img, x, y, sleeve)
-	# upper arm: vertical, 4px thick, slight inward step at the top (bend)
-	for y in range(23, 36):
-		var lean := -side if y < 26 else 0
-		for dx in range(-1, 3):
-			_px(img, ax + dx * side + lean, y, sleeve if dx <= 0 else outfit_sh)
+	# slim arm, uniform thickness (user note): straight up from the elbow,
+	# then gentle 1px diagonal steps melting into the shoulder — no fat wedge
+	for y in range(22, 40):
+		var inset := maxi(0, (y - 29)) / 2   # steps inward from row 31 down
+		var cx0 := ax - side * inset
+		for dx in range(-1, 2):              # 3px fill -> 2px visible + outline
+			_px(img, cx0 + dx, y, sleeve if dx * side <= 0 else outfit_sh)
 	# cuff
-	for dx in range(-1, 3):
-		_px(img, ax + dx * side - side, 22, outfit_sh.darkened(0.15))
+	for dx in range(-1, 2):
+		_px(img, ax + dx, 21, outfit_sh.darkened(0.15))
 	# closed fist gripping under the ball (no splayed fingers)
-	var fx := ax - side                      # fist sits on the bent wrist
+	var fx := ax                             # fist sits square on the wrist
 	_rect(img, fx - 2, 18, fx + 2, 21, skin)
 	_px(img, fx - side * 2, 19, skin.darkened(0.15))   # thumb crease
 	_px(img, fx + side * 2, 20, skin.darkened(0.10))
