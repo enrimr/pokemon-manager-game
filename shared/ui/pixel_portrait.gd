@@ -664,23 +664,31 @@ static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 	var side := 1 if _pick(seed, "wavedir", 2) == 0 else -1
 	var ax := CX + side * 17                 # clear of even the big hairdos
 	var sleeve := outfit.darkened(0.10) if side > 0 else outfit
-	# slim arm, uniform thickness (user note): straight up from the elbow,
-	# then gentle 1px diagonal steps melting into the shoulder — no fat wedge
+	# sturdy arm (user note v2: double the slim one), uniform thickness:
+	# straight from the wrist, gentle 1px diagonal steps into the shoulder
 	for y in range(22, 40):
 		var inset := maxi(0, (y - 29)) / 2   # steps inward from row 31 down
 		var cx0 := ax - side * inset
-		for dx in range(-1, 2):              # 3px fill -> 2px visible + outline
+		for dx in range(-2, 3):              # 5px fill -> 4px visible + outline
 			_px(img, cx0 + dx, y, sleeve if dx * side <= 0 else outfit_sh)
 	# cuff
-	for dx in range(-1, 2):
+	for dx in range(-2, 3):
 		_px(img, ax + dx, 21, outfit_sh.darkened(0.15))
 	# closed fist gripping under the ball (no splayed fingers)
 	var fx := ax                             # fist sits square on the wrist
 	_rect(img, fx - 2, 18, fx + 2, 21, skin)
 	_px(img, fx - side * 2, 19, skin.darkened(0.15))   # thumb crease
 	_px(img, fx + side * 2, 20, skin.darkened(0.10))
-	# --- the Poké Ball, resting on the fist (rows 9..17)
-	var ball_r := Color("e03028")
+	# --- the ball, resting on the fist: Poké (common), Super or Master
+	var roll := _pick(seed, "balltype", 6)   # 0-2 Poké · 3-4 Super · 5 Master
+	var top := Color("e03028")
+	var gloss := Color("ff9a8a")
+	if roll >= 3 and roll <= 4:
+		top = Color("3a6ac9")                # Super Ball blue
+		gloss = Color("8ab4ff")
+	elif roll == 5:
+		top = Color("7a3fa8")                # Master Ball purple
+		gloss = Color("c98ae0")
 	var ball_w := Color("f2f2f5")
 	var bx := fx
 	var by := 13
@@ -688,7 +696,7 @@ static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 		var t2 := (float(y) - by) / 4.6
 		var w := 4.6 * sqrt(maxf(0.0, 1.0 - t2 * t2))
 		for x in range(bx - int(round(w)), bx + int(round(w)) + 1):
-			_px(img, x, y, ball_r if y < by else ball_w)
+			_px(img, x, y, top if y < by else ball_w)
 	# band across the middle + centre button
 	for x in range(bx - 4, bx + 5):
 		_px(img, x, by, OUT)
@@ -698,7 +706,17 @@ static func _hand_up(img: Image, seed: String, outfit: Color, outfit_sh: Color,
 	_px(img, bx, by - 1, OUT)
 	_px(img, bx - 1, by + 1, OUT)
 	_px(img, bx, by + 1, OUT)
-	# glossy highlight on the red hemisphere
-	_px(img, bx - 2, by - 3, Color("ff9a8a"))
-	_px(img, bx - 1, by - 3, Color("ff9a8a"))
-	_px(img, bx - 2, by - 2, Color("ff9a8a"))
+	# type accents on the top hemisphere
+	if roll >= 3 and roll <= 4:              # Super: red racing stripes
+		for dy in [-3, -2]:
+			_px(img, bx - 3, by + dy, Color("e03028"))
+			_px(img, bx + 2, by + dy, Color("e03028"))
+	elif roll == 5:                          # Master: pink pips + white M dot
+		_px(img, bx - 3, by - 2, Color("f08ae0"))
+		_px(img, bx + 2, by - 2, Color("f08ae0"))
+		_px(img, bx - 1, by - 2, ball_w)
+		_px(img, bx, by - 2, ball_w)
+	# glossy highlight
+	_px(img, bx - 2, by - 3, gloss)
+	_px(img, bx - 1, by - 3, gloss)
+	_px(img, bx - 2, by - 2, gloss)
