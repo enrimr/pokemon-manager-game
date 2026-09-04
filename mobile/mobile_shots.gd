@@ -83,7 +83,7 @@ func _run() -> void:
 	await _frames(12)
 	_shot("%s/home.png" % dir)
 
-	for tab in ["inbox", "squad", "league", "more", "items", "routes", "tactics"]:
+	for tab in ["inbox", "squad", "league", "more", "items", "routes", "tactics", "academy"]:
 		shell.open_tab(tab)
 		await _frames(10)
 		_shot("%s/%s.png" % [dir, tab])
@@ -161,6 +161,7 @@ func _run() -> void:
 	league_page.refresh()
 	await _frames(8)
 	_shot("%s/league_fixtures.png" % dir)
+
 
 	SaveGuard.restore()
 	if _fails > 0:

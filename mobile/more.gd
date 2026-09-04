@@ -48,6 +48,10 @@ func refresh() -> void:
 	tac_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tac_btn.pressed.connect(func(): _shell().call("open_tab", "tactics"))
 	hub.add_child(tac_btn)
+	var aca_btn := MUI.button(tr("Youth Academy"))
+	aca_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	aca_btn.pressed.connect(func(): _shell().call("open_tab", "academy"))
+	hub.add_child(aca_btn)
 
 	# ---- weekly training (express): one tap stamps a preset on THIS week
 	var tc := MUI.card()

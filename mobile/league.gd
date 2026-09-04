@@ -28,7 +28,7 @@ func refresh() -> void:
 	add_child(head)
 	head.add_child(MUI.title(tr(GameState.world["meta"].get("league_name", "League")), 16))
 	head.add_child(MUI.hspacer())
-	for m in [["table", tr("Table")], ["fixtures", tr("Matches")]]:
+	for m in [["table", tr("Table")], ["fixtures", tr("Matches")], ["cup", tr("Cups")]]:
 		var key: String = m[0]
 		var b := MUI.button(str(m[1]),
 			ThemeBuilder.COL_ACCENT_DIM if _mode == key else Color(ThemeBuilder.COL_PANEL_ALT, 1.0),
@@ -47,6 +47,8 @@ func refresh() -> void:
 	v.add_theme_constant_override("separation", 3)
 	if _mode == "table":
 		_build_table(v)
+	elif _mode == "cup":
+		_build_cups(v)
 	else:
 		_build_fixtures(v)
 
@@ -118,6 +120,77 @@ func _cell(text: String, w: int, col: Color) -> Label:
 		l.custom_minimum_size.x = w
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER if w > 0 else HORIZONTAL_ALIGNMENT_LEFT
 	return l
+
+
+# ---------------------------------------------------------------- cups
+## Indigo Cup rounds + Championship Series bracket, newest round first.
+## Played ties tap through to their report mail; the player's ties glow.
+
+func _build_cups(v: VBoxContainer) -> void:
+	v.add_theme_constant_override("separation", 6)
+	var pid := str(GameState.world["meta"]["player_club_id"])
+	for comp in [["playoff", I18n.t(Season.PLAYOFF_NAME)], ["cup", tr(GameState.cup_name())]]:
+		var kind := str(comp[0])
+		var ties: Array = GameState.fixtures.filter(func(f): return str(f["comp"]) == kind)
+		if ties.is_empty():
+			if kind == "playoff":
+				continue   # regular season: no bracket yet, skip the header
+			var ec := MUI.card()
+			v.add_child(ec[0])
+			(ec[1] as VBoxContainer).add_child(MUI.dim(
+				tr("The %s draw lands with the new season.") % str(comp[1]), 11))
+			continue
+		var rounds := {}
+		for f in ties:
+			var r := int(f.get("round", 1))
+			if not rounds.has(r):
+				rounds[r] = []
+			(rounds[r] as Array).append(f)
+		var rkeys: Array = rounds.keys()
+		rkeys.sort()
+		rkeys.reverse()   # newest round on top
+		var cc := MUI.card()
+		v.add_child(cc[0])
+		var cv: VBoxContainer = cc[1]
+		cv.add_child(MUI.dim(str(comp[1]).to_upper(), 10))
+		for r in rkeys:
+			cv.add_child(MUI.dim((I18n.playoff_round(int(r)) if kind == "playoff"
+				else I18n.cup_round(int(r))).to_upper(), 9))
+			for f in rounds[r]:
+				_cup_tie_row(cv, f, pid)
+
+
+func _cup_tie_row(cv: VBoxContainer, f: Dictionary, pid: String) -> void:
+	var home: Dictionary = GameState.club(str(f["home"]))
+	var away: Dictionary = GameState.club(str(f["away"]))
+	var ours: bool = str(f["home"]) == pid or str(f["away"]) == pid
+	var played: bool = bool(f.get("played", false))
+	var p := Button.new()
+	p.custom_minimum_size.y = 34
+	p.focus_mode = Control.FOCUS_NONE
+	p.add_theme_stylebox_override("normal", ThemeBuilder._flat(
+		ThemeBuilder.COL_ACCENT_DIM if ours else Color(ThemeBuilder.COL_PANEL_ALT, 1.0),
+		ThemeBuilder.COL_ACCENT if ours else ThemeBuilder.COL_BORDER, 4, 8, 4))
+	var h := HBoxContainer.new()
+	h.set_anchors_preset(Control.PRESET_FULL_RECT)
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	h.add_theme_constant_override("separation", 6)
+	p.add_child(h)
+	h.add_child(Crest.icon(home, 20, {"no_tooltip": true}))
+	var lbl := MUI.label("%s %s %s" % [str(home.get("short", "?")),
+		("%d–%d" % [int(f["score_home"]), int(f["score_away"])]) if played else tr("vs"),
+		str(away.get("short", "?"))], 12, Color.WHITE if ours else ThemeBuilder.COL_TEXT)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	h.add_child(lbl)
+	h.add_child(Crest.icon(away, 20, {"no_tooltip": true}))
+	var when := MUI.dim(I18n.short_date(str(f["date"])), 9)
+	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(when)
+	if played and ours:
+		p.pressed.connect(func(): _open_report(f, away if str(f["home"]) == pid else home))
+	cv.add_child(p)
 
 
 # ---------------------------------------------------------------- fixtures

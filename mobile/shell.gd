@@ -65,6 +65,7 @@ func _ready() -> void:
 	_pages["items"] = load("res://mobile/items.gd").new()
 	_pages["routes"] = load("res://mobile/routes.gd").new()
 	_pages["tactics"] = load("res://mobile/tactics.gd").new()
+	_pages["academy"] = load("res://mobile/academy.gd").new()
 	for k in _pages:
 		_pages[k].size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_pages[k].size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -105,7 +106,7 @@ func navigate_to(screen_name: String, _context: Dictionary = {}) -> bool:
 		open_battle()
 		return true
 	var map := {"inbox": "inbox", "squad": "squad", "competition": "league",
-		"items": "items", "routes": "routes", "tactics": "tactics"}
+		"items": "items", "routes": "routes", "tactics": "tactics", "academy": "academy"}
 	if map.has(screen_name):
 		open_tab(str(map[screen_name]))
 		return true
