@@ -178,10 +178,16 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 			half_r = half
 		for x in range(CX - half_l, CX + half_r + 1):
 			_px(img, x, y, outfit if x < CX + 2 else outfit_sh)
-	# arm seams: a darker vertical line where the sleeves start
+	# arm seams: a darker vertical line where the sleeves start (skipped on
+	# the side that raises the Poké Ball — it read as a third arm)
+	var wave_side := 0
+	if pose == 7:
+		wave_side = 1 if _pick(seed, "wavedir", 2) == 0 else -1
 	for y in range(40, N):
-		_px(img, CX - max_half + 3, y, outfit_sh.darkened(0.18))
-		_px(img, CX + max_half - 3, y, outfit_sh.darkened(0.25))
+		if wave_side != -1:
+			_px(img, CX - max_half + 3, y, outfit_sh.darkened(0.18))
+		if wave_side != 1:
+			_px(img, CX + max_half - 3, y, outfit_sh.darkened(0.25))
 	# key light along the left shoulder curve
 	for y in range(35, 40):
 		var t3 := clampf(float(y - 34) / 7.0, 0.0, 1.0)
@@ -231,12 +237,14 @@ static func _draw(seed: String, opts: Dictionary) -> Image:
 	var jaw := _pick(seed, "jaw", 3)          # 0 round, 1 square, 2 narrow
 	var rx := 10.0 if jaw != 2 else 9.0
 	_ellipse(head, CX, 19, rx, 11.0, skin)
-	if jaw == 1:                              # square: fill the jaw corners
-		_rect(head, CX - 7, 26, CX + 7, 29, skin)
-	else:
-		_rect(head, CX - 6, 26, CX + 6, 28, skin)
-		for x in range(CX - 4, CX + 5):
-			_px(head, x, 29, skin)
+	# chin: a real taper (the old full-width blocks squared every face)
+	var chin_w := [6, 5, 3] if jaw != 1 else [7, 6, 4]
+	for i in 3:
+		for x in range(CX - int(chin_w[i]), CX + int(chin_w[i]) + 1):
+			_px(head, x, 27 + i, skin)
+	if jaw == 1:                              # square: a touch more jawline
+		_px(head, CX - 8, 25, skin)
+		_px(head, CX + 8, 25, skin)
 	# ears at eye height — on a turn only the trailing ear stays visible
 	if turn >= 0:
 		_rect(head, CX - 12, 19, CX - 11, 23, skin)
@@ -530,25 +538,29 @@ static func _hair_buzz(img: Image, c: Color, sh: Color) -> void:
 
 
 static func _hat_cap(img: Image, seed: String, hair: Color, hair_sh: Color) -> void:
+	# a cap must READ as a cap (user note): flatter dome, a crown seam, and a
+	# bold 2-row brim jutting well past the face with a cast shadow under it
 	var cap := Color(OUTFITS[_pick(seed, "cap_c", OUTFITS.size())])
-	for y in range(4, 15):
-		var t := (float(y) - 14.0) / 10.0
+	for y in range(5, 14):
+		var t := (float(y) - 13.0) / 9.0
 		var w := 12.0 * sqrt(maxf(0.0, 1.0 - t * t))
 		for x in range(CX - int(round(w)), CX + int(round(w)) + 1):
 			_px(img, x, y, cap)
-	# front panel + button
-	_rect(img, CX - 4, 6, CX + 3, 11, cap.lightened(0.22))
-	_px(img, CX, 4, cap.darkened(0.3))
-	# brim sweeping right
-	for x in range(CX + 2, CX + 16):
-		_px(img, x, 15, cap.darkened(0.2))
-		_px(img, x, 16, cap.darkened(0.28))
-	# hair under the cap
-	for x in range(CX - 10, CX + 2):
-		_px(img, x, 15, hair)
+	# crown seams + button (baseball-cap panels)
+	_px(img, CX, 4, cap.darkened(0.35))
+	for y in range(5, 12):
+		_px(img, CX, y, cap.darkened(0.18))
+	_rect(img, CX - 5, 7, CX - 1, 12, cap.lightened(0.20))   # lit front panel
+	# THE BRIM: 2 rows tall, flat, reaching far beyond the head
+	for x in range(CX - 3, CX + 18):
+		_px(img, x, 14, cap.lightened(0.10))
+		_px(img, x, 15, cap.darkened(0.25))
+	# fringe peeking under the brim (doubles as the brim's cast shadow)
+	for x in range(CX - 8, CX + 6):
 		_px(img, x, 16, hair_sh)
-	_rect(img, CX - 11, 15, CX - 10, 20, hair)
-	_rect(img, CX + 10, 17, CX + 11, 20, hair_sh)
+	# hair peeking at the back/left + sideburns
+	_rect(img, CX - 11, 14, CX - 9, 19, hair)
+	_rect(img, CX + 10, 16, CX + 11, 19, hair_sh)
 
 
 static func _hair_afro(img: Image, c: Color, sh: Color, hi: Color) -> void:
