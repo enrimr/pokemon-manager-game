@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1788513786|6014395';
+const CACHE_VERSION = '1788514151|4602011';
 /** @type {string} */
 const CACHE_PREFIX = 'Trainer Manager-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
