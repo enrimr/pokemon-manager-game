@@ -60,7 +60,14 @@ func _run() -> void:
 
 	var failures := 0
 	for name in wanted:
-		if not _shell.navigate_to(name):
+		# "screen/tab" deep-links to a subsection (same context global search uses)
+		var tab := ""
+		if String(name).contains("/"):
+			var parts: PackedStringArray = String(name).split("/", true, 1)
+			name = parts[0]
+			tab = parts[1]
+		var ctx := {"kind": "tab", "tab": tab, "label": tab} if tab != "" else {}
+		if not _shell.navigate_to(name, ctx):
 			printerr("SCREENSHOT ERROR: screen '%s' failed to load" % name)
 			failures += 1
 			continue
@@ -73,7 +80,8 @@ func _run() -> void:
 		if _is_black(img):
 			printerr("SCREENSHOT ERROR: image for '%s' is black — rendering broken?" % name)
 			failures += 1
-		var path := out_dir.path_join("%s.png" % name)
+		var fname: String = name if tab == "" else "%s_%s" % [name, tab]
+		var path := out_dir.path_join("%s.png" % fname)
 		if img.save_png(path) != OK:
 			printerr("SCREENSHOT ERROR: cannot save %s" % path)
 			failures += 1

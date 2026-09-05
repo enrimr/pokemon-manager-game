@@ -539,8 +539,15 @@ func _refresh_header_cup() -> void:
 # ------------------------------------------------------------------ tabs
 
 func _build_tab_bar() -> Control:
+	# Two rows since the pyramid grew to four leagues + cup: one row of long
+	# Spanish tab titles PLUS five switcher chips forced a ~1500px minimum
+	# width, clipping every competition view on the right (user report
+	# 2026-09-05). Tabs ride the top row, the competition switcher the next.
+	var wrap := VBoxContainer.new()
+	wrap.add_theme_constant_override("separation", 4)
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 4)
+	wrap.add_child(bar)
 	for entry in TABS:
 		var b := Button.new()
 		b.text = entry[1]
@@ -550,14 +557,17 @@ func _build_tab_bar() -> Control:
 		b.pressed.connect(_select_tab.bind(entry[0]))
 		bar.add_child(b)
 		_tab_buttons[entry[0]] = b
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.add_child(spacer)
 
 	# competition switcher (FM: browse any competition, not just your own)
+	var srow := HBoxContainer.new()
+	srow.add_theme_constant_override("separation", 4)
+	wrap.add_child(srow)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	srow.add_child(spacer)
 	var cap := UI.dim("COMPETITION", 10)
 	cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.add_child(cap)
+	srow.add_child(cap)
 	var entries: Array = []
 	for lg in GameState.leagues():
 		entries.append([str(lg["id"]), str(lg.get("short", tr(str(lg["name"]))))])
@@ -567,14 +577,15 @@ func _build_tab_bar() -> Control:
 		b.text = str(entry[1])
 		b.toggle_mode = true
 		b.focus_mode = Control.FOCUS_NONE
-		b.custom_minimum_size = Vector2(108, 28)
+		b.clip_text = true
+		b.custom_minimum_size = Vector2(96, 28)
 		b.add_theme_font_size_override("font_size", 12)
 		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 		b.tooltip_text = tr("Browse the %s") % entry[1]
 		b.pressed.connect(comp_set_league.bind(str(entry[0])))
-		bar.add_child(b)
+		srow.add_child(b)
 		_ctx_buttons[str(entry[0])] = b
-	return bar
+	return wrap
 
 
 func _select_tab(key: String) -> void:
