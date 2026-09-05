@@ -172,18 +172,23 @@ func _build_map_tab() -> Control:
 	for i in titles.size():
 		_tree.set_column_title(i, tr(titles[i]))
 		_tree.set_column_title_alignment(i, HORIZONTAL_ALIGNMENT_LEFT)
+	# minimums sized so all six columns fit the pane at the 1600px canvas
+	# with no horizontal scroll (Travel/Cost had scrolled clean off-screen);
+	# the two expand columns soak up anything extra, cells ellipsize + tooltip
 	_tree.set_column_expand(0, true)
-	_tree.set_column_custom_minimum_width(0, 150)
+	_tree.set_column_custom_minimum_width(0, 130)
 	_tree.set_column_expand(1, false)
-	_tree.set_column_custom_minimum_width(1, 100)
+	_tree.set_column_custom_minimum_width(1, 90)
 	_tree.set_column_expand(2, false)
-	_tree.set_column_custom_minimum_width(2, 70)
+	_tree.set_column_custom_minimum_width(2, 66)
 	_tree.set_column_expand(3, true)
-	_tree.set_column_custom_minimum_width(3, 260)
+	_tree.set_column_custom_minimum_width(3, 210)
 	_tree.set_column_expand(4, false)
-	_tree.set_column_custom_minimum_width(4, 70)
+	_tree.set_column_custom_minimum_width(4, 66)
 	_tree.set_column_expand(5, false)
-	_tree.set_column_custom_minimum_width(5, 80)
+	_tree.set_column_custom_minimum_width(5, 76)
+	for i in titles.size():
+		_tree.set_column_clip_content(i, true)
 	_tree.item_selected.connect(_on_route_selected)
 	left.add_child(_tree)
 
@@ -283,7 +288,10 @@ func _refresh_tree() -> void:
 		it.set_custom_color(1, TB.COL_TEXT_DIM)
 		it.set_text(2, _level_text(r, tier))
 		it.set_custom_color(2, TB.COL_TEXT_DIM if tier <= 0 else TB.COL_TEXT)
-		it.set_text(3, _intel_text(r, tier))
+		var intel := _intel_text(r, tier)
+		it.set_text(3, intel)
+		it.set_tooltip_text(3, intel)   # ellipsized cells stay readable
+		it.set_tooltip_text(1, ", ".join(tnames))
 		it.set_custom_color(3, TB.COL_TEXT_DIM if tier <= 0 else TB.COL_TEXT)
 		var travel: int = int(r["travel"].get(GameState.player_league_id(), 2))
 		it.set_text(4, I18n.np(travel, "%d day", "%d days"))
@@ -493,6 +501,12 @@ func _refresh_planner() -> void:
 	lrow.add_child(lkey)
 	_leader_opt = OptionButton.new()
 	_leader_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# long Spanish leader lines must never widen the pane (they stole the
+	# route table's columns — user report 2026-09-05); clip + tooltip instead
+	_leader_opt.fit_to_longest_item = false
+	_leader_opt.clip_text = true
+	_leader_opt.item_selected.connect(func(i: int):
+		_leader_opt.tooltip_text = _leader_opt.get_item_text(i))
 	_leader_ids.clear()
 	var roles := {"scout": tr("Scout"), "coach": tr("Coach"), "manager": tr("Manager (you)")}
 	for l in svc.leaders():
@@ -716,6 +730,12 @@ func _refresh_hunt_planner(uid: String) -> void:
 	lrow.add_child(lkey)
 	_leader_opt = OptionButton.new()
 	_leader_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# long Spanish leader lines must never widen the pane (they stole the
+	# route table's columns — user report 2026-09-05); clip + tooltip instead
+	_leader_opt.fit_to_longest_item = false
+	_leader_opt.clip_text = true
+	_leader_opt.item_selected.connect(func(i: int):
+		_leader_opt.tooltip_text = _leader_opt.get_item_text(i))
 	_leader_ids.clear()
 	var best: int = lsvc.best_leader_skill()
 	var roles := {"scout": tr("Scout"), "coach": tr("Coach"), "manager": tr("Manager (you)")}
