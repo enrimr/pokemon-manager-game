@@ -442,8 +442,11 @@ func _make_row(m: Dictionary) -> Button:
 
 
 ## Portraits piece: mail from a PERSON (rival manager, journalist, coach,
-## scout, assistant) shows their procedural face; institutional mail (board,
-## committee, clubs) keeps the category badge.
+## scout, assistant) shows their procedural face. Institutional mail gets a
+## contextual image too (icons piece, user request 2026-09-05): board mail
+## wears the club Chair's face, cup-committee mail the pixel trophy, and
+## transfer mail from a rival club that club's crest. Anything else keeps
+## the category badge.
 func _msg_icon(m: Dictionary, meta: Dictionary, size_px: int) -> Control:
 	var cat: String = str(m.get("cat", "board"))
 	var sender: String = str(m.get("sender", ""))
@@ -459,7 +462,32 @@ func _msg_icon(m: Dictionary, meta: Dictionary, size_px: int) -> Control:
 		var av := Portrait.avatar(who, size_px, opts)
 		av.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		return av
+	if cat == "cup":
+		return TrophyArt.icon(size_px, {"tooltip": sender})
+	if cat == "board":
+		var pc := GameState.player_club()
+		var chair: Dictionary = Portrait.board_members(pc)[0]
+		var bav := Portrait.avatar(str(chair["name"]), size_px,
+			{"collar": Portrait.club_collar(pc), "age": int(chair["age"]),
+			"tooltip": "%s · %s" % [str(chair["name"]), tr("Chair")]})
+		bav.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		return bav
+	if cat == "transfer":
+		var rc := _sender_club(sender)
+		if not rc.is_empty():
+			return Crest.icon(rc, size_px)
 	return _cat_icon(meta, size_px)
+
+
+## The rival club a transfer mail speaks for ({} when it is our own transfer
+## department or no club matches the sender).
+func _sender_club(sender: String) -> Dictionary:
+	if sender == "":
+		return {}
+	for c in GameState.world.get("clubs", []):
+		if str(c.get("name", "")) == sender and not GameState.is_player_club(str(c["id"])):
+			return c
+	return {}
 
 
 func _cat_icon(meta: Dictionary, size_px: int) -> Control:

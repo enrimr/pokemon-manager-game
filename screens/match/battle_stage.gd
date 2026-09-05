@@ -31,9 +31,15 @@ class Medallion:
 	var flash := 0.0               # 0..1 white impact overlay
 	var t := 0.0                   # shared clock (set by stage)
 	var facing := 1                # 1 = faces right (home), -1 faces left
+	var sprite_view := ""          # "back" (our side) | "front" (theirs)
+	var _sprite: Texture2D = null
 
 	func set_battler(b: Dictionary) -> void:
 		battler = b
+		_sprite = null
+		var sid := PokeArt.id_of(str(b.get("species", "")))
+		if sid > 0:
+			_sprite = PokeArt.tex_view(sid, sprite_view)
 		queue_redraw()
 
 	func center() -> Vector2:
@@ -73,14 +79,29 @@ class Medallion:
 		var frac := clampf(float(battler.get("hp", 0)) / maxf(float(battler.get("max_hp", 1)), 1.0), 0.0, 1.0)
 		if not fainted:
 			draw_arc(c, r + 7.0, -PI * 0.5, -PI * 0.5 + TAU * frac, 48, UIB.hp_color(frac), 4.0, true)
-		# monogram
+		# species art: gen-V battle sprite (back = ours, front = theirs),
+		# flipped to face the opponent; monogram only when art is missing
 		var font := get_theme_default_font()
-		var mono := str(battler.get("species", battler.get("name", "?"))).substr(0, 3).to_upper()
-		var fs := int(size.x * 0.26)
-		var msz := font.get_string_size(mono, HORIZONTAL_ALIGNMENT_CENTER, -1, fs)
-		var mcol := Color("f2f4fa") if not fainted else Color("6a7188")
-		draw_string(font, c + Vector2(-msz.x * 0.5, msz.y * 0.32), mono,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, fs, mcol)
+		if _sprite != null:
+			var s := r * 1.7
+			var tint := Color.WHITE if not fainted else Color(0.5, 0.52, 0.6, 0.85)
+			var rect := Rect2(c - Vector2(s, s) * 0.5 - Vector2(0, r * 0.08), Vector2(s, s))
+			var flip := (facing < 0 and sprite_view == "back") \
+				or (facing > 0 and sprite_view == "front")
+			if flip:
+				# mirror about the disc centre: the rect is centred on c.x,
+				# so only the texture flips, not its position
+				draw_set_transform(Vector2(c.x * 2.0, 0.0), 0.0, Vector2(-1, 1))
+			draw_texture_rect(_sprite, rect, false, tint)
+			if flip:
+				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		else:
+			var mono := str(battler.get("species", battler.get("name", "?"))).substr(0, 3).to_upper()
+			var fs := int(size.x * 0.26)
+			var msz := font.get_string_size(mono, HORIZONTAL_ALIGNMENT_CENTER, -1, fs)
+			var mcol := Color("f2f4fa") if not fainted else Color("6a7188")
+			draw_string(font, c + Vector2(-msz.x * 0.5, msz.y * 0.32), mono,
+				HORIZONTAL_ALIGNMENT_LEFT, -1, fs, mcol)
 		# level tag
 		var lv := tr("Lv%d") % int(battler.get("level", 0))
 		var lsz := font.get_string_size(lv, HORIZONTAL_ALIGNMENT_CENTER, -1, 11)
@@ -156,6 +177,8 @@ func _ensure_meds() -> void:
 			var k: int = _meds[side].size()
 			var m := Medallion.new()
 			m.facing = 1 if side == 0 else -1
+			m.sprite_view = "back" if runner != null and side == runner.player_side else "front"
+			m.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			var base := 118.0 if side == 0 else 100.0
 			if n > 1:
 				base *= 0.82
@@ -402,6 +425,17 @@ func _anim_switch(e: Dictionary) -> void:
 	var m: Medallion = _med(side, slot)
 	if m == null:
 		return
+	# Big caption so a tactical switch never reads as a faint (user report
+	# 2026-09-05). Battle-start send-outs keep the battle caption instead.
+	if not bool(e.get("first", false)):
+		var shorts: Array = runner.shorts()
+		var club := str(shorts[side]) if side < shorts.size() else ""
+		if bool(e.get("forced", false)):
+			_set_caption(tr("%s SEND OUT %s") % [club.to_upper(), str(e.get("to", "?"))],
+				Color("4dc3e6"), tr("replacing the fallen %s") % str(e.get("from", "?")))
+		else:
+			_set_caption(tr("SWITCH — %s") % club.to_upper(), Color("4dc3e6"),
+				tr("%s is recalled · %s steps in") % [str(e.get("from", "?")), str(e.get("to", "?"))])
 	var out_dir := -1.0 if side == 0 else 1.0
 	var tw := create_tween()
 	tw.tween_property(m, "anim_offset", Vector2(out_dir * 240.0, 10.0), 0.22)\

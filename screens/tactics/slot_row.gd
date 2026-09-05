@@ -62,7 +62,7 @@ func setup(analysis: Dictionary, slot_text: String, role_id: String, starter: bo
 		ThemeBuilder.COL_ACCENT if starter else ThemeBuilder.COL_TEXT_DIM)
 	h.add_child(slot)
 
-	# type-coloured monogram badge
+	# species sprite (falls back to the type-coloured monogram pre-sprites)
 	h.add_child(_make_badge())
 
 	# name / details
@@ -214,6 +214,9 @@ func _restyle() -> void:
 
 
 func _make_badge() -> Control:
+	var sid := PokeArt.id_of(str(_a["battler"]["species"]))
+	if sid > 0 and PokeArt.has_art(sid):
+		return PokeArt.icon(sid, 32)
 	var badge := PanelContainer.new()
 	badge.custom_minimum_size = Vector2(32, 32)
 	var types: Array = _a["types"]

@@ -94,6 +94,17 @@ func _build_list() -> void:
 			break
 
 
+## The rival club a transfer mail speaks for ({} when it is our own transfer
+## department or no club matches the sender).
+func _sender_club(sender: String) -> Dictionary:
+	if sender == "":
+		return {}
+	for c in GameState.world.get("clubs", []):
+		if str(c.get("name", "")) == sender and not GameState.is_player_club(str(c["id"])):
+			return c
+	return {}
+
+
 func _row(m: Dictionary) -> Control:
 	var r := MUI.row(func():
 		_selected = m
@@ -102,8 +113,19 @@ func _row(m: Dictionary) -> Control:
 	var btn: Button = r[0]
 	var h: HBoxContainer = r[1]
 	var sender := str(m.get("sender", ""))
+	var cat := str(m.get("cat", "board"))
+	var rc: Dictionary = _sender_club(sender) if cat == "transfer" else {}
 	if Portrait.is_person(sender) or TrainerArt.has_art(Portrait.person_key(sender)):
 		h.add_child(Portrait.avatar(Portrait.person_key(sender), 30))
+	elif cat == "cup":
+		h.add_child(TrophyArt.icon(30))
+	elif cat == "board":
+		var pc := GameState.player_club()
+		var chair: Dictionary = Portrait.board_members(pc)[0]
+		h.add_child(Portrait.avatar(str(chair["name"]), 30,
+			{"collar": Portrait.club_collar(pc), "age": int(chair["age"])}))
+	elif not rc.is_empty():
+		h.add_child(Crest.icon(rc, 30))
 	else:
 		var chip := PanelContainer.new()
 		var col := ThemeBuilder.COL_ACCENT_DIM
