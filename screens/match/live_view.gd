@@ -800,6 +800,9 @@ func _show_action_bar() -> void:
 			if not item_groups.has(iid):
 				item_groups[iid] = []
 			item_groups[iid].append(a)
+	if not doubles:
+		for lk in runner.choice_locked_moves():
+			moves_row.add_child(_locked_move_button(lk))
 	for iid in item_groups:
 		items_row.add_child(_item_menu(str(iid), item_groups[iid]))
 
@@ -858,6 +861,22 @@ func _move_button(a: Dictionary) -> Button:
 		UI.COL_GOOD if eff >= 2.0 else (UI.COL_BAD if eff == 0.0 else UI.COL_TEXT))
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(_on_player_action.bind(action))
+	btn.custom_minimum_size = Vector2(120, 46)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return btn
+
+
+## A move vetoed by a Choice item: visible but disabled, with the reason.
+func _locked_move_button(lk: Dictionary) -> Button:
+	var btn := Button.new()
+	var mv: Dictionary = DataStore.move(str(lk["move"]))
+	btn.text = I18n.t("%s\n%s · %d PP\n%s") % [tr(str(lk["move"])),
+		I18n.type_name(str(mv.get("type", "?"))).to_upper(), int(lk["pp"]),
+		tr("LOCKED — %s") % str(lk["item_name"])]
+	btn.tooltip_text = tr("%s locks the user into %s until it leaves the field.") % [
+		str(lk["item_name"]), tr(str(lk["locked_move"]))]
+	btn.disabled = true
+	btn.add_theme_font_size_override("font_size", 12)
 	btn.custom_minimum_size = Vector2(120, 46)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return btn

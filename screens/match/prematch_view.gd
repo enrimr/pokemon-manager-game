@@ -50,14 +50,15 @@ func _build_header() -> Control:
 		else tr("Cup · %s") % I18n.cup_round(int(f["round"]))
 	row.add_child(UI.club_crest(runner.home_club, 40))
 	var mid := UI.vbox(2)
-	var title := UI.label(tr("%s  vs  %s") % [runner.home_club["name"], runner.away_club["name"]], 21, Color.WHITE)
+	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var title := UI.wrap_label(tr("%s  vs  %s") % [runner.home_club["name"], runner.away_club["name"]], 21, Color.WHITE)
 	mid.add_child(title)
-	mid.add_child(UI.label(tr("MATCH DAY  ·  %s  ·  %s  ·  best of 3 six-a-side battles  ·  %s") % [
+	mid.add_child(UI.wrap_label(tr("MATCH DAY  ·  %s  ·  %s  ·  best of 3 six-a-side battles  ·  %s") % [
 		comp_txt, I18n.pretty_date(str(f["date"])),
 		tr("home advantage: none — this is about the six you send out") if runner.player_side == 0 else tr("away day")],
 		12, UI.COL_DIM))
 	if f["comp"] == "cup":
-		mid.add_child(UI.label(tr("CUP FORMAT — game 2 is played 2v2 DOUBLES: two actives per side, ")
+		mid.add_child(UI.wrap_label(tr("CUP FORMAT — game 2 is played 2v2 DOUBLES: two actives per side, ")
 			+ tr("spread moves, targeting calls. Order your six with a doubles pair in mind."),
 			12, UI.COL_WARN))
 	row.add_child(mid)
@@ -348,17 +349,17 @@ func _build_their_panel() -> Control:
 			row.add_child(UI.type_badge(str(t), 10))
 		box.add_child(row)
 		var hp := int(b["stats"]["hp"])
-		box.add_child(UI.label(tr("     HP %d · Atk %d · Def %d · SpA %d · SpD %d · Spe %d") % [
+		box.add_child(UI.wrap_label(tr("     HP %d · Atk %d · Def %d · SpA %d · SpD %d · Spe %d") % [
 			hp, int(b["stats"]["atk"]), int(b["stats"]["def"]), int(b["stats"]["spa"]),
 			int(b["stats"]["spd"]), int(b["stats"]["spe"])], 11, UI.COL_DIM))
 		var held := str(b.get("held_item", "") if b.get("held_item") != null else "")
 		if held != "":
-			var hl := UI.label(tr("     • holds %s") % I18n.item_name(held), 11, UI.COL_WARN)
+			var hl := UI.wrap_label(tr("     • holds %s") % I18n.item_name(held), 11, UI.COL_WARN)
 			hl.tooltip_text = I18n.item_desc(held)
 			hl.mouse_filter = Control.MOUSE_FILTER_STOP
 			box.add_child(hl)
 	box.add_child(UI.spacer_v())
-	box.add_child(UI.label(tr("Six picked by level and condition — expect this exact\nlineup in every battle of the series."), 11, UI.COL_DIM))
+	box.add_child(UI.wrap_label(tr("Six picked by level and condition — expect this exact\nlineup in every battle of the series."), 11, UI.COL_DIM))
 	return p
 
 
@@ -368,8 +369,7 @@ func _build_footer() -> Control:
 	var pair: Array = UI.panel("", true)
 	var row := UI.hbox(10)
 	pair[1].add_child(row)
-	row.add_child(UI.label(tr("Play it yourself — every move, switch and item is your call —\nor delegate: watch the coach run it, or take the instant result."), 12, UI.COL_DIM))
-	row.add_child(UI.spacer_h())
+	row.add_child(UI.wrap_label(tr("Play it yourself — every move, switch and item is your call —\nor delegate: watch the coach run it, or take the instant result."), 12, UI.COL_DIM))
 	var instant := Button.new()
 	instant.text = tr("Instant result")
 	instant.icon = GlyphIcons.tex("fast_forward", 12, ThemeBuilder.COL_TEXT)

@@ -501,6 +501,10 @@ func _build_action_buttons(actions: Array) -> void:
 	_action_area.add_child(grid)
 	for a in moves:
 		grid.add_child(_move_button(a))
+	if not runner.doubles_now():
+		# Choice-locked moves stay visible (greyed) — vanishing reads as a bug.
+		for lk in runner.choice_locked_moves():
+			grid.add_child(_locked_move_button(lk))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	_action_area.add_child(row)
@@ -556,6 +560,30 @@ func _move_button(a: Dictionary) -> Button:
 			sub += " · " + tr("weak")
 	v.add_child(MUI.dim(sub, 9))
 	b.pressed.connect(func(): _choose_move(a))
+	return b
+
+
+func _locked_move_button(lk: Dictionary) -> Button:
+	var md: Dictionary = DataStore.move(str(lk["move"]))
+	var tcol: Color = DataStore.type_color(str(md.get("type", "normal")))
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(0, 52)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.disabled = true
+	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_stylebox_override("disabled", ThemeBuilder._flat(tcol.darkened(0.75), tcol.darkened(0.5), 6, 10, 5))
+	b.tooltip_text = tr("%s locks the user into %s until it leaves the field.") % [
+		str(lk["item_name"]), I18n.move_name(str(lk["locked_move"]))]
+	var v := VBoxContainer.new()
+	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 6)
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.add_theme_constant_override("separation", 0)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(v)
+	var nm := MUI.label(I18n.move_name(str(lk["move"])), 13, Color(1, 1, 1, 0.45))
+	nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	v.add_child(nm)
+	v.add_child(MUI.dim(tr("LOCKED — %s") % str(lk["item_name"]), 9))
 	return b
 
 

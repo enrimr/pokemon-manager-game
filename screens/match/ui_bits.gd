@@ -54,6 +54,15 @@ static func label(text: String, size := 14, color := COL_TEXT) -> Label:
 	return l
 
 
+## Long copy that must never force the panel wider than its share (Spanish
+## strings overflowed the viewport): wraps within the width it is given.
+static func wrap_label(text: String, size := 14, color := COL_TEXT) -> Label:
+	var l := label(text, size, color)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return l
+
+
 static func type_badge(type: String, size := 11) -> Label:
 	var l := Label.new()
 	l.text = I18n.type_name(type).to_upper()

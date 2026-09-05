@@ -333,6 +333,26 @@ func available_actions() -> Array:
 	return out
 
 
+## Moves our active battler cannot pick right now because a Choice item locked
+## it into one move ([] when free). The UI shows these disabled instead of
+## hiding them — vanishing buttons read as a bug (user report 2026-09-05).
+## Each entry: {move, pp, item_name, locked_move}.
+func choice_locked_moves() -> Array:
+	if engine == null or engine.is_over():
+		return []
+	var me: Dictionary = engine.active_battler(player_side)
+	var lock := str(me.get("choice_lock", ""))
+	if lock == "" or int(me["pp"].get(lock, 0)) <= 0:
+		return []
+	var out: Array = []
+	for mname in me["moves"]:
+		if str(mname) != lock and int(me["pp"].get(mname, 0)) > 0:
+			out.append({"move": str(mname), "pp": int(me["pp"].get(mname, 0)),
+				"item_name": DataStore.item_name(str(me.get("item", ""))),
+				"locked_move": lock})
+	return out
+
+
 # ---------------------------------------------------------- doubles manual input
 
 ## Our slots that still have a standing battler (doubles: 0 and/or 1).

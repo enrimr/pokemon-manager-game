@@ -5897,3 +5897,5 @@ Release this recruit?,¿Liberar a este recluta?
 Intake-day report cards land in the inbox. Facility investment lives in landscape.,Los boletines del día de captación llegan a la bandeja. La inversión en instalaciones vive en apaisado.
 %d month,%d mes
 %d months,%d meses
+LOCKED — %s,BLOQUEADO — %s
+%s locks the user into %s until it leaves the field.,%s bloquea a su portador en %s hasta que se retire del campo.
