@@ -176,14 +176,12 @@ func _build_scoreboard() -> Control:
 	var home: Dictionary = runner.home_club
 	var away: Dictionary = runner.away_club
 	row.add_child(UI.club_crest(home, 34))
-	var hl := UI.label(home["name"], 16, Color.WHITE if runner.player_side == 0 else UI.COL_TEXT)
-	row.add_child(hl)
+	row.add_child(_club_ident(home, runner.player_side == 0, false))
 	row.add_child(UI.spacer_h())
 	_score_label = UI.label("0 – 0", 26, Color.WHITE)
 	row.add_child(_score_label)
 	row.add_child(UI.spacer_h())
-	var al := UI.label(away["name"], 16, Color.WHITE if runner.player_side == 1 else UI.COL_TEXT)
-	row.add_child(al)
+	row.add_child(_club_ident(away, runner.player_side == 1, true))
 	row.add_child(UI.club_crest(away, 34))
 	_battle_label = UI.label("", 12, UI.COL_DIM)
 	_battle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -193,6 +191,33 @@ func _build_scoreboard() -> Control:
 	_weather_label.visible = false
 	pair[1].add_child(_weather_label)
 	return pair[0]
+
+
+## Club name over the trainer's face + name (portraits piece — the two
+## managers on the touchline are part of the story of the tie).
+func _club_ident(club: Dictionary, is_player: bool, right: bool) -> Control:
+	var v := UI.vbox(2)
+	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var name_l := UI.label(str(club.get("name", "?")), 16,
+		Color.WHITE if is_player else UI.COL_TEXT)
+	if right:
+		name_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		name_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_child(name_l)
+	var mgr := str(club.get("manager", ""))
+	if mgr != "":
+		var mrow := UI.hbox(5)
+		var av := Portrait.avatar(mgr, 20, {"collar": Portrait.club_collar(club), "tooltip": mgr})
+		var ml := UI.label(mgr + (tr(" (you)") if is_player else ""), 11, UI.COL_DIM)
+		if right:
+			mrow.alignment = BoxContainer.ALIGNMENT_END
+			mrow.add_child(ml)
+			mrow.add_child(av)
+		else:
+			mrow.add_child(av)
+			mrow.add_child(ml)
+		v.add_child(mrow)
+	return v
 
 
 func _build_card(col: int) -> Control:

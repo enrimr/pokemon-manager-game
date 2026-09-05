@@ -336,6 +336,7 @@ func plan(route_id: String, field_days: int, leader_id: String, approach: String
 	}
 	next_uid += 1
 	expeditions.append(exp)
+	Analytics.event("expedition:launch:%s:%s" % [approach, route_id], field_days)
 	_log(exp, "depart", I18n.t("Party of %s departs for %s (%d field days, %d capture attempts budgeted).") % [
 		str(leader["name"]), str(r["name"]), field_days, attempts])
 	if leader_id == "manager":

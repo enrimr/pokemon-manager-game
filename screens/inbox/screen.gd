@@ -681,7 +681,9 @@ func _render_reading_pane() -> void:
 	body.add_theme_font_override("bold_font", _bold)
 	body.add_theme_font_size_override("normal_font_size", 14)
 	body.add_theme_constant_override("line_separation", 4)
-	body.text = str(rendered.get("bbcode", ""))
+	# entity deep-links: club / manager / squad names become clickable
+	body.text = EntityLinks.linkify(str(rendered.get("bbcode", "")))
+	body.meta_clicked.connect(_on_entity_link)
 	scroll.add_child(body)
 
 	# actions — decisions (accept/counter/reject call the live transfer
@@ -907,6 +909,18 @@ func _make_banner(banner: Dictionary) -> Control:
 	res.add_theme_color_override("font_color", edge)
 	v.add_child(res)
 	return panel
+
+
+## An inline [url=kind:id] entity link inside the message body.
+func _on_entity_link(meta: Variant) -> void:
+	var entry := EntityLinks.resolve(str(meta))
+	if entry.is_empty():
+		return
+	var n: Node = get_parent()
+	while n != null and not n.has_method("navigate_to"):
+		n = n.get_parent()
+	if n != null:
+		n.call("navigate_to", str(entry["screen"]), entry)
 
 
 func _on_action(a: Dictionary) -> void:

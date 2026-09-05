@@ -206,7 +206,17 @@ func _build_detail() -> void:
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_theme_font_size_override("normal_font_size", 13)
 	body.add_theme_constant_override("line_separation", 4)
-	body.text = str(rendered.get("bbcode", ""))
+	# entity deep-links (shim depth on mobile: club -> league, mon -> squad)
+	body.text = EntityLinks.linkify(str(rendered.get("bbcode", "")))
+	body.meta_clicked.connect(func(meta: Variant):
+		var entry := EntityLinks.resolve(str(meta))
+		if entry.is_empty():
+			return
+		var n: Node = get_parent()
+		while n != null and not n.has_method("navigate_to"):
+			n = n.get_parent()
+		if n != null:
+			n.call("navigate_to", str(entry["screen"]), entry))
 	sc.add_child(body)
 
 	var actions: Array = rendered.get("actions", [])

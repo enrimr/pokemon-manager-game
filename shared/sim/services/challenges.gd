@@ -210,6 +210,7 @@ func accept() -> String:
 	r.away_club = club
 	r.opp_six = Season.pick_team(club)
 	state["pending"]["accepted"] = true
+	Analytics.event("challenge:accepted:%s" % str(ch.get("kind", "trainer")))
 	return ""
 
 

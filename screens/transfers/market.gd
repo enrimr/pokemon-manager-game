@@ -3478,3 +3478,9 @@ func _log_deal(pname: String, from_name: String, to_name: String, fee: int, wage
 	})
 	if deals.size() > 120:
 		deals.resize(120)
+	# analytics: only the player's business, not the league's AI-to-AI churn
+	var pc_name := str(GameState.player_club().get("name", ""))
+	if to_name == pc_name:
+		Analytics.event("transfer:in:%s" % kind, fee)
+	elif from_name == pc_name:
+		Analytics.event("transfer:out:%s" % kind, fee)
