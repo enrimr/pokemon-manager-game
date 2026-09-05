@@ -176,10 +176,10 @@ func _ensure_meds() -> void:
 		while _meds[side].size() < n:
 			var k: int = _meds[side].size()
 			var m := Medallion.new()
-			m.facing = 1 if side == 0 else -1
-			m.sprite_view = "back" if runner != null and side == runner.player_side else "front"
+			m.facing = 1 if side == _near_side() else -1
+			m.sprite_view = "back" if side == _near_side() else "front"
 			m.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-			var base := 118.0 if side == 0 else 100.0
+			var base := 118.0 if side == _near_side() else 100.0
 			if n > 1:
 				base *= 0.82
 			m.size = Vector2(base, base)
@@ -188,13 +188,21 @@ func _ensure_meds() -> void:
 			_meds[side].append(m)
 
 
+## The side rendered on the NEAR (bottom-left) platforms: always the player,
+## home or away — the camera sits behind the manager, so our Pokémon show
+## their backs and the opponent faces us (user report 2026-09-05).
+func _near_side() -> int:
+	return runner.player_side if runner != null else 0
+
+
 func _slot_pos(side: int, slot: int) -> Vector2:
-	## Home fights from the near (bottom-left) platforms, away from the far ones.
+	## The player fights from the near (bottom-left) platforms, the opponent
+	## from the far ones — regardless of home/away.
 	var w := size.x
 	var h := size.y
 	if _slots_n() <= 1:
-		return Vector2(w * 0.30, h * 0.62) if side == 0 else Vector2(w * 0.72, h * 0.33)
-	if side == 0:
+		return Vector2(w * 0.30, h * 0.62) if side == _near_side() else Vector2(w * 0.72, h * 0.33)
+	if side == _near_side():
 		return Vector2(w * 0.24, h * 0.56) if slot == 0 else Vector2(w * 0.41, h * 0.72)
 	return Vector2(w * 0.63, h * 0.27) if slot == 0 else Vector2(w * 0.80, h * 0.40)
 
@@ -271,8 +279,8 @@ func _draw() -> void:
 		var rim: Color = UI.club_color(club) if not club.is_empty() else Color("2e3550")
 		for k in slots_n:
 			var s := _slot_pos(side, k)
-			var pr := ((w * 0.135) if side == 0 else (w * 0.115)) * (0.82 if slots_n > 1 else 1.0)
-			var drop := (68.0 if side == 0 else 58.0) * (0.82 if slots_n > 1 else 1.0)
+			var pr := ((w * 0.135) if side == _near_side() else (w * 0.115)) * (0.82 if slots_n > 1 else 1.0)
+			var drop := (68.0 if side == _near_side() else 58.0) * (0.82 if slots_n > 1 else 1.0)
 			var plat_c := s + Vector2(0, drop)
 			draw_ellipse_fill(plat_c, pr, pr * 0.30, Color("11141d"))
 			draw_ellipse_fill(plat_c + Vector2(0, -3), pr, pr * 0.30, Color("222840"))
@@ -436,7 +444,7 @@ func _anim_switch(e: Dictionary) -> void:
 		else:
 			_set_caption(tr("SWITCH — %s") % club.to_upper(), Color("4dc3e6"),
 				tr("%s is recalled · %s steps in") % [str(e.get("from", "?")), str(e.get("to", "?"))])
-	var out_dir := -1.0 if side == 0 else 1.0
+	var out_dir := -1.0 if side == _near_side() else 1.0
 	var tw := create_tween()
 	tw.tween_property(m, "anim_offset", Vector2(out_dir * 240.0, 10.0), 0.22)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
@@ -554,7 +562,7 @@ func _anim_miss(e: Dictionary) -> void:
 	if d == null:
 		return
 	var tw := create_tween()
-	tw.tween_property(d, "anim_offset", Vector2(22.0 * (1.0 if 1 - side == 1 else -1.0), -6), 0.12)
+	tw.tween_property(d, "anim_offset", Vector2(22.0 * (-1.0 if 1 - side == _near_side() else 1.0), -6), 0.12)
 	tw.tween_property(d, "anim_offset", Vector2.ZERO, 0.18)
 	_float_med(d, tr("MISS"), Color("8b91a8"), 13)
 
@@ -658,7 +666,7 @@ func _anim_item(e: Dictionary) -> void:
 	var actives: Array = runner.vm["actives"][side]
 	var t_idx := int(e.get("target_index", -1))
 	var target_slot := actives.find(t_idx)
-	var corner := Vector2(size.x * (0.12 if side == 0 else 0.88), size.y * 0.82)
+	var corner := Vector2(size.x * (0.12 if side == _near_side() else 0.88), size.y * 0.82)
 	_float_text(corner, "• %s" % iname, Color("9a8dff"), 14)
 	var m: Medallion = _med(side, target_slot) if target_slot >= 0 else null
 	if m != null:

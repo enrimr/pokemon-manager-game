@@ -18,6 +18,7 @@ var _key_only := false
 var _clock := 0.0
 var _ticker_idx := 0
 var _action_slot := -1       # doubles: which of our slots the action bar is for
+var _bar_live := false       # bar shows ENABLED controls (our turn) vs parked
 
 # node refs
 var _score_label: Label
@@ -348,6 +349,7 @@ func _build_touchline() -> Control:
 		_tl_row2.visible = v or not _action_bar.visible
 		if v:
 			_action_bar.visible = false
+			_bar_live = false
 			_tl_row2.visible = true)
 	row1.add_child(_ctl_toggle)
 
@@ -698,6 +700,7 @@ func _finish_skip_refresh() -> void:
 
 func _show_over_bar() -> void:
 	_action_bar.visible = false
+	_bar_live = false
 	_action_slot = -1
 	_tl_row2.visible = true
 	_over_bar.visible = true
@@ -756,13 +759,15 @@ func _show_action_bar() -> void:
 		if waiting.is_empty():
 			return
 		slot = int(waiting[0])
-	if _action_bar.visible and _action_slot == slot:
+	if _bar_live and _action_bar.visible and _action_slot == slot:
 		return
 	_action_slot = slot
+	_bar_live = true
 	_over_bar.visible = false
 	_action_bar.visible = true
 	_tl_row2.visible = false  # policies are moot while you call every turn
 	var head: Label = _action_bar.get_meta("head")
+	head.modulate.a = 1.0
 	var undo: Button = _action_bar.get_meta("undo")
 	undo.visible = false
 	if doubles:
@@ -812,7 +817,7 @@ func _on_undo_slot() -> void:
 		return
 	runner.retract_slot_action(int(runner.slot_actions.keys()[0]))
 	_action_slot = -1
-	_action_bar.visible = false
+	_bar_live = false
 	_show_action_bar()
 
 
@@ -959,17 +964,32 @@ func _on_player_action(action: Dictionary) -> void:
 		runner.submit_slot_action(_action_slot, action)
 		_action_slot = -1
 		if runner.awaiting_input() and not runner.slots_awaiting().is_empty():
-			_action_bar.visible = false
+			_bar_live = false
 			_show_action_bar()   # step two: the other slot's call
 			return
-		_action_bar.visible = false
-		_tl_row2.visible = true
+		_park_action_bar()
 		if _speed <= 0.0:
 			_set_speed(1.0)
 		return
-	_action_bar.visible = false
+	_park_action_bar()
 	_action_slot = -1
-	_tl_row2.visible = true
 	runner.submit_action(action)
 	if _speed <= 0.0:
 		_set_speed(1.0)
+
+
+## While the turn resolves the bar stays in place with its controls greyed —
+## hiding it reflowed the whole left column every turn (user report
+## 2026-09-05). It re-arms on the next awaiting_input via _show_action_bar.
+func _park_action_bar() -> void:
+	_bar_live = false
+	for key in ["moves_row", "switch_row", "items_row"]:
+		var row: HBoxContainer = _action_bar.get_meta(key)
+		for c in row.get_children():
+			if c is BaseButton:
+				c.disabled = true
+	var head: Label = _action_bar.get_meta("head")
+	head.text = tr("Waiting — the turn plays out…")
+	head.modulate.a = 0.55
+	var undo: Button = _action_bar.get_meta("undo")
+	undo.visible = false
