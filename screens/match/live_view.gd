@@ -443,13 +443,21 @@ func _build_action_bar() -> Control:
 	head_row.add_child(undo)
 	var moves_row := UI.hbox(6)
 	rows.add_child(moves_row)
+	# switch/item pills wrap onto extra lines instead of forcing the left
+	# column wider — parking the bar made any overflow permanent, crushing
+	# the commentary panel (user report 2026-09-05)
 	var lower := UI.hbox(6)
 	rows.add_child(lower)
-	var switch_row := UI.hbox(6)
+	var switch_row := HFlowContainer.new()
+	switch_row.add_theme_constant_override("h_separation", 6)
+	switch_row.add_theme_constant_override("v_separation", 4)
 	switch_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lower.add_child(switch_row)
-	var items_row := UI.hbox(6)
-	items_row.alignment = BoxContainer.ALIGNMENT_END
+	var items_row := HFlowContainer.new()
+	items_row.add_theme_constant_override("h_separation", 6)
+	items_row.add_theme_constant_override("v_separation", 4)
+	items_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	items_row.alignment = FlowContainer.ALIGNMENT_END
 	lower.add_child(items_row)
 	pair[0].set_meta("head", head)
 	pair[0].set_meta("undo", undo)
@@ -805,9 +813,9 @@ func _show_action_bar() -> void:
 			undo.visible = true
 	else:
 		head.text = tr("Attack, switch or use an item (items cost the turn).")
-	var moves_row: HBoxContainer = _action_bar.get_meta("moves_row")
-	var switch_row: HBoxContainer = _action_bar.get_meta("switch_row")
-	var items_row: HBoxContainer = _action_bar.get_meta("items_row")
+	var moves_row: Container = _action_bar.get_meta("moves_row")
+	var switch_row: Container = _action_bar.get_meta("switch_row")
+	var items_row: Container = _action_bar.get_meta("items_row")
 	for c in moves_row.get_children():
 		c.queue_free()
 	for c in switch_row.get_children():
@@ -891,6 +899,8 @@ func _move_button(a: Dictionary) -> Button:
 		UI.COL_GOOD if eff >= 2.0 else (UI.COL_BAD if eff == 0.0 else UI.COL_TEXT))
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(_on_player_action.bind(action))
+	btn.clip_text = true   # never force the column wide; ellipsize instead
+	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	btn.custom_minimum_size = Vector2(120, 46)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return btn
@@ -907,6 +917,8 @@ func _locked_move_button(lk: Dictionary) -> Button:
 		str(lk["item_name"]), tr(str(lk["locked_move"]))]
 	btn.disabled = true
 	btn.add_theme_font_size_override("font_size", 12)
+	btn.clip_text = true   # never force the column wide; ellipsize instead
+	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	btn.custom_minimum_size = Vector2(120, 46)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return btn
@@ -924,6 +936,8 @@ func _move_target_menu(a: Dictionary) -> MenuButton:
 	mb.icon = GlyphIcons.tex("target", 12, ThemeBuilder.COL_WARN)
 	mb.flat = false
 	mb.add_theme_font_size_override("font_size", 12)
+	mb.clip_text = true
+	mb.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	mb.custom_minimum_size = Vector2(120, 46)
 	mb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mb.tooltip_text = tr("Single-target move — choose which foe to hit.")
@@ -1009,7 +1023,7 @@ func _on_player_action(action: Dictionary) -> void:
 func _park_action_bar() -> void:
 	_bar_live = false
 	for key in ["moves_row", "switch_row", "items_row"]:
-		var row: HBoxContainer = _action_bar.get_meta(key)
+		var row: Container = _action_bar.get_meta(key)
 		for c in row.get_children():
 			if c is BaseButton:
 				c.disabled = true
