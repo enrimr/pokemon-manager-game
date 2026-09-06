@@ -25,7 +25,7 @@ shared/
   game_state.gd          # autoload GameState (career state, advance_day, save/load)
 screens/<name>/          # one folder per screen, discovered by convention
 tools/
-  gen_data.py            # regenerates the four data JSONs (python3 tools/gen_data.py)
+  gen_data.py            # regenerates the four data JSONs (python3 packs/pokemon/gen_data.py)
   screenshots.{gd,tscn}  # screenshot harness (see docs/TESTING.md)
   sim_check.{gd,tscn}    # headless 50-day season + engine verification
 scripts/smoke.sh         # smoke test runner
@@ -217,7 +217,7 @@ with filters/prices/stock, buy/sell, and the squad equipment board
 |--------------|--------------------------------------------------------------------------|
 | squad        | `res://screens/squad/`                                                   |
 | tactics      | `res://screens/tactics/`                                                 |
-| match        | `res://screens/match/` **plus** `res://shared/sim/battle_engine.gd`      |
+| match        | `res://screens/match/` **plus** `res://packs/pokemon/engine/battle_engine.gd`      |
 | competition  | `res://screens/competition/` **plus** fixture/table logic in `res://shared/sim/season.gd` (keep existing public signatures; coordinate via GameState API) |
 | transfers    | `res://screens/transfers/`                                               |
 | training     | `res://screens/training/`                                                |
@@ -431,7 +431,7 @@ returns `est_frac 0` against ability-immune targets. sim_check covers natures,
 Gen 1+2 evolution chains with an FM-style **manager approval** flow. Mechanics
 live in the drop-in service `res://packs/pokemon/services/evolution.gd`
 (auto-loaded, daily tick, persisted under `world.meta.services.evolution`);
-the chain data is `shared/data/evolutions.json`; evolution stones/items are
+the chain data is `packs/pokemon/data/evolutions.json`; evolution stones/items are
 ordinary shop items in `items.json`. Both data changes are produced by
 `artifacts/evolutions/gen_evolutions.py` (idempotent — rerun it after any
 `tools/gen_data.py` regeneration to restore the stone items). UI pieces

@@ -5,7 +5,7 @@ class_name ExpeditionService
 ## ticked daily; state rides world.meta.services.expeditions.
 ##
 ## Model (deterministic off GameState.career_seed + expedition id + date):
-##  - Plan an expedition to any route in shared/data/routes.json: pick the
+##  - Plan an expedition to any route in packs/pokemon/data/routes.json: pick the
 ##    field duration, a leader (a staff scout/coach whose judging skill drives
 ##    encounter quality, capture odds and IV quality — or the manager, whose
 ##    absence costs squad morale and a pointed board note), an approach
@@ -29,7 +29,7 @@ signal expeditions_changed
 
 static var active = null
 
-const ROUTES_PATH := "res://shared/data/routes.json"
+const ROUTES_PATH := "res://packs/pokemon/data/routes.json"
 const MAX_ACTIVE := 2
 const COOLDOWN_DAYS := 14
 const ATTEMPT_COST := 600

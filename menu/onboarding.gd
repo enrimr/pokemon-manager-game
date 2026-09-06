@@ -15,7 +15,7 @@ signal career_created
 signal cancelled
 
 const ClubStep := preload("res://menu/club_step.gd")
-const StarterStep := preload("res://menu/starter_step.gd")
+const StarterStep := preload("res://packs/pokemon/onboarding/starter_step.gd")
 const PANEL_W := 1240.0
 const PANEL_H := 800.0
 

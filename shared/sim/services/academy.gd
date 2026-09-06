@@ -72,7 +72,7 @@ var _evo_parent: Dictionary = {}  # child species id -> pre-evo id (lazy)
 ## Family root of a species (walks evolutions.json backwards). Charizard -> 4.
 func _root_of(id: int) -> int:
 	if _evo_parent.is_empty():
-		var f := FileAccess.open("res://shared/data/evolutions.json", FileAccess.READ)
+		var f := FileAccess.open("res://packs/pokemon/data/evolutions.json", FileAccess.READ)
 		if f != null:
 			var data: Variant = JSON.parse_string(f.get_as_text())
 			var evos: Dictionary = data.get("evolutions", {}) if data is Dictionary else {}

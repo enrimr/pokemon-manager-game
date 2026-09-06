@@ -768,7 +768,7 @@ func finance_summary() -> Dictionary:
 func _load_initial_finances() -> void:
 	if not _initial_finances.is_empty():
 		return
-	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
+	var f := FileAccess.open("res://packs/pokemon/data/world.json", FileAccess.READ)
 	if f == null:
 		return
 	var data: Variant = JSON.parse_string(f.get_as_text())

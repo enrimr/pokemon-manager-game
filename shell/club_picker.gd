@@ -7,7 +7,7 @@ extends Control
 ## league and start. Plain boot without a save still defaults to Pallet
 ## Pioneers (GameState.boot), FM's "pick me a club" equivalent.
 ##
-## The picker reads a FRESH res://shared/data/world.json so the numbers shown
+## The picker reads a FRESH res://packs/pokemon/data/world.json so the numbers shown
 ## are exactly what the new career will start with (not the current, drifted
 ## career state). Emits club_chosen(club_id) / cancelled; the shell drives
 ## GameState from there.
@@ -54,7 +54,7 @@ func _ready() -> void:
 # ------------------------------------------------------------------ data
 
 func _load_world() -> void:
-	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
+	var f := FileAccess.open("res://packs/pokemon/data/world.json", FileAccess.READ)
 	if f == null:
 		return
 	var world: Variant = JSON.parse_string(f.get_as_text())

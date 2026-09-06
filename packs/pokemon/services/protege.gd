@@ -38,7 +38,7 @@ static func wild_pools() -> Dictionary:
 	if not _wild_pool_cache.is_empty():
 		return _wild_pool_cache
 	var evolved := {}
-	var f := FileAccess.open("res://shared/data/evolutions.json", FileAccess.READ)
+	var f := FileAccess.open("res://packs/pokemon/data/evolutions.json", FileAccess.READ)
 	if f != null:
 		var data: Variant = JSON.parse_string(f.get_as_text())
 		if typeof(data) == TYPE_DICTIONARY:
@@ -48,7 +48,7 @@ static func wild_pools() -> Dictionary:
 				for opt in (evs[from_id] as Array):
 					evolved[int((opt as Dictionary).get("to", 0))] = true
 	var legends: Array = []
-	var lf := FileAccess.open("res://shared/data/legendaries.json", FileAccess.READ)
+	var lf := FileAccess.open("res://packs/pokemon/data/legendaries.json", FileAccess.READ)
 	if lf != null:
 		var ld: Variant = JSON.parse_string(lf.get_as_text())
 		if typeof(ld) == TYPE_DICTIONARY:

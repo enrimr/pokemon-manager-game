@@ -1,6 +1,6 @@
 ## Evolution service (drop-in sim service, see docs/ARCHITECTURE.md).
 ##
-## Owns the MECHANICS of Pokémon evolution: gen 1+2 chains (shared/data/
+## Owns the MECHANICS of Pokémon evolution: gen 1+2 chains (packs/pokemon/data/
 ## evolutions.json), eligibility from level + training development + stones,
 ## the FM-style manager-approval flow (pending -> approve/postpone), instance
 ## transformation, AI-club autonomous evolutions, and persistence.
@@ -33,7 +33,7 @@ signal evolved(uid: String, from_id: int, to_id: int, club_id: String)
 ## Latest service instance (set on career start / load). UI pieces use this.
 static var instance: EvolutionService = null
 
-const DATA_PATH := "res://shared/data/evolutions.json"
+const DATA_PATH := "res://packs/pokemon/data/evolutions.json"
 const REOFFER_DAYS := 14           ## postponed offers return after this
 const POSTPONE_MORALE_COST := 3    ## morale lost per postpone
 const EVOLVE_MORALE_BOOST := 6     ## morale gained on evolving

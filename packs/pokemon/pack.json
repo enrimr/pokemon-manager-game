@@ -15,7 +15,7 @@
 		]
 	},
 	"match": {
-		"engine": "res://shared/sim/battle_engine.gd",
+		"engine": "res://packs/pokemon/engine/battle_engine.gd",
 		"series_best_of": 3,
 		"draws": false,
 		"points": {"win": 3, "draw": 1, "loss": 0},

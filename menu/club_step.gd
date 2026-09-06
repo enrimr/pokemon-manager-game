@@ -5,7 +5,7 @@ extends Control
 ## club DETAIL PANE: board season expectation preview, squad strength,
 ## budgets and the manager you'd replace.
 ##
-## Reads a FRESH res://shared/data/world.json (like shell/club_picker.gd)
+## Reads a FRESH res://packs/pokemon/data/world.json (like shell/club_picker.gd)
 ## so the numbers are exactly what the new career starts with.
 
 signal club_selected(summary: Dictionary)
@@ -53,7 +53,7 @@ func selected_summary() -> Dictionary:
 # ------------------------------------------------------------------ data
 
 func _load_world() -> void:
-	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
+	var f := FileAccess.open("res://packs/pokemon/data/world.json", FileAccess.READ)
 	if f == null:
 		return
 	var world: Variant = JSON.parse_string(f.get_as_text())

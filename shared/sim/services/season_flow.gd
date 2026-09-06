@@ -773,7 +773,7 @@ func _send_season_digest(gs, closed_season: int, filed: Dictionary) -> void:
 func _age_cap_months(species_id: int) -> int:
 	if not _evo_loaded:
 		_evo_loaded = true
-		var f := FileAccess.open("res://shared/data/evolutions.json", FileAccess.READ)
+		var f := FileAccess.open("res://packs/pokemon/data/evolutions.json", FileAccess.READ)
 		if f != null:
 			var data: Variant = JSON.parse_string(f.get_as_text())
 			var evos: Dictionary = data.get("evolutions", {}) if data is Dictionary else {}

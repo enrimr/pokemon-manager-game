@@ -3,7 +3,7 @@ class_name LegendaryService
 ## LegendaryService — rare legendary sighting events (legendary events piece).
 ## Auto-loaded by the GameState services convention; ticked daily; state rides
 ## world.meta.services.legendaries. Builds on ExpeditionService (leaders,
-## capture delivery) and shared/data/legendaries.json.
+## capture delivery) and packs/pokemon/data/legendaries.json.
 ##
 ## Model (deterministic off GameState.career_seed):
 ##  - 1-2 sightings fire per season, league-wide, on a schedule derived purely
@@ -25,7 +25,7 @@ signal legendaries_changed
 
 static var active = null
 
-const DATA_PATH := "res://shared/data/legendaries.json"
+const DATA_PATH := "res://packs/pokemon/data/legendaries.json"
 const SEASON_LAST_OFFSET := 200      # sightings fire within season_start+14..+200
 const RESURFACE_MAX_OFFSET := 240    # roamers only resurface inside the season
 const ODDS_SKILL := 0.003            # per leader skill point over 10

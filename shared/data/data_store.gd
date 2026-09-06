@@ -1,7 +1,7 @@
 extends Node
 ## Autoload: DataStore
 ## Read-only static game data: species, moves, type chart.
-## Loaded once at startup from res://shared/data/*.json.
+## Loaded once at startup from res://packs/pokemon/data/*.json.
 
 var pokemon: Array = []            # Array[Dictionary], indexed list of species
 var pokemon_by_id: Dictionary = {} # int id -> species dict
@@ -28,15 +28,15 @@ func _ready() -> void:
 
 
 func _load_all() -> void:
-	pokemon = _load_json("res://shared/data/pokemon.json")
+	pokemon = _load_json("res://packs/pokemon/data/pokemon.json")
 	for p in pokemon:
 		pokemon_by_id[int(p["id"])] = p
 		pokemon_by_name[p["name"]] = p
-	moves = _load_json("res://shared/data/moves.json")
-	items = _load_json("res://shared/data/items.json")
-	natures = _load_json("res://shared/data/natures.json")
-	abilities = _load_json("res://shared/data/abilities.json")
-	var tc: Dictionary = _load_json("res://shared/data/typechart.json")
+	moves = _load_json("res://packs/pokemon/data/moves.json")
+	items = _load_json("res://packs/pokemon/data/items.json")
+	natures = _load_json("res://packs/pokemon/data/natures.json")
+	abilities = _load_json("res://packs/pokemon/data/abilities.json")
+	var tc: Dictionary = _load_json("res://packs/pokemon/data/typechart.json")
 	types = tc["types"]
 	type_chart = tc["chart"]
 	print("DataStore: %d species, %d moves, %d items, %d types" % [pokemon.size(), moves.size(), items.size(), types.size()])

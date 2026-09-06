@@ -81,7 +81,7 @@ func boot() -> void:
 func new_career(seed_value: int = 20260801, club_id: String = "") -> void:
 	save_slot = _new_slot_id()   # every career gets its own slot (saves piece)
 	career_seed = seed_value
-	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
+	var f := FileAccess.open("res://packs/pokemon/data/world.json", FileAccess.READ)
 	world = JSON.parse_string(f.get_as_text())
 	_index_clubs()
 	_sanitize_contract_dates()
@@ -1089,7 +1089,7 @@ func _ensure_second_divisions() -> void:
 			lg["region"] = str(lg["id"])
 		if not lg.has("tier"):
 			lg["tier"] = 1
-	var f := FileAccess.open("res://shared/data/world.json", FileAccess.READ)
+	var f := FileAccess.open("res://packs/pokemon/data/world.json", FileAccess.READ)
 	if f == null:
 		return
 	var shipped: Dictionary = JSON.parse_string(f.get_as_text())
