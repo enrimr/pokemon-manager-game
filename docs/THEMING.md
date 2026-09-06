@@ -1,7 +1,15 @@
 # Multi-Competition Engine — theming investigation
 
-*Status: investigation (2026-09-06). The complete Pokémon game is frozen at git
-tag `v1-pokemon`; nothing in this document is implemented yet.*
+*Status: PHASE 1 IMPLEMENTED (2026-09-06; the Pokémon game is byte-identical
+and frozen-at-tag `v1-pokemon` before it). Live today: MatchEngine contract +
+engine-owned tally, Packs facade + pack.json manifest, entity-stat registry,
+multi-root screens/services discovery, manifest-driven onboarding with pack
+steps + career-extras service hook, the pack lexicon (§3.4), and a fully
+self-contained packs/pokemon/ (data, engine, assets, ui, screens, services,
+onboarding, generator). Remaining seams for later phases: chassis binds
+MonRoles/BattleEngine/PokeArt by class_name (a second pack must provide its
+own or the loader must resolve per pack), commentary prose lives with the
+live match view (phase 3), academy species biases, match-stat defs registry.*
 
 Goal: evolve Trainer Manager from "an FM-style Pokémon game" into **a
 management-game engine plus swappable Competition Packs** — the same chassis
