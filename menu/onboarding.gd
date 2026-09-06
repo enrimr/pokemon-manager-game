@@ -15,7 +15,6 @@ signal career_created
 signal cancelled
 
 const ClubStep := preload("res://menu/club_step.gd")
-const StarterStep := preload("res://packs/pokemon/onboarding/starter_step.gd")
 const PANEL_W := 1240.0
 const PANEL_H := 800.0
 
@@ -25,12 +24,14 @@ var _font_header: Font
 
 var _step := 0
 var _selected: Dictionary = {}      # club summary from club_step
-var _starter: Dictionary = {}       # starter summary from starter_step
+# Wizard steps from the active pack's manifest (theming): builtins
+# "identity"/"club"/"confirm" plus any pack step scripts, in order.
+# Each: {id, kind: "identity"|"club"|"confirm"|"pack", panel, summary}
+var _steps: Array = []
 
 var _content: MarginContainer
 var _identity_panel: Control = null
 var _club_panel: Control = null
-var _starter_panel: Control = null
 var _name_edit: LineEdit
 var _nick_edit: LineEdit
 var _face_holder: Control = null
@@ -46,13 +47,43 @@ func setup(bold: Font, semibold: Font, header: Font) -> void:
 	_font_bold = bold
 	_font_semibold = semibold
 	_font_header = header
+	_build_steps()
+
+
+## Resolve the manifest's onboarding list into live step descriptors. Pack
+## step panels are created eagerly (they provide chip/footer labels).
+func _build_steps() -> void:
+	_steps.clear()
+	for id in Packs.onboarding_steps():
+		var sid := str(id)
+		if sid in ["identity", "club", "confirm"]:
+			_steps.append({"id": sid, "kind": sid, "panel": null, "summary": {}})
+			continue
+		var path := Packs.onboarding_step_path(sid)
+		if not ResourceLoader.exists(path):
+			push_warning("Onboarding: pack step '%s' not found at %s" % [sid, path])
+			continue
+		var panel: Control = (load(path) as GDScript).new()
+		panel.setup(_font_bold, _font_semibold, _font_header)
+		var desc := {"id": sid, "kind": "pack", "panel": panel, "summary": {}}
+		panel.step_selected.connect(func(sum: Dictionary):
+			desc["summary"] = sum
+			_refresh_footer())
+		panel.step_confirmed.connect(func():
+			if not desc["summary"].is_empty():
+				_show_step(_step + 1))
+		_steps.append(desc)
 
 
 func _notification(what: int) -> void:
 	# step panels live detached while another step is shown — free them with
 	# the wizard so no orphan Controls leak on cancel/start
 	if what == NOTIFICATION_PREDELETE:
-		for p in [_identity_panel, _club_panel, _starter_panel]:
+		var panels := [_identity_panel, _club_panel]
+		for d in _steps:
+			if d.get("panel") != null:
+				panels.append(d["panel"])
+		for p in panels:
 			if p != null and is_instance_valid(p) and not p.is_inside_tree():
 				p.free()
 
@@ -127,16 +158,19 @@ func _build_header() -> Control:
 		sub.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 		col.add_child(sub)
 	row.add_child(col)
-	# step chips: 1 MANAGER · 2 CLUB · 3 STARTER · 4 CONFIRM
+	# step chips from the pack's step list: 1 MANAGER · 2 CLUB · ... · CONFIRM
 	var chips := HFlowContainer.new()
 	chips.add_theme_constant_override("h_separation", 6 if narrow else 8)
 	chips.add_theme_constant_override("v_separation", 4)
 	chips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	for i in 4:
+	var chip_names := {"identity": tr("MANAGER"), "club": tr("CLUB"), "confirm": tr("CONFIRM")}
+	for i in _steps.size():
+		var d: Dictionary = _steps[i]
+		var cname: String = str(chip_names.get(str(d["kind"]),
+			tr(str(d["panel"].chip_label())) if d["panel"] != null else str(d["id"]).to_upper()))
 		var chip := PanelContainer.new()
 		var lbl := Label.new()
-		lbl.text = ("%d" % (i + 1)) if narrow else "%d · %s" % [i + 1,
-			[tr("MANAGER"), tr("CLUB"), tr("STARTER"), tr("CONFIRM")][i]]
+		lbl.text = ("%d" % (i + 1)) if narrow else "%d · %s" % [i + 1, cname]
 		lbl.add_theme_font_override("font", _font_header)
 		lbl.add_theme_font_size_override("font_size", 11)
 		chip.add_child(lbl)
@@ -189,18 +223,23 @@ func _build_footer() -> Control:
 # ------------------------------------------------------------------ steps
 
 func _show_step(i: int) -> void:
-	_step = clampi(i, 0, 3)
+	_step = clampi(i, 0, _steps.size() - 1)
+	var cached := [_identity_panel, _club_panel]
+	for d in _steps:
+		if d.get("panel") != null:
+			cached.append(d["panel"])
 	for child in _content.get_children():
 		_content.remove_child(child)
-		if child != _identity_panel and child != _club_panel and child != _starter_panel:
+		if not cached.has(child):
 			child.queue_free()
-	match _step:
-		0:
+	var desc: Dictionary = _steps[_step]
+	match str(desc["kind"]):
+		"identity":
 			if _identity_panel == null:
 				_identity_panel = _build_identity()
 			_content.add_child(_identity_panel)
 			_name_edit.grab_focus.call_deferred()
-		1:
+		"club":
 			if _club_panel == null:
 				_club_panel = ClubStep.new()
 				_club_panel.setup(_font_bold, _font_semibold, _font_header)
@@ -209,23 +248,15 @@ func _show_step(i: int) -> void:
 					_refresh_footer())
 				_club_panel.club_confirmed.connect(func():
 					if not _selected.is_empty():
-						_show_step(2))
+						_show_step(_step + 1))
 			_content.add_child(_club_panel)
-		2:
-			if _starter_panel == null:
-				_starter_panel = StarterStep.new()
-				_starter_panel.setup(_font_bold, _font_semibold, _font_header)
-				_starter_panel.starter_selected.connect(func(s: Dictionary):
-					_starter = s
-					_refresh_footer())
-				_starter_panel.starter_confirmed.connect(func():
-					if not _starter.is_empty():
-						_show_step(3))
-			_content.add_child(_starter_panel)
-			_starter_panel.set_context(str(_selected.get("league", "kanto")),
-				str(_selected.get("name", "")))
-			_starter = _starter_panel.selected_summary()
-		3:
+		"pack":
+			var panel: Control = desc["panel"]
+			_content.add_child(panel)
+			panel.set_context({"league": str(_selected.get("league", "kanto")),
+				"club_name": str(_selected.get("name", ""))})
+			desc["summary"] = panel.selected_summary()
+		"confirm":
 			_content.add_child(_build_summary())
 	_refresh_footer()
 	_refresh_chips()
@@ -246,35 +277,57 @@ func _refresh_chips() -> void:
 
 func _refresh_footer() -> void:
 	_back_btn.visible = _step > 0
-	match _step:
-		0:
-			_next_btn.text = tr("Next: choose your club")
-			_next_btn.disabled = _manager_name() == ""
-		1:
-			_next_btn.text = tr("Next: meet the professor")
-			_next_btn.disabled = _selected.is_empty()
-		2:
-			_next_btn.text = tr("Next: summary")
-			_next_btn.disabled = _starter.is_empty()
-		3:
-			_next_btn.text = tr("Start career at %s") % str(_selected.get("name", ""))
-			_next_btn.disabled = false
+	var desc: Dictionary = _steps[_step]
+	var last: bool = _step == _steps.size() - 1
+	if last:
+		_next_btn.text = tr("Start career at %s") % str(_selected.get("name", ""))
+		_next_btn.disabled = false
+	else:
+		_next_btn.text = _entry_label(_steps[_step + 1])
+		match str(desc["kind"]):
+			"identity":
+				_next_btn.disabled = _manager_name() == ""
+			"club":
+				_next_btn.disabled = _selected.is_empty()
+			"pack":
+				_next_btn.disabled = (desc["summary"] as Dictionary).is_empty()
+			_:
+				_next_btn.disabled = false
+
+
+## Footer caption announcing the NEXT step ("Next: meet the professor" comes
+## from the pack step itself).
+func _entry_label(next_desc: Dictionary) -> String:
+	match str(next_desc["kind"]):
+		"club":
+			return tr("Next: choose your club")
+		"confirm":
+			return tr("Next: summary")
+		"pack":
+			return str(next_desc["panel"].next_label())
+	return tr("Next")
 
 
 func _on_next() -> void:
-	if _step < 3:
+	if _step < _steps.size() - 1:
 		_show_step(_step + 1)
 		return
-	# step 3: start — each career saves to its own slot, nothing is overwritten
+	# last step: start — each career saves to its own slot, nothing overwritten
 	_do_start()
 
 
 func _do_start() -> void:
-	if _selected.is_empty() or _starter.is_empty() or _manager_name() == "":
+	if _selected.is_empty() or _manager_name() == "":
 		return
-	MenuFlow.start_career(str(_selected["id"]), _manager_name(), _nick_edit.text,
-		int(_starter.get("species_id", 0)),
-		_starter_panel.nickname() if _starter_panel != null else "")
+	var extras := {}
+	for d in _steps:
+		if str(d["kind"]) != "pack":
+			continue
+		if (d["summary"] as Dictionary).is_empty():
+			return   # a pack step is unresolved — refuse to start
+		if d["panel"].has_method("career_extras"):
+			extras.merge(d["panel"].career_extras(), true)
+	MenuFlow.start_career_ex(str(_selected["id"]), _manager_name(), _nick_edit.text, extras)
 	var save_needed := false
 	if _face_variant != 0:   # chosen look follows the manager everywhere
 		GameState.world["meta"]["manager_face_variant"] = _face_variant
@@ -287,6 +340,14 @@ func _do_start() -> void:
 	AudioManager.play("confirm")
 	career_created.emit()
 	queue_free()
+
+
+## Test/harness access to a step's live panel by manifest id ({} builtin).
+func step_panel(id: String) -> Control:
+	for d in _steps:
+		if str(d["id"]) == id:
+			return d["panel"]
+	return null
 
 
 func _manager_name() -> String:
@@ -538,55 +599,15 @@ func _build_summary() -> Control:
 	col.add_child(club_row)
 	col.add_child(_hline())
 
-	# the protégé (starter ceremony, step 3)
-	if not _starter.is_empty():
-		var srow := HBoxContainer.new()
-		srow.add_theme_constant_override("separation", 12)
-		var sty: Array = _starter.get("types", [])
-		var scol: Color = DataStore.type_color(str(sty[0]) if not sty.is_empty() else "normal")
-		if PokeArt.has_art(int(_starter.get("species_id", 0))):
-			srow.add_child(PokeArt.icon(int(_starter.get("species_id", 0)), 46))
-		var disc := PanelContainer.new()
-		disc.visible = not PokeArt.has_art(int(_starter.get("species_id", 0)))
-		disc.custom_minimum_size = Vector2(46, 46)
-		var dsb := StyleBoxFlat.new()
-		dsb.bg_color = scol.darkened(0.35)
-		dsb.border_color = scol.lightened(0.25)
-		dsb.set_border_width_all(2)
-		dsb.set_corner_radius_all(23)
-		disc.add_theme_stylebox_override("panel", dsb)
-		var dl := Label.new()
-		dl.text = str(_starter.get("name", "?")).substr(0, 1)
-		dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		dl.add_theme_font_override("font", _font_header)
-		dl.add_theme_font_size_override("font_size", 20)
-		dl.add_theme_color_override("font_color", Color.WHITE)
-		disc.add_child(dl)
-		srow.add_child(disc)
-		var scol2 := VBoxContainer.new()
-		scol2.alignment = BoxContainer.ALIGNMENT_CENTER
-		scol2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		scol2.add_theme_constant_override("separation", 0)
-		var snick: String = _starter_panel.nickname() if _starter_panel != null else ""
-		var sname := Label.new()
-		sname.text = (tr("%s “%s” — your protégé") % [str(_starter.get("name", "")), snick]) \
-			if snick != "" else (tr("%s — your protégé") % str(_starter.get("name", "")))
-		sname.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		sname.add_theme_font_override("font", _font_bold)
-		sname.add_theme_font_size_override("font_size", 15)
-		sname.add_theme_color_override("font_color", Color.WHITE)
-		scol2.add_child(sname)
-		var sline := Label.new()
-		sline.text = tr("It will start in your YOUTH ACADEMY at Lv 10, not in your matchday squad — develop it there and promote it when it is ready. It follows you for your whole career.")
-		sline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		sline.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		sline.add_theme_font_size_override("font_size", 11)
-		sline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
-		scol2.add_child(sline)
-		srow.add_child(scol2)
-		col.add_child(srow)
-		col.add_child(_hline())
+	# pack step summary rows (the starter ceremony's protégé line, etc.)
+	for d in _steps:
+		if str(d["kind"]) != "pack" or d["panel"] == null \
+				or not d["panel"].has_method("summary_row"):
+			continue
+		var prow: Control = d["panel"].summary_row()
+		if prow != null:
+			col.add_child(prow)
+			col.add_child(_hline())
 
 	var exp := Label.new()
 	exp.text = tr("\"%s expect the club to %s and to %s.\"") % [str(_selected.get("name", "")),

@@ -153,6 +153,14 @@ static func professor_for_league(league_id: String) -> String:
 	return "Professor Elm" if league_id.trim_suffix("2") == "johto" else "Professor Oak"
 
 
+## Onboarding-extras hook (GameState.dispatch_career_extras): the starter
+## ceremony's payload lands here without the chassis knowing what it is.
+func on_career_extras(_gs2, extras: Dictionary) -> void:
+	var sid := int(extras.get("starter_id", 0))
+	if sid > 0:
+		select_starter(sid, str(extras.get("starter_nick", "")))
+
+
 ## The onboarding wizard's contract: called ONCE right after new_career()
 ## (MenuFlow.start_career). Creates the academy entry, assigns the rival's
 ## counter-starter and posts the announcement mail. "" = ok, else error.

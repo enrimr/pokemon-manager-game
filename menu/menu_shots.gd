@@ -85,8 +85,8 @@ func _run() -> void:
 			_shot("%s/onboarding_club_%s.png" % [dir, loc])
 			ob._on_next()
 			await _frames(10)
-			ob._starter_panel._select(4)   # the starter ceremony: pick Charmander
-			ob._starter_panel._nick_edit.text = "Brasa" if loc == "es" else "Ember"
+			ob.step_panel("starter")._select(4)   # the starter ceremony: pick Charmander
+			ob.step_panel("starter")._nick_edit.text = "Brasa" if loc == "es" else "Ember"
 			await _frames(8)
 			_shot("%s/onboarding_starter_%s.png" % [dir, loc])
 			ob._on_next()

@@ -5,8 +5,12 @@ extends Control
 ## protege.gd) and may give it a nickname. FM-style masked stats: scout
 ## RANGES, not numbers — you pick with your heart plus a hint.
 
-signal starter_selected(summary: Dictionary)
-signal starter_confirmed
+## GENERIC ONBOARDING STEP CONTRACT (theming — menu/onboarding.gd hosts any
+## pack step that exposes this surface): step_selected/step_confirmed signals,
+## setup(fonts), set_context(ctx), selected_summary(), next_label(),
+## chip_label(), career_extras().
+signal step_selected(summary: Dictionary)
+signal step_confirmed
 
 const Protege := preload("res://packs/pokemon/services/protege.gd")
 
@@ -49,7 +53,77 @@ func selected_summary() -> Dictionary:
 
 
 ## Rebuild the trio when the chosen club (league) changes between visits.
-func set_context(league_id: String, club_name: String) -> void:
+## The confirm step's summary line for this step (contract, optional).
+func summary_row() -> Control:
+	var sel := selected_summary()
+	if sel.is_empty():
+		return null
+	var srow := HBoxContainer.new()
+	srow.add_theme_constant_override("separation", 12)
+	var sty: Array = sel.get("types", [])
+	var scol: Color = DataStore.type_color(str(sty[0]) if not sty.is_empty() else "normal")
+	if PokeArt.has_art(int(sel.get("species_id", 0))):
+		srow.add_child(PokeArt.icon(int(sel.get("species_id", 0)), 46))
+	else:
+		var disc := PanelContainer.new()
+		disc.custom_minimum_size = Vector2(46, 46)
+		var dsb := StyleBoxFlat.new()
+		dsb.bg_color = scol.darkened(0.35)
+		dsb.border_color = scol.lightened(0.25)
+		dsb.set_border_width_all(2)
+		dsb.set_corner_radius_all(23)
+		disc.add_theme_stylebox_override("panel", dsb)
+		var dl := Label.new()
+		dl.text = str(sel.get("name", "?")).substr(0, 1)
+		dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		dl.add_theme_font_override("font", _font_header)
+		dl.add_theme_font_size_override("font_size", 20)
+		dl.add_theme_color_override("font_color", Color.WHITE)
+		disc.add_child(dl)
+		srow.add_child(disc)
+	var scol2 := VBoxContainer.new()
+	scol2.alignment = BoxContainer.ALIGNMENT_CENTER
+	scol2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scol2.add_theme_constant_override("separation", 0)
+	var snick := nickname()
+	var sname := Label.new()
+	sname.text = (tr("%s “%s” — your protégé") % [str(sel.get("name", "")), snick]) \
+		if snick != "" else (tr("%s — your protégé") % str(sel.get("name", "")))
+	sname.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	sname.add_theme_font_override("font", _font_bold)
+	sname.add_theme_font_size_override("font_size", 15)
+	sname.add_theme_color_override("font_color", Color.WHITE)
+	scol2.add_child(sname)
+	var sline := Label.new()
+	sline.text = tr("It will start in your YOUTH ACADEMY at Lv 10, not in your matchday squad — develop it there and promote it when it is ready. It follows you for your whole career.")
+	sline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	sline.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sline.add_theme_font_size_override("font_size", 11)
+	sline.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
+	scol2.add_child(sline)
+	srow.add_child(scol2)
+	return srow
+
+
+func chip_label() -> String:
+	return "STARTER"
+
+
+func next_label() -> String:
+	return tr("Next: meet the professor")
+
+
+## What this step contributes to the new career (consumed by services via
+## the on_career_extras hook — the protégé service claims the starter).
+func career_extras() -> Dictionary:
+	var sel := selected_summary()
+	return {"starter_id": int(sel.get("species_id", 0)), "starter_nick": nickname()}
+
+
+func set_context(ctx: Dictionary) -> void:
+	var league_id := str(ctx.get("league", "kanto"))
+	var club_name := str(ctx.get("club_name", ""))
 	if league_id == _league and club_name == _club_name:
 		return
 	_league = league_id
@@ -287,7 +361,7 @@ func _select(id: int) -> void:
 	_rebuild_balls()
 	_update_choose_btn()
 	_apply_styles()
-	starter_selected.emit(_selected)
+	step_selected.emit(_selected)
 
 
 func _apply_styles() -> void:
@@ -425,7 +499,7 @@ func _build_card(id: int, with_button := true) -> Control:
 	panel.gui_input.connect(func(ev: InputEvent):
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
 			if int(_selected.get("species_id", -1)) == id and ev.double_click:
-				starter_confirmed.emit()
+				step_confirmed.emit()
 			else:
 				_select(id))
 	_cards.append({"panel": panel, "id": id, "color": col})

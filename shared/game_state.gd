@@ -52,6 +52,7 @@ func _ready() -> void:
 	# (Deferred so DataStore's _ready has definitely run first.)
 	# The Settings autoload registers AFTER us, so apply the saved language
 	# first — boot-time inbox mail must be written in the player's locale.
+	Packs.install_lexicon()   # pack vocabulary overlay rides ahead of locale
 	I18n.apply_saved_locale()
 	boot()
 
@@ -1017,6 +1018,14 @@ func _load_services_from(dir_path: String) -> void:
 				continue
 			var svc: Variant = (script as GDScript).new()
 			_services.append(svc)
+
+
+## Hand onboarding extras to whichever service claims them (theming: the
+## chassis stays ignorant of pack concepts like starters).
+func dispatch_career_extras(extras: Dictionary) -> void:
+	for svc in _services:
+		if svc.has_method("on_career_extras"):
+			svc.on_career_extras(self, extras)
 
 
 ## Manual registration (tests / screens that want the same lifecycle).

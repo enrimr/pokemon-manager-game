@@ -1,0 +1,5 @@
+{
+	"_readme": "Vocabulary overlay: locale -> {i18n key -> override}. The chassis' English keys are already Pokémon-flavoured, so this pack overrides nothing. A football pack would map e.g. 'Squad Pokémon' -> 'Squad Players' (en) and -> 'Jugadores de la plantilla' (es).",
+	"en": {},
+	"es": {}
+}

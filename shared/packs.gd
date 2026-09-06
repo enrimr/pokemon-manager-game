@@ -71,6 +71,56 @@ static func entity_plural() -> String:
 	return str(manifest().get("entity", {}).get("plural", entity_singular()))
 
 
+## Install the pack's vocabulary overlay (theming: vocabulary IS translation).
+## <pack>/lexicon.json maps locale -> {i18n key -> override}, letting a pack
+## rewrite sport terms in EVERY language without touching call sites (e.g. a
+## football pack overrides "Squad Pokémon" in en AND es). Empirically in
+## Godot 4.6 the FIRST translation added for a locale wins, so the overlay is
+## inserted in front of the base catalog (tools/lexicon_check.tscn guards
+## this). The Pokémon pack ships an empty lexicon — keys are already right.
+static func install_lexicon(extra: Dictionary = {}) -> void:
+	var lex: Dictionary = {}
+	var f := FileAccess.open("%s/%s/lexicon.json" % [PACK_DIR, ACTIVE], FileAccess.READ)
+	if f != null:
+		var parsed: Variant = JSON.parse_string(f.get_as_text())
+		if parsed is Dictionary:
+			lex = parsed
+	for locale in extra:
+		if not lex.has(locale):
+			lex[locale] = {}
+		(lex[locale] as Dictionary).merge(extra[locale], true)
+	for locale in lex:
+		if not (lex[locale] is Dictionary):
+			continue   # metadata entries like "_readme"
+		var terms: Dictionary = lex[locale]
+		if terms.is_empty():
+			continue
+		var t := Translation.new()
+		t.locale = str(locale)
+		for k in terms:
+			t.add_message(str(k), str(terms[k]))
+		var base := TranslationServer.get_translation_object(str(locale))
+		if base != null:
+			TranslationServer.remove_translation(base)
+		TranslationServer.add_translation(t)
+		if base != null:
+			TranslationServer.add_translation(base)
+
+
+## Onboarding step ids in wizard order. "identity", "club" and "confirm" are
+## chassis builtins; any other id resolves to the pack step script at
+## <pack>/onboarding/<id>_step.gd (duck-typed contract — see menu/onboarding.gd).
+static func onboarding_steps() -> Array:
+	var steps: Variant = manifest().get("onboarding", [])
+	if steps is Array and not steps.is_empty():
+		return steps
+	return ["identity", "club", "confirm"]
+
+
+static func onboarding_step_path(id: String) -> String:
+	return "%s/%s/onboarding/%s_step.gd" % [PACK_DIR, ACTIVE, id]
+
+
 ## Pack-owned drop-in roots (theming 1d): screens and simulation services may
 ## live inside the active pack, discovered exactly like the shared ones.
 static func screens_root() -> String:

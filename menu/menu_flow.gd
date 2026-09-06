@@ -96,10 +96,21 @@ static func apply_manager_identity(name: String, nickname: String = "") -> void:
 ## seed the shell has always used.
 static func start_career(club_id: String, name: String, nickname: String = "",
 		starter_id: int = 0, starter_nick: String = "") -> void:
+	var extras := {}
+	if starter_id > 0:
+		extras = {"starter_id": starter_id, "starter_nick": starter_nick}
+	start_career_ex(club_id, name, nickname, extras)
+
+
+## Pack-agnostic variant (theming): whatever the pack's onboarding steps
+## collected rides in `extras`, claimed by any service exposing
+## on_career_extras(gs, extras) — the chassis never learns what a starter is.
+static func start_career_ex(club_id: String, name: String, nickname: String = "",
+		extras: Dictionary = {}) -> void:
 	GameState.new_career(20260801, club_id)
 	apply_manager_identity(name, nickname)
-	if starter_id > 0 and ProtegeService.instance != null:
-		ProtegeService.instance.select_starter(starter_id, starter_nick)
+	if not extras.is_empty():
+		GameState.dispatch_career_extras(extras)
 	GameState.save_game()
 
 

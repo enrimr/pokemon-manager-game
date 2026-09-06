@@ -67,7 +67,7 @@ func _run() -> void:
 		_shot("%s/onboarding_2.png" % dir)
 		ob._on_next()
 		await _frames(12)
-		ob._starter_panel._select(4)
+		ob.step_panel("starter")._select(4)
 		await _frames(8)
 		_shot("%s/onboarding_3.png" % dir)
 		ob._on_next()

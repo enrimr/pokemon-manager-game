@@ -149,14 +149,16 @@ Replace the six hardcoded stat keys with the manifest's `entity.stats` list:
   per pack); the sport half becomes `inst["attrs"]` keyed by the registry.
 - `MonRoles` (wall/sweeper/striker...) becomes a pack-provided role table.
 
-### 3.4 Vocabulary table
+### 3.4 Vocabulary table — IMPLEMENTED as the pack lexicon
 
-Keep `tr()` untouched (it is the *language* axis). Add a tiny `Vocab`
-indirection for the ~150 sport-coupled terms (the *theme* axis):
-`Vocab.entity()` → "Pokémon"/"Jugador"/"Fighter", `Vocab.level_tag(n)` →
-"Lv 34"/"OVR 78", `Vocab.acquire()` → "Capture"/"Sign". Two axes stay
-orthogonal: vocab keys are English and flow through `tr()` afterwards, so
-Spanish keeps working per pack with one extra strings.csv.
+Vocabulary IS translation: `<pack>/lexicon.json` maps locale → {i18n key →
+override} and `Packs.install_lexicon()` shadows the base catalogs at boot
+(first-added translation wins in Godot 4.6 — `tools/lexicon_check.tscn`
+guards the mechanism). A football pack overrides "Squad Pokémon" in en AND
+es without touching a single call site; the Pokémon pack ships an empty
+lexicon because the chassis keys are already right. `Packs.entity_singular/
+plural()` remains for strings composed at runtime (e.g. the global search
+placeholder).
 
 ### 3.5 Modules (the routes ↔ scouting insight)
 
