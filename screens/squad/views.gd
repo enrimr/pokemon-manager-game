@@ -17,13 +17,13 @@ const MAX_NAME := 20
 const LOCKED_COL := "name"    # every view keeps the Name column
 
 ## Factory presets — the editable starting points.
-const PRESETS := {
+const _BASE_PRESETS := {
 	"General": ["pick", "name", "avail", "type", "babil", "lv", "age", "cur", "pot", "rec",
 		"cond", "morale", "happy", "item", "apps", "rat", "salary", "status"],
 	"Selection": ["pick", "name", "avail", "role", "type", "babil", "lv", "cond", "fit", "morale",
 		"item", "apps", "kos", "rat", "value", "status"],
-	"Battle Stats": ["pick", "name", "type", "lv", "babil", "nature", "cur", "pot", "hp", "atk", "def",
-		"spa", "spd", "spe", "tot", "dev", "apps", "wins", "kos", "dmg", "taken", "faints", "rat"],
+	"Battle Stats": ["pick", "name", "type", "lv", "babil", "nature", "cur", "pot", "@entity_stats",
+		"tot", "dev", "apps", "wins", "kos", "dmg", "taken", "faints", "rat"],
 	"Contracts": ["pick", "name", "avail", "age", "lv", "cur", "pot", "rec", "morale",
 		"salary", "wage_pct", "expiry", "days_left", "demand", "value", "status"],
 	"Happiness": ["pick", "name", "pers", "sstat", "morale", "happy",
@@ -33,7 +33,7 @@ const PRESETS := {
 ## Every column the table can render. `w` is the preferred min width; the
 ## table scales widths down responsively and h-scrolls beyond that, so no
 ## column can ever be lost to the viewport.
-const COLS := {
+const _BASE_COLS := {
 	"pick": {"title": "Picked", "w": 84, "expand": false, "num": false,
 		"cat": "Selection", "desc": "Matchday selection: starter slot + role, or bench order."},
 	"role": {"title": "Role", "w": 100, "expand": false, "num": false,
@@ -64,18 +64,7 @@ const COLS := {
 		"cat": "Coach Report", "desc": "Coach verdict: keep, develop, sell."},
 	"dev": {"title": "Dev", "w": 52, "expand": false, "num": true,
 		"cat": "Coach Report", "desc": "Attribute points gained this season."},
-	"hp": {"title": "HP", "w": 50, "expand": false, "num": true,
-		"cat": "Attributes", "desc": "Effective HP."},
-	"atk": {"title": "Atk", "w": 50, "expand": false, "num": true,
-		"cat": "Attributes", "desc": "Effective Attack."},
-	"def": {"title": "Def", "w": 50, "expand": false, "num": true,
-		"cat": "Attributes", "desc": "Effective Defence."},
-	"spa": {"title": "SpA", "w": 50, "expand": false, "num": true,
-		"cat": "Attributes", "desc": "Effective Sp. Attack."},
-	"spd": {"title": "SpD", "w": 50, "expand": false, "num": true,
-		"cat": "Attributes", "desc": "Effective Sp. Defence."},
-	"spe": {"title": "Spe", "w": 50, "expand": false, "num": true,
-		"cat": "Attributes", "desc": "Effective Speed."},
+	"@entity_stats": {},
 	"tot": {"title": "Tot", "w": 56, "expand": false, "num": true,
 		"cat": "Attributes", "desc": "Attribute total."},
 	"apps": {"title": "Apps", "w": 52, "expand": false, "num": true,
@@ -126,6 +115,41 @@ const COLS := {
 
 const CATS := ["Selection", "Identity", "Coach Report", "Attributes",
 	"Season Stats", "Condition & Mind", "Contract & Value"]
+
+
+
+## Pack-driven tables (theming phase 1b, docs/THEMING.md): the entity's
+## attribute columns come from the active Competition Pack's stat schema and
+## are injected where the "@entity_stats" marker sits, so the squad screen
+## works unchanged for any sport.
+static var COLS := _build_cols()
+static var PRESETS := _build_presets()
+
+
+static func _build_cols() -> Dictionary:
+	var out := {}
+	for k in _BASE_COLS:
+		if str(k) == "@entity_stats":
+			for st in Packs.entity_stats():
+				out[str(st["key"])] = {"title": str(st["title"]), "w": 50,
+					"expand": false, "num": true, "cat": "Attributes",
+					"desc": str(st.get("desc", str(st.get("long", st["title"]))))}
+		else:
+			out[k] = _BASE_COLS[k]
+	return out
+
+
+static func _build_presets() -> Dictionary:
+	var out: Dictionary = _BASE_PRESETS.duplicate(true)
+	for name in out:
+		var cols: Array = out[name]
+		var i: int = cols.find("@entity_stats")
+		if i >= 0:
+			cols.remove_at(i)
+			var keys: Array = Packs.entity_stat_keys()
+			for j in keys.size():
+				cols.insert(i + j, keys[j])
+	return out
 
 
 static func col_def(id: String) -> Dictionary:

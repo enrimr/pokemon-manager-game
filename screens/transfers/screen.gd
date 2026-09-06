@@ -10,8 +10,15 @@ const POOL_LABELS := ["All pools", "Club Pokémon", "Free agents", "Prospects", 
 const STAGE_SHORT := ["—", "Rumour", "Initial", "Partial", "Detailed", "FULL"]
 const PRICE_LABELS := ["Any value", "Under 100K", "Under 250K", "Under 500K", "Under 1M"]
 const PRICE_CAPS := [0, 100000, 250000, 500000, 1000000]
-const STAT_KEYS := ["hp", "atk", "def", "spa", "spd", "spe"]
-const STAT_NAMES := {"hp": "HP", "atk": "Atk", "def": "Def", "spa": "SpA", "spd": "SpD", "spe": "Spe"}
+# entity stat schema from the active Competition Pack (theming 1b)
+static var STAT_KEYS: Array = Packs.entity_stat_keys()
+static var STAT_NAMES: Dictionary = _stat_names()
+
+static func _stat_names() -> Dictionary:
+	var out := {}
+	for st in Packs.entity_stats():
+		out[str(st["key"])] = str(st["title"])
+	return out
 
 var market: RefCounted
 

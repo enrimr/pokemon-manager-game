@@ -6,12 +6,12 @@
 		"plural": "Pokémon",
 		"matchday_size": 6,
 		"stats": [
-			{"key": "hp",  "title": "HP",  "long": "HP"},
-			{"key": "atk", "title": "Atk", "long": "Attack"},
-			{"key": "def", "title": "Def", "long": "Defence"},
-			{"key": "spa", "title": "SpA", "long": "Special Attack"},
-			{"key": "spd", "title": "SpD", "long": "Special Defence"},
-			{"key": "spe", "title": "Spe", "long": "Speed"}
+			{"key": "hp",  "title": "HP",  "long": "HP",             "desc": "Effective HP."},
+			{"key": "atk", "title": "Atk", "long": "Attack",         "desc": "Effective Attack."},
+			{"key": "def", "title": "Def", "long": "Defence",        "desc": "Effective Defence."},
+			{"key": "spa", "title": "SpA", "long": "Special Attack", "desc": "Effective Sp. Attack."},
+			{"key": "spd", "title": "SpD", "long": "Special Defence", "desc": "Effective Sp. Defence."},
+			{"key": "spe", "title": "Spe", "long": "Speed",          "desc": "Effective Speed."}
 		]
 	},
 	"match": {

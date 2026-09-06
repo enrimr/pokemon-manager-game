@@ -279,8 +279,14 @@ static func raw_stats(inst: Dictionary) -> Dictionary:
 
 # --------------------------------------------------- natures & battle abilities
 
-const STAT_SHORT := {"hp": "HP", "atk": "Atk", "def": "Def",
-	"spa": "SpA", "spd": "SpD", "spe": "Spe"}
+# entity stat abbreviations from the active Competition Pack (theming 1b)
+static var STAT_SHORT := _stat_short()
+
+static func _stat_short() -> Dictionary:
+	var out := {}
+	for st in Packs.entity_stats():
+		out[str(st["key"])] = str(st["title"])
+	return out
 
 
 ## Apply a nature to a stats dict in place-copy: engine-identical math

@@ -35,8 +35,14 @@ const UI := preload("res://screens/squad/ui_helpers.gd")
 const SeasonStats := preload("res://screens/squad/season_stats.gd")
 
 const STAT_KEYS := ["hp", "atk", "def", "spa", "spd", "spe"]
-const STAT_SHORT := {"hp": "HP", "atk": "Atk", "def": "Def",
-	"spa": "SpA", "spd": "SpD", "spe": "Spe"}
+static var STAT_SHORT := _pack_stat_short()
+
+static func _pack_stat_short() -> Dictionary:
+	# entity stat abbreviations from the active Competition Pack (theming 1b)
+	var out := {}
+	for st in Packs.entity_stats():
+		out[str(st["key"])] = str(st["title"])
+	return out
 
 const SNAP_INTERVAL_DAYS := 7
 const SNAP_MAX := 160
