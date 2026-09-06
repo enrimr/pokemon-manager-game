@@ -5,7 +5,7 @@ extends Node
 ## (or postpones) the live squad instance, and stone mail/Use-Stone works.
 ## Run: godot --headless --path . res://screens/inbox/evo_selftest.tscn
 
-const EvoScript := preload("res://shared/sim/services/evolution.gd")
+const EvoScript := preload("res://packs/pokemon/services/evolution.gd")
 
 var _fails := 0
 

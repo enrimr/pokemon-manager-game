@@ -6,7 +6,7 @@ extends Control
 ## All model logic lives in training_service.gd (kept alive at /root).
 
 const TrainingServiceScript := preload("res://screens/training/training_service.gd")
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 
 const FOCUS_COLORS := {
 	"physical": Color("e06868"), "special": Color("f085b0"), "defense": Color("6890f0"),

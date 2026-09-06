@@ -4,7 +4,7 @@ extends VBoxContainer
 ## back to stock), pop evolution stones on eligible battlers — all the same
 ## GameState/EvolutionService calls the desktop Items screen makes.
 
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 
 var _mode := ""          # "" | "equip" | "use"
 var _item := ""          # the item being equipped/used

@@ -8,7 +8,7 @@ extends Control
 signal starter_selected(summary: Dictionary)
 signal starter_confirmed
 
-const Protege := preload("res://shared/sim/services/protege.gd")
+const Protege := preload("res://packs/pokemon/services/protege.gd")
 
 var _font_bold: Font
 var _font_semibold: Font

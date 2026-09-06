@@ -10,7 +10,7 @@ const BoardRoom := preload("res://screens/inbox/board_room.gd")
 const Economy := preload("res://screens/inbox/economy.gd")
 const PeopleGen := preload("res://screens/inbox/people_gen.gd")
 const EvolutionGen := preload("res://screens/inbox/evolution_gen.gd")
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 
 var news: RefCounted
 var reports: RefCounted

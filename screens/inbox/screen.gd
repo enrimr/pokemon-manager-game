@@ -1,5 +1,5 @@
 extends Control
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 ## Inbox screen — FM-style two-pane inbox + Board & Finances tab.
 ## Owned by the "inbox" piece. Reads/annotates GameState.inbox, renders rich
 ## bodies via report_gen.gd, generates deterministic news via news_gen.gd.

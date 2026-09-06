@@ -1,5 +1,5 @@
 extends Control
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 ## Squad screen — FM24-style squad table + full Pokémon profile.
 ## Owned by the "squad" piece. All data live from GameState / DataStore.
 

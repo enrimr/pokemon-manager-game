@@ -1,5 +1,5 @@
 extends Control
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 ## Items screen — FM-facility-style League Store & club storeroom.
 ## Left: browsable catalog (filters, prices, stock) — buy with club funds.
 ## Right: item dossier + squad equipment board: equip/unequip held items

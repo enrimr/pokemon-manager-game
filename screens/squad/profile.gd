@@ -1,5 +1,5 @@
 extends Control
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 ## Squad piece: full Pokémon profile (FM player-profile style).
 ## Overview tab: header (monogram, types, key facts), attribute panels with
 ## 1-20 colored bars and 30-day change indicators, known + learnable moves,

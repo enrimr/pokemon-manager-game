@@ -1,5 +1,5 @@
 extends RefCounted
-const EvoSvc := preload("res://shared/sim/services/evolution.gd")
+const EvoSvc := preload("res://packs/pokemon/services/evolution.gd")
 ## Inbox piece: renders evolution messages — the FM-style "requires your
 ## decision" approval flow. Three kinds (tagged by the evolution service):
 ##   evo_ready — a mon met its requirements; Approve / Postpone buttons live

@@ -429,7 +429,7 @@ returns `est_frac 0` against ability-immune targets. sim_check covers natures,
 ## Evolutions (evolutions piece)
 
 Gen 1+2 evolution chains with an FM-style **manager approval** flow. Mechanics
-live in the drop-in service `res://shared/sim/services/evolution.gd`
+live in the drop-in service `res://packs/pokemon/services/evolution.gd`
 (auto-loaded, daily tick, persisted under `world.meta.services.evolution`);
 the chain data is `shared/data/evolutions.json`; evolution stones/items are
 ordinary shop items in `items.json`. Both data changes are produced by
@@ -456,7 +456,7 @@ Methods:
   (documented liberty: no day/night clock).
 
 ### Service API (`EvolutionService`, via `EvolutionService.instance` or
-`load("res://shared/sim/services/evolution.gd").instance`; set on career
+`load("res://packs/pokemon/services/evolution.gd").instance`; set on career
 start/load)
 
 ```gdscript
