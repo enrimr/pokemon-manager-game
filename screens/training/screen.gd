@@ -2139,6 +2139,7 @@ func _build_development_tab() -> Control:
 	v.add_child(_dev_tree)
 
 	_dev_note = Label.new()
+	_dev_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_dev_note.add_theme_font_size_override("font_size", 12)
 	_dev_note.add_theme_color_override("font_color", ThemeBuilder.COL_TEXT_DIM)
 	v.add_child(_dev_note)
@@ -2261,6 +2262,8 @@ func _refresh_development() -> void:
 	if listed == 0:
 		var ok := Label.new()
 		ok.text = tr("No concerns — workload and age profile look healthy.")
+		ok.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ok.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		ok.add_theme_color_override("font_color", ThemeBuilder.COL_GOOD)
 		_stag_box.add_child(ok)
 

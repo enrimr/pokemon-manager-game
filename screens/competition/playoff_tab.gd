@@ -67,8 +67,11 @@ func _render_race() -> void:
 	var total := Season.total_league_rounds(GameState.fixtures)
 	_status.text = tr("qualification race · after matchday %d of %d") % [maxi(last, 0), total]
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
+	# one 380px card per league: since the pyramid grew to four leagues the
+	# row must wrap, not push 700px past the viewport (overflow_scan catch)
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 10)
+	row.add_theme_constant_override("v_separation", 10)
 	for lg in GameState.leagues():
 		row.add_child(_race_card(str(lg["id"])))
 	row.add_child(_format_card())
@@ -138,8 +141,11 @@ func _format_card() -> Control:
 func _honours_note() -> Control:
 	var hist: Array = GameState.season_history()
 	if hist.is_empty():
-		return UI.dim(tr("No %s has been crowned yet — this season's Final will be the first.")
+		var none := UI.dim(tr("No %s has been crowned yet — this season's Final will be the first.")
 			% tr(Season.INDIGO_TITLE), 12)
+		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		none.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		return none
 	var last: Dictionary = hist[hist.size() - 1]
 	var ind: Dictionary = last.get("indigo", {})
 	var h := HBoxContainer.new()
@@ -162,14 +168,17 @@ func _render_bracket(po: Array) -> void:
 		if int(f["round"]) == 3 and f["played"]:
 			final_f = f
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
-	row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 10)
+	row.add_theme_constant_override("v_separation", 10)
 	for r in range(1, 4):
 		row.add_child(_round_card(po, r))
 	row.add_child(_champion_card(final_f))
 	_body.add_child(row)
-	_body.add_child(UI.dim(tr("Seeding: each league champion opens against the other league's 4th place; ties are best-of-3 battles, no replays. The Final crowns the %s.") % tr(Season.INDIGO_TITLE), 12))
+	var seed_note := UI.dim(tr("Seeding: each league champion opens against the other league's 4th place; ties are best-of-3 battles, no replays. The Final crowns the %s.") % tr(Season.INDIGO_TITLE), 12)
+	seed_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	seed_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_body.add_child(seed_note)
 
 	if not final_f.is_empty():
 		var champ := GameState.club(Season.fixture_winner(final_f))

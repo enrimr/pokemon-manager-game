@@ -171,6 +171,8 @@ func _ready() -> void:
 		if str(lg["id"]) == GameState.player_league_id():
 			_lg_sel.select(idx)
 	_lg_sel.custom_minimum_size.x = 138
+	_lg_sel.fit_to_longest_item = false   # es items must not widen the bar
+	_lg_sel.clip_text = true
 	_lg_sel.focus_mode = Control.FOCUS_NONE
 	_lg_sel.tooltip_text = "Scope every stat view to one league, or merge both regions"
 	_lg_sel.item_selected.connect(func(_i): refresh())
@@ -180,6 +182,7 @@ func _ready() -> void:
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(sp)
 	_note = UI.dim("", 12)
+	_note.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	head.add_child(_note)
 	add_child(head)
 
@@ -214,8 +217,10 @@ func _build_centre() -> void:
 	_centre.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(_centre)
 
-	var bar := HBoxContainer.new()
-	bar.add_theme_constant_override("separation", 8)
+	# wraps onto extra lines when Spanish labels outgrow the row
+	var bar := HFlowContainer.new()
+	bar.add_theme_constant_override("h_separation", 8)
+	bar.add_theme_constant_override("v_separation", 4)
 
 	bar.add_child(_toolbar_cap("VIEW"))
 	_cat_sel = OptionButton.new()
@@ -224,6 +229,8 @@ func _build_centre() -> void:
 	_cat_sel.add_item(tr(CUSTOM_CAT))
 	_cat_sel.select(0)
 	_cat_sel.custom_minimum_size.x = 168
+	_cat_sel.fit_to_longest_item = false   # es items must not widen the bar
+	_cat_sel.clip_text = true
 	_cat_sel.focus_mode = Control.FOCUS_NONE
 	_cat_sel.tooltip_text = "Choose which stat columns are shown — or build your own view with Columns"
 	_cat_sel.item_selected.connect(func(_i): _rebuild_table())
@@ -248,6 +255,8 @@ func _build_centre() -> void:
 		_club_sel.set_item_metadata(idx, str(c["id"]))
 	_club_sel.select(0)
 	_club_sel.custom_minimum_size.x = 150
+	_club_sel.fit_to_longest_item = false   # es items must not widen the bar
+	_club_sel.clip_text = true
 	_club_sel.focus_mode = Control.FOCUS_NONE
 	_club_sel.tooltip_text = "Filter the table to one club's squad"
 	_club_sel.item_selected.connect(func(_i): _rebuild_table())
@@ -261,6 +270,8 @@ func _build_centre() -> void:
 		_comp_sel.set_item_metadata(idx, entry[0])
 	_comp_sel.select(0)
 	_comp_sel.custom_minimum_size.x = 118
+	_comp_sel.fit_to_longest_item = false   # es items must not widen the bar
+	_comp_sel.clip_text = true
 	_comp_sel.focus_mode = Control.FOCUS_NONE
 	_comp_sel.tooltip_text = "Count league matches, cup matches, or both"
 	_comp_sel.item_selected.connect(func(_i): _rebuild_table())
@@ -309,7 +320,10 @@ func _build_centre() -> void:
 
 	var foot := HBoxContainer.new()
 	foot.add_theme_constant_override("separation", 14)
-	foot.add_child(UI.dim("click a header to sort · names link to profiles · the Columns menu builds a custom view", 11))
+	var hint := UI.dim("click a header to sort · names link to profiles · the Columns menu builds a custom view", 11)
+	hint.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	foot.add_child(hint)
 	foot.add_child(_pctl_legend())
 	_centre.add_child(foot)
 
@@ -725,8 +739,10 @@ func _build_teams() -> void:
 	_teams.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(_teams)
 
-	var bar := HBoxContainer.new()
-	bar.add_theme_constant_override("separation", 8)
+	# wraps onto extra lines when Spanish labels outgrow the row
+	var bar := HFlowContainer.new()
+	bar.add_theme_constant_override("h_separation", 8)
+	bar.add_theme_constant_override("v_separation", 4)
 
 	bar.add_child(_toolbar_cap("VIEW"))
 	_tcat_sel = OptionButton.new()
@@ -735,6 +751,8 @@ func _build_teams() -> void:
 	_tcat_sel.add_item(tr(CUSTOM_CAT))
 	_tcat_sel.select(0)
 	_tcat_sel.custom_minimum_size.x = 168
+	_tcat_sel.fit_to_longest_item = false   # es items must not widen the bar
+	_tcat_sel.clip_text = true
 	_tcat_sel.focus_mode = Control.FOCUS_NONE
 	_tcat_sel.tooltip_text = "Choose which team stat columns are shown — or build your own view with Columns"
 	_tcat_sel.item_selected.connect(func(_i): _rebuild_teams())
@@ -755,6 +773,8 @@ func _build_teams() -> void:
 		_tcomp_sel.set_item_metadata(idx, entry[0])
 	_tcomp_sel.select(0)
 	_tcomp_sel.custom_minimum_size.x = 128
+	_tcomp_sel.fit_to_longest_item = false   # es items must not widen the bar
+	_tcomp_sel.clip_text = true
 	_tcomp_sel.focus_mode = Control.FOCUS_NONE
 	_tcomp_sel.tooltip_text = "Count league matches, cup matches, or both"
 	_tcomp_sel.item_selected.connect(func(_i): _rebuild_teams())
@@ -1129,8 +1149,10 @@ func _build_hub() -> void:
 	_hub.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(_hub)
 
-	var bar := HBoxContainer.new()
-	bar.add_theme_constant_override("separation", 8)
+	# wraps onto extra lines when Spanish labels outgrow the row
+	var bar := HFlowContainer.new()
+	bar.add_theme_constant_override("h_separation", 8)
+	bar.add_theme_constant_override("v_separation", 4)
 	_hub_note = UI.dim("", 11)
 	_hub_note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.add_child(_hub_note)
