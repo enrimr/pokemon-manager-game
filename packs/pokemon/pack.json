@@ -1,0 +1,31 @@
+{
+	"id": "pokemon",
+	"name": "Trainer Manager",
+	"entity": {
+		"singular": "Pokémon",
+		"plural": "Pokémon",
+		"matchday_size": 6,
+		"stats": [
+			{"key": "hp",  "title": "HP",  "long": "HP"},
+			{"key": "atk", "title": "Atk", "long": "Attack"},
+			{"key": "def", "title": "Def", "long": "Defence"},
+			{"key": "spa", "title": "SpA", "long": "Special Attack"},
+			{"key": "spd", "title": "SpD", "long": "Special Defence"},
+			{"key": "spe", "title": "Spe", "long": "Speed"}
+		]
+	},
+	"match": {
+		"engine": "res://shared/sim/battle_engine.gd",
+		"series_best_of": 3,
+		"draws": false,
+		"points": {"win": 3, "draw": 1, "loss": 0},
+		"score_label": "battles"
+	},
+	"modules": {
+		"academy": true,
+		"training": true,
+		"items": true,
+		"acquisition": "routes"
+	},
+	"onboarding": ["identity", "club", "starter", "confirm"]
+}

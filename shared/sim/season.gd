@@ -153,11 +153,11 @@ static func compute_table(club_ids: Array, fixtures: Array) -> Array:
 		a["ba"] += int(f["score_home"])
 		if int(f["score_home"]) > int(f["score_away"]):
 			h["won"] += 1
-			h["points"] += 3
+			h["points"] += Packs.points_for("win")
 			a["lost"] += 1
 		else:
 			a["won"] += 1
-			a["points"] += 3
+			a["points"] += Packs.points_for("win")
 			h["lost"] += 1
 	var out: Array = rows.values()
 	_sort_table_rows(out)
@@ -195,7 +195,7 @@ static func pick_team(club: Dictionary) -> Array:
 			return int(a["level"]) > int(b["level"])
 		return int(a.get("condition", 100)) > int(b.get("condition", 100)))
 	var team: Array = []
-	for inst in squad.slice(0, 6):
+	for inst in squad.slice(0, Packs.matchday_size()):
 		var b: Dictionary = DataStore.make_battler(inst)
 		if not b.is_empty():
 			team.append(b)
@@ -223,14 +223,14 @@ static func simulate_fixture(home_club: Dictionary, away_club: Dictionary, match
 			push_error("simulate_fixture: empty team for %s vs %s" % [home_club["name"], away_club["name"]])
 			return {"score_home": 2, "score_away": 0, "battles": [], "turns": [],
 				"detail": {"score_home": 2, "score_away": 0, "battles": [], "players": {}}}
-		var eng := BattleEngine.new(team_h, team_a, match_seed + i * 7919)
+		var eng := Packs.match_engine_new(team_h, team_a, match_seed + i * 7919)
 		eng.run_to_end()
 		var w := eng.winner()
 		wins[w] += 1
 		battles.append(w)
 		turns.append(eng.turn)
 		detail_battles.append({"winner": w, "turns": eng.turn})
-		_tally_battle(eng.events, [team_h, team_a], w, players)
+		eng.tally(eng.events, [team_h, team_a], w, players)
 	return {"score_home": wins[0], "score_away": wins[1], "battles": battles, "turns": turns,
 		"detail": {"score_home": wins[0], "score_away": wins[1],
 			"battles": detail_battles, "players": players}}
@@ -333,7 +333,7 @@ static func _credit_result(row: Dictionary, f: Dictionary, as_home: bool) -> voi
 	row["ba"] += them
 	if us > them:
 		row["won"] += 1
-		row["points"] += 3
+		row["points"] += Packs.points_for("win")
 	else:
 		row["lost"] += 1
 
@@ -459,12 +459,12 @@ static func _reconcile_detail(f: Dictionary) -> Dictionary:
 		var team_a := pick_team(away)
 		if team_h.is_empty() or team_a.is_empty():
 			return stub
-		var eng := BattleEngine.new(team_h, team_a, seed_v + i * 7919)
+		var eng := Packs.match_engine_new(team_h, team_a, seed_v + i * 7919)
 		eng.run_to_end()
 		var w := maxi(eng.winner(), 0)
 		wins[w] += 1
 		battles.append({"winner": w, "turns": eng.turn})
-		_tally_battle(eng.events, [team_h, team_a], w, players)
+		eng.tally(eng.events, [team_h, team_a], w, players)
 	if wins[0] != int(f["score_home"]) or wins[1] != int(f["score_away"]):
 		return stub   # replay drifted from the recorded result — clear, don't lie
 	return {"score_home": wins[0], "score_away": wins[1],
@@ -518,105 +518,6 @@ static func _normalize_detail(d: Dictionary) -> Dictionary:
 		players[str(uid)] = p
 	out["players"] = players
 	return out
-
-
-## Parse one battle's event log into per-uid stats, merged into `out`.
-static func _tally_battle(events: Array, teams: Array, winner: int, out: Dictionary) -> void:
-	# name -> uid per side, plus per-side total max hp for rating context
-	var uid_of := [{}, {}]
-	var team_hp := [0.0, 0.0]
-	for side in 2:
-		for b in teams[side]:
-			uid_of[side][b["name"]] = b["uid"]
-			team_hp[side] += float(b["stats"]["hp"])
-
-	var battle := {}   # uid -> {dmg, taken, kos, fainted, in_battle}
-	var ensure := func(side: int, pname: String) -> Dictionary:
-		var uid: String = uid_of[side].get(pname, "")
-		if uid == "":
-			return {}
-		if not battle.has(uid):
-			var src: Dictionary = {}
-			for b in teams[side]:
-				if b["uid"] == uid:
-					src = b
-					break
-			battle[uid] = {"side": side, "name": src.get("name", pname),
-				"species": src.get("species", pname), "level": int(src.get("level", 0)),
-				"dmg": 0, "taken": 0, "kos": 0, "fainted": false, "in_battle": false,
-				"hits": 0, "misses": 0, "crits": 0, "se": 0}
-		return battle[uid]
-
-	var last_hitter := [{}, {}]   # victim side -> {"name":..,"side":..}
-	for e in events:
-		match e["t"]:
-			"switch":
-				var s: Dictionary = ensure.call(int(e["side"]), str(e["to"]))
-				if not s.is_empty():
-					s["in_battle"] = true
-			"damage":
-				var vs := int(e["side"])
-				var victim: Dictionary = ensure.call(vs, str(e["pokemon"]))
-				if not victim.is_empty():
-					victim["taken"] += int(e.get("amount", 0))
-					victim["in_battle"] = true
-				if e.has("by") and not e.get("recoil", false):
-					var atk: Dictionary = ensure.call(int(e["by_side"]), str(e["by"]))
-					if not atk.is_empty():
-						atk["dmg"] += int(e.get("amount", 0))
-						atk["hits"] += 1
-						if bool(e.get("crit", false)):
-							atk["crits"] += 1
-						if float(e.get("effectiveness", 1.0)) > 1.0:
-							atk["se"] += 1
-					last_hitter[vs] = {"name": str(e["by"]), "side": int(e["by_side"])}
-			"miss":
-				var msr: Dictionary = ensure.call(int(e["side"]), str(e["pokemon"]))
-				if not msr.is_empty():
-					msr["misses"] += 1
-					msr["in_battle"] = true
-			"status_tick":
-				var vict: Dictionary = ensure.call(int(e["side"]), str(e["pokemon"]))
-				if not vict.is_empty():
-					vict["taken"] += int(e.get("amount", 0))
-			"faint":
-				var fs := int(e["side"])
-				var fb: Dictionary = ensure.call(fs, str(e["pokemon"]))
-				if not fb.is_empty():
-					fb["fainted"] = true
-				var lh: Dictionary = last_hitter[fs]
-				if not lh.is_empty() and int(lh["side"]) != fs:
-					var koer: Dictionary = ensure.call(int(lh["side"]), str(lh["name"]))
-					if not koer.is_empty():
-						koer["kos"] += 1
-
-	for uid in battle:
-		var s: Dictionary = battle[uid]
-		if not s["in_battle"]:
-			continue
-		var side := int(s["side"])
-		var won := side == winner
-		var opp_hp: float = maxf(team_hp[1 - side], 1.0)
-		var rating: float = 6.0 + 3.4 * float(s["dmg"]) / opp_hp + 0.5 * float(s["kos"])
-		rating += 0.4 if won else -0.25
-		if s["fainted"]:
-			rating -= 0.45
-		rating = clampf(rating, 4.5, 10.0)
-		if not out.has(uid):
-			out[uid] = {"name": s["name"], "species": s["species"], "level": s["level"],
-				"side": side, "battles": 0, "wins": 0, "kos": 0, "dmg": 0, "taken": 0,
-				"faints": 0, "rating_sum": 0.0,
-				"hits": 0, "misses": 0, "crits": 0, "se": 0}
-		var agg: Dictionary = out[uid]
-		agg["battles"] += 1
-		agg["wins"] += 1 if won else 0
-		agg["kos"] += s["kos"]
-		agg["dmg"] += s["dmg"]
-		agg["taken"] += s["taken"]
-		agg["faints"] += 1 if s["fainted"] else 0
-		agg["rating_sum"] += rating
-		for k in ["hits", "misses", "crits", "se"]:
-			agg[k] += int(s.get(k, 0))
 
 
 # ------------------------------------------------------- season-wide leaders
@@ -816,7 +717,7 @@ static func season_club_stats(club_ids: Array, fixtures: Array, comp: String = "
 			h["hl"] += 1
 		if str(f["comp"]) == "league":
 			var winner_row: Dictionary = h if home_won else a
-			winner_row["pts"] += 3
+			winner_row["pts"] += Packs.points_for("win")
 		h["results"].append("W" if home_won else "L")
 		a["results"].append("L" if home_won else "W")
 

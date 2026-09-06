@@ -102,7 +102,8 @@ func _run_save_load_checks() -> void:
 	# plan A: distinctive marker, saved
 	p["instructions"]["aggression"] = 1
 	Logic.save_state(state)          # persists world.meta.tactics_state + plan
-	var older := FileAccess.get_file_as_string("user://save.json")
+	# multi-slot saves (2026-09-03): snapshot the ACTIVE slot, not the legacy path
+	var older := FileAccess.get_file_as_string(GameState.save_path())
 	_check(older != "", "older save captured")
 
 	# plan B: the career moves on, tactic changes, saved again
@@ -123,7 +124,7 @@ func _run_save_load_checks() -> void:
 	side = null
 
 	# roll back to the older save
-	var f := FileAccess.open("user://save.json", FileAccess.WRITE)
+	var f := FileAccess.open(GameState.save_path(), FileAccess.WRITE)
 	f.store_string(older)
 	f = null
 	_check(GameState.load_game(), "older save loads")
@@ -237,7 +238,8 @@ func _run() -> void:
 	scr._do_save()
 	_check(not FileAccess.file_exists(Logic.TACTICS_PATH),
 		"legacy sidecar user://tactics.json is retired (not written)")
-	var sf := FileAccess.open("user://save.json", FileAccess.READ)
+	# multi-slot saves (2026-09-03): read the active slot, not the legacy path
+	var sf := FileAccess.open(GameState.save_path(), FileAccess.READ)
 	var save: Dictionary = JSON.parse_string(sf.get_as_text())
 	var dp: Dictionary = Logic.active_preset(save["world"]["meta"]["tactics_state"])
 	_check(int(dp["instructions"]["aggression"]) == 4, "instructions saved inside save.json (meta.tactics_state)")

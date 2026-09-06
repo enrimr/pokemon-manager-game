@@ -65,7 +65,7 @@ var recorded := false
 var starting_six: Array = []      # ordered squad instances (lead first)
 var opp_six: Array = []           # opponent battler dicts (display + team source)
 
-var engine: BattleEngine = null
+var engine = null   # MatchEngine (the active pack's — BattleEngine for Pokémon)
 var pending: Array = []           # produced engine events not yet consumed by the view
 var slot_actions := {}            # doubles manual mode: slot -> chosen action (this turn)
 # Manual combat is the headline flow: full_control defaults ON. The pre-match
@@ -230,7 +230,7 @@ func _start_battle() -> void:
 	var team_h := mine if player_side == 0 else theirs
 	var team_a := theirs if player_side == 0 else mine
 	var seed_v: int = GameState.career_seed + absi(str(fixture["id"]).hash()) % 1000000 + battle_no * 7919
-	engine = BattleEngine.new(team_h, team_a, seed_v, mode_for_battle(battle_no))
+	engine = Packs.match_engine_new(team_h, team_a, seed_v, mode_for_battle(battle_no))
 	engine.set_inventory(0, series_bag[0])
 	engine.set_inventory(1, series_bag[1])
 	# Setting "ai_coach_uses_bag" (GameState.settings, default true): when off,
@@ -694,7 +694,7 @@ func _apply(e: Dictionary) -> void:
 			# match report / season stats show what actually happened here
 			# instead of a neutral replay (see Season.fixture_detail).
 			if engine != null:
-				Season._tally_battle(engine.events,
+				engine.tally(engine.events,
 					[engine.team_state(0), engine.team_state(1)], w, _detail_players)
 			live_state = LiveState.BATTLE_OVER
 			if series_decided():

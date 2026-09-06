@@ -118,6 +118,7 @@ func save_game() -> bool:
 	_collect_service_state()
 	var data := {
 		"version": 2,
+		"pack": Packs.id(),   # competition pack this career belongs to
 		"career_seed": career_seed,
 		"current_date": current_date,
 		"season_start": season_start,
@@ -146,6 +147,12 @@ func load_game() -> bool:
 		# Pre-leagues (v1) or corrupt save: flag it so boot() can route to a
 		# graceful new career with a clear inbox note instead of crashing.
 		push_warning("GameState: incompatible save file (old version) — starting fresh")
+		_incompatible_save = true
+		return false
+	if str(data.get("pack", "pokemon")) != Packs.id():
+		# a career from another competition pack — same graceful path
+		push_warning("GameState: save belongs to pack '%s' (active: '%s') — starting fresh"
+			% [str(data.get("pack")), Packs.id()])
 		_incompatible_save = true
 		return false
 	career_seed = int(data["career_seed"])

@@ -350,7 +350,7 @@ static func run_fixture(home_club: Dictionary, away_club: Dictionary,
 		var w: int = maxi(eng.winner(), 0)
 		wins[w] += 1
 		battles.append({"winner": w, "turns": eng.turn})
-		Season._tally_battle(eng.events, [team_h, team_a], w, players)
+		eng.tally(eng.events, [team_h, team_a], w, players)
 		for e in eng.events:
 			if str(e.get("t", "")) == "faint":
 				if int(e.get("side", -1)) == our_side:
