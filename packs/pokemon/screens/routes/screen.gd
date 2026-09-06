@@ -5,11 +5,11 @@ extends Control
 ##                  species intel + the expedition planner panel.
 ##   Expeditions  — live tracker for parties in the field (day-by-day log).
 ##   History      — past expeditions + the club's capture record.
-## All model logic lives in shared/sim/services/expeditions.gd.
+## All model logic lives in packs/pokemon/services/expeditions.gd.
 
 const TB := preload("res://shared/theme/theme_builder.gd")
-const Exped := preload("res://shared/sim/services/expeditions.gd")
-const Leg := preload("res://shared/sim/services/legendaries.gd")
+const Exped := preload("res://packs/pokemon/services/expeditions.gd")
+const Leg := preload("res://packs/pokemon/services/legendaries.gd")
 const COL_LEGEND := Color("e8c15a")
 
 const TIER_COL := {"common": Color("8b91a8"), "uncommon": Color("4dc3e6"),

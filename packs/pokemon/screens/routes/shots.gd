@@ -2,11 +2,11 @@ extends Node
 ## Builder verification: boots the real shell on a throwaway career with a
 ## live expedition + a completed one, opens the Routes screen and screenshots
 ## every tab plus the expedition mail renderers (windowed run).
-##   Godot --path . res://screens/routes/shots.tscn
+##   Godot --path . res://packs/pokemon/screens/routes/shots.tscn
 ## The player's real save is backed up in-process and restored before quitting.
 
 const SaveGuard := preload("res://tools/save_guard.gd")
-const ExpedScript := preload("res://shared/sim/services/expeditions.gd")
+const ExpedScript := preload("res://packs/pokemon/services/expeditions.gd")
 const OUT := "artifacts/routes"
 const SETTLE := 14
 

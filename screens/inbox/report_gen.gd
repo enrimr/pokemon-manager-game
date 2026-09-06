@@ -133,8 +133,8 @@ func _protege_gen() -> RefCounted:
 func _exped() -> RefCounted:
 	if not _exped_tried:
 		_exped_tried = true
-		if ResourceLoader.exists("res://screens/routes/mail_gen.gd"):
-			var scr = load("res://screens/routes/mail_gen.gd")
+		if ResourceLoader.exists("res://packs/pokemon/screens/routes/mail_gen.gd"):
+			var scr = load("res://packs/pokemon/screens/routes/mail_gen.gd")
 			if scr != null:
 				_exped_gen = scr.new()
 	return _exped_gen
