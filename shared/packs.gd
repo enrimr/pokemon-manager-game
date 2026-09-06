@@ -60,6 +60,27 @@ static func points_for(outcome: String) -> int:
 	return int(pts.get(outcome, 0))
 
 
+## Sport vocabulary (theming 1c): what the chassis calls the entity. The
+## returned terms are English i18n KEYS — pass them through tr() at render
+## time so each pack ships its own translation rows.
+static func entity_singular() -> String:
+	return str(manifest().get("entity", {}).get("singular", "Pokémon"))
+
+
+static func entity_plural() -> String:
+	return str(manifest().get("entity", {}).get("plural", entity_singular()))
+
+
+## Pack-owned drop-in roots (theming 1d): screens and simulation services may
+## live inside the active pack, discovered exactly like the shared ones.
+static func screens_root() -> String:
+	return "%s/%s/screens" % [PACK_DIR, ACTIVE]
+
+
+static func services_root() -> String:
+	return "%s/%s/services" % [PACK_DIR, ACTIVE]
+
+
 ## Construct the pack's match engine for one game (MatchEngine contract).
 static func match_engine_new(team_a: Array, team_b: Array, seed: int,
 		mode: String = "singles") -> MatchEngine:

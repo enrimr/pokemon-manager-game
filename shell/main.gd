@@ -170,6 +170,9 @@ func _retranslate_chrome() -> void:
 	var top_hint: Node = find_child("ShortcutHint", true, false)
 	if top_hint is Label:
 		top_hint.text = tr("1–%d screens   ·   Ctrl+1–9 sections   ·   Space  Continue   ·   Alt+Left/Right  Back/Fwd   ·   Ctrl+F  Search") % _shortcut_count
+	if _search != null and not Settings.is_mobile():
+		# composed at build time (pack entity name), so re-compose on switch
+		_search.placeholder_text = tr("Search %s or clubs…   (Ctrl+F)") % tr(Packs.entity_plural())
 	_refresh_identity()
 	_refresh_topbar()
 	_update_subnav()
@@ -461,26 +464,11 @@ func _current_screen_instance() -> Node:
 
 
 func _discover_screens() -> void:
-	var dir := DirAccess.open("res://screens")
-	if dir == null:
-		push_warning("Shell: res://screens not found")
-		return
-	for folder in dir.get_directories():
-		var scene_path := "res://screens/%s/screen.tscn" % folder
-		var meta_path := "res://screens/%s/screen.json" % folder
-		if not FileAccess.file_exists(meta_path) or not ResourceLoader.exists(scene_path):
-			continue
-		var meta: Variant = JSON.parse_string(FileAccess.open(meta_path, FileAccess.READ).get_as_text())
-		if meta == null or typeof(meta) != TYPE_DICTIONARY:
-			push_warning("Shell: bad screen.json in %s" % folder)
-			continue
-		screens[folder] = {
-			"title": meta.get("title", folder.capitalize()),
-			"order": int(meta.get("order", 999)),
-			"icon_letter": meta.get("icon_letter", folder.substr(0, 1).to_upper()),
-			"path": scene_path,
-			"tabs": _discover_tabs(folder, meta),
-		}
+	# shared screens plus the active Competition Pack's own (theming 1d,
+	# docs/THEMING.md) — same folder convention, later roots may not shadow
+	# an already-discovered screen name.
+	for root in ["res://screens", Packs.screens_root()]:
+		_discover_screens_in(root)
 	var names := screens.keys()
 	names.sort_custom(func(a, b): return screens[a]["order"] < screens[b]["order"])
 	var ordered := {}
@@ -494,14 +482,41 @@ func _discover_screens() -> void:
 	print("Shell: discovered %d screens: %s" % [screens.size(), ", ".join(summary)])
 
 
-func _discover_tabs(folder: String, meta: Dictionary) -> Array:
+func _discover_screens_in(root: String) -> void:
+	var dir := DirAccess.open(root)
+	if dir == null:
+		if root == "res://screens":
+			push_warning("Shell: res://screens not found")
+		return
+	for folder in dir.get_directories():
+		if screens.has(folder):
+			continue
+		var scene_path := "%s/%s/screen.tscn" % [root, folder]
+		var meta_path := "%s/%s/screen.json" % [root, folder]
+		if not FileAccess.file_exists(meta_path) or not ResourceLoader.exists(scene_path):
+			continue
+		var meta: Variant = JSON.parse_string(FileAccess.open(meta_path, FileAccess.READ).get_as_text())
+		if meta == null or typeof(meta) != TYPE_DICTIONARY:
+			push_warning("Shell: bad screen.json in %s" % folder)
+			continue
+		screens[folder] = {
+			"title": meta.get("title", folder.capitalize()),
+			"order": int(meta.get("order", 999)),
+			"icon_letter": meta.get("icon_letter", folder.substr(0, 1).to_upper()),
+			"path": scene_path,
+			"tabs": _discover_tabs(root, folder, meta),
+		}
+
+
+
+func _discover_tabs(root: String, folder: String, meta: Dictionary) -> Array:
 	## Normalised tab list [{id, title}] for a screen. Priority:
 	## screen.json "tabs" > screen.gd consts (TABS / PRESETS) > SUBNAV_FALLBACK.
 	var declared: Variant = meta.get("tabs")
 	var normalized := _normalize_tabs(declared)
 	if not normalized.is_empty():
 		return normalized
-	var script_path := "res://screens/%s/screen.gd" % folder
+	var script_path := "%s/%s/screen.gd" % [root, folder]
 	if ResourceLoader.exists(script_path):
 		var script: GDScript = load(script_path)
 		if script != null:
@@ -642,7 +657,7 @@ func _build_topbar() -> Control:
 	# global search
 	_search = LineEdit.new()
 	_search.placeholder_text = "Search…" if Settings.is_mobile() \
-		else "Search Pokémon or clubs…   (Ctrl+F)"
+		else tr("Search %s or clubs…   (Ctrl+F)") % tr(Packs.entity_plural())
 	_search.custom_minimum_size = Vector2(150 if Settings.is_mobile() else 280, 34)
 	_search.text_changed.connect(_on_search_text)
 	_search.text_submitted.connect(func(_t): _activate_search_selection())

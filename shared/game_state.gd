@@ -976,8 +976,25 @@ func start_new_season() -> void:
 ## Discover + instantiate every service, restore its saved state, then start it.
 func _load_services() -> void:
 	_services.clear()
-	var dir_path := "res://shared/sim/services"
 	var states: Dictionary = world["meta"].get("services", {})
+	# shared services first, then the active Competition Pack's own drop-ins
+	# (theming 1d, docs/THEMING.md) — same contract, same .gdc normalisation.
+	for dir_path in ["res://shared/sim/services", Packs.services_root()]:
+		_load_services_from(dir_path)
+	if _services.is_empty():
+		push_warning("GameState: no simulation services discovered")
+	else:
+		print("GameState: loaded %d simulation services" % _services.size())
+	for svc in _services:
+		var sid := _service_id(svc)
+		if svc.has_method("load_state") and states.has(sid):
+			svc.load_state(states[sid])
+	for svc in _services:
+		if svc.has_method("on_career_started"):
+			svc.on_career_started(self)
+
+
+func _load_services_from(dir_path: String) -> void:
 	var dir := DirAccess.open(dir_path)
 	if dir != null:
 		# In exported builds scripts live in the PCK as "name.gdc" plus a
@@ -1000,17 +1017,6 @@ func _load_services() -> void:
 				continue
 			var svc: Variant = (script as GDScript).new()
 			_services.append(svc)
-		if _services.is_empty():
-			push_warning("GameState: no simulation services discovered in %s" % dir_path)
-		else:
-			print("GameState: loaded %d simulation services" % _services.size())
-	for svc in _services:
-		var sid := _service_id(svc)
-		if svc.has_method("load_state") and states.has(sid):
-			svc.load_state(states[sid])
-	for svc in _services:
-		if svc.has_method("on_career_started"):
-			svc.on_career_started(self)
 
 
 ## Manual registration (tests / screens that want the same lifecycle).
